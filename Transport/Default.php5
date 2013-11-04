@@ -50,7 +50,7 @@ class CMM_Mail_Transport_Default
 	 */
 	public function __construct( $mailer = NULL )
 	{
-		$this->mailer	= 'cmClasses::CMM_Mail_Mail/'.CMC_VERSION;
+		$this->mailer	= 'CMM_Mail_Message/'.CMC_VERSION;
 		if( is_string( $mailer ) && strlen( trim( $mailer ) ) )
 			$this->mailer	= $mailer;
 	}
@@ -71,8 +71,8 @@ class CMM_Mail_Transport_Default
 	/**
 	 *	Sends Mail.
 	 *	@access		public
-	 *	@param		CMM_Mail_Mail	$mail		Mail Object
-	 *	@param		array		$parameters	Additional mail parameters
+	 *	@param		CMM_Mail_Message	$mail		Mail message object
+	 *	@param		array				$parameters	Additional mail parameters
 	 *	@return		void
 	 *	@throws		RuntimeException|InvalidArgumentException
 	 */
@@ -116,7 +116,7 @@ class CMM_Mail_Transport_Default
 	 *	Sends Mail statically.
 	 *	@access		public
 	 *	@static
-	 *	@param		CMM_Mail_Mail	$mail		Mail Object
+	 *	@param		CMM_Mail_Message	$mail		Mail Object
 	 *	@param		array		$parameters	Additional mail parameters
 	 *	@return		void
 	 */

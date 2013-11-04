@@ -84,11 +84,11 @@ class CMM_Mail_Transport_SMTP
 	/**
 	 *	Sends mail using a socket connection to a remote SMTP server.
 	 *	@access		public
-	 *	@param		CMM_Mail_Mail		$mail		Mail object
+	 *	@param		CMM_Mail_Message	$mail		Mail message object
 	 *	@return		void
 	 */
 	public function send( CMM_Mail_Message $mail ){
-		$delim	= CMM_Mail_Mail::$delimiter;
+		$delim	= CMM_Mail_Message::$delimiter;
 		$server	= 'localhost';
 		if( !empty( $_SERVER['SERVER_NAME'] ) )
 			$server	= $_SERVER['SERVER_NAME'];
@@ -150,7 +150,7 @@ class CMM_Mail_Transport_SMTP
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
 			remark( ' < '.$message );
-		fputs( $connection, $message.CMM_Mail_Mail::$delimiter );
+		fputs( $connection, $message.CMM_Mail_Message::$delimiter );
 	}
 
 	/**

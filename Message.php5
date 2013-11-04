@@ -209,7 +209,7 @@ class CMM_Mail_Message{
 		$contents[]	= "";
 		foreach( $this->attachments as $part )
 			$contents[]	= "--".$mimeBoundary."\r\n".$part->render();
-		$contents[]	= "--".$mimeBoundary."--".CMM_Mail_Mail::$delimiter;
+		$contents[]	= "--".$mimeBoundary."--\r\n";
 		return $headers->toString()."\r\n\r\n".join( "\r\n", $contents );
 	}
 
