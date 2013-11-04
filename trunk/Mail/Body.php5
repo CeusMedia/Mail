@@ -85,7 +85,7 @@ class CMM_Mail_Body
 	 */
 	public function setContent( $content )
 	{
-		$this->content	= wordwrap( $content, 998, CMM_Mail_Mail::$delimiter, TRUE );
+		$this->content	= wordwrap( $content, 998, CMM_Mail_Message::$delimiter, TRUE );
 	}
 
 	/**
@@ -122,7 +122,7 @@ class CMM_Mail_Body
 	 */
 	public function wrapWords( $maxLineLength = 78 )
 	{
-		$this->content	= chunk_split( $this->content, $maxLineLength, CMM_Mail_Mail::$delimiter );
+		$this->content	= chunk_split( $this->content, $maxLineLength, CMM_Mail_Message::$delimiter );
 	}
 
 	/**
@@ -132,7 +132,7 @@ class CMM_Mail_Body
 	 */
 	public function render()
 	{
-		$EOL	= CMM_Mail_Mail::$delimiter;
+		$EOL	= CMM_Mail_Message::$delimiter;
 		return $this->headers->toString().$EOL.$EOL.$this->content/*.$EOL*/;
 	}
 }

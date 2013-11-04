@@ -186,7 +186,7 @@ class CMM_Mail_Header_Section
 	{
 		$list	= $this->toArray();
 		if( $list )
-			return implode( CMM_Mail_Mail::$delimiter, $list )/*.CMM_Mail_Mail::$delimiter*/;
+			return implode( CMM_Mail_Message::$delimiter, $list )/*.CMM_Mail_Message::$delimiter*/;
 		return "";
 	}
 }
