@@ -11,10 +11,10 @@
 	<builder format="HTML" theme="Default-SilverFire">
 		<path type="target">./docs/</path>
 		<path type="documents">./</path>
-		<title version="">MailSender</title>
+		<title version="">Mail</title>
 		<author email="christian.wuerker@ceusmedia.de">Christian Würker</author>
 		<company url="ceusmedia.de">Ceus Media</company>
-		<logo href="http://ceusmedia.de/products/cmClasses" title="cmClasses @ CeusMedia">logo/construction.png</logo>
+		<logo href="http://ceusmedia.de/products/cmModules" title="cmModules @ CeusMedia">../../logo.png</logo>
 		<language timezone="Europe/Berlin">en</language>
 		<option name="showSourceCode">1</option>
 		<plugin>Home</plugin>
