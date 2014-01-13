@@ -17,25 +17,24 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmClasses
- *	@package		Net
+ *	@category		cmModules
+ *	@package		Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2013 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmclasses/
- *	@since			0.7.1
+ *	@link			http://code.google.com/p/cmframeworks/
  *	@version		$Id: Mail.php5 1111 2013-09-30 06:28:11Z christian.wuerker $
  */
 /**
- *	Collector container for mails.
- *	@category		cmClasses
- *	@package		Net
+ *	Collector container for mails
+ *
+ *	@category		cmModules
+ *	@package		Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2013 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmclasses/
+ *	@link			http://code.google.com/p/cmframeworks/
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
- *	@since			0.7.1
  *	@version		$Id: Mail.php5 1111 2013-09-30 06:28:11Z christian.wuerker $
  */
 class CMM_Mail_Message{

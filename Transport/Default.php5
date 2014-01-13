@@ -2,7 +2,7 @@
 /**
  *	Sends Mail using PHPs mail function and local SMTP server.
  *
- *	Copyright (c) 2007-2013 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2014 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,24 +17,22 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmClasses
- *	@package		Net.Mail.Transport
+ *	@category		cmModules
+ *	@package		Mail.Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2013 Christian Würker
+ *	@copyright		2007-2014 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmclasses/
- *	@since			19.02.2007
+ *	@link			http://code.google.com/p/cmframeworks/
  *	@version		$Id: Default.php5 1080 2013-07-23 01:56:47Z christian.wuerker $
  */
 /**
  *	Sends Mails of different Types.
- *	@category		cmClasses
- *	@package		Net.Mail.Transport
+ *	@category		cmModules
+ *	@package		Mail.Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2013 Christian Würker
+ *	@copyright		2007-2014 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmclasses/
- *	@since			19.02.2007
+ *	@link			http://code.google.com/p/cmframeworks/
  *	@version		$Id: Default.php5 1080 2013-07-23 01:56:47Z christian.wuerker $
  */
 class CMM_Mail_Transport_Default
