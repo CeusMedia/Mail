@@ -1,6 +1,6 @@
 <?php
 /**
- *	Mail Attachment Data Object.
+ *	Attachment Mail Part.
  *
  *	Copyright (c) 2010-2014 Christian Würker (ceusmedia.de)
  *
@@ -26,7 +26,7 @@
  *	@version		$Id: Attachment.php5 1080 2013-07-23 01:56:47Z christian.wuerker $
  */
 /**
- *	Mail Attachment Data Object.
+ *	Attachment Mail Part.
  *
  *	@category		cmModules
  *	@package		Mail.Part
