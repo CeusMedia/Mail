@@ -22,7 +22,7 @@
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2010-2014 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmframeworks/
+ *	@link			http://code.google.com/p/cmmodules/
  *	@version		$Id: SMTP.php5 1112 2013-09-30 15:11:51Z christian.wuerker $
  */
 /**
@@ -33,7 +33,7 @@
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2010-2014 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmframeworks/
+ *	@link			http://code.google.com/p/cmmodules/
  *	@see			http://www.der-webdesigner.net/tutorials/php/anwendungen/329-php-und-oop-mailversand-via-smtp.html
  *	@version		$Id: SMTP.php5 1112 2013-09-30 15:11:51Z christian.wuerker $
  */

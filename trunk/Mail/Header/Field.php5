@@ -22,7 +22,7 @@
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2010-2014 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmclasses/
+ *	@link			http://code.google.com/p/cmmodules/
  *	@version		$Id: Field.php5 961 2012-05-23 11:58:00Z christian.wuerker $
  */
 /**
@@ -32,7 +32,7 @@
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2010-2014 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmclasses/
+ *	@link			http://code.google.com/p/cmmodules/
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  *	@version		$Id: Field.php5 961 2012-05-23 11:58:00Z christian.wuerker $
  */
