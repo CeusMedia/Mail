@@ -86,8 +86,9 @@ class CMM_Mail_Transport_SMTP
 	 *	@return		void
 	 */
 	public function send( CMM_Mail_Message $mail ){
-		$delim	= CMM_Mail_Message::$delimiter;
-		$server	= 'localhost';
+		$delim		= CMM_Mail_Message::$delimiter;
+		$server		= 'localhost';
+		$subject	= "=?UTF-8?B?".base64_encode( $mail->getSubject() )."?=";
 		if( !empty( $_SERVER['SERVER_NAME'] ) )
 			$server	= $_SERVER['SERVER_NAME'];
 		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
