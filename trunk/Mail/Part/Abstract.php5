@@ -48,7 +48,7 @@ abstract class CMM_Mail_Part_Abstract{
 	public function getCharset(){
 		return $this->charset;
 	}
-	
+
 	public function getContent(){
 		return $this->content;
 	}
@@ -60,7 +60,7 @@ abstract class CMM_Mail_Part_Abstract{
 	public function getFormat(){
 		return $this->format;
 	}
-	
+
 	public function getMimeType(){
 		return $this->mimeType;
 	}
