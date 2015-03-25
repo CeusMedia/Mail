@@ -117,7 +117,7 @@ class CMM_Mail_Participant{
 	public function getLocalPart(){
 		if( !$this->localPart )
 			throw new RuntimeException( 'No address set, yet' );
-		return $this->address;
+		return $this->localPart;
 	}
 
 	/**
