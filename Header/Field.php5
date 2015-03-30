@@ -63,7 +63,10 @@ class CMM_Mail_Header_Field
 	 */
 	public function getName()
 	{
-		return $this->name;
+		if( function_exists( 'mb_convert_case' ) ){
+			return mb_convert_case( $this->name, MB_CASE_TITLE );
+		}
+		return str_replace( " ", "-", ucwords( str_replace( "-", " ", $this->name ) ) );
 	}
 
 	/**
@@ -108,8 +111,7 @@ class CMM_Mail_Header_Field
 	 */
 	public function toString()
 	{
-		$name	= mb_convert_case( $this->name, MB_CASE_TITLE );
-		return $name.": ".$this->value;
+		return $this->getName().": ".$this->getValue();
 	}
 
 	/**

@@ -1,5 +1,5 @@
 <?php
-class CMM_Mail_Participant_Test{
+class CMM_Mail_Check_Recipient{
 
 	/**	@var	CMM_Mail_Participant	$sender		... */
 	protected $sender;
@@ -7,7 +7,7 @@ class CMM_Mail_Participant_Test{
 	protected $lastResponse;
 
 	const ERROR_NONE					= 0;
-	const ERROR_MX_RESOLUTION_FAILED	= 1;
+	const ERROR_MX_RESOLUTION_FAILED		 =1;
 	const ERROR_SOCKET_FAILED			= 2;
 	const ERROR_SOCKET_EXCEPTION		= 3;
 	const ERROR_CONNECTION_FAILED		= 4;

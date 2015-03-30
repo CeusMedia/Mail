@@ -49,8 +49,8 @@ class CMM_Mail_Message{
 	protected $headers;
 	/**	@var		string					$sender			Sender mail address */
 	protected $sender;
-	/**	@var		string					$receivers		List of receivers */
-	protected $receivers;
+	/**	@var		string					$recipients		List of recipients */
+	protected $recipients;
 	/**	@var		string					$subject		Mail subject */
 	protected $subject;
 	/**	@var		string					$mailer		Mailer agent */
@@ -109,20 +109,20 @@ class CMM_Mail_Message{
 		return $this;
 	}
 
-	public function addReceiver( $address, $name, $type = "To" )
+	public function addRecipient( $address, $name, $type = "To" )
 	{
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
-			throw new InvalidArgumentException( 'Invalid receiver type' );
-		$this->receivers[]	= (object) array(
+			throw new InvalidArgumentException( 'Invalid recipient type' );
+		$this->recipients[]	= (object) array(
 			'address'	=> $address,
 			'name'		=> $name,
 			'type'		=> strtoupper( $type )
 		);
-		$receiver	= '<'.$address.'>';
+		$recipient	= '<'.$address.'>';
 		if( strlen( trim( $name ) ) )
-			$receiver	= $name.' '.$receiver;
+			$recipient	= $name.' '.$recipient;
 		if( strtoupper( $type ) !== "BCC" )
-			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $receiver );
+			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $recipient );
 		return $this;
 	}
 
@@ -153,13 +153,13 @@ class CMM_Mail_Message{
 	}
 
 	/**
-	 *	Returns Receiver Address.
+	 *	Returns Recipient Addresses.
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getReceivers()
+	public function getRecipients()
 	{
-		return $this->receivers;
+		return $this->recipients;
 	}
 
 	public function getSender()
@@ -233,11 +233,11 @@ class CMM_Mail_Message{
 		return $this;
 	}
 
-	public function setReadNotificationReceiver( $address, $name = NULL ){
-		$receiver	= $address;
+	public function setReadNotificationRecipient( $address, $name = NULL ){
+		$recipient	= $address;
 		if( strlen( trim( $name ) ) )
-			$receiver	= $name.' <'.$receiver.'>';
-		$this->headers->addFieldPair( 'Disposition-Notification-To', $receiver );
+			$recipient	= $name.' <'.$recipient.'>';
+		$this->headers->addFieldPair( 'Disposition-Notification-To', $recipient );
 	}
 
 	/**

@@ -152,7 +152,7 @@ class CMM_Mail_Participant{
 			$name		= NULL;															//  clear user name
 		}
 		else{																			//  not matching any pattern
-			$list	= '"'.implode( '" or "', array_keys( $patterns ) ).'"';
+			$list	= '"'.implode( '" or "', array_keys( self::$patterns ) ).'"';
 			throw new InvalidArgumentException( 'Invalid address given (must match '.$list.')' );
 		}
 		return (object) array(
