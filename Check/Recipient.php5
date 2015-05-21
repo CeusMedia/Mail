@@ -41,7 +41,7 @@ class CMM_Mail_Check_Recipient{
 
 	/**	@var	CMM_Mail_Participant	$sender		... */
 	protected $sender;
-
+	protected $verbose;
 	protected $lastResponse;
 
 	const ERROR_NONE					= 0;
@@ -53,9 +53,9 @@ class CMM_Mail_Check_Recipient{
 	const ERROR_SENDER_NOT_ACCEPTED		= 6;
 	const ERROR_RECEIVER_NOT_ACCEPTED	= 7;
 
-	public function __construct( CMM_Mail_Participant $sender, $verbose = FALSE ){
+	public function __construct( CMM_Mail_Participant $sender, $verbose = NULL ){
 		$this->sender	= $sender;
-		$this->verbose	= $verbose;
+		$this->setVerbose( $verbose );
 		$this->lastResponse	= (object) array(
 			'error'		=> self::ERROR_NONE,
 			'request'	=> NULL,
@@ -66,8 +66,20 @@ class CMM_Mail_Check_Recipient{
 		$this->cache	= CMM_SEA_Factory::createStorage( 'Noop' );
 	}
 
-	public function setCache( CMM_SEA_Adapter $cache ){
-		$this->cache	= $cache;
+	public function getLastError(){
+		if( $this->lastResponse ){
+			return (object) array(
+				'error'		=> $this->lastResponse->error,
+				'code'		=> $this->lastResponse->code,
+				'message'	=> $this->lastResponse->message
+			);
+		}
+	}
+
+	public function getLastResponse(){
+		if( $this->lastResponse ){
+			return $this->lastResponse;
+		}
 	}
 
 	protected function getMailServers( $hostname ){
@@ -162,27 +174,19 @@ class CMM_Mail_Check_Recipient{
 		return (int) $matches[1] < 400;
 	}
 
-	public function getLastError(){
-		if( $this->lastResponse ){
-			return (object) array(
-				'error'		=> $this->lastResponse->error,
-				'code'		=> $this->lastResponse->code,
-				'message'	=> $this->lastResponse->message
-			);
-		}
-	}
-
-	public function getLastResponse(){
-		if( $this->lastResponse ){
-			return $this->lastResponse->error;
-		}
-	}
-
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
 			remark( ' < '.$message );
 		$this->lastResponse->request	= $message;
 		fputs( $connection, $message.CMM_Mail_Message::$delimiter );
+	}
+
+	public function setCache( CMM_SEA_Adapter $cache ){
+		$this->cache	= $cache;
+	}
+
+	public function setVerbose( $verbose = TRUE ){
+		$this->verbose	= (bool) $verbose;
 	}
 }
 // support windows platforms
