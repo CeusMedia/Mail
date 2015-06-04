@@ -124,16 +124,18 @@ class CMM_Mail_Check_Recipient{
 		}
 		try{
 			$this->parseResponse( $conn );
-			if( $this->lastResponse->code !== 220 ){
+			if( (int) $this->lastResponse->code !== 220 ){
 				$this->lastResponse->error	= self::ERROR_CONNECTION_FAILED;
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "HELO ".$this->sender->getDomain() );
 			$this->parseResponse( $conn );
-			if( $this->lastResponse->code !== 250 ){
+			if( !in_array( $this->lastResponse->code, array( 220, 250 ) ) ){
 				$this->lastResponse->error	= self::ERROR_HELO_FAILED;
 				return FALSE;
 			}
+			while( $this->lastResponse->code === 220 )									//  for telekom.de
+				$this->parseResponse( $conn );
 			$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
 			$this->parseResponse( $conn );
 			if( $this->lastResponse->code !== 250 ){
@@ -148,7 +150,7 @@ class CMM_Mail_Check_Recipient{
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "QUIT" );
-			$this->parseResponse( $conn );
+//			$this->parseResponse( $conn );
 			fclose( $conn );
 			$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
 			return TRUE;
@@ -164,19 +166,19 @@ class CMM_Mail_Check_Recipient{
 	protected function parseResponse( $connection ){
 		$this->lastResponse->response	= fgets( $connection, 1024 );
 		if( $this->verbose )
-			remark( ' > '.$this->lastResponse->response );
+			remark( ' < '.$this->lastResponse->response );
 		$matches	= array();
-		preg_match( '/^([0-9]{3}) (.+)$/', trim( $this->lastResponse->response ), $matches );
+		preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $this->lastResponse->response ), $matches );
 		if( !$matches )
 			throw new RuntimeException( 'SMTP response not understood' );
 		$this->lastResponse->code		= (int) $matches[1];
-		$this->lastResponse->message	= $matches[2];
+		$this->lastResponse->message	= $matches[3];
 		return (int) $matches[1] < 400;
 	}
 
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
-			remark( ' < '.$message );
+			remark( ' > '.htmlentities( $message, ENT_QUOTES, 'UTF-8' ) );
 		$this->lastResponse->request	= $message;
 		fputs( $connection, $message.CMM_Mail_Message::$delimiter );
 	}
