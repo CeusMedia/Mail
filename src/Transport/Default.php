@@ -2,7 +2,7 @@
 /**
  *	Sends Mail using PHPs mail function and local SMTP server.
  *
- *	Copyright (c) 2007-2014 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,25 +17,24 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail.Transport
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id: Default.php5 1080 2013-07-23 01:56:47Z christian.wuerker $
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail\Transport;
 /**
  *	Sends Mails of different Types.
- *	@category		cmModules
- *	@package		Mail.Transport
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id: Default.php5 1080 2013-07-23 01:56:47Z christian.wuerker $
+ *	@link			https://github.com/CeusMedia/Mail
  */
-class CMM_Mail_Transport_Default
+class Default
 {
 	/**	@var		string		$mailer		Mailer Agent */
 	public $mailer;
@@ -48,7 +47,7 @@ class CMM_Mail_Transport_Default
 	 */
 	public function __construct( $mailer = NULL )
 	{
-		$this->mailer	= 'CMM_Mail_Message/'.CMC_VERSION;
+		$this->mailer	= 'CeusMedia/Mail/'.CMC_VERSION;
 		if( is_string( $mailer ) && strlen( trim( $mailer ) ) )
 			$this->mailer	= $mailer;
 	}
@@ -63,33 +62,33 @@ class CMM_Mail_Transport_Default
 	protected function checkForInjection( $value )
 	{
 		if( preg_match( '/(\r|\n)/', $value ) )
-			throw new InvalidArgumentException( 'Mail injection attempt detected' );
+			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 
 	/**
 	 *	Sends Mail.
 	 *	@access		public
-	 *	@param		CMM_Mail_Message	$mail		Mail message object
-	 *	@param		array				$parameters	Additional mail parameters
+	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
+	 *	@param		array					$parameters	Additional mail parameters
 	 *	@return		void
 	 *	@throws		RuntimeException|InvalidArgumentException
 	 */
-	public function send( $mail, $parameters = array() )
+	public function send( \CeusMedia\Mail\Message $message, $parameters = array() )
 	{
-		$body		= $mail->getBody();
-		$headers	= $mail->getHeaders();
-		$receiver	= $mail->getReceiver();
-		$subject	= $mail->getSubject();
+		$body		= \CeusMedia\Mail\Renderer::render();
+		$headers	= $message->getHeaders();
+		$receivers	= $message->getRecipients();
+		$subject	= $message->getSubject();
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
 		$this->checkForInjection( $receiver );
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
-			throw new InvalidArgumentException( 'No mail sender defined' );
-		if( !$receiver )
-			throw new InvalidArgumentException( 'No mail receiver defined' );
+			throw new \InvalidArgumentException( 'No mail sender defined' );
+		if( !$receivers )
+			throw new \InvalidArgumentException( 'No mail receiver defined' );
 		if( !$subject )
-			throw new InvalidArgumentException( 'No mail subject defined' );
+			throw new \InvalidArgumentException( 'No mail subject defined' );
 		$subject	= "=?UTF-8?B?".base64_encode( $subject )."?=";
 
 /*		foreach( $headers as $key => $value )
@@ -107,7 +106,7 @@ class CMM_Mail_Transport_Default
 			$parameters	= implode( PHP_EOL, $parameters );
 
 		if( !mail( $receiver, $subject, $body, $headers->toString(), $parameters ) )
-			throw new RuntimeException( 'Mail could not been sent' );
+			throw new \RuntimeException( 'Mail could not been sent' );
 	}
 
 
@@ -115,14 +114,14 @@ class CMM_Mail_Transport_Default
 	 *	Sends Mail statically.
 	 *	@access		public
 	 *	@static
-	 *	@param		CMM_Mail_Message	$mail		Mail Object
+	 *	@param		\CeusMedia\Mail\Message	$message		Mail Object
 	 *	@param		array		$parameters	Additional mail parameters
 	 *	@return		void
 	 */
-	public static function sendMail( $mail, $parameters = array() )
+	public static function sendMail( \CeusMedia\Mail\Message $message, $parameters = array() )
 	{
-		$transport	= new CMM_Mail_Transport_Default();
-		$transport->send( $mail, $parameters );
+		$transport	= new \CeusMedia\Mail\Transport\Default();
+		$transport->send( $message, $parameters );
 	}
 }
 ?>

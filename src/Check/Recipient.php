@@ -2,7 +2,7 @@
 /**
  *	Evaluate existence of mail receiver address.
  *
- *	Copyright (c) 2015 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,24 +17,23 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail.Check
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2015 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail;
 /**
  *	Evaluate existence of mail receiver address.
  *
- *	@category		cmModules
- *	@package		Mail.Check
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2015 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
  */
 class CMM_Mail_Check_Recipient{
@@ -53,7 +52,7 @@ class CMM_Mail_Check_Recipient{
 	const ERROR_SENDER_NOT_ACCEPTED		= 6;
 	const ERROR_RECEIVER_NOT_ACCEPTED	= 7;
 
-	public function __construct( CMM_Mail_Participant $sender, $verbose = NULL ){
+	public function __construct( \CeusMedia\Mail\Participant $sender, $verbose = NULL ){
 		$this->sender	= $sender;
 		$this->setVerbose( $verbose );
 		$this->lastResponse	= (object) array(
@@ -88,7 +87,7 @@ class CMM_Mail_Check_Recipient{
 		$servers	= array();
 		getmxrr( $hostname, $mxRecords, $mxWeights );
 		if( !$mxRecords )
-			throw new RuntimeException( 'No MX records found for host: '.$hostname );
+			throw new \RuntimeException( 'No MX records found for host: '.$hostname );
 		foreach( $mxRecords as $nr => $server ){
 			$servers[$mxWeights[$nr]]	= $server;
 		}
@@ -97,7 +96,7 @@ class CMM_Mail_Check_Recipient{
 		return $servers;
 	}
 
-	public function test( CMM_Mail_Participant $receiver, $host = NULL, $port = 25, $force = FALSE ){
+	public function test( \CeusMedia\Mail\Participant $receiver, $host = NULL, $port = 25, $force = FALSE ){
 		if( !$force ){
 			if( $this->cache->has( 'user:'.$receiver->getAddress() ) ){
 				return $this->cache->get( 'user:'.$receiver->getAddress() );
@@ -170,7 +169,7 @@ class CMM_Mail_Check_Recipient{
 		$matches	= array();
 		preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $this->lastResponse->response ), $matches );
 		if( !$matches )
-			throw new RuntimeException( 'SMTP response not understood' );
+			throw new \RuntimeException( 'SMTP response not understood' );
 		$this->lastResponse->code		= (int) $matches[1];
 		$this->lastResponse->message	= $matches[3];
 		return (int) $matches[1] < 400;
@@ -180,7 +179,7 @@ class CMM_Mail_Check_Recipient{
 		if( $this->verbose )
 			remark( ' > '.htmlentities( $message, ENT_QUOTES, 'UTF-8' ) );
 		$this->lastResponse->request	= $message;
-		fputs( $connection, $message.CMM_Mail_Message::$delimiter );
+		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
 	}
 
 	public function setCache( CMM_SEA_Adapter $cache ){

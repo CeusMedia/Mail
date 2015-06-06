@@ -2,7 +2,7 @@
 /**
  *	Mail Parser.
  *
- *	Copyright (c) 2015 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,31 +17,29 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2015 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail;
 /**
  *	Mail Parser.
  *
- *	@category		cmModules
- *	@package		Mail
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2015 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  *	@todo			finish: parse mail headers too
  */
-class CMM_Mail_Parser{
+class Parser{
 
 	static public function parse( $content ){
-		$mail	= new CMM_Mail_Message();
+		$mail	= new \CeusMedia\Mail\Message();
 		foreach( $parts as $part ){
 			$mail->addPart( $part );
 		}
@@ -120,7 +118,7 @@ class CMM_Mail_Parser{
 
 		switch( strtolower( $object->mimeType ) ){
 			case 'text/html':
-				$part	= new CMM_Mail_Part_HTML( $object->body, $object->charset );
+				$part	= new \CeusMedia\Mail\Part\HTML( $object->body, $object->charset );
 				if( $object->encoding )
 					$part->setEncoding( $object->encoding );
 				if( $object->format )
@@ -128,7 +126,7 @@ class CMM_Mail_Parser{
 				return $part;
 			case 'text/text':
 			default:
-				$part	= new CMM_Mail_Part_Text( $object->body, $object->charset );
+				$part	= new \CeusMedia\Mail\Part\Text( $object->body, $object->charset );
 				if( $object->encoding )
 					$part->setEncoding( $object->encoding );
 				if( $object->format )

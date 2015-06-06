@@ -2,7 +2,7 @@
 /**
  *	Container for Mail Header Fields.
  *
- *	Copyright (c) 2010-2014 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,37 +17,36 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail.Header
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2010-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id: Section.php5 1111 2013-09-30 06:28:11Z christian.wuerker $
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail\Header;
 /**
  *	Container for Mail Header Fields.
  *
- *	@category		cmModules
- *	@package		Mail.Header
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2010-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
+ *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
- *	@version		$Id: Section.php5 1111 2013-09-30 06:28:11Z christian.wuerker $
  */
-class CMM_Mail_Header_Section
+class Section
 {
 	protected $fields			= array();
 
 	/**
 	 *	Add a Header Field Object.
 	 *	@access		public
-	 *	@param		CMM_Mail_Header_Field	$field		Header Field Object
+	 *	@param		\CeusMedia\Mail\Header\Field	$field		Header Field Object
 	 *	@return		void
 	 */
-	public function addField( CMM_Mail_Header_Field $field )
+	public function addField( \CeusMedia\Mail\Header\Field $field )
 	{
 		return $this->setField( $field, FALSE );
 	}
@@ -61,7 +60,7 @@ class CMM_Mail_Header_Section
 	 */
 	public function addFieldPair( $name, $value )
 	{
-		$field	= new CMM_Mail_Header_Field( $name, $value );
+		$field	= new \CeusMedia\Mail\Header\Field( $name, $value );
 		$this->addField( $field );
 	}
 
@@ -136,11 +135,11 @@ class CMM_Mail_Header_Section
 	/**
 	 *	Sets an Header Field Object.
 	 *	@access		public
-	 *	@param		CMM_Mail_Header_Field	$field			Header Field Object to set
+	 *	@param		\CeusMedia\Mail\Header\Field	$field			Header Field Object to set
 	 *	@param		boolean					$emptyBefore	Flag: TRUE - set | FALSE - append
 	 *	@return		void
 	 */
-	public function setField( CMM_Mail_Header_Field $field, $emptyBefore = TRUE )
+	public function setField( \CeusMedia\Mail\Header\Field $field, $emptyBefore = TRUE )
 	{
 		$name	= strtolower( $field->getName() );
 		if( $emptyBefore || !array_key_exists( $name, $this->fields ) )
@@ -158,7 +157,7 @@ class CMM_Mail_Header_Section
 	 */
 	public function setFieldPair( $name, $value, $emptyBefore = TRUE )
 	{
-		return $this->setField( new CMM_Mail_Header_Field( $name, $value ), $emptyBefore );
+		return $this->setField( new \CeusMedia\Mail\Header\Field( $name, $value ), $emptyBefore );
 	}
 
 	/**
@@ -184,7 +183,7 @@ class CMM_Mail_Header_Section
 	{
 		$list	= $this->toArray();
 		if( $list )
-			return implode( CMM_Mail_Message::$delimiter, $list )/*.CMM_Mail_Message::$delimiter*/;
+			return implode( \CeusMedia\Mail\Message::$delimiter, $list )/*.\CeusMedia\Mail\Message::$delimiter*/;
 		return "";
 	}
 }

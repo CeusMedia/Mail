@@ -2,7 +2,7 @@
 /**
  *	Collector container for mails.
  *
- *	Copyright (c) 2007-2013 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,27 +17,25 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2013 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id: Mail.php5 1111 2013-09-30 06:28:11Z christian.wuerker $
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail;
 /**
  *	Collector container for mails
  *
- *	@category		cmModules
- *	@package		Mail
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2013 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
- *	@version		$Id: Mail.php5 1111 2013-09-30 06:28:11Z christian.wuerker $
+ *	@link			https://github.com/CeusMedia/Mail
  */
-class CMM_Mail_Message{
+class Message{
 
 	/**	@var		array					$parts			List of attachments */
 	protected $attachments					= array();
@@ -53,8 +51,8 @@ class CMM_Mail_Message{
 	protected $recipients;
 	/**	@var		string					$subject		Mail subject */
 	protected $subject;
-	/**	@var		string					$mailer		Mailer agent */
-	protected $userAgent					= 'cmModules::CMM_Mail/0.1';
+	/**	@var		string					$mailer			Mailer agent */
+	protected $userAgent					= 'CeusMedia/Mail/0.1';
 
 	/**
 	 *	Constructor.
@@ -63,22 +61,21 @@ class CMM_Mail_Message{
 	 */
 	public function __construct()
 	{
-		$this->headers		= new CMM_Mail_Header_Section();
+		$this->headers		= new \CeusMedia\Mail\Header\Section();
 	}
 
-	public function addAttachment( CMM_Mail_Part_Attachment $attachment )
+	public function addAttachment( \CeusMedia\Mail\Part\Attachment $attachment )
 	{
-		$this->attachments[]	= $attachment;
-		return $this;
+		return $this->addPart( $attachment );
 	}
 
 	/**
 	 *	Sets a header.
 	 *	@access		public
-	 *	@param		CMM_Mail_Header_Field	$field		Mail header field object
+	 *	@param		\CeusMedia\Mail\Header\Field	$field		Mail header field object
 	 *	@return		void
 	 */
-	public function addHeader( CMM_Mail_Header_Field $field )
+	public function addHeader( \CeusMedia\Mail\Header\Field $field )
 	{
 		$this->headers->addField( $field );
 		return $this;
@@ -93,23 +90,23 @@ class CMM_Mail_Message{
 	 */
 	public function addHeaderPair( $key, $value )
 	{
-		$this->headers->addField( new CMM_Mail_Header_Field( $key, $value ) );
-		return $this;
+		$field	= new \CeusMedia\Mail\Header\Field( $key, $value );
+		return $this->addHeader( $field );
 	}
 
 	/**
 	 *	Sets mail body part.
 	 *	@access		public
-	 *	@param		CMM_Mail_Part_Abstract		$body		Body part of mail
+	 *	@param		\CeusMedia\Mail\Part	$part		Part of mail
 	 *	@return		void
 	 */
-	public function addPart( CMM_Mail_Part_Abstract $body )
+	public function addPart( \CeusMedia\Mail\Part $part )
 	{
-		$this->parts[]	= $body;
+		$this->parts[]	= $part;
 		return $this;
 	}
 
-	public function addRecipient( $address, $name, $type = "To" )
+	public function addRecipient( $address, $name = NULL, $type = "To" )
 	{
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
 			throw new InvalidArgumentException( 'Invalid recipient type' );
@@ -126,15 +123,28 @@ class CMM_Mail_Message{
 		return $this;
 	}
 
-	public function attach( $fileName, $mimeType, $encoding = NULL ){
-		$attachment	= new CMM_Mail_Part_Attachment();
+	public function attachFile( $fileName, $mimeType, $encoding = NULL ){
+		$attachment	= new \CeusMedia\Mail\Part\Attachment();
 		$attachment->setFile( $fileName, $mimeType, $encoding );
-		$this->attachments[]	= $attachment;
-		return $this;
+		return $this->addAttachment( $attachment );
 	}
 
 	/**
-	 *	Returns set Headers.
+	 *	Returns list set attachment parts.
+	 *	@access		public
+	 *	@return		array
+	 */
+	public function getAttachments()
+	{
+		$list	= array();
+		foreach( $this->parts as $part )
+			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
+				$list[]	= $part;
+		return $list;
+	}
+
+	/**
+	 *	Returns set headers.
 	 *	@access		public
 	 *	@return		array
 	 */
@@ -144,16 +154,23 @@ class CMM_Mail_Message{
 	}
 
 	/**
-	 *	Returns Mail Body.
+	 *	Returns list of set body parts.
 	 *	@access		public
-	 *	@return		string
+	 *	@param		boolean		$withAttachments	Flag: return attachment parts also
+	 *	@return		array
 	 */
-	public function getParts(){
-		return $this->parts;
+	public function getParts( $withAttachments = FALSE ){
+		if( $withAttachments )
+			return $this->parts;
+		$list	= array();
+		foreach( $this->parts as $part )
+			if( !( $part instanceof \CeusMedia\Mail\Part\Attachment ) )
+				$list[]	= $part;
+		return $list;
 	}
 
 	/**
-	 *	Returns Recipient Addresses.
+	 *	Returns set recipient addresses.
 	 *	@access		public
 	 *	@return		string
 	 */
@@ -168,48 +185,13 @@ class CMM_Mail_Message{
 	}
 
 	/**
-	 *	Returns Mail Subject.
+	 *	Returns set mail subject.
 	 *	@access		public
 	 *	@return		string
 	 */
 	public function getSubject()
 	{
 		return $this->subject;
-	}
-
-	public function render()
-	{
-		if( !count( $this->parts ) )
-			return "";
-		$mimeBoundary	= "------".md5( microtime( TRUE ) );
-		$mimeBoundary1	= $mimeBoundary."-1";
-
-		$headers		= new CMM_Mail_Header_Section();
-		foreach( $this->headers->getFields() as $field )
-			$headers->addField( $field );
-		
-		$server		= empty( $_SERVER['SERVER_NAME'] ) ? 'localhost' : $_SERVER['SERVER_NAME'];
-
-		$headers->setFieldPair( "Message-ID", "<".sha1( microtime() )."@".$server.">" );
-		$headers->setFieldPair( "Date", date( "D, d M Y H:i:s O", time() ) );
-		$headers->setFieldPair( "Subject", "=?utf-8?B?".base64_encode( $this->subject )."?=" );
-		$headers->setFieldPair( "Content-Type", "multipart/mixed;\r\n boundary=\"".$mimeBoundary."\"" );
-		$headers->setFieldPair( "MIME-Version", "1.0" );		
-		$headers->addFieldPair( 'X-Mailer', $this->userAgent );
-
-		$contents	= array( "This is a multi-part message in MIME format." );
-		$contents[]	= "--".$mimeBoundary;
-		$contents[]	= "Content-Type: multipart/alternative;\r\n boundary=\"".$mimeBoundary1."\"";
-		$contents[]	= "";
-		foreach( $this->parts as $part )
-			$contents[]	= "--".$mimeBoundary1."\r\n".$part->render();
-		$contents[]	= "--".$mimeBoundary1."--";
-		$contents[]	= "";
-		$contents[]	= "";
-		foreach( $this->attachments as $part )
-			$contents[]	= "--".$mimeBoundary."\r\n".$part->render();
-		$contents[]	= "--".$mimeBoundary."--\r\n";
-		return $headers->toString()."\r\n\r\n".join( "\r\n", $contents );
 	}
 
 	/**
@@ -224,7 +206,7 @@ class CMM_Mail_Message{
 	}
 
 	public function setHTML( $content, $charset = NULL, $encoding = NULL ){
-		$part	= new CMM_Mail_Part_HTML( $content );
+		$part	= new \CeusMedia\Mail\Part\HTML( $content );
 		if( $charset )
 			$part->setCharset( $charset );
 		if( $encoding )
@@ -238,6 +220,7 @@ class CMM_Mail_Message{
 		if( strlen( trim( $name ) ) )
 			$recipient	= $name.' <'.$recipient.'>';
 		$this->headers->addFieldPair( 'Disposition-Notification-To', $recipient );
+		return $this;
 	}
 
 	/**
@@ -274,7 +257,7 @@ class CMM_Mail_Message{
 	}
 
 	public function setText( $content, $charset = NULL, $encoding = NULL ){
-		$part	= new CMM_Mail_Part_Text( $content );
+		$part	= new \CeusMedia\Mail\Part\Text( $content );
 		if( $charset )
 			$part->setCharset( $charset );
 		if( $encoding )

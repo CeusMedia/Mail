@@ -2,7 +2,7 @@
 /**
  *	Validator for Mail addresses.
  *
- *	Copyright (c) 2015 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,26 +17,25 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail.Check
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2015 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail;
 /**
  *	Validator for Mail addresses.
  *
- *	@category		cmModules
- *	@package		Mail.Check
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2015 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  */
- class CMM_Mail_Check_Address{
+class CMM_Mail_Check_Address{
 
 	static protected $regexSimple	= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
 	static protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
@@ -63,7 +62,7 @@
 			return 2;
 		}
 		if( $throwException ){
-			throw new InvalidArgumentException( 'Given mail address is not valid' );
+			throw new \InvalidArgumentException( 'Given mail address is not valid' );
 		}
 		return 0;
 	}

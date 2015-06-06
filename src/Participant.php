@@ -2,7 +2,7 @@
 /**
  *	Data object for mail participants, having an address and optionally a name.
  *
- *	Copyright (c) 2007-2013 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,14 +17,14 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail;
 /**
  *	Data object for mail participants, having an address and optionally a name.
  *
@@ -35,13 +35,12 @@
  *			- Local Part (mandatory)
  *			- Domain (mandatory)
  *
- *	@category		cmModules
- *	@package		Mail
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id$
+ *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
  *	@todo			create tests
  *	@todo			use in Message class

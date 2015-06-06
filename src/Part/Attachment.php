@@ -2,7 +2,7 @@
 /**
  *	Attachment Mail Part.
  *
- *	Copyright (c) 2010-2014 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,29 +17,26 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail.Part
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2010-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id: Attachment.php5 1080 2013-07-23 01:56:47Z christian.wuerker $
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail\Part;
 /**
  *	Attachment Mail Part.
  *
- *	@category		cmModules
- *	@package		Mail.Part
- *	@extends		CMM_Mail_Part_Abstract
- *	@uses			CMM_Mail_Header_Section
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2010-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
+ *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
- *	@version		$Id: Attachment.php5 1080 2013-07-23 01:56:47Z christian.wuerker $
  */
-class CMM_Mail_Part_Attachment extends CMM_Mail_Part_Abstract{
+class Attachment extends \CeusMedia\Mail\Part{
 
 	protected $content;
 	protected $fileName;
@@ -78,7 +75,7 @@ class CMM_Mail_Part_Attachment extends CMM_Mail_Part_Abstract{
 			'Content-Transfer-Encoding'	=> $this->encoding,
 			'Content-Description'		=> $this->fileName,
 		);
-		$section	= new CMM_Mail_Header_Section();
+		$section	= new \CeusMedia\Mail\Header\Section();
 		foreach( $headers as $key => $value )
 			$section->setFieldPair( $key, $value );
 		
@@ -110,7 +107,7 @@ class CMM_Mail_Part_Attachment extends CMM_Mail_Part_Abstract{
 
 	public function setFile( $fileName, $mimeType = NULL, $encoding = NULL ){
 		if( !file_exists( $fileName ) )
-			throw new InvalidArgumentException( 'Attachment file "'.$fileName.'" is not existing' );
+			throw new \InvalidArgumentException( 'Attachment file "'.$fileName.'" is not existing' );
 		$this->setFileName( $fileName );
 		$this->content	= file_get_contents( $fileName );
 		if( $mimeType )

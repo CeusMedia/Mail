@@ -2,7 +2,7 @@
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
  *
- *	Copyright (c) 2010-2014 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -17,27 +17,26 @@
  *	You should have received a copy of the GNU General Public License
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	@category		cmModules
- *	@package		Mail.Transport
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2010-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
- *	@version		$Id: SMTP.php5 1112 2013-09-30 15:11:51Z christian.wuerker $
+ *	@link			https://github.com/CeusMedia/Mail
  */
+namespace CeusMedia\Mail\Transport;
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
  *
- *	@category		cmModules
- *	@package		Mail.Transport
+ *	@category		Library
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2010-2014 Christian Würker
+ *	@copyright		2007-2015 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
- *	@link			http://code.google.com/p/cmmodules/
+ *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://www.der-webdesigner.net/tutorials/php/anwendungen/329-php-und-oop-mailversand-via-smtp.html
- *	@version		$Id: SMTP.php5 1112 2013-09-30 15:11:51Z christian.wuerker $
  */
-class CMM_Mail_Transport_SMTP
+class SMTP
 {
 	/**	@var		string		$host		SMTP server host name */
 	protected $host;
@@ -62,7 +61,7 @@ class CMM_Mail_Transport_SMTP
 	 *	@return		void
 	 */
 	public function __construct( $host, $port = 25, $username = NULL, $password = NULL ){
-		$this->host		= $host;
+		$this->setHost( $host );
 		$this->setPort( $port );
 		$this->setUsername( $username );
 		$this->setPassword( $password );
@@ -76,30 +75,35 @@ class CMM_Mail_Transport_SMTP
 		preg_match( '/^([0-9]{3}) (.+)$/', trim( $response ), $matches );
 		if( $matches )
 			if( (int) $matches[1] >= 400 )
-				throw new RuntimeException( 'SMTP error: '.$matches[2], (int) $matches[1] );
+				throw new \RuntimeException( 'SMTP error: '.$matches[2], (int) $matches[1] );
 	}
 
 	/**
 	 *	Sends mail using a socket connection to a remote SMTP server.
 	 *	@access		public
-	 *	@param		CMM_Mail_Message	$mail		Mail message object
+	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
+	 *	@throws		\RuntimeException		if connection to SMTP server failed
+	 *	@throws		\RuntimeException		if message has no mail sender
+	 *	@throws		\RuntimeException		if message has no mail receivers
+	 *	@throws		\RuntimeException		if message has no mail body parts
+	 *	@throws		\RuntimeException		if sending mail failed
 	 *	@return		void
 	 */
-	public function send( CMM_Mail_Message $mail ){
-		$delim		= CMM_Mail_Message::$delimiter;
+	public function send( \CeusMedia\Mail\Message $message ){
+		$delim		= \CeusMedia\Mail\Message::$delimiter;
 		$server		= 'localhost';
-		$subject	= "=?UTF-8?B?".base64_encode( $mail->getSubject() )."?=";
+		$subject	= "=?UTF-8?B?".base64_encode( $message->getSubject() )."?=";
 		if( !empty( $_SERVER['SERVER_NAME'] ) )
 			$server	= $_SERVER['SERVER_NAME'];
 		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
 		if( !$conn )
-			throw new RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
-		if( !$mail->getSender() )
-			throw new RuntimeException( 'No mail sender set' );
-		if( !$mail->getReceivers() )
-			throw new RuntimeException( 'No mail receiver(s) set' );
-		if( !( $body = $mail->render() ) )
-			throw new RuntimeException( 'No mail body set' );
+			throw new \RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
+		if( !$message->getSender() )
+			throw new \RuntimeException( 'No mail sender set' );
+		if( !$message->getRecipients() )
+			throw new \RuntimeException( 'No mail receiver(s) set' );
+		if( !$message->getParts() )
+			throw new \RuntimeException( 'No mail body parts set' );
 		try{
 			$this->checkResponse( $conn );
 			$this->sendChunk( $conn, "HELO ".$server );
@@ -116,12 +120,12 @@ class CMM_Mail_Transport_SMTP
 				$this->sendChunk( $conn, base64_encode( $this->password ) );
 				$this->checkResponse( $conn );
 			}
-			$sender		= $mail->getSender();
+			$sender		= $message->getSender();
 			$address	= $sender->address;
 			if( !empty( $sender->name ) )
 				$address	= $sender->name.' <'.$address.'>';
 			$this->sendChunk( $conn, "MAIL FROM: ".$address );
-			foreach( $mail->getReceivers() as $receiver ){
+			foreach( $message->getRecipients() as $receiver ){
 				$address	= $receiver->address;
 				if( !empty( $receiver->name ) )
 					$address	= $receiver->name.' <'.$address.'>';
@@ -129,9 +133,10 @@ class CMM_Mail_Transport_SMTP
 				$this->sendChunk( $conn, "RCPT ".$type.": ".$address );
 			}
 
+			$content	= \CeusMedia\Mail\Renderer::render( $message );
 			$this->sendChunk( $conn, "DATA" );
 			$this->checkResponse( $conn );
-			$this->sendChunk( $conn, $body );
+			$this->sendChunk( $conn, $content );
 			$this->checkResponse( $conn );
 			$this->sendChunk( $conn, '.' );
 			$this->checkResponse( $conn );
@@ -142,14 +147,28 @@ class CMM_Mail_Transport_SMTP
 		}
 		catch( Exception $e ){
 			fclose( $conn );
-			throw new RuntimeException( $e->getMessage(), $e->getCode(), $e->getPrevious() );
+			throw new \RuntimeException( $e->getMessage(), $e->getCode(), $e->getPrevious() );
 		}
 	}
 
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
 			remark( ' < '.$message );
-		fputs( $connection, $message.CMM_Mail_Message::$delimiter );
+		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
+	}
+
+	/**
+	 *	Sets SMTP host.
+	 *	@access		public
+	 *	@param		integer		$host		SMTP server host
+	 *	@return		void
+	 */
+	public function setHost( $host )
+	{
+		if( !strlen( trim( $host ) ) )
+			throw new \InvalidArgumentException( 'Missing SMTP host' );
+		$this->host		= $host;
+		return $this;
 	}
 
 	/**
