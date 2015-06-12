@@ -81,7 +81,7 @@ class Renderer{
 		foreach( $message->getAttachments() as $part )
 			$contents[]	= "--".$mimeBoundary.$delim.$part->render();
 		$contents[]	= "--".$mimeBoundary."--".$delim;
-		return $headers->toString().$delim$delim.join( $delim, $contents );
+		return $headers->toString().$delim.$delim.join( $delim, $contents );
 	}
 
 	/**
