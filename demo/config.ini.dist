@@ -1,0 +1,10 @@
+host			= ""
+port			= 25
+username		= ""
+password		= ""
+
+senderAddress	= ""
+senderName		= "Sender Name"
+receiverName	= "Receiver Name"
+subject			= "CeusMedia/Mail: Demo Mail #%s"
+body			= "This is just a test. The current UNIX timestamp is %s."
