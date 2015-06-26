@@ -70,7 +70,7 @@ class SMTP
 	protected function checkResponse( $connection ){
 		$response	= fgets( $connection, 1024 );
 		if( $this->verbose )
-			remark( ' > '.$response );
+			print ' > '.$response . PHP_EOL;
 		$matches	= array();
 		preg_match( '/^([0-9]{3}) (.+)$/', trim( $response ), $matches );
 		if( $matches )
@@ -82,28 +82,30 @@ class SMTP
 	 *	Sends mail using a socket connection to a remote SMTP server.
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
-	 *	@throws		\RuntimeException		if connection to SMTP server failed
 	 *	@throws		\RuntimeException		if message has no mail sender
 	 *	@throws		\RuntimeException		if message has no mail receivers
 	 *	@throws		\RuntimeException		if message has no mail body parts
+	 *	@throws		\RuntimeException		if connection to SMTP server failed
 	 *	@throws		\RuntimeException		if sending mail failed
 	 *	@return		void
 	 */
 	public function send( \CeusMedia\Mail\Message $message ){
 		$delim		= \CeusMedia\Mail\Message::$delimiter;
-		$server		= 'localhost';
-		$subject	= "=?UTF-8?B?".base64_encode( $message->getSubject() )."?=";
-		if( !empty( $_SERVER['SERVER_NAME'] ) )
-			$server	= $_SERVER['SERVER_NAME'];
-		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
-		if( !$conn )
-			throw new \RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
 		if( !$message->getSender() )
 			throw new \RuntimeException( 'No mail sender set' );
 		if( !$message->getRecipients() )
 			throw new \RuntimeException( 'No mail receiver(s) set' );
 		if( !$message->getParts() )
 			throw new \RuntimeException( 'No mail body parts set' );
+		$content	= \CeusMedia\Mail\Renderer::render( $message );
+		$subject	= "=?UTF-8?B?".base64_encode( $message->getSubject() )."?=";
+
+		$server		= 'localhost';
+		if( !empty( $_SERVER['SERVER_NAME'] ) )
+			$server	= $_SERVER['SERVER_NAME'];
+		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
+		if( !$conn )
+			throw new \RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
 		try{
 			$this->checkResponse( $conn );
 			$this->sendChunk( $conn, "HELO ".$server );
@@ -122,24 +124,23 @@ class SMTP
 			}
 			$sender		= $message->getSender();
 			$address	= $sender->address;
-			if( !empty( $sender->name ) )
-				$address	= $sender->name.' <'.$address.'>';
+//			if( !empty( $sender->name ) )
+//				$address	= $sender->name.' <'.$address.'>';
 			$this->sendChunk( $conn, "MAIL FROM: ".$address );
+			$this->checkResponse( $conn );
 			foreach( $message->getRecipients() as $receiver ){
 				$address	= $receiver->address;
-				if( !empty( $receiver->name ) )
-					$address	= $receiver->name.' <'.$address.'>';
+//				if( !empty( $receiver->name ) )
+//					$address	= $receiver->name.' <'.$address.'>';
 				$type	= empty( $receiver->type ) ? 'TO' : strtoupper( $receiver->type );
 				$this->sendChunk( $conn, "RCPT ".$type.": ".$address );
 			}
+			$this->checkResponse( $conn );
 
-			$content	= \CeusMedia\Mail\Renderer::render( $message );
 			$this->sendChunk( $conn, "DATA" );
 			$this->checkResponse( $conn );
 			$this->sendChunk( $conn, $content );
-			$this->checkResponse( $conn );
 			$this->sendChunk( $conn, '.' );
-			$this->checkResponse( $conn );
 			$this->checkResponse( $conn );
 			$this->sendChunk( $conn, "QUIT" );
 			$this->checkResponse( $conn );
@@ -153,7 +154,7 @@ class SMTP
 
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
-			remark( ' < '.$message );
+			print ' < '.$message . PHP_EOL;
 		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
 	}
 
