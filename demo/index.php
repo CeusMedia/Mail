@@ -37,17 +37,34 @@ $body	= '
 	<div class="row-fluid">
 		<div class="span12">
 			<h3>Code</h3>
+			Create a mail, setup a transport and send mail via transport:
 			<pre>
 //  create mail
 $mail = new \CeusMedia\Mail\Message();
 $mail->setSender("john@example.com", "John Doe");
 $mail->addRecipient("mike@example.com", "Mike Foo");
 $mail->setSubject("This is just a test");
-$mail->addPart(new \CeusMedia\Mail\Part\HTML("Test Message..."));
+$mail->addPart(new \CeusMedia\Mail\Part\Text("Test Message..."));
 
-//  set up SMTP transport and send mail
-$transport = new \CeusMedia\Mail\Transport\SMTP("example.com", 25, "john@example.com", "my_password");
+//  setup SMTP transport and send mail
+$transport = new \CeusMedia\Mail\Transport\SMTP("example.com", 587);
+$transport->setUsername("john@example.com");
+$transport->setPassword("my_password");
+$transport->setSecure(true);
 $transport->send($mail);
+			</pre>
+			Or chained:
+			<pre>
+\CeusMedia\Mail\Transport\SMTP::getInstance("example.com", 587)
+	->setUsername("john@example.com")
+	->setPassword("my_password")
+	->setSecure(true)
+	->send(\CeusMedia\Mail\Message::getInstance()
+		->setSender("john@example.com", "John Doe")
+		->addRecipient("mike@example.com", "Mike Foo")
+		->setSubject("This is just a test")
+		->addPart(new \CeusMedia\Mail\Part\Text("Test Message..."));
+	);
 			</pre>
 		</div>
 	</div>
@@ -75,6 +92,7 @@ function sendMail($config) {
 
 	$transport  = new \CeusMedia\Mail\Transport\SMTP($host, $port, $username, $password);
 	$transport->setVerbose(TRUE);
+	$transport->setSecure($port != 25);
 	$transport->send($mail);
 }
 
