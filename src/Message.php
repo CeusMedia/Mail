@@ -207,13 +207,10 @@ class Message{
 	/**
 	 *	Returns assigned mail sender.
 	 *	@access		public
-	 *	@param		string|NULL		$encoding		Types: quoted-printable, base64. Default: none
 	 *	@return		string
 	 */
-	public function getSender( $encoding = NULL )
+	public function getSender()
 	{
-		if( $encoding )
-			return self::encodeIfNeeded( $this->sender, $encoding );
 		return $this->sender;
 	}
 
