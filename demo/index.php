@@ -18,7 +18,7 @@ $body	= '
 	<h3>Live Demo</h3>
 	<div class="row-fluid">
 		<div class="span3">
-			<form action="./test.php" method="post">
+			<form action="./" method="post">
 				<label>Sender Name</label>
 				<input type="text" class="span12" readonly="readonly" value="'.htmlentities($config['senderName'], ENT_QUOTES, 'UTF-8').'"/>
 				<label>Sender Address</label>
