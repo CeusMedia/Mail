@@ -67,15 +67,34 @@ class SMTP
 		$this->setPassword( $password );
 	}
 
-	protected function checkResponse( $connection ){
-		$response	= fgets( $connection, 1024 );
-		if( $this->verbose )
-			print ' > '.$response . PHP_EOL;
-		$matches	= array();
-		preg_match( '/^([0-9]{3}) (.+)$/', trim( $response ), $matches );
-		if( $matches )
-			if( (int) $matches[1] >= 400 )
-				throw new \RuntimeException( 'SMTP error: '.$matches[2], (int) $matches[1] );
+	protected function checkResponse( $connection, $acceptedCodes = array() ){
+		$lastLine	= FALSE;
+		$code		= NULL;
+		$buffer		= array();
+		do{
+			$response	= fgets( $connection, 1024 );
+			if( $this->verbose )
+				print ' < '.$response;
+			$matches	= array();
+			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
+			if( $matches ){
+				$code		= (int) $matches[1];
+				$buffer[]	= $matches[3];
+				if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
+					throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], (int) $matches[1] );
+				if( $matches[2] === " " )
+					$lastLine	= TRUE;
+			}
+		}
+		while( $response && !$lastLine );
+		return (object) array(
+			'code'		=> $code,
+			'message'	=> join( "\n", $buffer ),
+		);
+	}
+
+	static public function getInstance( $host, $port = 25 ){
+		return new self( $host, $port );
 	}
 
 	/**
@@ -98,52 +117,42 @@ class SMTP
 		if( !$message->getParts() )
 			throw new \RuntimeException( 'No mail body parts set' );
 		$content	= \CeusMedia\Mail\Renderer::render( $message );
-		$subject	= "=?UTF-8?B?".base64_encode( $message->getSubject() )."?=";
 
-		$server		= $this->host;
-//		if( !empty( $_SERVER['SERVER_NAME'] ) )
-//			$server	= $_SERVER['SERVER_NAME'];
 		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
 		if( !$conn )
 			throw new \RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
 		try{
-			$this->checkResponse( $conn );
-			$this->sendChunk( $conn, "HELO ".$server );
-			$this->checkResponse( $conn );
+			$this->checkResponse( $conn, array( 220 ) );
+			$this->sendChunk( $conn, "EHLO ".$this->host );
+			$this->checkResponse( $conn, array( 250 ) );
 			if( $this->isSecure ){
 				$this->sendChunk( $conn, "STARTTLS" );
-				$this->checkResponse( $conn );
+				$this->checkResponse( $conn, array( 220 ) );
+				stream_socket_enable_crypto( $conn, true, STREAM_CRYPTO_METHOD_TLS_CLIENT );
 			}
 			if( $this->username && $this->password ){
 				$this->sendChunk( $conn, "AUTH LOGIN" );
-				$this->checkResponse( $conn );
+				$this->checkResponse( $conn, array( 334 ) );
 				$this->sendChunk( $conn, base64_encode( $this->username ) );
-				$this->checkResponse( $conn );
+				$this->checkResponse( $conn, array( 334 ) );
 				$this->sendChunk( $conn, base64_encode( $this->password ) );
-				$this->checkResponse( $conn );
+				$this->checkResponse( $conn, array( 235 ) );
 			}
 			$sender		= $message->getSender();
 			$address	= $sender->address;
-//			if( !empty( $sender->name ) )
-//				$address	= $sender->name.' <'.$address.'>';
 			$this->sendChunk( $conn, "MAIL FROM: ".$address );
-			$this->checkResponse( $conn );
+			$this->checkResponse( $conn, array( 250 ) );
 			foreach( $message->getRecipients() as $receiver ){
-				$address	= $receiver->address;
-//				if( !empty( $receiver->name ) )
-//					$address	= $receiver->name.' <'.$address.'>';
-				$type	= empty( $receiver->type ) ? 'TO' : strtoupper( $receiver->type );
-				$this->sendChunk( $conn, "RCPT ".$type.": ".$address );
+				$this->sendChunk( $conn, "RCPT TO: ".$receiver->address );
+				$this->checkResponse( $conn, array( 250 ) );
 			}
-			$this->checkResponse( $conn );
-
 			$this->sendChunk( $conn, "DATA" );
-			$this->checkResponse( $conn );
+			$this->checkResponse( $conn, array( 354 ) );
 			$this->sendChunk( $conn, $content );
 			$this->sendChunk( $conn, '.' );
-			$this->checkResponse( $conn );
+			$this->checkResponse( $conn, array( 250 ) );
 			$this->sendChunk( $conn, "QUIT" );
-			$this->checkResponse( $conn );
+			$this->checkResponse( $conn, array( 221 ) );
 			fclose( $conn );
 		}
 		catch( Exception $e ){
@@ -154,7 +163,7 @@ class SMTP
 
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
-			print ' < '.$message . PHP_EOL;
+			print PHP_EOL . ' > '.$message . PHP_EOL;
 		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
 	}
 
