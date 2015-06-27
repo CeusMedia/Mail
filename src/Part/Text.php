@@ -48,8 +48,14 @@ class Text extends \CeusMedia\Mail\Part{
 
 	public function render(){
 		switch( strtolower( $this->encoding ) ){
+			case '7bit':
+			case '8bit':
+				$content	= mb_convert_encoding( $this->content, "UTF-8", strtolower( $this->encoding ) );
+				break;
 			case 'base64':
+			case 'binary':
 				$content	= base64_encode( $this->content );
+				$content	= chunk_split( $content, 76 );
 				break;
 			case 'quoted-printable':
 				$content	= quoted_printable_encode( $this->content );
@@ -57,7 +63,6 @@ class Text extends \CeusMedia\Mail\Part{
 			default:
 				$content	= $this->content;
 		}
-		$content		= chunk_split( $content, 76 );
 		$headers		= new \CeusMedia\Mail\Header\Section();
 		$contentType	= array(
 			$this->mimeType,
