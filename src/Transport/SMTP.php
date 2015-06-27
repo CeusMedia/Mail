@@ -100,9 +100,9 @@ class SMTP
 		$content	= \CeusMedia\Mail\Renderer::render( $message );
 		$subject	= "=?UTF-8?B?".base64_encode( $message->getSubject() )."?=";
 
-		$server		= 'localhost';
-		if( !empty( $_SERVER['SERVER_NAME'] ) )
-			$server	= $_SERVER['SERVER_NAME'];
+		$server		= $this->host;
+//		if( !empty( $_SERVER['SERVER_NAME'] ) )
+//			$server	= $_SERVER['SERVER_NAME'];
 		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
 		if( !$conn )
 			throw new \RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
