@@ -116,8 +116,9 @@ class Message{
 			'type'		=> strtoupper( $type )
 		);
 		$recipient	= '<'.$address.'>';
-		if( strlen( trim( $name ) ) )
-			$recipient	= $name.' '.$recipient;
+		if( strlen( trim( $name ) ) ){
+			$recipient	= self::encodeIfNeeded( $name ).' '.$recipient;
+		}
 		if( strtoupper( $type ) !== "BCC" )
 			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $recipient );
 		return $this;
@@ -127,6 +128,26 @@ class Message{
 		$attachment	= new \CeusMedia\Mail\Part\Attachment();
 		$attachment->setFile( $fileName, $mimeType, $encoding );
 		return $this->addAttachment( $attachment );
+	}
+
+	/**
+	 *	Encodes a mail header value string if needed.
+	 *	@access		public
+	 *	@param		string		$string			A mail header value string, subject for example.
+	 *	@param		string		$encoding		quoted-printable (default) or base64
+	 *	@return		string
+	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 */
+	static public function encodeIfNeeded( $string, $encoding = "quoted-printable" ){
+		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
+			return $string;
+		switch( strtolower( $encoding ) ){
+			case 'quoted-printable':
+				return "=?UTF-8?Q?".quoted_printable_encode( $string )."?=";
+			case 'base64':
+				return "=?UTF-8?B?".base64_encode( $string )."?=";
+		}
+		throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 	}
 
 	/**
@@ -151,6 +172,10 @@ class Message{
 	public function getHeaders()
 	{
 		return $this->headers;
+	}
+
+	static public function getInstance(){
+		return new self;
 	}
 
 	/**
@@ -179,18 +204,29 @@ class Message{
 		return $this->recipients;
 	}
 
-	public function getSender()
+	/**
+	 *	Returns assigned mail sender.
+	 *	@access		public
+	 *	@param		string|NULL		$encoding		Types: quoted-printable, base64. Default: none
+	 *	@return		string
+	 */
+	public function getSender( $encoding = NULL )
 	{
+		if( $encoding )
+			return self::encodeIfNeeded( $this->sender, $encoding );
 		return $this->sender;
 	}
 
 	/**
 	 *	Returns set mail subject.
 	 *	@access		public
+	 *	@param		string|NULL		$encoding		Types: quoted-printable, base64. Default: none
 	 *	@return		string
 	 */
-	public function getSubject()
+	public function getSubject( $encoding = NULL )
 	{
+		if( $encoding )
+			return self::encodeIfNeeded( $this->subject, $encoding );
 		return $this->subject;
 	}
 
@@ -239,7 +275,7 @@ class Message{
 		);
 		$sender	= '<'.$address.'>';
 		if( strlen( trim( $name ) ) )
-			$sender	= $name.' '.$sender;
+			$sender	= self::encodeIfNeeded( $name ).' '.$sender;
 		$this->addHeaderPair( "From", $sender );
 		return $this;
 	}
