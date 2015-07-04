@@ -46,18 +46,6 @@ class Parser{
 		return $mail;
 	}
 
-	static protected function flattenParsedBodyParts( &$list, $part, $key ){
-		if( $part->content !== NULL ){																//  skip if not content
-			$list[$key]	= (object) array(															//  otherwise enlist part
-				'headers'	=> $part->headers,
-				'content'	=> $part->content,
-			);
-		}
-		foreach( $part->nested as $subpartKey => $subpart ){										//  iterate subparts
-			self::flattenParsedBodyParts( $list, $subpart, $subpartKey );							//  and flatten them too
-		}
-	}
-
 	/**
 	 *	Read part and return a mail part object.
 	 *	@static
@@ -68,7 +56,7 @@ class Parser{
 	 *	@todo		finish: return an object of CMM_Mail_Part_*
 	 *	@todo		implement attachments
 	 */
-	static protected function getPartObject( $part, $options = array() ){
+	static protected function getPartObject( $part, $options = array(), $verbose = NULL ){
 		$object		= (object) array(																//  prepare body part data object
 			'headers'	=> array(),																	//  ... with empty header list
 			'content'	=> $part->content,															//  ... with raw content
@@ -109,12 +97,34 @@ class Parser{
 			}
 
 		}
+		$verbose ? remark( "Headers: ") : NULL;
+		$verbose ? print_m( $object->headers ) : NULL;
+
 		if( strtolower( $object->format === "fixed" ) )
 			$object->body	= join( $object->body );
 		else
 			$object->body	= join( "\n", $object->body );
 		if( strtolower( $object->encoding ) === "base64" )
 			$object->body	= base64_decode( $object->body );
+
+
+		if( isset( $object->headers['Content-Disposition'] ) ){
+			if( preg_match( "/attachment/", $object->headers['Content-Disposition'] ) ){
+				$part	= new CMM_Mail_Part_Attachment();
+				$part->setContent( $object->body, $object->headers['Content-Type'] );
+				if( $object->encoding )
+					$part->setEncoding( $object->encoding );
+				if( $object->format )
+					$part->setFormat( $object->format );
+				if( isset( $object->headers['Content-Description'] ) )
+					$filename	= $object->headers['Content-Description'];
+				else
+					$filename	= preg_replace( "/^.+filename=\"(.+)\"$/", "\\1", $object->headers['Content-Disposition'] );
+				if( $filename )
+					$part->setFilename( $filename );
+				return $part;
+			}
+		}
 
 		switch( strtolower( $object->mimeType ) ){
 			case 'text/html':
@@ -124,7 +134,7 @@ class Parser{
 				if( $object->format )
 					$part->setFormat( $object->format );
 				return $part;
-			case 'text/text':
+			case 'text/plain':
 			default:
 				$part	= new \CeusMedia\Mail\Part\Text( $object->body, $object->charset );
 				if( $object->encoding )
@@ -145,10 +155,12 @@ class Parser{
 	static public function parseBody( $body ){
 		$list	= array();																			//  prepare flat body parts list
 		$lines	= preg_split( "/\r?\n/", $body );													//  split body lines
-		$parts	= self::parseBodyPart( $lines, 1 );													//  parse body parts recursively
-		self::flattenParsedBodyParts( $list, $parts, 'main' );										//  fill flat body parts list
-		foreach( $list as $nr => $entry ){															//  iterate body party
-			$list[$nr]	= self::getPartObject( $entry );											//  ...
+		$parts	= array();
+		self::parseBodyPart( $parts, $lines, 1 );													//  parse body parts recursively
+		foreach( $parts as $partKey => $subparts ){													//  iterate body part lists
+			foreach( $subparts as $nr => $entry ){													//  iterate body parts
+				$list[$partKey.'-'.$nr]	= self::getPartObject( $entry );							//  ...
+			}
 		}
 		return $list;																				//  return parts collected from body
 	}
@@ -161,16 +173,18 @@ class Parser{
 	 *	@param		integer		$initialStatus	Status to start at (0: read header, 1: read content)
 	 *	@return		object		Body part data object
 	 */
-	static protected function parseBodyPart( $lines, $initialStatus = 0 ){
+	static protected function parseBodyPart( &$parts, $lines, $initialStatus = 0, $verbose = FALSE ){
+		$verbose ? remark( "0: Lines: ".count( $lines ) ) : NULL;
 		$status	= max( 0, min( 1, $initialStatus ) );												//  prepare mode within 0 and 1
 		$part	= (object) array(																	//  prepare part data object
 			'headers'	=> array(),																	//  ... with headers list
-			'content'	=> NULL,																	//  ... and content
+			'content'	=> array(),																	//  ... and content
 			'nested'	=> array(),																	//  ... and list of nested parts
 		);
 		foreach( $lines as $line ){																	//  iterate lines
 			if( $status === 0 ){																	//  in mode: read header
 				if( preg_match( "/^$/", $line ) ){													//  found empty line after headers
+					$verbose ? remark( "0: Found ".count( $part->headers )." headers" ) : NULL;
 					$status = 1;																	//  switch to mode: read content
 					continue;																		//  go to next line
 				}
@@ -179,21 +193,35 @@ class Parser{
 			else if( $status === 1 ){																//  in mode: read content
 				if( preg_match( "/^--(\S+)$/", $line ) ){											//  found boundary start
 					$subpartKey		= preg_replace( "/^--(\S+)$/", "\\1", $line );					//  get subpart boundary key
+					$verbose ? remark( "1: Found start of ".$subpartKey ) : NULL;
 					$subpartLines	= array();														//  start subpart lines buffer
 					$status			= 2;															//  switch to mode: read subpart
+					$parts[$subpartKey]	= array();
 					continue;																		//  go to next line
 				}
 				$part->content[]	= $line;														//  otherwise collect content line
 			}
 			else if( $status === 2 ){																//  in mode: read subpart
+				if( preg_match( "/^--".preg_quote( $subpartKey, "/" )."$/", $line ) ){				//  found boundary AGAIN
+					$verbose ? remark( "2: Found part with ".count( $subpartLines )." lines" ) : NULL;
+					$verbose ? print_m( array_slice( $subpartLines, 0, 30 ) ) : NULL;
+					$parts[$subpartKey][]	= self::parseBodyPart( $parts, $subpartLines, $verbose );			//  parse nested body part
+					$subpartLines	= array();														//  start subpart lines buffer
+					$status			= 2;															//  switch to mode: read subpart
+					continue;																		//  go to next line
+				}
 				if( preg_match( "/^--".preg_quote( $subpartKey, "/" )."--$/", $line ) ){			//  found boundary end
-					$part->nested[$subpartKey]	= self::parseBodyPart( $subpartLines );				//  parse nested body part
+					$verbose ? remark( "2: Found end of ".$subpartKey ) : NULL;
+					$verbose ? remark( "2: Found LAST part with ".count( $subpartLines )." lines" ) : NULL;
+					$verbose ? print_m( array_slice( $subpartLines, 0, 30 ) ) : NULL;
+					$parts[$subpartKey][]	= self::parseBodyPart( $parts, $subpartLines, $verbose );			//  parse nested body part
 					$status		= 3;																//  switch to mode: done
 					continue;																		//  go to next line
 				}
 				$subpartLines[]	= $line;															//  otherwise collect subpart line
 			}
 		}
+		$verbose ? remark( "X: Return part with ".count( $part->content )." lines" ) : NULL;
 		return $part;																				//  return this body part
 	}
 }
