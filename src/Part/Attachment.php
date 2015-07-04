@@ -40,6 +40,10 @@ class Attachment extends \CeusMedia\Mail\Part{
 
 	protected $content;
 	protected $fileName;
+	protected $fileATime		= NULL;
+	protected $fileCTime		= NULL;
+	protected $fileMTime		= NULL;
+	protected $fileSize			= NULL;
 
 	/**
 	 *	Constructor.
@@ -57,28 +61,53 @@ class Attachment extends \CeusMedia\Mail\Part{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getFileName()
-	{
+	public function getFileName(){
 		return $this->fileName;
+	}
+
+	public function getFileSize(){
+		return $this->fileSize;
+	}
+
+	public function getFileATime(){
+		return $this->fileATime;
+	}
+
+	public function getFileCTime(){
+		return $this->fileCTime;
+	}
+
+	public function getFileMTime(){
+		return $this->fileMTime;
 	}
 
 	public function render(){
 		$headers		= array(
-			'Content-Disposition'		=> join( ";\r\n ", array(
+			'Content-Disposition'		=> array(
 				"attachment",
-				'filename="'.$this->fileName.'"'
-			) ),
-			'Content-Type'				=> join( ";\r\n ", array(
+				'filename="'.$this->fileName.'"',
+			),
+			'Content-Type'				=> array(
 				$this->mimeType,
-				'name="'.$this->fileName.'"'
-			) ),
+			),
 			'Content-Transfer-Encoding'	=> $this->encoding,
 			'Content-Description'		=> $this->fileName,
 		);
+		if( $this->fileSize !== NULL )
+			$headers['Content-Disposition'][]	= 'size='.$this->fileSize;
+		if( $this->fileATime !== NULL )
+			$headers['Content-Disposition'][]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
+		if( $this->fileCTime !== NULL )
+			$headers['Content-Disposition'][]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
+		if( $this->fileMTime !== NULL )
+			$headers['Content-Disposition'][]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
+		$headers['Content-Disposition']	= join( ";\r\n ", $headers['Content-Disposition'] );
+		$headers['Content-Type']		= join( ";\r\n ", $headers['Content-Type'] );
+
 		$section	= new \CeusMedia\Mail\Header\Section();
 		foreach( $headers as $key => $value )
 			$section->setFieldPair( $key, $value );
-		
+
 		switch( $this->encoding ){
 			case 'base64':
 				$content	= base64_encode( $this->content );
@@ -116,8 +145,36 @@ class Attachment extends \CeusMedia\Mail\Part{
 			$this->setEncoding( $encoding );
 	}
 
-	public function setFileName( $fileName ){
+	public function setFileName( $fileName, $fileSize = NULL, $fileMTime = NULL, $fileCTime = NULL, $fileATime = NULL ){
 		$this->fileName	= basename( $fileName );
+		if( file_exists( $fileName ) ){
+			$this->setFileSize( filesize( $this->fileName ) );
+			$this->setFileATime( fileatime( $this->fileName ) );
+			$this->setFileCTime( filectime( $this->fileName ) );
+			$this->setFileMTime( filemtime( $this->fileName ) );
+		}
+		else{
+			$this->setFileSize( $fileSize );
+			$this->setFileATime( $fileATime );
+			$this->setFileCTime( $fileCTime );
+			$this->setFileMTime( $fileMTime );
+		}
+	}
+
+	public function setFileSize( $size ){
+		$this->fileSize		= $size;
+	}
+
+	public function setFileATime( $timestamp ){
+		$this->fileATime	= $timestamp;
+	}
+
+	public function setFileCTime( $timestamp ){
+		$this->fileCTime	= $timestamp;
+	}
+
+	public function setFileMTime( $timestamp ){
+		$this->fileMTime	= $timestamp;
 	}
 }
 ?>
