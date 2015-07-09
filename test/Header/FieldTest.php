@@ -2,14 +2,14 @@
 /**
  *	Unit test for mail header field.
  *	@category		Test
- *	@package		CeusMedia_Mail_Header;
+ *	@package		CeusMedia_Mail_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 require_once dirname( __DIR__ ).'/bootstrap.php';
 /**
  *	Unit test for mail recipient address validation.
  *	@category		Test
- *	@package		CeusMedia_Mail_Header;
+ *	@package		CeusMedia_Mail_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 class Test_Header_FieldTest extends PHPUnit_Framework_TestCase
