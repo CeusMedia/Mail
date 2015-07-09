@@ -6,6 +6,7 @@
  *	@since			16.02.2008
  *	@version		0.6
  */
+require_once dirname( __DIR__ ).'/bootstrap.php';
 /**
  *	UnitTest for Request Header Field.
  *	@package		net.http.request
@@ -14,11 +15,11 @@
  *	@since			16.02.2008
  *	@version		0.6
  */
-class Test_Header_FieldTest extends Test_Case
+class Test_Header_FieldTest extends PHPUnit_Framework_TestCase
 {
 	public function testConstruct()
 	{
-		$header	= new CMM_Mail_Header_Field( "key", "value" );
+		$header	= new \CeusMedia\Mail\Header\Field( "key", "value" );
 		$assertion	= true;
 		$creation	= (bool) count( $header->toString() );
 		$this->assertEquals( $assertion, $creation );
@@ -26,7 +27,7 @@ class Test_Header_FieldTest extends Test_Case
 
 	public function testGetName()
 	{
-		$header	= new CMM_Mail_Header_Field( "Key-with-Value", "Value with Space" );
+		$header	= new \CeusMedia\Mail\Header\Field( "Key-with-Value", "Value with Space" );
 
 		$assertion	= "Key-With-Value";
 		$creation	= $header->getName();
@@ -35,7 +36,7 @@ class Test_Header_FieldTest extends Test_Case
 
 	public function testGetValue()
 	{
-		$header	= new CMM_Mail_Header_Field( "Key-with-Value", "Value with Space" );
+		$header	= new \CeusMedia\Mail\Header\Field( "Key-with-Value", "Value with Space" );
 
 		$assertion	= "Value with Space";
 		$creation	= $header->getValue();
@@ -44,17 +45,17 @@ class Test_Header_FieldTest extends Test_Case
 
 	public function testToString()
 	{
-		$header	= new CMM_Mail_Header_Field( "key", "value" );
+		$header	= new \CeusMedia\Mail\Header\Field( "key", "value" );
 		$assertion	= "Key: value";
 		$creation	= $header->toString();
 		$this->assertEquals( $assertion, $creation );
 
-		$header	= new CMM_Mail_Header_Field( "key", "value" );
+		$header	= new \CeusMedia\Mail\Header\Field( "key", "value" );
 		$assertion	= "Key: value";
 		$creation	= (string) $header;
 		$this->assertEquals( $assertion, $creation );
 
-		$header	= new CMM_Mail_Header_Field( "key-with-more-words", "value" );
+		$header	= new \CeusMedia\Mail\Header\Field( "key-with-more-words", "value" );
 		$assertion	= "Key-With-More-Words: value";
 		$creation	= $header->toString();
 		$this->assertEquals( $assertion, $creation );

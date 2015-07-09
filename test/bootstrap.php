@@ -1,17 +1,17 @@
 <?php
+$path = dirname(__DIR__) . '/src/';
+require_once $path . 'Message.php';
+require_once $path . 'Check/Address.php';
+require_once $path . 'Check/Recipient.php';
+require_once $path . 'Header/Field.php';
+require_once $path . 'Header/Section.php';
+require_once $path . 'Part.php';
+require_once $path . 'Part/Attachment.php';
+require_once $path . 'Part/Text.php';
+require_once $path . 'Part/HTML.php';
+require_once $path . 'Check/Address.php';
+require_once $path . 'Check/Recipient.php';
 
-require_once 'Message.php5';
-require_once 'Check/Address.php5';
-require_once 'Check/Recipient.php5';
-require_once 'Header/Field.php5';
-require_once 'Header/Section.php5';
-require_once 'Part/Abstract.php5';
-require_once 'Part/Attachment.php5';
-require_once 'Part/Text.php5';
-require_once 'Part/HTML.php5';
-require_once 'Check/Address.php5';
-require_once 'Check/Recipient.php5';
-
-class Test_Case extends PHPUnit_Framework_TestCase{}
+//class Test_Case extends PHPUnit_Framework_TestCase{}
 
 ?>
