@@ -35,8 +35,7 @@ namespace CeusMedia\Mail\Header;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Field
-{
+class Field{
 	/**	@var		string		$name		Name of Header */
 	protected $name;
 	/**	@var		string		$value		Value of Header */
@@ -49,8 +48,7 @@ class Field
 	 *	@param		string		$value		Value of Header
 	 *	@return		void
 	 */
-	public function __construct( $name, $value )
-	{
+	public function __construct( $name, $value ){
 		$this->setName( $name );
 		$this->setValue( $value );
 	}
@@ -60,8 +58,7 @@ class Field
 	 *	@access		public
 	 *	@return		string		Header Name
 	 */
-	public function getName()
-	{
+	public function getName(){
 		if( function_exists( 'mb_convert_case' ) ){
 			return mb_convert_case( $this->name, MB_CASE_TITLE );
 		}
@@ -73,8 +70,7 @@ class Field
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getValue()
-	{
+	public function getValue(){
 		return $this->value;
 	}
 
@@ -84,8 +80,7 @@ class Field
 	 *	@param		string		$name		Header Field Name
 	 *	@return		void
 	 */
-	public function setName( $name )
-	{
+	public function setName( $name ){
 		if( !trim( $name ) )
 			throw new \InvalidArgumentException( 'Field name cannot be empty' );
 		$this->name	= strtolower( $name );
@@ -98,8 +93,7 @@ class Field
 	 *	@param		string		$name		Header Field Value
 	 *	@return		void
 	 */
-	public function setValue( $value )
-	{
+	public function setValue( $value ){
 		$this->value	= $value;
 	}
 
@@ -108,8 +102,7 @@ class Field
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function toString()
-	{
+	public function toString(){
 		return $this->getName().": ".$this->getValue();
 	}
 
@@ -118,8 +111,7 @@ class Field
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function __toString()
-	{
+	public function __toString(){
 		return $this->toString();
 	}
 }

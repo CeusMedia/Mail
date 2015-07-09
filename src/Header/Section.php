@@ -36,8 +36,8 @@ namespace CeusMedia\Mail\Header;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Section
-{
+class Section{
+
 	protected $fields			= array();
 
 	/**
@@ -46,8 +46,7 @@ class Section
 	 *	@param		\CeusMedia\Mail\Header\Field	$field		Header Field Object
 	 *	@return		void
 	 */
-	public function addField( \CeusMedia\Mail\Header\Field $field )
-	{
+	public function addField( \CeusMedia\Mail\Header\Field $field ){
 		return $this->setField( $field, FALSE );
 	}
 
@@ -58,8 +57,7 @@ class Section
 	 *	@param		string		$value		Header Field Value
 	 *	@return		void
 	 */
-	public function addFieldPair( $name, $value )
-	{
+	public function addFieldPair( $name, $value ){
 		$field	= new \CeusMedia\Mail\Header\Field( $name, $value );
 		$this->addField( $field );
 	}
@@ -70,8 +68,7 @@ class Section
 	 *	@param		array		$fields		List of Header Field Objects
 	 *	@return		void
 	 */
-	public function addFields( $fields )
-	{
+	public function addFields( $fields ){
 		foreach( $fields as $field )
 			$this->addField( $field );
 	}
@@ -82,8 +79,7 @@ class Section
 	 *	@param		string		$name		Header Field Name
 	 *	@return		CMM_Mail_Header_Field
 	 */
-	public function getField( $name )
-	{
+	public function getField( $name ){
 		if( !$this->hasField( $name ) )
 			return NULL;
 		$values	= $this->getFieldsByName( $name );
@@ -95,8 +91,7 @@ class Section
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function getFields()
-	{
+	public function getFields(){
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
 				if( count( $fields ) )
@@ -111,8 +106,7 @@ class Section
 	 *	@param		string		$name		Header Field Name
 	 *	@return		array
 	 */
-	public function getFieldsByName( $name )
-	{
+	public function getFieldsByName( $name ){
 		$name	= strtolower( $name );
 		if( isset( $this->fields[$name] ) )
 			return $this->fields[$name];
@@ -125,8 +119,7 @@ class Section
 	 *	@param		string		$name		Header Field Name
 	 *	@return		boolean
 	 */
-	public function hasField( $name )
-	{
+	public function hasField( $name ){
 		$name	= strtolower( $name );
 		if( isset( $this->fields[$name] ) )
 			return (bool) count( $this->fields[$name] );
@@ -139,8 +132,7 @@ class Section
 	 *	@param		boolean					$emptyBefore	Flag: TRUE - set | FALSE - append
 	 *	@return		void
 	 */
-	public function setField( \CeusMedia\Mail\Header\Field $field, $emptyBefore = TRUE )
-	{
+	public function setField( \CeusMedia\Mail\Header\Field $field, $emptyBefore = TRUE ){
 		$name	= strtolower( $field->getName() );
 		if( $emptyBefore || !array_key_exists( $name, $this->fields ) )
 			$this->fields[$name]	= array();
@@ -155,9 +147,9 @@ class Section
 	 *	@param		boolean		$emptyBefore	Flag: TRUE - set | FALSE - append
 	 *	@return		void
 	 */
-	public function setFieldPair( $name, $value, $emptyBefore = TRUE )
-	{
-		return $this->setField( new \CeusMedia\Mail\Header\Field( $name, $value ), $emptyBefore );
+	public function setFieldPair( $name, $value, $emptyBefore = TRUE ){
+		$field new \CeusMedia\Mail\Header\Field( $name, $value );
+		return $this->setField( $field, $emptyBefore );
 	}
 
 	/**
@@ -165,8 +157,7 @@ class Section
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function toArray()
-	{
+	public function toArray(){
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
 			foreach( $fields as $field )
@@ -179,8 +170,7 @@ class Section
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function toString()
-	{
+	public function toString(){
 		$list	= $this->toArray();
 		if( $list )
 			return implode( \CeusMedia\Mail\Message::$delimiter, $list )/*.\CeusMedia\Mail\Message::$delimiter*/;

@@ -49,8 +49,7 @@ class Renderer{
 		return self::$userAgent;
 	}
 
-	static public function render( \CeusMedia\Mail\Message $message )
-	{
+	static public function render( \CeusMedia\Mail\Message $message ){
 		if( !count( $message->getParts() ) )
 			throw new \RuntimeException( "No content part set" );
 		if( !strlen( trim( $message->getSubject() ) ) )

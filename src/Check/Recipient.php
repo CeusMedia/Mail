@@ -24,7 +24,7 @@
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-namespace CeusMedia\Mail;
+namespace CeusMedia\Mail\Check;
 /**
  *	Evaluate existence of mail receiver address.
  *
@@ -36,7 +36,7 @@ namespace CeusMedia\Mail;
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
  */
-class CMM_Mail_Check_Recipient{
+class Recipient{
 
 	/**	@var	CMM_Mail_Participant	$sender		... */
 	protected $sender;
@@ -62,7 +62,7 @@ class CMM_Mail_Check_Recipient{
 			'code'		=> NULL,
 			'message'	=> NULL
 		);
-		$this->cache	= CMM_SEA_Factory::createStorage( 'Noop' );
+		$this->cache	= \CeusMedia\Cache\Factory::createStorage( 'Noop' );
 	}
 
 	public function getLastError(){
@@ -182,7 +182,7 @@ class CMM_Mail_Check_Recipient{
 		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
 	}
 
-	public function setCache( CMM_SEA_Adapter $cache ){
+	public function setCache( \CeusMedia\Cache\AdapterAbstract $cache ){
 		$this->cache	= $cache;
 	}
 
