@@ -1,19 +1,16 @@
 <?php
 /**
- *	UnitTest for Request Header Field.
- *	@package		net.http.request
+ *	Unit test for mail header field.
+ *	@category		Test
+ *	@package		CeusMedia_Mail_Header;
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@since			16.02.2008
- *	@version		0.6
  */
 require_once dirname( __DIR__ ).'/bootstrap.php';
 /**
- *	UnitTest for Request Header Field.
- *	@package		net.http.request
- *	@uses			Net_HTTP_Header
+ *	Unit test for mail recipient address validation.
+ *	@category		Test
+ *	@package		CeusMedia_Mail_Header;
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@since			16.02.2008
- *	@version		0.6
  */
 class Test_Header_FieldTest extends PHPUnit_Framework_TestCase
 {
