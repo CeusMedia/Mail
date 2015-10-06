@@ -34,7 +34,7 @@ namespace CeusMedia\Mail\Transport;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Default
+class Local
 {
 	/**	@var		string		$mailer		Mailer Agent */
 	public $mailer;
@@ -120,7 +120,7 @@ class Default
 	 */
 	public static function sendMail( \CeusMedia\Mail\Message $message, $parameters = array() )
 	{
-		$transport	= new \CeusMedia\Mail\Transport\Default();
+		$transport	= new \CeusMedia\Mail\Transport\Local();
 		$transport->send( $message, $parameters );
 	}
 }
