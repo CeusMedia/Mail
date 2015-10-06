@@ -148,7 +148,7 @@ class Section{
 	 *	@return		void
 	 */
 	public function setFieldPair( $name, $value, $emptyBefore = TRUE ){
-		$field new \CeusMedia\Mail\Header\Field( $name, $value );
+		$field	= new \CeusMedia\Mail\Header\Field( $name, $value );
 		return $this->setField( $field, $emptyBefore );
 	}
 
