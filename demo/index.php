@@ -7,7 +7,12 @@ $config		= getConfig($request);
 $result	= '- no mail triggered -';
 if($request->has('send') && $request->get('receiverAddress')){
 	ob_start();
-	sendMail($config);
+	try{
+		sendMail($config);
+	}
+	catch( Exception $e ){
+		print "\n\nException: ".$e->getMessage()."\n".$e->getTraceAsString();
+	}
 	$result	= ob_get_clean();
 }
 
