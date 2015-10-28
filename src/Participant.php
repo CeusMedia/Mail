@@ -45,7 +45,7 @@ namespace CeusMedia\Mail;
  *	@todo			create tests
  *	@todo			use in Message class
  */
-class CMM_Mail_Participant{
+class Participant{
 
 	/**	@var	string		$domain			Domain of mail participant */
 	protected $domain;
@@ -83,7 +83,7 @@ class CMM_Mail_Participant{
 	 *	@return		string		Full mail address with brackets and username (if available)
 	 */
 	public function get(){
-		return self::render( $this->domain, $this->localPart, $this->name );
+		return self::render( $this->getDomain(), $this->getLocalPart(), $this->getName() );
 	}
 
 	/**
@@ -98,24 +98,26 @@ class CMM_Mail_Participant{
 	/**
 	 *	Returns domain of mail participant.
 	 *	@access		public
+	 *	@param		boolean		$strict		Flag: throw exception if no domain set
 	 *	@return		string		Domain of mail participant
 	 *	@throws		RuntimeException		if no address has been set, yet
 	 */
-	public function getDomain(){
-		if( !$this->domain )
-			throw new RuntimeException( 'No address set, yet' );
+	public function getDomain( $strict = TRUE ){
+		if( !$this->domain && $strict )
+			throw new \RuntimeException( 'No address set, yet' );
 		return $this->domain;
 	}
 
 	/**
 	 *	Returns local part of mail participant.
 	 *	@access		public
+	 *	@param		boolean		$strict		Flag: throw exception if no local part set
 	 *	@return		string		Local part of mail participant
 	 *	@throws		RuntimeException		if no address has been set, yet
 	 */
-	public function getLocalPart(){
-		if( !$this->localPart )
-			throw new RuntimeException( 'No address set, yet' );
+	public function getLocalPart( $strict = TRUE ){
+		if( !$this->localPart && $strict )
+			throw new \RuntimeException( 'No address set, yet' );
 		return $this->localPart;
 	}
 
@@ -129,10 +131,12 @@ class CMM_Mail_Participant{
 	}
 
 	/**
-	 *	.
+	 *	Parse a mail address and return found parts.
+	 *	Reads patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
-	 *	@param		.		$.		.
+	 *	@param		string		$string			Mail address to parse
 	 *	@return		void
+	 *	@throws		InvalidArgumentException	if given string is not a valid mail address
 	 */
 	static public function parse( $string ){
 		$string		= stripslashes( trim( $string ) );
@@ -152,7 +156,7 @@ class CMM_Mail_Participant{
 		}
 		else{																			//  not matching any pattern
 			$list	= '"'.implode( '" or "', array_keys( self::$patterns ) ).'"';
-			throw new InvalidArgumentException( 'Invalid address given (must match '.$list.')' );
+			throw new \InvalidArgumentException( 'Invalid address given (must match '.$list.')' );
 		}
 		return (object) array(
 			'name'		=> $name,
@@ -163,19 +167,40 @@ class CMM_Mail_Participant{
 	}
 
 	/**
-	 *	.
+	 *	Renders full mail address by given parts.
+	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
-	 *	@param		.		$.		.
-	 *	@return		void
+	 *	@param		string		$domain		Domain of mail address
+	 *	@param		string		$localPart	Local part of mail address
+	 *	@param		string		$name		Name of mail address
+	 *	@return		string		Rendered mail address
+	 *	@throws		InvalidArgumentException	if domain is empty
+	 *	@throws		InvalidArgumentException	if local part is empty
 	 */
 	static public function render( $domain, $localPart, $name = NULL ){
 		if( !strlen( trim( $domain ) ) )
-			throw new InvalidArgumentException( 'Domain cannot be empty' );
+			throw new \InvalidArgumentException( 'Domain cannot be empty' );
 		if( !strlen( trim( $localPart ) ) )
-			throw new InvalidArgumentException( 'Local part cannot be empty' );
+			throw new \InvalidArgumentException( 'Local part cannot be empty' );
 		if( strlen( trim( $name ) ) )
 			return addslashes( $name.' <'.$localPart.'@'.$domain.'>' );
 		return addslashes( $localPart.'@'.$domain );
+	}
+
+	/**
+	 *	Sets an full mail address.
+	 *	@access		public
+	 *	@param		string		$string			Full mail address to set
+	 *	@return		void
+	 *	@throws		InvalidArgumentException	if given string is empty
+	 */
+	public function set( $string ){
+		if( !strlen( trim( $string ) ) )
+			throw new InvalidArgumentException( 'No address given' );
+		$parts	= $this->parse( $string );
+		$this->domain		= $parts->domain;
+		$this->localPart	= $parts->localPart;
+		$this->name			= $parts->name;
 	}
 
 	/**
@@ -190,7 +215,7 @@ class CMM_Mail_Participant{
 		$address	= trim( $address );
 		$regex		= self::$patterns['local-part@domain'];
 		if( !preg_match( $regex, trim( $address ) ) )									//  found short address: neither name nor brackets
-			throw new InvalidArgumentException( 'Invalid address given (must match "local-part@domain")' );
+			throw new \InvalidArgumentException( 'Invalid address given (must match "local-part@domain")' );
 		$this->localPart	= preg_replace( $regex, "\\2", $address );					//  extract local part
 		$this->domain		= preg_replace( $regex, "\\3", $address );					//  extract domain part
 		$this->name		= NULL;															//  clear user name
