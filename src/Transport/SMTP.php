@@ -140,10 +140,10 @@ class SMTP
 			}
 			$sender		= $message->getSender();
 			$address	= $sender->address;
-			$this->sendChunk( $conn, "MAIL FROM: ".$address );
+			$this->sendChunk( $conn, "MAIL FROM: <".$address.">" );
 			$this->checkResponse( $conn, array( 250 ) );
 			foreach( $message->getRecipients() as $receiver ){
-				$this->sendChunk( $conn, "RCPT TO: ".$receiver->address );
+				$this->sendChunk( $conn, "RCPT TO: <".$receiver->address.">" );
 				$this->checkResponse( $conn, array( 250 ) );
 			}
 			$this->sendChunk( $conn, "DATA" );
