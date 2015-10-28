@@ -69,8 +69,7 @@ class Section{
 	 *	@return		void
 	 */
 	public function addFields( $fields ){
-		foreach( $fields as $field )
-			$this->addField( $field );
+		$this->setFields( $fields, FALSE );
 	}
 
 	/**
@@ -121,12 +120,27 @@ class Section{
 	 */
 	public function hasField( $name ){
 		$name	= strtolower( $name );
-		if( isset( $this->fields[$name] ) )
-			return (bool) count( $this->fields[$name] );
+		if( !isset( $this->fields[$name] ) )
+			return FALSE;
+		return (bool) count( $this->fields[$name] );
+	}
+
+	/**
+	 *	Removes all Header Field Objects by name.
+	 *	@param		string		$name		Header Field Name
+	 *	@return		Number of removed Field Objects
+	 */
+	public function removeFieldByName( $name ){
+		$count	= count( $this->getFieldsByName( $name ) );
+		if( $count )
+			unset( $this->fields[strtolower( $name )] );
+		return $count;
 	}
 
 	/**
 	 *	Sets an Header Field Object.
+	 *	Headers with already noted name will be replaced.
+	 *	To avoid this, disable emptyBefore.
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Header\Field	$field			Header Field Object to set
 	 *	@param		boolean					$emptyBefore	Flag: TRUE - set | FALSE - append
@@ -141,6 +155,8 @@ class Section{
 
 	/**
 	 *	Sets an Header Field by Name and Value.
+	 *	Headers with already noted name will be replaced.
+	 *	To avoid this, disable emptyBefore.
 	 *	@access		public
 	 *	@param		string		$name			Header Field Name
 	 *	@param		string		$value			Header Field Value
@@ -150,6 +166,20 @@ class Section{
 	public function setFieldPair( $name, $value, $emptyBefore = TRUE ){
 		$field	= new \CeusMedia\Mail\Header\Field( $name, $value );
 		return $this->setField( $field, $emptyBefore );
+	}
+
+	/**
+	 *	Sets several Header Field Objects.
+	 *	Headers with already noted name will be replaced.
+	 *	To avoid this, disable emptyBefore.
+	 *	@access		public
+	 *	@param		array		$fields		List of Header Field Objects
+	 *	@param		boolean		$emptyBefore	Flag: TRUE - set | FALSE - append
+	 *	@return		void
+	 */
+	public function setFields( $fields, $emptyBefore = TRUE ){
+		foreach( $fields as $field )
+			$this->setField( $field, $emptyBefore );
 	}
 
 	/**
