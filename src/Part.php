@@ -44,6 +44,31 @@ abstract class Part{
 	protected $format;
 	protected $mimeType;
 
+	protected function encode( $content, $encoding, $split = TRUE ){
+		$delimiter	= \CeusMedia\Mail\Message::$delimiter;
+		$lineLength	= \CeusMedia\Mail\Message::$lineLength;
+		switch( strtolower( $encoding ) ){
+			case '7bit':
+			case '8bit':
+				$content	= mb_convert_encoding( $content, "UTF-8", strtolower( $encoding ) );
+				if( $split )
+					$content	= wordwrap( $content, $lineLength, $delimiter, TRUE );
+				break;
+			case 'base64':
+			case 'binary':
+				$content	= base64_encode( $content );
+				if( $split )
+					$content	= chunk_split( $content, $lineLength, $delimiter );
+				break;
+			case 'quoted-printable':
+				$content	= quoted_printable_encode( $content );
+				break;
+			default:
+				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
+		}
+		return $content;
+	}
+
 	public function getCharset(){
 		return $this->charset;
 	}
@@ -77,14 +102,14 @@ abstract class Part{
 	public function setEncoding( $encoding ){
 		$encodings	= array( "7bit", "8bit", "base64", "quoted-printable", "binary" );
 		if( !in_array( $encoding, $encodings ) )
-			throw new InvalidArgumentException( 'Invalid encoding' );
+			throw new \InvalidArgumentException( 'Invalid encoding' );
 		$this->encoding	= $encoding;
 	}
 
 	public function setFormat( $format ){
 		$formats	= array( "fixed", "flowed" );
 		if( !in_array( $format, $formats ) )
-			throw new InvalidArgumentException( 'Invalid format' );
+			throw new \InvalidArgumentException( 'Invalid format' );
 		$this->format	= $format;
 	}
 
