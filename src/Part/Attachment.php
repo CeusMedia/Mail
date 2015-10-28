@@ -108,14 +108,8 @@ class Attachment extends \CeusMedia\Mail\Part{
 		foreach( $headers as $key => $value )
 			$section->setFieldPair( $key, $value );
 
-		switch( $this->encoding ){
-			case 'base64':
-				$content	= base64_encode( $this->content );
-				break;
-			default:
-				$content	= $this->content;
-		}
-		return $section->toString()."\r\n\r\n".chunk_split( $content, 76 );
+		$content	= $this->encode( $this->content, $this->encoding );
+		return $section->toString()."\r\n\r\n".$content;
 	}
 
 	/**
@@ -139,26 +133,18 @@ class Attachment extends \CeusMedia\Mail\Part{
 			throw new \InvalidArgumentException( 'Attachment file "'.$fileName.'" is not existing' );
 		$this->setFileName( $fileName );
 		$this->content	= file_get_contents( $fileName );
+		$this->setFileSize( filesize( $fileName ) );
+		$this->setFileATime( fileatime( $fileName ) );
+		$this->setFileCTime( filectime( $fileName ) );
+		$this->setFileMTime( filemtime( $fileName ) );
 		if( $mimeType )
 			$this->setMimeType( $mimeType );
 		if( $encoding )
 			$this->setEncoding( $encoding );
 	}
 
-	public function setFileName( $fileName, $fileSize = NULL, $fileMTime = NULL, $fileCTime = NULL, $fileATime = NULL ){
-		$this->fileName	= basename( $fileName );
-		if( file_exists( $fileName ) ){
-			$this->setFileSize( filesize( $this->fileName ) );
-			$this->setFileATime( fileatime( $this->fileName ) );
-			$this->setFileCTime( filectime( $this->fileName ) );
-			$this->setFileMTime( filemtime( $this->fileName ) );
-		}
-		else{
-			$this->setFileSize( $fileSize );
-			$this->setFileATime( $fileATime );
-			$this->setFileCTime( $fileCTime );
-			$this->setFileMTime( $fileMTime );
-		}
+	public function setFileName( $fileName ){
+		$this->fileName		= basename( $fileName );
 	}
 
 	public function setFileSize( $size ){
