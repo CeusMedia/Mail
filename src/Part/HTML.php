@@ -38,8 +38,8 @@ namespace CeusMedia\Mail\Part;
  */
 class HTML extends \CeusMedia\Mail\Part\Text{
 
-	public function __construct( $content ){
-		parent::__construct( $content );
+	public function __construct( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+		parent::__construct( $content, $charset, $encoding );
 		$this->setMimeType( 'text/html' );
 	}
 }
