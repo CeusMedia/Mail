@@ -41,6 +41,8 @@ class Message{
 	protected $attachments					= array();
 	/**	@var		string					$delimiter		Line separator, for some reasons only \n must be possible */
 	public static $delimiter				= "\r\n";
+	/**	@var		integer					$lineLength		Maximum line length of mail content */
+	public static $lineLength				= 75;
 	/**	@var		array					$parts			List of mail parts */
 	protected $parts						= array();
 	/**	@var		CMM_Mail_Header_Section	$headers		Mail header section */
