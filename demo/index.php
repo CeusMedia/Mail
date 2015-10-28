@@ -1,5 +1,5 @@
 <?php
-(@include '../vendor/autoload.php') or die('Please use composer to install required packages.');
+(@include '../vendor/autoload.php') or die('Please use composer to install required packages.' . PHP_EOL);
 
 $request	= new Net_HTTP_Request_Receiver;
 $config		= getConfig($request);

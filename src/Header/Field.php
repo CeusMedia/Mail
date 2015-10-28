@@ -55,12 +55,20 @@ class Field{
 
 	/**
 	 *	Returns set Header Name.
+	 *	By default all letters will be lowercased, before the first word letter is uppercased.
+	 *	If available mb_convert_case is used. Otherwise ucwords will do the trick.
+	 *	This will lowercase acronyms, too.
+	 *	You can protected uppercased acronyms by keeping the letter case, using the first argument.
 	 *	@access		public
+	 *	@param		boolean		$keepCase				Flag: do not use mb_convert_case or ucwords, protected uppercased acronyms
+	 *	@param		boolean		$ignoreMbConvertCase	Flag: do not use mb_convert_case even if it is available (needed to testing)
 	 *	@return		string		Header Name
 	 */
-	public function getName(){
-		if( function_exists( 'mb_convert_case' ) ){
-			return mb_convert_case( $this->name, MB_CASE_TITLE );
+	public function getName( $keepCase = FALSE, $ignoreMbConvertCase = FALSE ){
+		if( !$keepCase ){
+			if( function_exists( 'mb_convert_case' ) && !$ignoreMbConvertCase )
+				return mb_convert_case( $this->name, MB_CASE_TITLE );
+			return str_replace( " ", "-", ucwords( str_replace( "-", " ", strtolower( $this->name ) ) ) );
 		}
 		return str_replace( " ", "-", ucwords( str_replace( "-", " ", $this->name ) ) );
 	}
@@ -83,7 +91,7 @@ class Field{
 	public function setName( $name ){
 		if( !trim( $name ) )
 			throw new \InvalidArgumentException( 'Field name cannot be empty' );
-		$this->name	= strtolower( $name );
+		$this->name	= preg_replace( "/( |-)+/", "-", trim( $name ) );
 	}
 
 
