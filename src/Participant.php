@@ -70,10 +70,7 @@ class Participant{
 	 */
 	public function __construct( $string = NULL ){
 		if( $string ){
-			$parts	= $this->parse( $string );
-			$this->domain		= $parts->domain;
-			$this->localPart	= $parts->localPart;
-			$this->name			= $parts->name;
+			$this->set( $string );
 		}
 	}
 
@@ -197,7 +194,7 @@ class Participant{
 	public function set( $string ){
 		if( !strlen( trim( $string ) ) )
 			throw new InvalidArgumentException( 'No address given' );
-		$parts	= $this->parse( $string );
+		$parts	= self::parse( $string );
 		$this->domain		= $parts->domain;
 		$this->localPart	= $parts->localPart;
 		$this->name			= $parts->name;

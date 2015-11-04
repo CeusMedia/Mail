@@ -105,8 +105,9 @@ class Local
 		if( is_array( $parameters ) )
 			$parameters	= implode( PHP_EOL, $parameters );
 
-		if( !mail( $receiver, $subject, $body, $headers->toString(), $parameters ) )
-			throw new \RuntimeException( 'Mail could not been sent' );
+		foreach( $receivers as $receiver )
+			if( !mail( $receiver->participant->getAddress(), $subject, $body, $headers->toString(), $parameters ) )
+				throw new \RuntimeException( 'Mail could not been sent' );
 	}
 
 

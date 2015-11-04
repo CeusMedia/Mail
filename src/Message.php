@@ -112,15 +112,15 @@ class Message{
 	{
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
 			throw new InvalidArgumentException( 'Invalid recipient type' );
-		$this->recipients[]	= (object) array(
-			'address'	=> $address,
-			'name'		=> $name,
-			'type'		=> strtoupper( $type )
-		);
-		$recipient	= '<'.$address.'>';
+		$participant	= new \CeusMedia\Mail\Participant( $address );
+		if( $name )
+			$participant->setName( $name );
+		$this->recipients[]	= $participant;
+		$recipient	= '<'.$participant->getAddress().'>';
 		if( strlen( trim( $name ) ) ){
 			$recipient	= self::encodeIfNeeded( $name ).' '.$recipient;
 		}
+		$recipient	= $participant->get();
 		if( strtoupper( $type ) !== "BCC" )
 			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $recipient );
 		return $this;
@@ -268,14 +268,8 @@ class Message{
 	 */
 	public function setSender( $address, $name = NULL )
 	{
-		$this->sender	= (object) array(
-			'address'	=> $address,
-			'name'		=> $name
-		);
-		$sender	= '<'.$address.'>';
-		if( strlen( trim( $name ) ) )
-			$sender	= self::encodeIfNeeded( $name ).' '.$sender;
-		$this->addHeaderPair( "From", $sender );
+		$this->sender		= new \CeusMedia\Mail\Participant( $address );
+		$this->addHeaderPair( "From", $this->sender->get() );
 		return $this;
 	}
 
