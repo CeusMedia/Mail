@@ -160,9 +160,12 @@ class Message{
 	public function getAttachments()
 	{
 		$list	= array();
-		foreach( $this->parts as $part )
+		foreach( $this->parts as $part ){
 			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
 				$list[]	= $part;
+			if( $part instanceof \CeusMedia\Mail\Part\InlineImage )
+				$list[]	= $part;
+		}
 		return $list;
 	}
 
@@ -190,9 +193,13 @@ class Message{
 		if( $withAttachments )
 			return $this->parts;
 		$list	= array();
-		foreach( $this->parts as $part )
-			if( !( $part instanceof \CeusMedia\Mail\Part\Attachment ) )
-				$list[]	= $part;
+		foreach( $this->parts as $part ){
+			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
+				continue;
+			if( $part instanceof \CeusMedia\Mail\Part\InlineImage )
+				continue;
+			$list[]	= $part;
+		}
 		return $list;
 	}
 

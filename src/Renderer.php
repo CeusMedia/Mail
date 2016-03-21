@@ -65,14 +65,14 @@ class Renderer{
 		$headers->setFieldPair( "Message-ID", "<".sha1( microtime() )."@".$server.">" );
 		$headers->setFieldPair( "Date", date( "D, d M Y H:i:s O", time() ) );
 		$headers->setFieldPair( "Subject", $message->getSubject( "quoted-printable" ) );
-		$headers->setFieldPair( "Content-Type", "multipart/mixed;".$delim." boundary=\"".$mimeBoundary."\"" );
+		$headers->setFieldPair( "Content-Type", "multipart/related;".$delim." boundary=".$mimeBoundary );
 		$headers->setFieldPair( "MIME-Version", "1.0" );
 		$headers->addFieldPair( 'X-Mailer', self::$userAgent );
 
 		$contents	= array( "This is a multi-part message in MIME format." );
 		$contents[]	= "--".$mimeBoundary;
 		$contents[]	= "Content-Type: multipart/alternative;";
-		$contents[]	= " boundary=\"".$mimeBoundary1."\"";
+		$contents[]	= " boundary=".$mimeBoundary1;
 		$contents[]	= "";
 		foreach( $message->getParts() as $part )
 			$contents[]	= "--".$mimeBoundary1.$delim.$part->render();
