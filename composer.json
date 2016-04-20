@@ -20,8 +20,10 @@
   "require": {
     "php": ">=5.3.0",
     "ceus-media/common": ">=0.8.2",
-    "ceus-media/cache": "dev-master",
-    "ceus-media/doc-creator": "dev-master"
+    "ceus-media/cache": "dev-master"
+  },
+  "require-dev": {
+    "ceus-media/doc-creator": ">=0.9"
   },
   "autoload": {
     "psr-4": {
