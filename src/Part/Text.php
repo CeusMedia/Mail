@@ -50,12 +50,13 @@ class Text extends \CeusMedia\Mail\Part{
 		$headers		= new \CeusMedia\Mail\Header\Section();
 		$contentType	= array(
 			$this->mimeType,
-			'charset="'.trim( $this->charset ).'"',
-//			'format="'.$this->format.'"'
+			'charset="'.strtolower( trim( $this->charset ) ).'"',
+		//	'format='.$this->format
 		);
-		$headers->addFieldPair( 'Content-Type', join( ";\r\n ", $contentType ) );
+		$delim	= \CeusMedia\Mail\Message::$delimiter;
+		$headers->addFieldPair( 'Content-Type', join( ";".$delim." ", $contentType ) );
 		$headers->addFieldPair( 'Content-Transfer-Encoding', $this->encoding );
 		$content		= $this->encode( $this->content, $this->encoding );
-		return $headers->toString()."\r\n"."\r\n".$content;
+		return $headers->toString().$delim.$delim.$content;
 	}
 }

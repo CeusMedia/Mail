@@ -57,28 +57,27 @@ class Renderer{
 
 		$delim			= \CeusMedia\Mail\Message::$delimiter;
 		$mimeBoundary	= "------".md5( microtime( TRUE ) );
-		$mimeBoundary1	= $mimeBoundary."-1";
+		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );
 
 		$server		= empty( $_SERVER['SERVER_NAME'] ) ? 'localhost' : $_SERVER['SERVER_NAME'];
 
 		$headers	= $message->getHeaders();
-		$headers->setFieldPair( "Message-ID", "<".sha1( microtime() )."@".$server.">" );
-		$headers->setFieldPair( "Date", date( "D, d M Y H:i:s O", time() ) );
-		$headers->setFieldPair( "Subject", $message->getSubject( "quoted-printable" ) );
-		$headers->setFieldPair( "Content-Type", "multipart/related;".$delim." boundary=".$mimeBoundary );
-		$headers->setFieldPair( "MIME-Version", "1.0" );
+		$headers->setFieldPair( 'Message-ID', "<".sha1( microtime() )."@".$server.">" );
+		$headers->setFieldPair( 'Date', date( "D, d M Y H:i:s O", time() ) );
+		$headers->setFieldPair( 'Subject', $message->getSubject( 'quoted-printable' ) );
+		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
+		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->addFieldPair( 'X-Mailer', self::$userAgent );
 
 		$contents	= array( "This is a multi-part message in MIME format." );
 		$contents[]	= "--".$mimeBoundary;
-		$contents[]	= "Content-Type: multipart/alternative;";
-		$contents[]	= " boundary=".$mimeBoundary1;
+		$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
 		$contents[]	= "";
 		foreach( $message->getParts() as $part )
-			$contents[]	= "--".$mimeBoundary1.$delim.$part->render();
-		$contents[]	= "--".$mimeBoundary1."--".$delim.$delim;
+			$contents[]	= "--".$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
+		$contents[]	= "--".$mimeBoundary1."--".$delim;
 		foreach( $message->getAttachments() as $part )
-			$contents[]	= "--".$mimeBoundary.$delim.$part->render();
+			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
 		$contents[]	= "--".$mimeBoundary."--".$delim;
 		return $headers->toString().$delim.$delim.join( $delim, $contents );
 	}
