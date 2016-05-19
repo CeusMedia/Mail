@@ -1,6 +1,6 @@
 <?php
 /**
- *	Attachment Mail Part.
+ *	Inline Image Mail Part.
  *
  *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
  *
@@ -26,7 +26,7 @@
  */
 namespace CeusMedia\Mail\Part;
 /**
- *	Attachment Mail Part.
+ *	Inline Image Mail Part.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Part
