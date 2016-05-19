@@ -63,6 +63,7 @@ class SMTP
 	public function __construct( $host, $port = 25, $username = NULL, $password = NULL ){
 		$this->setHost( $host );
 		$this->setPort( $port );
+		$this->setSecure( in_array( $port, array( 465, 587 ) ) );
 		$this->setUsername( $username );
 		$this->setPassword( $password );
 	}
