@@ -52,7 +52,9 @@ class Recipient{
 	const ERROR_SENDER_NOT_ACCEPTED		= 6;
 	const ERROR_RECEIVER_NOT_ACCEPTED	= 7;
 
-	public function __construct( \CeusMedia\Mail\Participant $sender, $verbose = NULL ){
+	public function __construct( $sender, $verbose = NULL ){
+		if( is_string( $sender ) )
+			$sender		= new \CeusMedia\Mail\Participant( $sender );
 		$this->sender	= $sender;
 		$this->setVerbose( $verbose );
 		$this->lastResponse	= (object) array(
@@ -96,7 +98,9 @@ class Recipient{
 		return $servers;
 	}
 
-	public function test( \CeusMedia\Mail\Participant $receiver, $host = NULL, $port = 25, $force = FALSE ){
+	public function test( $receiver, $host = NULL, $port = 25, $force = FALSE ){
+		if( is_string( $receiver ) )
+			$receiver	= new \CeusMedia\Mail\Participant( $receiver );
 		if( !$force ){
 			if( $this->cache->has( 'user:'.$receiver->getAddress() ) ){
 				return $this->cache->get( 'user:'.$receiver->getAddress() );
@@ -165,7 +169,7 @@ class Recipient{
 	protected function parseResponse( $connection ){
 		$this->lastResponse->response	= fgets( $connection, 1024 );
 		if( $this->verbose )
-			remark( ' < '.$this->lastResponse->response );
+			print PHP_EOL.' < '.$this->lastResponse->response;
 		$matches	= array();
 		preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $this->lastResponse->response ), $matches );
 		if( !$matches )
@@ -177,7 +181,7 @@ class Recipient{
 
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
-			remark( ' > '.htmlentities( $message, ENT_QUOTES, 'UTF-8' ) );
+			print PHP_EOL.' > '.$message;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
 		$this->lastResponse->request	= $message;
 		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
 	}
