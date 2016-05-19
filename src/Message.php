@@ -108,11 +108,15 @@ class Message{
 		return $this;
 	}
 
-	public function addRecipient( $address, $name = NULL, $type = "To" )
+	public function addRecipient( $participant, $name = NULL, $type = "To" )
 	{
+		if( is_string( $participant ) )
+			$participant	= new \CeusMedia\Mail\Participant( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
+			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
 			throw new InvalidArgumentException( 'Invalid recipient type' );
-		$participant	= new \CeusMedia\Mail\Participant( $address );
+
 		if( $name )
 			$participant->setName( $name );
 		$this->recipients[]	= $participant;
@@ -257,26 +261,31 @@ class Message{
 		return $this;
 	}
 
-	public function setReadNotificationRecipient( $address, $name = NULL ){
-		$recipient	= $address;
-		if( strlen( trim( $name ) ) )
-			$recipient	= $name.' <'.$recipient.'>';
-		$this->headers->addFieldPair( 'Disposition-Notification-To', $recipient );
+	public function setReadNotificationRecipient( $participant, $name = NULL ){
+		if( is_string( $participant ) )
+			$participant	= new \CeusMedia\Mail\Participant( $participant );
+		if( $name )
+			$participant->setName( $name );
+		$this->headers->addFieldPair( 'Disposition-Notification-To', $recipient->get() );
 		return $this;
 	}
 
 	/**
 	 *	Sets sender address and name.
 	 *	@access		public
-	 *	@param		string		$address	Mail sender address
-	 *	@param		string		$name		Mail sender address
+	 *	@param		string|object	$participant	Mail sender address or participant object
+	 *	@param		string			$name			Mail sender name
 	 *	@return		void
 	 *	@throws		Exception
 	 */
-	public function setSender( $address, $name = NULL )
+	public function setSender( $participant, $name = NULL )
 	{
-		$this->sender		= new \CeusMedia\Mail\Participant( $address );
-		$this->addHeaderPair( "From", $this->sender->get() );
+		if( is_string( $participant ) )
+			$participant	= new \CeusMedia\Mail\Participant( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
+			throw new InvalidArgumentException( 'Invalid value of first argument' );
+		$this->sender	= $participant;
+		$this->addHeaderPair( "From", $participant->get() );
 		return $this;
 	}
 
