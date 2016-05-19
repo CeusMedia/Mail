@@ -7,9 +7,11 @@ Send mails via SMTP using PHP.
   - simple, easy, clean
   - PHP5, object-oriented style, chainable
   - automatic encoding
-- Contents
-  - multipart MIME: plain text and HTML
+- MIME Contents
+  - HTML
+  - plain text
   - file attachments
+  - inline images
 - Partipicants
   - To, Cc, Bcc
   - sender and receiver names
@@ -17,7 +19,6 @@ Send mails via SMTP using PHP.
   - SMTP, with TLS support
   - local PHP mail function
 - Checks
-  - address validity
   - address validity
   - receiver reachability
 
@@ -27,7 +28,6 @@ Send mails via SMTP using PHP.
 \CeusMedia\Mail\Transport\SMTP::getInstance("example.com", 587)
 	->setUsername("john@example.com")
 	->setPassword("my_password")
-	->setSecure(true)
 	->send(\CeusMedia\Mail\Message::getInstance()
 		->setSender("john@example.com", "John Doe")
 		->addRecipient("mike@example.com", "Mike Foo")

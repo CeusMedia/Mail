@@ -266,7 +266,7 @@ class Message{
 			$participant	= new \CeusMedia\Mail\Participant( $participant );
 		if( $name )
 			$participant->setName( $name );
-		$this->headers->addFieldPair( 'Disposition-Notification-To', $recipient->get() );
+		$this->headers->addFieldPair( 'Disposition-Notification-To', $participant->get() );
 		return $this;
 	}
 

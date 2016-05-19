@@ -46,15 +46,16 @@ try {
 
 	//  create message
 	$message	= new \CeusMedia\Mail\Message();									//  create mail message object
-	$message->setSender($sender);													//  set sender by sender object
-	$message->addRecipient($receiverTo);											//  set receiver by receiver object
-	$message->addRecipient($receiverCc, NULL, 'cc');								//  set receiver by receiver object
-	$message->addRecipient($receiverBcc, NULL, 'bcc' );								//  set receiver by receiver object
+	$message->setSender($sender);													//  set sender
+	$message->addRecipient($receiverTo);											//  set TO receiver
+	$message->addRecipient($receiverCc, NULL, 'cc');								//  set CC receiver
+	$message->addRecipient($receiverBcc, NULL, 'bcc' );								//  set BCC receiver
 	$message->setSubject($subject);													//  set mail subject
 	$message->addPart(new \CeusMedia\Mail\Part\Text($bodyText));					//  set mail content as plain text part
 	$message->addPart(new \CeusMedia\Mail\Part\HTML($bodyHtml));					//  set mail content as HTML part
 	$message->addPart(new \CeusMedia\Mail\Part\InlineImage('test1', 'test.png'));	//  add inline image
 	$message->addPart($attachment);
+	$message->setReadNotificationRecipient($sender);
 
 	//  send message
 	$transport->send($message);														//  send message via prepared transport
