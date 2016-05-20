@@ -2,7 +2,7 @@
 /**
  *	Collector container for mails.
  *
- *	Copyright (c) 2007-2015 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2015 Christian Würker
+ *	@copyright		2007-2016 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -31,7 +31,7 @@ namespace CeusMedia\Mail;
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2015 Christian Würker
+ *	@copyright		2007-2016 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -61,13 +61,18 @@ class Message{
 	 *	@access		public
 	 *	@return		void
 	 */
-	public function __construct()
-	{
+	public function __construct(){
 		$this->headers		= new \CeusMedia\Mail\Header\Section();
 	}
 
-	public function addAttachment( \CeusMedia\Mail\Part\Attachment $attachment )
-	{
+	/**
+	 *	Add attachment.
+	 *	@access		public
+	 *	@param		\CeusMedia\Mail\Part\Attachment	$attachment	Attachment object to add
+	 *	@return		object		Message object for chaining
+	 */
+
+	public function addAttachment( \CeusMedia\Mail\Part\Attachment $attachment ){
 		return $this->addPart( $attachment );
 	}
 
@@ -75,10 +80,9 @@ class Message{
 	 *	Sets a header.
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Header\Field	$field		Mail header field object
-	 *	@return		void
+	 *	@return		object		Message object for chaining
 	 */
-	public function addHeader( \CeusMedia\Mail\Header\Field $field )
-	{
+	public function addHeader( \CeusMedia\Mail\Header\Field $field ){
 		$this->headers->addField( $field );
 		return $this;
 	}
@@ -88,10 +92,9 @@ class Message{
 	 *	@access		public
 	 *	@param		string		$key		Key of header
 	 *	@param		string		$value		Value of header
-	 *	@return		void
+	 *	@return		object		Message object for chaining
 	 */
-	public function addHeaderPair( $key, $value )
-	{
+	public function addHeaderPair( $key, $value ){
 		$field	= new \CeusMedia\Mail\Header\Field( $key, $value );
 		return $this->addHeader( $field );
 	}
@@ -100,22 +103,20 @@ class Message{
 	 *	Sets mail body part.
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Part	$part		Part of mail
-	 *	@return		void
+	 *	@return		object			Message object for chaining
 	 */
-	public function addPart( \CeusMedia\Mail\Part $part )
-	{
+	public function addPart( \CeusMedia\Mail\Part $part ){
 		$this->parts[]	= $part;
 		return $this;
 	}
 
-	public function addRecipient( $participant, $name = NULL, $type = "To" )
-	{
+	public function addRecipient( $participant, $name = NULL, $type = "To" ){
 		if( is_string( $participant ) )
 			$participant	= new \CeusMedia\Mail\Participant( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
-			throw new InvalidArgumentException( 'Invalid value of first argument' );
+			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
-			throw new InvalidArgumentException( 'Invalid recipient type' );
+			throw new \InvalidArgumentException( 'Invalid recipient type' );
 
 		if( $name )
 			$participant->setName( $name );
@@ -130,7 +131,15 @@ class Message{
 		return $this;
 	}
 
-	public function attachFile( $fileName, $mimeType, $encoding = NULL ){
+	/**
+	 *	Attach a file.
+	 *	@access		public
+	 *	@param		string		$fileName		Path of file to add
+	 *	@param		string		$mimeType		MIME type of file
+	 *	@param		string		$encoding		Encoding to apply
+	 *	@return		object		Message object for chaining
+	 */
+	public function attachFile( $fileName, $mimeType = NULL, $encoding = NULL ){
 		$attachment	= new \CeusMedia\Mail\Part\Attachment();
 		$attachment->setFile( $fileName, $mimeType, $encoding );
 		return $this->addAttachment( $attachment );
@@ -153,7 +162,16 @@ class Message{
 			case 'base64':
 				return "=?UTF-8?B?".base64_encode( $string )."?=";
 		}
-		throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+		throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+	}
+
+	/**
+	 *	Returns mail agent.
+	 *	@access		public
+	 *	@return		string
+	 */
+	public function getAgent(){
+		return $this->userAgent;
 	}
 
 	/**
@@ -161,8 +179,7 @@ class Message{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function getAttachments()
-	{
+	public function getAttachments(){
 		$list	= array();
 		foreach( $this->parts as $part ){
 			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
@@ -178,8 +195,7 @@ class Message{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function getHeaders()
-	{
+	public function getHeaders(){
 		return $this->headers;
 	}
 
@@ -212,8 +228,7 @@ class Message{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getRecipients()
-	{
+	public function getRecipients(){
 		return $this->recipients;
 	}
 
@@ -222,8 +237,7 @@ class Message{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getSender()
-	{
+	public function getSender(){
 		return $this->sender;
 	}
 
@@ -233,8 +247,7 @@ class Message{
 	 *	@param		string|NULL		$encoding		Types: quoted-printable, base64. Default: none
 	 *	@return		string
 	 */
-	public function getSubject( $encoding = NULL )
-	{
+	public function getSubject( $encoding = NULL ){
 		if( $encoding )
 			return self::encodeIfNeeded( $this->subject, $encoding );
 		return $this->subject;
@@ -244,13 +257,20 @@ class Message{
 	 *	Sets mail agent for mailer header.
 	 *	@access		public
 	 *	@param		string		$userAgent		Mailer user agent
-	 *	@return		void
+	 *	@return		object		Message object for chaining
 	 */
 	public function setAgent( $userAgent ){
 		$this->userAgent = $userAgent;
 		return $this;
 	}
 
+	/**
+	 *	...
+	 *	@param		string		$content		...
+	 *	@param		string		$charset		...
+	 *	@param		string		$encoding		...
+	 *	@return		object		Message object for chaining
+	 */
 	public function setHTML( $content, $charset = NULL, $encoding = NULL ){
 		$part	= new \CeusMedia\Mail\Part\HTML( $content );
 		if( $charset )
@@ -275,15 +295,16 @@ class Message{
 	 *	@access		public
 	 *	@param		string|object	$participant	Mail sender address or participant object
 	 *	@param		string			$name			Mail sender name
-	 *	@return		void
+	 *	@return		object			Message object for chaining
 	 *	@throws		Exception
 	 */
-	public function setSender( $participant, $name = NULL )
-	{
+	public function setSender( $participant, $name = NULL ){
 		if( is_string( $participant ) )
 			$participant	= new \CeusMedia\Mail\Participant( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
-			throw new InvalidArgumentException( 'Invalid value of first argument' );
+			throw new \InvalidArgumentException( 'Invalid value of first argument' );
+		if( $name )
+			$participant->setName( $name );
 		$this->sender	= $participant;
 		$this->addHeaderPair( "From", $participant->get() );
 		return $this;
@@ -293,14 +314,20 @@ class Message{
 	 *	Sets Mail Subject.
 	 *	@access		public
 	 *	@param		string		$subject	Subject of Mail
-	 *	@return		void
+	 *	@return		object		Message object for chaining
 	 */
-	public function setSubject( $subject )
-	{
+	public function setSubject( $subject ){
 		$this->subject	= $subject;
 		return $this;
 	}
 
+	/**
+	 *	...
+	 *	@param		string		$content		...
+	 *	@param		string		$charset		...
+	 *	@param		string		$encoding		...
+	 *	@return		object		Message object for chaining
+	 */
 	public function setText( $content, $charset = NULL, $encoding = NULL ){
 		$part	= new \CeusMedia\Mail\Part\Text( $content );
 		if( $charset )
