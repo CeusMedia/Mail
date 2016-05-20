@@ -41,7 +41,7 @@ class Part_TextTest extends PHPUnit_Framework_TestCase
 		$content	= "This is the content with umlauts: äöü.";
 
 		$part		= new \CeusMedia\Mail\Part\Text( $content );
-		$assertion	= 'Content-Type: text/plain;'.$this->delimiter.' charset="UTF-8"'.$this->delimiter.'Content-Transfer-Encoding: quoted-printable'.$this->delimiter.$this->delimiter.quoted_printable_encode( $content );
+		$assertion	= 'Content-Type: text/plain;'.$this->delimiter.' charset="utf-8"'.$this->delimiter.'Content-Transfer-Encoding: quoted-printable'.$this->delimiter.$this->delimiter.quoted_printable_encode( $content );
 		$this->assertEquals( $assertion, $part->render() );
 
 		$part		= new \CeusMedia\Mail\Part\Text( $content, 'utf-8', 'base64' );

@@ -93,9 +93,9 @@ class Section{
 	public function getFields(){
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
-				if( count( $fields ) )
-					foreach( $fields as $field )
-						$list[]	= $field;
+			if( count( $fields ) )
+				foreach( $fields as $field )
+					$list[]	= $field;
 		return $list;
 	}
 
