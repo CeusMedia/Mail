@@ -44,7 +44,7 @@ class Recipient{
 	protected $lastResponse;
 
 	const ERROR_NONE					= 0;
-	const ERROR_MX_RESOLUTION_FAILED		 =1;
+	const ERROR_MX_RESOLUTION_FAILED	= 1;
 	const ERROR_SOCKET_FAILED			= 2;
 	const ERROR_SOCKET_EXCEPTION		= 3;
 	const ERROR_CONNECTION_FAILED		= 4;
@@ -83,18 +83,18 @@ class Recipient{
 		}
 	}
 
-	protected function getMailServers( $hostname ){
-		if( $this->cache->has( 'mx:'.$hostname ) )
+	protected function getMailServers( $hostname, $useCache = TRUE, $strict = TRUE ){
+		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
 			return $this->cache->get( 'mx:'.$hostname );
 		$servers	= array();
 		getmxrr( $hostname, $mxRecords, $mxWeights );
-		if( !$mxRecords )
+		if( !$mxRecords && $strict )
 			throw new \RuntimeException( 'No MX records found for host: '.$hostname );
-		foreach( $mxRecords as $nr => $server ){
+		foreach( $mxRecords as $nr => $server )
 			$servers[$mxWeights[$nr]]	= $server;
-		}
 		ksort( $servers );
-		$this->cache->set( 'mx:'.$hostname, $servers );
+		if( $useCache )
+			$this->cache->set( 'mx:'.$hostname, $servers );
 		return $servers;
 	}
 
@@ -109,13 +109,16 @@ class Recipient{
 
 		if( !$host ){
 			try{
-				$servers	= $this->getMailServers( $receiver->getDomain() );
+				$servers	= $this->getMailServers( $receiver->getDomain(), !$force, TRUE );
 				$host		= array_shift( $servers );
 			}
-			catch( Exception $e ){
-				$this->lastResponse->error		= self::ERROR_MX_RESOLUTION_FAILED;
-				$this->lastResponse->message	= $e->getMessage();
-				return FALSE;
+			catch( \Exception $e ){
+				if( $force ){
+					$this->lastResponse->error		= self::ERROR_MX_RESOLUTION_FAILED;
+					$this->lastResponse->message	= $e->getMessage();
+					return FALSE;
+				}
+				$host		= $receiver->getDomain();
 			}
 		}
 
