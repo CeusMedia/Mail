@@ -1,13 +1,35 @@
 
 ## Changelog
 
+- 1.1.0
+	* New SMTP transport method setAuth.
+	* Improve chainability of Message.
+	* New Message methods: addFile, addHtml, addText, embedImage.
+	* Deprecated Message methods: addAttachment, attachFile, embedImage.
+	* New Message method getUserAgent replaces getAgent.
+	* New Message method setUserAgent replaces setAgent.
+	* Deprecated Message methods: getAgent, setAgent.
+	* Improve code documentation.
+	* Let Renderer use set user agent of Message.
+	* Deprecated Renderer methods: getAgent, setAgent.
+	* New Image method setId.
+	* Move Image method setFile into constructor.
+	* Move Image method getMimeTypeFromFile to abstract part.
+	* Apply MIME detection in attachment part.
+	* Migrate and extend test classes.
+	* Add deprecation notice trigger for all deprecated methods.
+	* Update demos.
+	* Update make file to use colors on unit test.
+	* Update make file by syntax test.
+- 1.0.1 Cleanup.
+- 1.0.0 Release.
 - 0.9.6 Update readme.
 - 0.9.5 Allow participient object or address string as sender and receivers.
 - 0.9.4 Fix code doc.
 - 0.9.3 Allow participiant or address string as receiver argument.
-- 0.9.2 Detect TLS/SSL secured connecton by port.
+- 0.9.2 Detect TLS/SSL secured connection by port.
 - 0.9.1 Add full console demo.
-- 0.9.0 Replace generation algorith for inner boundary.
+- 0.9.0 Replace generation algorithm for inner boundary.
 - 0.8.9 Require CeusMedia/DocCreator only in dev mode.
 - 0.8.8 Require CeusMedia/Common version 0.8.2 in composer file.
 - 0.8.7 Add support for inline images.

@@ -57,7 +57,7 @@ class Attachment extends \CeusMedia\Mail\Part{
 	}
 
 	/**
-	 *	Returns set File Name.
+	 *	Returns set file name.
 	 *	@access		public
 	 *	@return		string
 	 */
@@ -65,22 +65,47 @@ class Attachment extends \CeusMedia\Mail\Part{
 		return $this->fileName;
 	}
 
+	/**
+	 *	Returns file size in bytes.
+	 *	@access		public
+	 *	@return		string
+	 */
 	public function getFileSize(){
 		return $this->fileSize;
 	}
 
+	/**
+	 *	Returns latest access time as UNIX timestamp.
+	 *	@access		public
+	 *	@return		string
+	 */
 	public function getFileATime(){
 		return $this->fileATime;
 	}
 
+	/**
+	 *	Returns file creation time as UNIX timestamp.
+	 *	@access		public
+	 *	@return		string
+	 */
 	public function getFileCTime(){
 		return $this->fileCTime;
 	}
 
+	/**
+	 *	Returns last modification time as UNIX timestamp.
+	 *	@access		public
+	 *	@return		string
+	 */
 	public function getFileMTime(){
 		return $this->fileMTime;
 	}
 
+	/**
+	 *	Returns string representation of mail part for rendering whole mail.
+	 *	@access		public
+	 *	@return		string
+	 */
 	public function render(){
 		$headers		= array(
 			'Content-Disposition'		=> array(
@@ -116,9 +141,11 @@ class Attachment extends \CeusMedia\Mail\Part{
 	 *	Sets attachment by content string.
 	 *	@access		public
 	 *	@param		string		$content		String containing file content
-	 *	@param		string		$fileName		Name of File to attach
-	 *	@param		string		$mimeType		MIME Type of File
-	 *	@return		void
+	 *	@param		string		$mimeType		MIME type of file (will NOT be detected if not given)
+	 *	@param		string		$encoding		Encoding of file
+	 *	@return		object  	Self instance for chaining
+	 *	@todo   	use mime magic to detect MIME type
+	 *	@todo  		scan file for malware
 	 */
 	public function setContent( $content, $mimeType = NULL, $encoding = NULL ){
 		$this->content	= $content;
@@ -126,41 +153,88 @@ class Attachment extends \CeusMedia\Mail\Part{
 			$this->setMimeType( $mimeType );
 		if( $encoding )
 			$this->setEncoding( $encoding );
+		return $this;
 	}
 
+	/**
+	 *	Sets attachment by existing file.
+	 *	Will gather file size, file dates (access, creation, modification).
+	 *	@access		public
+	 *	@param		string		$fileName		Name of file to attach
+	 *	@param		string		$mimeType		MIME type of file (will be detected if not given)
+	 *	@param		string		$encoding		Encoding of file
+	 *	@return		object  	Self instance for chaining
+	 *	@throws		\InvalidArgumentException	if file is not existing
+	 *	@todo  		scan file for malware
+	 */
 	public function setFile( $fileName, $mimeType = NULL, $encoding = NULL ){
 		if( !file_exists( $fileName ) )
 			throw new \InvalidArgumentException( 'Attachment file "'.$fileName.'" is not existing' );
-		$this->setFileName( $fileName );
 		$this->content	= file_get_contents( $fileName );
+		$this->setFileName( $fileName );
 		$this->setFileSize( filesize( $fileName ) );
 		$this->setFileATime( fileatime( $fileName ) );
 		$this->setFileCTime( filectime( $fileName ) );
 		$this->setFileMTime( filemtime( $fileName ) );
-		if( $mimeType )
-			$this->setMimeType( $mimeType );
+		$this->setMimeType( $mimeType ? $mimeType : $this->getMimeTypeFromFile( $fileName ) );
 		if( $encoding )
 			$this->setEncoding( $encoding );
+		return $this;
 	}
 
+	/**
+	 *	Sets file name.
+	 *	@access		public
+	 *	@param		string   	File name.
+	 *	@return		object  	Self instance for chaining
+	 */
 	public function setFileName( $fileName ){
 		$this->fileName		= basename( $fileName );
+		return $this;
 	}
 
+	/**
+	 *	Sets file size in bytes.
+	 *	@access		public
+	 *	@param		string   	File name.
+	 *	@return		object  	Self instance for chaining
+	 */
 	public function setFileSize( $size ){
 		$this->fileSize		= $size;
+		return $this;
 	}
 
+	/**
+	 *	Sets access time by UNIX timestamp.
+	 *	@access		public
+	 *	@param		string   	$timestamp		Timestamp of latest access.
+	 *	@return		object  	Self instance for chaining
+	 */
 	public function setFileATime( $timestamp ){
 		$this->fileATime	= $timestamp;
+		return $this;
 	}
 
+	/**
+	 *	Sets creation time by UNIX timestamp.
+	 *	@access		public
+	 *	@param		string   	$timestamp		Timestamp of creation.
+	 *	@return		object  	Self instance for chaining
+	 */
 	public function setFileCTime( $timestamp ){
 		$this->fileCTime	= $timestamp;
+		return $this;
 	}
 
+	/**
+	 *	Sets modification time by UNIX timestamp.
+	 *	@access		public
+	 *	@param		string   	$timestamp		Timestamp of last modification.
+	 *	@return		object  	Self instance for chaining
+	 */
 	public function setFileMTime( $timestamp ){
 		$this->fileMTime	= $timestamp;
+		return $this;
 	}
 }
 ?>

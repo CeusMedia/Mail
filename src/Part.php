@@ -89,6 +89,15 @@ abstract class Part{
 		return $this->mimeType;
 	}
 
+	protected function getMimeTypeFromFile( $fileName ){
+		if( !file_exists( $fileName ) )
+			throw new \InvalidArgumentException( 'File "'.$fileName.'" is not existing' );
+		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
+		$type	= finfo_file( $finfo, $fileName );
+		finfo_close( $finfo );
+		return $type;
+	}
+
 	abstract public function render();
 
 	public function setCharset( $charset ){
@@ -102,7 +111,7 @@ abstract class Part{
 	public function setEncoding( $encoding ){
 		$encodings	= array( "7bit", "8bit", "base64", "quoted-printable", "binary" );
 		if( !in_array( $encoding, $encodings ) )
-			throw new \InvalidArgumentException( 'Invalid encoding' );
+			throw new \InvalidArgumentException( 'Invalid encoding: '.$encoding );
 		$this->encoding	= $encoding;
 	}
 

@@ -168,7 +168,7 @@ class Parser{
 	/**
 	 *	Parse body part and nested parts recursively.
 	 *	@static
-	 *	@access		proteced
+	 *	@access		protected
 	 *	@param		array		$lines			List of body part lines
 	 *	@param		integer		$initialStatus	Status to start at (0: read header, 1: read content)
 	 *	@return		object		Body part data object

@@ -36,8 +36,7 @@ namespace CeusMedia\Mail\Transport;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://www.der-webdesigner.net/tutorials/php/anwendungen/329-php-und-oop-mailversand-via-smtp.html
  */
-class SMTP
-{
+class SMTP{
 	/**	@var		string		$host		SMTP server host name */
 	protected $host;
 	/**	@var		integer		$port		SMTP server port */
@@ -107,7 +106,7 @@ class SMTP
 	 *	@throws		\RuntimeException		if message has no mail body parts
 	 *	@throws		\RuntimeException		if connection to SMTP server failed
 	 *	@throws		\RuntimeException		if sending mail failed
-	 *	@return		void
+	 *	@return		object  	Self instance for chaining.
 	 */
 	public function send( \CeusMedia\Mail\Message $message ){
 		$delim		= \CeusMedia\Mail\Message::$delimiter;
@@ -159,6 +158,7 @@ class SMTP
 			fclose( $conn );
 			throw new \RuntimeException( $e->getMessage(), $e->getCode(), $e->getPrevious() );
 		}
+		return $this;
 	}
 
 	protected function sendChunk( $connection, $message ){
@@ -168,13 +168,26 @@ class SMTP
 	}
 
 	/**
+	 *	Sets username and password for SMTP authentication.
+	 *	Shortcut for setUsername and setPassword.
+	 *	@access		public
+	 *	@param		string		$username	SMTP username
+	 *	@param		string		$password	SMTP password
+	 *	@return		object  	Self instance for chaining.
+	 */
+	public function setAuth( $username, $password ){
+		$this->setUsername( $username );
+		$this->setPassword( $password );
+		return $this;
+	}
+
+	/**
 	 *	Sets SMTP host.
 	 *	@access		public
 	 *	@param		integer		$host		SMTP server host
-	 *	@return		void
+	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setHost( $host )
-	{
+	public function setHost( $host ){
 		if( !strlen( trim( $host ) ) )
 			throw new \InvalidArgumentException( 'Missing SMTP host' );
 		$this->host		= $host;
@@ -185,7 +198,7 @@ class SMTP
 	 *	Sets password for SMTP authentication.
 	 *	@access		public
 	 *	@param		string		$password	SMTP password
-	 *	@return		void
+	 *	@return		object  	Self instance for chaining.
 	 */
 	public function setPassword( $password ){
 		$this->password	= $password;
@@ -196,10 +209,9 @@ class SMTP
 	 *	Sets SMTP port.
 	 *	@access		public
 	 *	@param		integer		$port		SMTP server port
-	 *	@return		void
+	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setPort( $port )
-	{
+	public function setPort( $port ){
 		$this->port		= $port;
 		return $this;
 	}
@@ -213,13 +225,19 @@ class SMTP
 	 *	Sets username for SMTP authentication.
 	 *	@access		public
 	 *	@param		string		$username	SMTP username
-	 *	@return		void
+	 *	@return		object  	Self instance for chaining.
 	 */
 	public function setUsername( $username ){
 		$this->username	= $username;
 		return $this;
 	}
 
+	/**
+	 *	Sets verbosity.
+	 *	@access		public
+	 *	@param		boolean		$verbose	Be verbose during transportation (default: FALSE)
+	 *	@return		object  	Self instance for chaining.
+	 */
 	public function setVerbose( $verbose ){
 		$this->verbose = (bool) $verbose;
 		return $this;

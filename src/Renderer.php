@@ -37,15 +37,18 @@ namespace CeusMedia\Mail;
  */
 class Renderer{
 
-	static protected $userAgent		= "CeusMedia/Mail/0.1";
+	static protected $userAgent		= "CeusMedia/Mail/1.0.2";
 
 	/**
 	 *	Get set mail agent.
 	 *	@static
 	 *	@access		public
 	 *	@return		string		Mailer user agent
+	 *	@deprecated	use Message::getUserAgent instead
+	 *	@todo    	to be removed in 1.2
 	 */
 	static public function getAgent(){
+		trigger_error( 'Use Message::getUserAgent instead', E_USER_DEPRECATED );
 		return self::$userAgent;
 	}
 
@@ -67,7 +70,7 @@ class Renderer{
 		$headers->setFieldPair( 'Subject', $message->getSubject( 'quoted-printable' ) );
 		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
-		$headers->addFieldPair( 'X-Mailer', self::$userAgent );
+		$headers->addFieldPair( 'X-Mailer', $message->getUserAgent() );
 
 		$contents	= array( "This is a multi-part message in MIME format." );
 		$contents[]	= "--".$mimeBoundary;
@@ -88,8 +91,11 @@ class Renderer{
 	 *	@access		public
 	 *	@param		string		$userAgent		Mailer user agent
 	 *	@return		void
+	 *	@deprecated	use Message::setUserAgent instead
+	 *	@todo    	to be removed in 1.2
 	 */
 	static public function setAgent( $userAgent ){
+		trigger_error( 'Use Message::setUserAgent instead', E_USER_DEPRECATED );
 		self::$userAgent = $userAgent;
 	}
 }

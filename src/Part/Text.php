@@ -46,6 +46,11 @@ class Text extends \CeusMedia\Mail\Part{
 		$this->setEncoding( $encoding );
 	}
 
+	/**
+	 *	Returns string representation of mail part for rendering whole mail.
+	 *	@access		public
+	 *	@return		string
+	 */
 	public function render(){
 		$headers		= new \CeusMedia\Mail\Header\Section();
 		$contentType	= array(

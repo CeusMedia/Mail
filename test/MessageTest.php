@@ -14,6 +14,47 @@ require_once __DIR__.'/bootstrap.php';
  */
 class MessageTest extends PHPUnit_Framework_TestCase
 {
+	public function testAddText(){
+		$text		= "TestText123";
+		$part		= new \CeusMedia\Mail\Part\Text($text);
+		$message	= \CeusMedia\Mail\Message::getInstance();
+		$message->addText($text);
+
+		$parts	= $message->getParts();
+		$this->assertEquals( $parts[0], $part );
+	}
+
+	public function testAddHtml(){
+		$html		= "<b>TestText123</b>";
+		$part		= new \CeusMedia\Mail\Part\HTML($html);
+		$message	= \CeusMedia\Mail\Message::getInstance();
+		$message->addHtml($html);
+
+		$parts	= $message->getParts();
+		$this->assertEquals( $parts[0], $part );
+	}
+
+	public function testAddHtmlImage(){
+		$fileName	= __DIR__."/../logo.png";
+		$part		= new \CeusMedia\Mail\Part\InlineImage('id', $fileName);
+		$message	= \CeusMedia\Mail\Message::getInstance();
+		$message->addHtmlImage('id', $fileName);
+
+		$parts	= $message->getParts( TRUE );
+		$this->assertEquals( $parts[0], $part );
+	}
+
+	public function testEmbedImage(){
+		$this->setExpectedException( 'PHPUnit_Framework_Error' );
+		$fileName	= __DIR__."/../logo.png";
+		$part		= new \CeusMedia\Mail\Part\InlineImage('id', $fileName);
+		$message	= \CeusMedia\Mail\Message::getInstance();
+		$message->embedImage('id', $fileName);
+
+		$parts	= $message->getParts( TRUE );
+		$this->assertEquals( $parts[0], $part );
+	}
+
 	public function testGetAndSetSender(){
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$creation	= $message->setSender( "test@example.com" );
@@ -53,13 +94,27 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $subject, $message->getSubject() );
 	}
 
+	/**
+	 *	@deprecated		use testGetAndSetUserAgent instead
+	 *	@todo   		to be removed in 1.1
+	 */
 	public function testGetAndSetAgent(){
+		$this->setExpectedException( 'PHPUnit_Framework_Error' );
 		$agent		= "Test User Agent";
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$creation	= $message->setAgent( $agent );
 		$this->assertEquals( $message, $creation );
 
 		$this->assertEquals( $agent, $message->getAgent() );
+	}
+
+	public function testGetAndSetUsetAgent(){
+		$agent		= "Test User Agent";
+		$message	= \CeusMedia\Mail\Message::getInstance();
+		$creation	= $message->setUserAgent( $agent );
+		$this->assertEquals( $message, $creation );
+
+		$this->assertEquals( $agent, $message->getUserAgent() );
 	}
 
 	public function testAddAndGetRecipients(){
@@ -120,6 +175,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testAddAndGetAttachments(){
+		$this->setExpectedException( 'PHPUnit_Framework_Error' );
 		$attachment1	= new \CeusMedia\Mail\Part\Attachment();
 		$attachment1->setFile( __FILE__ );
 		$attachment2	= new \CeusMedia\Mail\Part\Attachment();
@@ -136,6 +192,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testAttachFileAndGetAttachments(){
+		$this->setExpectedException( 'PHPUnit_Framework_Error' );
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$creation	= $message->attachFile( __FILE__ );
 		$this->assertEquals( $message, $creation );
