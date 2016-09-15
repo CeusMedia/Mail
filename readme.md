@@ -1,4 +1,4 @@
-# CeusMedia/Mail
+# CeusMedia Mail
 
 Send mails via SMTP using PHP.
 
@@ -7,6 +7,7 @@ Send mails via SMTP using PHP.
   - simple, easy, clean
   - PHP5, object-oriented style, chainable
   - automatic encoding
+  - automatic MIME type detection
 - MIME Contents
   - HTML
   - plain text
@@ -22,7 +23,7 @@ Send mails via SMTP using PHP.
   - address validity
   - receiver reachability
 
-## Code Example
+## Code Examples
 
 ### Short version
 
@@ -63,6 +64,13 @@ $transport->setPassword("my_password");
 $transport->setVerbose(TRUE);
 $transport->send( $message );
 ```
+
+## Future plans
+- documentation for already existing parser
+- automatic virus scan
+- support for logging
+- factories and other design patterns
+- slim API - see "Future version"
 
 ### Future version
 

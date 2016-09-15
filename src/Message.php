@@ -52,7 +52,7 @@ class Message{
 	/**	@var		string							$subject		Mail subject */
 	protected $subject;
 	/**	@var		string							$mailer			Mailer agent */
-	protected $userAgent							= 'CeusMedia/Mail/1.0.2';
+	protected $userAgent							= 'CeusMedia::Mail/1.1.0';
 
 	/**
 	 *	Constructor.
