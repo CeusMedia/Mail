@@ -1,8 +1,8 @@
-## Mail
+# CeusMedia/Mail
 
 Send mails via SMTP using PHP.
 
-### Features
+## Features
 - Programming
   - simple, easy, clean
   - PHP5, object-oriented style, chainable
@@ -22,9 +22,9 @@ Send mails via SMTP using PHP.
   - address validity
   - receiver reachability
 
-### Code Example
+## Code Example
 
-#### Short version
+### Short version
 
 This example shows how to send a text mail using chainability.
 
@@ -39,7 +39,7 @@ This example shows how to send a text mail using chainability.
 	);
 ```
 
-#### Long version
+### Long version
 
 ```php
 use \CeusMedia\Mail\Message;
@@ -64,7 +64,7 @@ $transport->setVerbose(TRUE);
 $transport->send( $message );
 ```
 
-#### Future version
+### Future version
 
 Sending a mail should be as easy as possible.
 This is an outlook how the interface could look like in future.
@@ -88,8 +88,8 @@ function handleMailException( $e ){
 //  ...
 }
 ```
-**Thoughts on this example:**
 
+#### Thoughts on this example
 - Sending mail with this short code will be using SMTP, only.
 - The SMTP server will be determined by fetching MX records of the user's domain.
 - Setting the SMTP server port is still needed.
