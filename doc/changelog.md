@@ -1,6 +1,12 @@
 
 ## Changelog
 
+- 1.1.1
+	* Add PHPUnit in composer file.
+	* Add PHPUnit configuration file.
+	* Move changelog.md to doc folder.
+	* Move doc/doc.xml to root folder.
+	* Generalized make file.
 - 1.1.0
 	* New SMTP transport method setAuth.
 	* Improve chainability of Message.
