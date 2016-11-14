@@ -67,19 +67,41 @@ class Recipient{
 		$this->cache	= \CeusMedia\Cache\Factory::createStorage( 'Noop' );
 	}
 
-	public function getLastError(){
+	/**
+	 *	...
+	 *	@access		public
+	 *	@param		string		$key			Response data key (error|code|message)
+	 *	@throws		RangeException				if given key is invalid
+	 *	@return		array|string|integer
+	 */
+	public function getLastError( $key = NULL ){
 		if( $this->lastResponse ){
-			return (object) array(
-				'error'		=> $this->lastResponse->error,
-				'code'		=> $this->lastResponse->code,
-				'message'	=> $this->lastResponse->message
-			);
+			if( $key === NULL )
+				return (object) array(
+					'error'		=> $this->lastResponse->error,
+					'code'		=> $this->lastResponse->code,
+					'message'	=> $this->lastResponse->message
+				);
+			if( isset( $this->lastResponse->$key ) )
+				return $this->lastResponse->$key;
+			throw new \RangeException( 'Unknown key: '.$key );
 		}
 	}
 
-	public function getLastResponse(){
+	/**
+	 *	...
+	 *	@access		public
+	 *	@param		string		$key			Response data key (error|request|response|code|message)
+	 *	@throws		RangeException				if given key is invalid
+	 *	@return		array|string|integer
+	 */
+	public function getLastResponse( $key = NULL ){
 		if( $this->lastResponse ){
-			return $this->lastResponse;
+			if( $key === NULL )
+				return $this->lastResponse;
+			if( isset( $this->lastResponse->$key ) )
+				return $this->lastResponse->$key;
+			throw new \RangeException( 'Unknown key: '.$key );
 		}
 	}
 
@@ -96,6 +118,34 @@ class Recipient{
 		if( $useCache )
 			$this->cache->set( 'mx:'.$hostname, $servers );
 		return $servers;
+	}
+
+	protected function readResponse( $connection, $acceptedCodes = array() ){
+		$lastLine	= FALSE;
+		$code		= NULL;
+		$buffer		= array();
+		do{
+			$this->lastResponse->response	= fgets( $connection, 1024 );
+			if( $this->verbose )
+				print ' < '.$this->lastResponse->response;
+			$matches	= array();
+			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $this->lastResponse->response ), $matches );
+			if( !$matches )
+				throw new \RuntimeException( 'SMTP response not understood' );
+			$code		= (int) $matches[1];
+			$buffer[]	= $matches[3];
+			if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
+				throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], $code );
+			if( $matches[2] === " " )
+				$lastLine	= TRUE;
+			$this->lastResponse->code		= (int) $matches[1];
+			$this->lastResponse->message	= $matches[3];
+		}
+		while( $this->lastResponse->response && !$lastLine );
+		return (object) array(
+			'code'		=> $code,
+			'message'	=> join( "\n", $buffer ),
+		);
 	}
 
 	public function test( $receiver, $host = NULL, $port = 25, $force = FALSE ){
@@ -129,27 +179,27 @@ class Recipient{
 			return FALSE;
 		}
 		try{
-			$this->parseResponse( $conn );
-			if( (int) $this->lastResponse->code !== 220 ){
+			$this->readResponse( $conn );
+			if( $this->lastResponse->code !== 220 ){
 				$this->lastResponse->error	= self::ERROR_CONNECTION_FAILED;
 				return FALSE;
 			}
-			$this->sendChunk( $conn, "HELO ".$this->sender->getDomain() );
-			$this->parseResponse( $conn );
+			$this->sendChunk( $conn, "EHLO ".$this->sender->getDomain() );
+			$this->readResponse( $conn );
 			if( !in_array( $this->lastResponse->code, array( 220, 250 ) ) ){
 				$this->lastResponse->error	= self::ERROR_HELO_FAILED;
 				return FALSE;
 			}
-			while( $this->lastResponse->code === 220 )									//  for telekom.de
-				$this->parseResponse( $conn );
+//			while( $this->lastResponse->code === 220 )									//  for telekom.de
+//				$this->parseResponse( $conn );
 			$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
-			$this->parseResponse( $conn );
+			$this->readResponse( $conn );
 			if( $this->lastResponse->code !== 250 ){
 				$this->lastResponse->error	= self::ERROR_SENDER_NOT_ACCEPTED;
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
-			$this->parseResponse( $conn );
+			$this->readResponse( $conn );
 			if( $this->lastResponse->code !== 250 ){
 				$this->lastResponse->error	= self::ERROR_RECEIVER_NOT_ACCEPTED;
 				$this->cache->set( 'user:'.$receiver->getAddress(), FALSE );
@@ -169,10 +219,13 @@ class Recipient{
 		}
 	}
 
+	/**
+	 *	@deprecated		use readResponse instead
+	 */
 	protected function parseResponse( $connection ){
 		$this->lastResponse->response	= fgets( $connection, 1024 );
 		if( $this->verbose )
-			print PHP_EOL.' < '.$this->lastResponse->response;
+			print ' < '.$this->lastResponse->response;
 		$matches	= array();
 		preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $this->lastResponse->response ), $matches );
 		if( !$matches )
@@ -184,7 +237,7 @@ class Recipient{
 
 	protected function sendChunk( $connection, $message ){
 		if( $this->verbose )
-			print PHP_EOL.' > '.$message;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
+			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
 		$this->lastResponse->request	= $message;
 		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
 	}

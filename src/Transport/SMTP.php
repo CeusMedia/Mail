@@ -77,14 +77,14 @@ class SMTP{
 				print ' < '.$response;
 			$matches	= array();
 			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
-			if( $matches ){
-				$code		= (int) $matches[1];
-				$buffer[]	= $matches[3];
-				if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
-					throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], (int) $matches[1] );
-				if( $matches[2] === " " )
-					$lastLine	= TRUE;
-			}
+			if( !$matches )
+				throw new \RuntimeException( 'SMTP response not understood' );
+			$code		= (int) $matches[1];
+			$buffer[]	= $matches[3];
+			if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
+				throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], $code );
+			if( $matches[2] === " " )
+				$lastLine	= TRUE;
 		}
 		while( $response && !$lastLine );
 		return (object) array(
