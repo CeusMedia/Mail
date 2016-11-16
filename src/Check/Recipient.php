@@ -58,11 +58,11 @@ class Recipient{
 		$this->sender	= $sender;
 		$this->setVerbose( $verbose );
 		$this->lastResponse	= (object) array(
+			'code'		=> 0,
 			'error'		=> self::ERROR_NONE,
+			'message'	=> NULL
 			'request'	=> NULL,
 			'response'	=> NULL,
-			'code'		=> NULL,
-			'message'	=> NULL
 		);
 		$this->cache	= \CeusMedia\Cache\Factory::createStorage( 'Noop' );
 	}
@@ -126,6 +126,9 @@ class Recipient{
 		$buffer		= array();
 		do{
 			$this->lastResponse->response	= fgets( $connection, 1024 );
+			$this->lastResponse->error		= self::ERROR_NONE;
+			$this->lastResponse->code		= 0;
+			$this->lastResponse->message	= NULL;
 			if( $this->verbose )
 				print ' < '.$this->lastResponse->response;
 			$matches	= array();
@@ -156,6 +159,12 @@ class Recipient{
 				return $this->cache->get( 'user:'.$receiver->getAddress() );
 			}
 		}
+
+		$this->lastResponse->error		= self::ERROR_NONE;
+		$this->lastResponse->code		= 0;
+		$this->lastResponse->message	= NULL;
+		$this->lastResponse->response	= NULL;
+		$this->lastResponse->request	= NULL;
 
 		if( !$host ){
 			try{
