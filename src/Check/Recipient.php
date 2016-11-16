@@ -60,7 +60,7 @@ class Recipient{
 		$this->lastResponse	= (object) array(
 			'code'		=> 0,
 			'error'		=> self::ERROR_NONE,
-			'message'	=> NULL
+			'message'	=> NULL,
 			'request'	=> NULL,
 			'response'	=> NULL,
 		);
