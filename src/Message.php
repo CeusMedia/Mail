@@ -118,10 +118,10 @@ class Message{
 	 *	@access		public
 	 *	@param		string		$content		HTML content to add as message part
 	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: quoted-printable)
+	 *	@param		string		$encoding		Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 */
-	public function addHtml( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+	public function addHtml( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		return $this->addPart( new \CeusMedia\Mail\Part\HTML( $content, $charset, $encoding ) );
 	}
 
@@ -177,10 +177,10 @@ class Message{
 	 *	@access		public
 	 *	@param		string		$content		Plaintext content to add as message part
 	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: quoted-printable)
+	 *	@param		string		$encoding		Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 */
-	public function addText( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+	public function addText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		return $this->addPart( new \CeusMedia\Mail\Part\Text( $content, $charset, $encoding ) );
 	}
 
@@ -221,18 +221,21 @@ class Message{
 	 *	Encodes a mail header value string if needed.
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
-	 *	@param		string		$encoding		quoted-printable (default) or base64
+	 *	@param		string		$encoding		base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
 	 *	@throws		InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function encodeIfNeeded( $string, $encoding = "quoted-printable" ){
+	static public function encodeIfNeeded( $string, $encoding = "base64" ){
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 		switch( strtolower( $encoding ) ){
-			case 'quoted-printable':
-				return "=?UTF-8?Q?".quoted_printable_encode( $string )."?=";
 			case 'base64':
 				return "=?UTF-8?B?".base64_encode( $string )."?=";
+			case 'quoted-printable':
+				$string	= quoted_printable_encode( $string );
+				$string	= str_replace( '?', '=3F', $string );
+				$string	= str_replace( ' ', '_', $string );
+				return "=?UTF-8?Q?".$string."?=";
 		}
 		throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 	}
@@ -321,7 +324,7 @@ class Message{
 	/**
 	 *	Returns set mail subject.
 	 *	@access		public
-	 *	@param		string|NULL		$encoding		Types: quoted-printable, base64. Default: none
+	 *	@param		string|NULL		$encoding		Types: base64, quoted-printable. Default: none
 	 *	@return		string
 	 */
 	public function getSubject( $encoding = NULL ){
@@ -357,12 +360,12 @@ class Message{
 	 *	Alias for addHtml.
 	 *	@param		string		$content		HTML content to add as message part
 	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: quoted-printable)
+	 *	@param		string		$encoding		Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use addHtml or addPart instead
 	 *	@todo    	to be removed in 1.2
 	 */
-	public function setHTML( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+	public function setHTML( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		trigger_error( 'Use addHtml instead', E_USER_DEPRECATED );
 		return $this->addHtml( $content, $charset, $encoding );
 	}
@@ -411,12 +414,12 @@ class Message{
 	 *	...
 	 *	@param		string		$content		HTML content to add as message part
 	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: quoted-printable)
+	 *	@param		string		$encoding		Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use addText or addPart instead
 	 *	@todo    	to be removed in 1.2
 	 */
-	public function setText( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+	public function setText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		trigger_error( 'Use addText instead', E_USER_DEPRECATED );
 		return $this->addText( $content, $charset, $encoding );
 	}

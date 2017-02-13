@@ -158,11 +158,11 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testEncodeIfNeeded(){
-		$creation	= \CeusMedia\Mail\Message::encodeIfNeeded( "ÄÖÜ", "base64" );
+		$creation	= \CeusMedia\Mail\Message::encodeIfNeeded( "ÄÖÜ" );
 		$assertion	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $creation, $assertion );
 
-		$creation	= \CeusMedia\Mail\Message::encodeIfNeeded( "ÄÖÜ" );
+		$creation	= \CeusMedia\Mail\Message::encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
 		$assertion	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $creation, $assertion );
 	}

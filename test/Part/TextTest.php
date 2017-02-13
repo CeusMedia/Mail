@@ -28,7 +28,7 @@ class Part_TextTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $content, $part->getContent() );
 		$this->assertEquals( "UTF-8", $part->getCharset() );
 		$this->assertEquals( "text/plain", $part->getMimeType() );
-		$this->assertEquals( "quoted-printable", $part->getEncoding() );
+		$this->assertEquals( "base64", $part->getEncoding() );
 		$this->assertEquals( "fixed", $part->getFormat() );
 
 		$part		= new \CeusMedia\Mail\Part\Text( $content, 'latin1', 'base64' );
@@ -40,11 +40,11 @@ class Part_TextTest extends PHPUnit_Framework_TestCase
 	public function testRender(){
 		$content	= "This is the content with umlauts: äöü.";
 
-		$part		= new \CeusMedia\Mail\Part\Text( $content );
+		$part		= new \CeusMedia\Mail\Part\Text( $content, 'utf-8', 'quoted-printable' );
 		$assertion	= 'Content-Type: text/plain;'.$this->delimiter.' charset="utf-8"'.$this->delimiter.'Content-Transfer-Encoding: quoted-printable'.$this->delimiter.$this->delimiter.quoted_printable_encode( $content );
 		$this->assertEquals( $assertion, $part->render() );
 
-		$part		= new \CeusMedia\Mail\Part\Text( $content, 'utf-8', 'base64' );
+		$part		= new \CeusMedia\Mail\Part\Text( $content );
 		$part->setMimeType( "text/PLAIN" );
 		$assertion	= 'Content-Type: text/PLAIN;'.$this->delimiter.' charset="utf-8"'.$this->delimiter.'Content-Transfer-Encoding: base64'.$this->delimiter.$this->delimiter.chunk_split( base64_encode( $content ), $this->lineLength );
 		$this->assertEquals( $assertion, $part->render() );

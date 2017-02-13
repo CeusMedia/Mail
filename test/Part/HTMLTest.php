@@ -28,7 +28,7 @@ class Part_HTMLTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $content, $part->getContent() );
 		$this->assertEquals( "UTF-8", $part->getCharset() );
 		$this->assertEquals( "text/html", $part->getMimeType() );
-		$this->assertEquals( "quoted-printable", $part->getEncoding() );
+		$this->assertEquals( "base64", $part->getEncoding() );
 		$this->assertEquals( "fixed", $part->getFormat() );
 
 		$part		= new \CeusMedia\Mail\Part\HTML( $content, 'latin1', 'base64' );
@@ -40,7 +40,7 @@ class Part_HTMLTest extends PHPUnit_Framework_TestCase
 	public function testRender(){
 		$content	= "<b>This is the content with umlauts:</b> <em>äöü</em>.";
 
-		$part		= new \CeusMedia\Mail\Part\HTML( $content );
+		$part		= new \CeusMedia\Mail\Part\HTML( $content, 'utf-8', 'quoted-printable' );
 		$assertion	= 'Content-Type: text/html;'.$this->delimiter.' charset="utf-8"'.$this->delimiter.'Content-Transfer-Encoding: quoted-printable'.$this->delimiter.$this->delimiter.quoted_printable_encode( $content );
 		$this->assertEquals( $assertion, $part->render() );
 

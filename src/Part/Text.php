@@ -38,7 +38,7 @@ namespace CeusMedia\Mail\Part;
  */
 class Text extends \CeusMedia\Mail\Part{
 
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		$this->setContent( $content );
 		$this->setMimeType( 'text/plain' );
 		$this->setCharset( $charset );

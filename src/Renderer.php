@@ -67,7 +67,7 @@ class Renderer{
 		$headers	= $message->getHeaders();
 		$headers->setFieldPair( 'Message-ID', "<".sha1( microtime() )."@".$server.">" );
 		$headers->setFieldPair( 'Date', date( "D, d M Y H:i:s O", time() ) );
-		$headers->setFieldPair( 'Subject', $message->getSubject( 'quoted-printable' ) );
+		$headers->setFieldPair( 'Subject', $message->getSubject( 'base64' ) );
 		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->addFieldPair( 'X-Mailer', $message->getUserAgent() );
