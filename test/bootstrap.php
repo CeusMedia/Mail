@@ -12,8 +12,8 @@ if( !@include_once dirname( __DIR__ ).'/vendor/autoload.php' ){
 	require_once $path . 'Part/HTML.php';
 	require_once $path . 'Participant.php';
 	require_once $path . 'Parser.php';
+	require_once $path . 'Parser/AddressList.php';
 	require_once $path . 'Renderer.php';
 }
 
 //class Test_Case extends PHPUnit_Framework_TestCase{}
-
