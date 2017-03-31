@@ -77,7 +77,7 @@ class AddressTest extends PHPUnit_Framework_TestCase
 
 	public function testAddress(){
 		$participant	= new \CeusMedia\Mail\Address();
-		$participant->setAddress( "Hans.Mustermann@muster-server.tld" );
+		$participant->set( "Hans.Mustermann@muster-server.tld" );
 		$this->assertEquals( "muster-server.tld", $participant->getDomain() );
 		$this->assertEquals( "Hans.Mustermann", $participant->getLocalPart() );
 		$this->assertEquals( NULL, $participant->getName() );
@@ -91,13 +91,5 @@ class AddressTest extends PHPUnit_Framework_TestCase
 
 		$participant->set( "Hans.Mustermann@muster-server.tld" );
 		$this->assertEquals( "Hans.Mustermann@muster-server.tld", $participant->get() );
-	}
-
-	/**
-	 *	@expectedException		InvalidArgumentException
-	 */
-	public function testParseException(){
-		$participant	= new \CeusMedia\Mail\Address();
-		$participant->parse( 'invalid' );
 	}
 }

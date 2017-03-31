@@ -44,7 +44,7 @@ class Parser{
 	const STATE_READING_ADDRESS			= 4;
 
 	static public function parse( $string, $delimiter = "," ){
-		if( !strlen( $this->delimiter ) )
+		if( !strlen( $delimiter ) )
 			throw new InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
 		$list		= array();
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );

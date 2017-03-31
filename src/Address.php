@@ -56,12 +56,6 @@ class Address{
 	/**	@var	string		$name			Name of mail participant */
 	protected $name;
 
-	/**	@var	array		$patterns		Map of understandable patterns (regular expressions) */
-	static protected $patterns	= array(												//  define name patterns
-		'name <local-part@domain>'	=> "/^(.*)\s(<((\S+)@(\S+))>)$/U",					//  full address: name and local-part at domain with (maybe in brackets)
-		'local-part@domain'			=> "/^((\S+)@(\S+))$/U",							//  short address: local-part at domain without name (and no brackets)
-	);
-
 	/**
 	 *	Constructor.
 	 *	@access		public

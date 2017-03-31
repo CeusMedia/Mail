@@ -2,20 +2,20 @@
 /**
  *	Unit test for mail address collection parser.
  *	@category		Test
- *	@package		CeusMedia_Mail_Address_Check_Collection
+ *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 /**
  *	Unit test for mail address collection parser.
  *	@category		Test
- *	@package		CeusMedia_Mail_Address_Check_Collection
+ *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 {
 	public function testParse1(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -33,7 +33,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse2(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -51,7 +51,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse3(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -65,7 +65,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse4(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -79,7 +79,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse5(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -93,7 +93,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse6(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -107,7 +107,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse7(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -121,7 +121,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse8(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(
@@ -143,7 +143,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testParse9(){
-		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
 			array(

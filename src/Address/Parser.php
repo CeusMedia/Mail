@@ -2,6 +2,12 @@
 namespace CeusMedia\Mail\Address;
 class Parser{
 
+	/**	@var	array		$patterns		Map of understandable patterns (regular expressions) */
+	static protected $patterns	= array(												//  define name patterns
+		'name <local-part@domain>'	=> "/^(.*)\s(<((\S+)@(\S+))>)$/U",					//  full address: name and local-part at domain with (maybe in brackets)
+		'local-part@domain'			=> "/^((\S+)@(\S+))$/U",							//  short address: local-part at domain without name (and no brackets)
+	);
+
 	/**
 	 *	Parse a mail address and return found parts.
 	 *	Reads patterns 'local-part@domain' and 'name <local-part@domain>'.
