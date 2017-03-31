@@ -122,7 +122,7 @@ class AddressList{
 	public function decodeNameIfNeeded( $list ){
 		foreach( $list as $nr => $entry ){
 			if( preg_match( "/^=\?/", $entry['fullname'] ) ){
-				$list[$nr]['fullname']	=  iconv_mime_decode( $entry['fullname'] );
+				$list[$nr]['fullname']	=  iconv_mime_decode( $entry['fullname'], 0, 'UTF-8' );
 			}
 		}
 		return $list;
