@@ -112,8 +112,18 @@ class AddressList{
 		}
 		if( $buffer && $status )
 			$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
+		$list	= $this->decodeNameIfNeeded( $list );
 		if( $splitNameParts ){
 			$list	= $this->splitNameParts( $list, $swapCommaSeparatedNameParts );
+		}
+		return $list;
+	}
+
+	public function decodeNameIfNeeded( $list ){
+		foreach( $list as $nr => $entry ){
+			if( preg_match( "/^=\?/", $entry['fullname'] ) ){
+				$list[$nr]['fullname']	=  iconv_mime_decode( $entry['fullname'] );
+			}
 		}
 		return $list;
 	}

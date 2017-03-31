@@ -157,4 +157,20 @@ class Parser_AddressListTest extends PHPUnit_Framework_TestCase
 		$creation	= $parser->parse( $string, TRUE, TRUE );
 		$this->assertEquals( $assertion, $creation );
 	}
+
+	public function testParse10(){
+		$parser		= new \CeusMedia\Mail\Parser\AddressList();
+
+		$assertion	= array(
+			array(
+				'fullname'	=> 'Hans Testmann',
+				'firstname'	=> 'Hans',
+				'surname'	=> 'Testmann',
+				'address'	=> 'hans.testmann@ceusmedia.de',
+			),
+		);
+		$string		= '=?UTF-8?Q?Testmann,=20Hans?= <hans.testmann@ceusmedia.de>';
+		$creation	= $parser->parse( $string, TRUE, TRUE );
+		$this->assertEquals( $assertion, $creation );
+	}
 }
