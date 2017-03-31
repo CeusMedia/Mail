@@ -37,22 +37,22 @@ namespace CeusMedia\Mail;
  */
 class Message{
 
-	/**	@var		string							$delimiter		Line separator, for some reasons only \n must be possible */
-	public static $delimiter						= "\r\n";
-	/**	@var		integer							$lineLength		Maximum line length of mail content */
-	public static $lineLength						= 75;
-	/**	@var		array							$parts			List of mail parts */
-	protected $parts								= array();
-	/**	@var		\CeusMedia\Mail\Header\Section	$headers		Mail header section */
+	/**	@var		string									$delimiter		Line separator, for some reasons only \n must be possible */
+	public static $delimiter								= "\r\n";
+	/**	@var		integer									$lineLength		Maximum line length of mail content */
+	public static $lineLength								= 75;
+	/**	@var		array									$parts			List of mail parts */
+	protected $parts										= array();
+	/**	@var		\CeusMedia\Mail\Message\Header\Section	$headers		Mail header section */
 	protected $headers;
-	/**	@var		string							$sender			Sender mail address */
+	/**	@var		string									$sender			Sender mail address */
 	protected $sender;
-	/**	@var		string							$recipients		List of recipients */
+	/**	@var		string									$recipients		List of recipients */
 	protected $recipients;
-	/**	@var		string							$subject		Mail subject */
+	/**	@var		string									$subject		Mail subject */
 	protected $subject;
-	/**	@var		string							$mailer			Mailer agent */
-	protected $userAgent							= 'CeusMedia::Mail/1.1.0';
+	/**	@var		string									$mailer			Mailer agent */
+	protected $userAgent									= 'CeusMedia::Mail/2.0';
 
 	/**
 	 *	Constructor.
@@ -60,7 +60,7 @@ class Message{
 	 *	@return		void
 	 */
 	public function __construct(){
-		$this->headers		= new \CeusMedia\Mail\Header\Section();
+		$this->headers		= new \CeusMedia\Mail\Message\Header\Section();
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Message{
 	 *	@deprecated	use addFile instead
 	 *	@todo    	to be removed in 1.2
 	 */
-	public function addAttachment( \CeusMedia\Mail\Part\Attachment $attachment ){
+	public function addAttachment( \CeusMedia\Mail\Message\Part\Attachment $attachment ){
 		trigger_error( 'Use addFile instead', E_USER_DEPRECATED );
 		return $this->addPart( $attachment );
 	}
@@ -85,7 +85,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addFile( $fileName, $mimeType = NULL, $encoding = NULL ){
-		$part	= new \CeusMedia\Mail\Part\Attachment();
+		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
 		$part->setFile( $fileName, $mimeType, $encoding );
 		return $this->addPart( $part );
 	}
@@ -96,7 +96,7 @@ class Message{
 	 *	@param		\CeusMedia\Mail\Header\Field	$field		Mail header field object
 	 *	@return		object		Message object for chaining
 	 */
-	public function addHeader( \CeusMedia\Mail\Header\Field $field ){
+	public function addHeader( \CeusMedia\Mail\Message\Header\Field $field ){
 		$this->headers->addField( $field );
 		return $this;
 	}
@@ -109,7 +109,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addHeaderPair( $key, $value ){
-		$field	= new \CeusMedia\Mail\Header\Field( $key, $value );
+		$field	= new \CeusMedia\Mail\Message\Header\Field( $key, $value );
 		return $this->addHeader( $field );
 	}
 
@@ -122,7 +122,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addHtml( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		return $this->addPart( new \CeusMedia\Mail\Part\HTML( $content, $charset, $encoding ) );
+		return $this->addPart( new \CeusMedia\Mail\Message\Part\HTML( $content, $charset, $encoding ) );
 	}
 
 	/**
@@ -135,7 +135,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addHtmlImage( $id, $fileName, $mimeType = NULL, $encoding = NULL ){
-		$part	= new \CeusMedia\Mail\Part\InlineImage( $id, $fileName, $mimeType, $encoding );
+		$part	= new \CeusMedia\Mail\Message\Part\InlineImage( $id, $fileName, $mimeType, $encoding );
 		return $this->addPart( $part );
 	}
 
@@ -143,18 +143,18 @@ class Message{
 	 *	General way to add another mail part.
 	 *	More specific: addText, addHtml, addHtmlImage, addFile.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Part	$part		Part of mail
-	 *	@return		object			Message object for chaining
+	 *	@param		\CeusMedia\Mail\Message\Part	$part		Part of mail
+	 *	@return		object							Message object for chaining
 	 */
-	public function addPart( \CeusMedia\Mail\Part $part ){
+	public function addPart( \CeusMedia\Mail\Message\Part $part ){
 		$this->parts[]	= $part;
 		return $this;
 	}
 
 	public function addRecipient( $participant, $name = NULL, $type = "To" ){
 		if( is_string( $participant ) )
-			$participant	= new \CeusMedia\Mail\Participant( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
+			$participant	= new \CeusMedia\Mail\Address( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
 			throw new \InvalidArgumentException( 'Invalid recipient type' );
@@ -181,7 +181,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		return $this->addPart( new \CeusMedia\Mail\Part\Text( $content, $charset, $encoding ) );
+		return $this->addPart( new \CeusMedia\Mail\Message\Part\Text( $content, $charset, $encoding ) );
 	}
 
 	/**
@@ -260,9 +260,9 @@ class Message{
 	public function getAttachments(){
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
+			if( $part instanceof \CeusMedia\Mail\Message\Part\Attachment )
 				$list[]	= $part;
-			if( $part instanceof \CeusMedia\Mail\Part\InlineImage )
+			if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
 				$list[]	= $part;
 		}
 		return $list;
@@ -292,10 +292,10 @@ class Message{
 			return $this->parts;
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
+			if( $part instanceof \CeusMedia\Mail\Message\Part\Attachment )
 				if( !$withAttachments)
 					continue;
-			if( $part instanceof \CeusMedia\Mail\Part\InlineImage )
+			if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
 				if( !$withAttachments)
 					continue;
 			$list[]	= $part;
@@ -372,7 +372,7 @@ class Message{
 
 	public function setReadNotificationRecipient( $participant, $name = NULL ){
 		if( is_string( $participant ) )
-			$participant	= new \CeusMedia\Mail\Participant( $participant );
+			$participant	= new \CeusMedia\Mail\Address( $participant );
 		if( $name )
 			$participant->setName( $name );
 		$this->headers->addFieldPair( 'Disposition-Notification-To', $participant->get() );
@@ -385,12 +385,12 @@ class Message{
 	 *	@param		string|object	$participant	Mail sender address or participant object
 	 *	@param		string			$name			Mail sender name
 	 *	@return		object			Message object for chaining
-	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Participant
+	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Address
 	 */
 	public function setSender( $participant, $name = NULL ){
 		if( is_string( $participant ) )
-			$participant	= new \CeusMedia\Mail\Participant( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
+			$participant	= new \CeusMedia\Mail\Address( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( $name )
 			$participant->setName( $name );
