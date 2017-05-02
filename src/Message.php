@@ -91,7 +91,7 @@ class Message{
 	}
 
 	/**
-	 *	Sets a header.
+	 *	Adds a header.
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Header\Field	$field		Mail header field object
 	 *	@return		object		Message object for chaining
@@ -395,7 +395,7 @@ class Message{
 		if( $name )
 			$participant->setName( $name );
 		$this->sender	= $participant;
-		$this->addHeaderPair( "From", $participant->get() );
+		$this->headers->setFieldPair( "From", $participant->get() );
 		return $this;
 	}
 
