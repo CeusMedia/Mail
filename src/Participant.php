@@ -179,9 +179,11 @@ class Participant{
 			throw new \InvalidArgumentException( 'Domain cannot be empty' );
 		if( !strlen( trim( $localPart ) ) )
 			throw new \InvalidArgumentException( 'Local part cannot be empty' );
-		if( strlen( trim( $name ) ) )
-			return addslashes( $name.' <'.$localPart.'@'.$domain.'>' );
-		return addslashes( $localPart.'@'.$domain );
+		if( !strlen( trim( $name ) ) )
+			return $localPart.'@'.$domain;
+		if( !preg_match( '/^\w+$/', $name ) )
+			$name	= '"'.$name.'"';
+		return $name.' <'.$localPart.'@'.$domain.'>';
 	}
 
 	/**
