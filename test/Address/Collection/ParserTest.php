@@ -18,10 +18,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
-			array(
-				'fullname'	=> '',
-				'address'	=> 'dev@ceusmedia.de',
-			),
+			new \CeusMedia\Mail\Address( 'dev@ceusmedia.de' ),
 		);
 		$string		= 'dev@ceusmedia.de';
 		$creation	= $parser->parse( $string );
@@ -36,10 +33,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
-			array(
-				'fullname'	=> '',
-				'address'	=> 'dev@ceusmedia.de',
-			),
+			new \CeusMedia\Mail\Address( 'dev@ceusmedia.de' ),
 		);
 		$string		= '<dev@ceusmedia.de>';
 		$creation	= $parser->parse( $string );
@@ -54,10 +48,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
-			array(
-				'fullname'	=> 'Developer',
-				'address'	=> 'dev@ceusmedia.de',
-			),
+			new \CeusMedia\Mail\Address( 'Developer <dev@ceusmedia.de>' ),
 		);
 		$string		= 'Developer <dev@ceusmedia.de>';
 		$creation	= $parser->parse( $string );
@@ -68,26 +59,9 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
-			array(
-				'fullname'	=> 'Developer',
-				'address'	=> 'dev@ceusmedia.de',
-			),
+			new \CeusMedia\Mail\Address( 'Developer <dev@ceusmedia.de>' ),
 		);
 		$string		= '"Developer" <dev@ceusmedia.de>';
-		$creation	= $parser->parse( $string );
-		$this->assertEquals( $assertion, $creation );
-	}
-
-	public function testParse5(){
-		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
-
-		$assertion	= array(
-			array(
-				'fullname'	=> 'Developer, Tester',
-				'address'	=> 'dev@ceusmedia.de',
-			),
-		);
-		$string		= '"Developer, Tester" <dev@ceusmedia.de>';
 		$creation	= $parser->parse( $string );
 		$this->assertEquals( $assertion, $creation );
 	}
@@ -96,10 +70,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
-			array(
-				'fullname'	=> 'Developer, Tester',
-				'address'	=> 'dev@ceusmedia.de',
-			),
+			new \CeusMedia\Mail\Address( 'Developer, Tester <dev@ceusmedia.de>' ),
 		);
 		$string		= '"Developer, Tester" <dev@ceusmedia.de>';
 		$creation	= $parser->parse( $string );
@@ -110,10 +81,7 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
-			array(
-				'fullname'	=> 'Developer (Dev-Crew)',
-				'address'	=> 'dev.dev-crew@ceusmedia.de',
-			),
+			new \CeusMedia\Mail\Address( 'Developer (Dev-Crew) <dev.dev-crew@ceusmedia.de>' ),
 		);
 		$string		= '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>';
 		$creation	= $parser->parse( $string );
@@ -124,14 +92,8 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
 
 		$assertion	= array(
-			array(
-				'fullname'	=> 'Developer',
-				'address'	=> 'dev@ceusmedia.de',
-			),
-			array(
-				'fullname'	=> 'Tester',
-				'address'	=> 'test@ceusmedia.de',
-			),
+			new \CeusMedia\Mail\Address( 'Developer <dev@ceusmedia.de>' ),
+			new \CeusMedia\Mail\Address( 'Tester <test@ceusmedia.de>' ),
 		);
 		$string		= 'Developer <dev@ceusmedia.de>, Tester <test@ceusmedia.de>';
 		$creation	= $parser->parse( $string );
@@ -139,22 +101,6 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 
 		$string		= ',Developer <dev@ceusmedia.de>,  "Tester"  <test@ceusmedia.de>, ';
 		$creation	= $parser->parse( $string );
-		$this->assertEquals( $assertion, $creation );
-	}
-
-	public function testParse9(){
-		$parser		= new \CeusMedia\Mail\Address\Collection\Parser();
-
-		$assertion	= array(
-			array(
-				'fullname'	=> 'Hans Testmann',
-				'firstname'	=> 'Hans',
-				'surname'	=> 'Testmann',
-				'address'	=> 'hans.testmann@ceusmedia.de',
-			),
-		);
-		$string		= '"Testmann, Hans" <hans.testmann@ceusmedia.de>';
-		$creation	= $parser->parse( $string, TRUE, TRUE );
 		$this->assertEquals( $assertion, $creation );
 	}
 }

@@ -15,6 +15,28 @@ require_once dirname( __DIR__ ).'/bootstrap.php';
 class Address_ParserTest extends PHPUnit_Framework_TestCase
 {
 
+	public function testParse(){
+		$parser	= new \CeusMedia\Mail\Address\Parser();
+
+		$assertion	= 'Hans.Mustermann@muster-server.tld';
+		$address	= $parser->parse( 'Hans.Mustermann@muster-server.tld' );
+		$this->assertEquals( $assertion, $address->get() );
+		$address	= $parser->parse( '<Hans.Mustermann@muster-server.tld>' );
+		$this->assertEquals( $assertion, $address->get() );
+
+		$assertion	= '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
+		$address	= $parser->parse( 'Hans Mustermann <Hans.Mustermann@muster-server.tld>' );
+		$this->assertEquals( $assertion, $address->get() );
+
+		$address	= $parser->parse( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>' );
+		$this->assertEquals( $assertion, $address->get() );
+
+		$assertion	= 'Hans_Mustermann <Hans_Mustermann@muster-server.tld>';
+		$address	= $parser->parse( 'Hans_Mustermann <Hans_Mustermann@muster-server.tld>' );
+		$this->assertEquals( $assertion, $address->get() );
+	}
+
+
 	/**
 	 *	@expectedException		InvalidArgumentException
 	 */

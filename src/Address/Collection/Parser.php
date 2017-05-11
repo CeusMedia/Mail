@@ -106,6 +106,12 @@ class Parser{
 		}
 		if( $buffer && $status )
 			$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
-		return $list;
+
+		$addresses	= array();
+		foreach( $list as $entry ){
+			$address		= trim( $entry['fullname'].' <'.$entry['address'].'>' );
+			$addresses[]	= new \CeusMedia\Mail\Address( $address );
+		}
+		return $addresses;
 	}
 }

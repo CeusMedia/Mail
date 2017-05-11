@@ -147,10 +147,11 @@ class Address{
 	public function set( $string ){
 		if( !strlen( trim( $string ) ) )
 			throw new InvalidArgumentException( 'No address given' );
-		$parts	= \CeusMedia\Mail\Address\Parser::parse( $string );
-		$this->domain		= $parts->domain;
-		$this->localPart	= $parts->localPart;
-		$this->name			= $parts->name;
+
+		$address	= \CeusMedia\Mail\Address\Parser::parse( $string );
+		$this->setDomain( $address->getDomain() );
+		$this->setLocalPart( $address->getLocalPart() );
+		$this->setName( $address->getName() );
 	}
 
 	/**
