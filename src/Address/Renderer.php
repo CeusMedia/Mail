@@ -1,7 +1,7 @@
 <?php
 namespace CeusMedia\Mail\Address;
 class Renderer{
-	
+
 	/**
 	 *	Renders full mail address by given parts.
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
@@ -18,8 +18,10 @@ class Renderer{
 			throw new \InvalidArgumentException( 'Domain cannot be empty' );
 		if( !strlen( trim( $localPart ) ) )
 			throw new \InvalidArgumentException( 'Local part cannot be empty' );
-		if( strlen( trim( $name ) ) )
-			return addslashes( $name.' <'.$localPart.'@'.$domain.'>' );
-		return addslashes( $localPart.'@'.$domain );
+		if( !strlen( trim( $name ) ) )
+			return $localPart.'@'.$domain;
+		if( !preg_match( '/^\w+$/', $name ) )
+			$name	= '"'.$name.'"';
+		return $name.' <'.$localPart.'@'.$domain.'>';
 	}
 }
