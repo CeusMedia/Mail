@@ -343,6 +343,22 @@ class Message{
 	}
 
 	/**
+	 *	Removes an added part.
+	 *	@access		public
+	 *	@param		integer			$index			Index number of part to be removed
+	 *	@return		boolean
+	 */
+	public function removePart( $index ){
+		foreach( array_keys( $this->parts ) as $nr ){
+			if( $nr === $index){
+				unset( $this->parts[$nr] );
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+
+	/**
 	 *	Sets mail agent for mailer header.
 	 *	@access		public
 	 *	@param		string		$userAgent		Mailer user agent
