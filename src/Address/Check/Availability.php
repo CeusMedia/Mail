@@ -132,17 +132,17 @@ class Availability{
 			if( $this->verbose )
 				print ' < '.$this->lastResponse->response;
 			$matches	= array();
-			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $this->lastResponse->response ), $matches );
+			preg_match( '/^([0-9]{3})( |-)(.+)$/', $this->lastResponse->response, $matches );
 			if( !$matches )
 				throw new \RuntimeException( 'SMTP response not understood' );
 			$code		= (int) $matches[1];
-			$buffer[]	= $matches[3];
+			$buffer[]	= trim( $matches[3] );
 			if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
 				throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], $code );
 			if( $matches[2] === " " )
 				$lastLine	= TRUE;
 			$this->lastResponse->code		= (int) $matches[1];
-			$this->lastResponse->message	= $matches[3];
+			$this->lastResponse->message	= trim( $matches[3] );
 		}
 		while( $this->lastResponse->response && !$lastLine );
 		return (object) array(
