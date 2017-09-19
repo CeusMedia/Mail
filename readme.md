@@ -102,7 +102,7 @@ function handleMailException( $e ){
 - The SMTP server will be determined by fetching MX records of the user's domain.
 - Setting the SMTP server port is still needed.
 - Assigned receivers will be checked for existance automatically.
-- If the auth method is receiving only one parameters, it will be understood as password.
+- If the auth method is receiving only one parameter, it will be understood as password.
 - The auth username will be taken from sender address.
 - Thrown exceptions can be catched by a defined error handler.
-- It everything is set the mail can be sent.
+- If everything is set the mail can be sent.
