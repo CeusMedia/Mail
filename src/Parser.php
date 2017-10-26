@@ -110,7 +110,7 @@ class Parser{
 
 		if( isset( $object->headers['Content-Disposition'] ) ){
 			if( preg_match( "/attachment/", $object->headers['Content-Disposition'] ) ){
-				$part	= new CMM_Mail_Part_Attachment();
+				$part	= new \CeusMedia\Mail\Part\Attachment();
 				$part->setContent( $object->body, $object->headers['Content-Type'] );
 				if( $object->encoding )
 					$part->setEncoding( $object->encoding );

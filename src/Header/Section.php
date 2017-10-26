@@ -76,7 +76,7 @@ class Section{
 	 *	Returns a Header Field Object by its Name if set.
 	 *	@access		public
 	 *	@param		string		$name		Header Field Name
-	 *	@return		CMM_Mail_Header_Field
+	 *	@return		CeusMedia\Mail\Header\Field
 	 */
 	public function getField( $name ){
 		if( !$this->hasField( $name ) )

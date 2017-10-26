@@ -38,7 +38,7 @@ namespace CeusMedia\Mail\Check;
  */
 class Recipient{
 
-	/**	@var	CMM_Mail_Participant	$sender		... */
+	/**	@var	CeusMedia\Mail\Participant	$sender		... */
 	protected $sender;
 	protected $verbose;
 	protected $lastResponse;
