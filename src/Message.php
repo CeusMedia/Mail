@@ -172,6 +172,17 @@ class Message{
 		return $this;
 	}
 
+	public function addReplyTo( $participant, $name = NULL ){
+		if( is_string( $participant ) )
+			$participant	= new \CeusMedia\Mail\Address( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
+			throw new \InvalidArgumentException( 'Invalid value of first argument' );
+		if( $name )
+			$participant->setName( $name );
+		$this->addHeaderPair( 'Reply-To', $participant->get() );
+		return $this;
+	}
+
 	/**
 	 *	Add plaintext part by content.
 	 *	@access		public

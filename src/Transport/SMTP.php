@@ -116,7 +116,7 @@ class SMTP{
 			throw new \RuntimeException( 'No mail receiver(s) set' );
 		if( !$message->getParts() )
 			throw new \RuntimeException( 'No mail body parts set' );
-		$content	= \CeusMedia\Mail\Renderer::render( $message );
+		$content	= \CeusMedia\Mail\Message\Renderer::render( $message );
 
 		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
 		if( !$conn )
