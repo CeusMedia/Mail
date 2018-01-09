@@ -34,22 +34,14 @@ namespace CeusMedia\Mail\Transport;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Local
-{
-	/**	@var		string		$mailer		Mailer Agent */
-	public $mailer;
+class Local{
 
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@param		string		$mailer		Mailer Agent
 	 *	@return		void
 	 */
-	public function __construct( $mailer = NULL )
-	{
-		$this->mailer	= 'CeusMedia/Mail/'.CMC_VERSION;
-		if( is_string( $mailer ) && strlen( trim( $mailer ) ) )
-			$this->mailer	= $mailer;
+	public function __construct(){
 	}
 
 	/**
@@ -59,8 +51,7 @@ class Local
 	 *	@return		void
 	 *	@throws		InvalidArgumentException
 	 */
-	protected function checkForInjection( $value )
-	{
+	protected function checkForInjection( $value ){
 		if( preg_match( '/(\r|\n)/', $value ) )
 			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
@@ -73,15 +64,15 @@ class Local
 	 *	@return		void
 	 *	@throws		RuntimeException|InvalidArgumentException
 	 */
-	public function send( \CeusMedia\Mail\Message $message, $parameters = array() )
-	{
-		$body		= \CeusMedia\Mail\Renderer::render();
+	public function send( \CeusMedia\Mail\Message $message, $parameters = array() ){
+		$body		= \CeusMedia\Mail\Renderer::render( $message );
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipients();
 		$subject	= $message->getSubject();
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
-		$this->checkForInjection( $receiver );
+		foreach( $receivers as $receiver )
+			$this->checkForInjection( $receiver->get() );
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new \InvalidArgumentException( 'No mail sender defined' );
@@ -98,16 +89,16 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-//		if( $this->mailer )
-		$headers->setFieldPair( 'X-Mailer', $this->mailer, TRUE );
+		$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
 		if( is_array( $parameters ) )
 			$parameters	= implode( PHP_EOL, $parameters );
 
 		foreach( $receivers as $receiver )
-			if( !mail( $receiver->participant->getAddress(), $subject, $body, $headers->toString(), $parameters ) )
+			if( !mail( $receiver->getAddress(), $subject, $body, $headers->toString(), $parameters ) )
 				throw new \RuntimeException( 'Mail could not been sent' );
+		return TRUE;
 	}
 
 
@@ -119,8 +110,7 @@ class Local
 	 *	@param		array		$parameters	Additional mail parameters
 	 *	@return		void
 	 */
-	public static function sendMail( \CeusMedia\Mail\Message $message, $parameters = array() )
-	{
+	public static function sendMail( \CeusMedia\Mail\Message $message, $parameters = array() ){
 		$transport	= new \CeusMedia\Mail\Transport\Local();
 		$transport->send( $message, $parameters );
 	}
