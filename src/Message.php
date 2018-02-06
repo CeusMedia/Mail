@@ -69,7 +69,7 @@ class Message{
 	 *	@param		\CeusMedia\Mail\Part\Attachment	$attachment	Attachment object to add
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use addFile instead
-	 *	@todo    	to be removed in 1.2
+	 *	@todo    	to be removed in 1.3
 	 */
 	public function addAttachment( \CeusMedia\Mail\Part\Attachment $attachment ){
 		trigger_error( 'Use addFile instead', E_USER_DEPRECATED );
@@ -79,14 +79,17 @@ class Message{
 	/**
 	 *	Add file as attachment part.
 	 *	@access		public
-	 *	@param		string		$fileName		Path of file to add
-	 *	@param		string		$mimeType		MIME type of file
-	 *	@param		string		$encoding		Encoding to apply
+	 *	@param		string		$filePath		Path of file to add
+	 *	@param		string		$mimeType		Optional: MIME type of file
+	 *	@param		string		$encoding		Optional: Encoding to apply
+	 *	@param		string		$fileName		Optional: Name of file
 	 *	@return		object		Message object for chaining
 	 */
-	public function addFile( $fileName, $mimeType = NULL, $encoding = NULL ){
+	public function addFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
 		$part	= new \CeusMedia\Mail\Part\Attachment();
-		$part->setFile( $fileName, $mimeType, $encoding );
+		$part->setFile( $filePath, $mimeType, $encoding );
+		if( $fileName )
+			$part->setFileName( $fileName );
 		return $this->addPart( $part );
 	}
 
@@ -129,13 +132,13 @@ class Message{
 	 *	Add image for HTML part by content.
 	 *	@access		public
 	 *	@param		string		$id				Content ID of image to be used in HTML part
-	 *	@param		string		$fileName		File Path of image to embed
-	 *	@param		string		$mimeType		MIME type of file
-	 *	@param		string		$encoding		Encoding to apply
+	 *	@param		string		$filePath		File Path of image to embed
+	 *	@param		string		$mimeType		Optional: MIME type of file
+	 *	@param		string		$encoding		Optional: Encoding to apply
 	 *	@return		object		Message object for chaining
 	 */
-	public function addHtmlImage( $id, $fileName, $mimeType = NULL, $encoding = NULL ){
-		$part	= new \CeusMedia\Mail\Part\InlineImage( $id, $fileName, $mimeType, $encoding );
+	public function addHtmlImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
+		$part	= new \CeusMedia\Mail\Part\InlineImage( $id, $filePath, $mimeType, $encoding );
 		return $this->addPart( $part );
 	}
 
@@ -197,18 +200,19 @@ class Message{
 
 	/**
 	 *	Attach a file.
-	 *	Alias for addFile.
+	 *	Deprecated alias for addFile.
 	 *	@access		public
-	 *	@param		string		$fileName		Path of file to add
-	 *	@param		string		$mimeType		MIME type of file
-	 *	@param		string		$encoding		Encoding to apply
+	 *	@param		string		$filePath		Path of file to add
+	 *	@param		string		$mimeType		Optional: MIME type of file
+	 *	@param		string		$encoding		Optional: Encoding to apply
+	 *	@param		string		$fileName		Optional: Name of file
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use addFile instead
-	 *	@todo    	to be removed in 1.2
+	 *	@todo    	to be removed in 1.3
 	 */
-	public function attachFile( $fileName, $mimeType = NULL, $encoding = NULL ){
+	public function attachFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
 		trigger_error( 'Use addFile instead', E_USER_DEPRECATED );
-		return $this->addFile( $fileName, $mimeType, $encoding );
+		return $this->addFile( $filePath, $mimeType, $encoding, $fileName );
 	}
 
 	/**
@@ -216,23 +220,23 @@ class Message{
 	 *	Alias for addHtmlImage.
 	 *	@access		public
 	 *	@param		string		$id				Content ID of image to be used in HTML part
-	 *	@param		string		$fileName		File Path of image to embed
-	 *	@param		string		$mimeType		MIME type of file
-	 *	@param		string		$encoding		Encoding to apply
+	 *	@param		string		$filePath		File Path of image to embed
+	 *	@param		string		$mimeType		Optional: MIME type of file
+	 *	@param		string		$encoding		Optional: Encoding to apply
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use addHtmlImage instead
-	 *	@todo    	to be removed in 1.2
+	 *	@todo    	to be removed in 1.3
 	 */
-	public function embedImage( $id, $fileName, $mimeType = NULL, $encoding = NULL ){
+	public function embedImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
 		trigger_error( 'Use addHtmlImage instead', E_USER_DEPRECATED );
-		return $this->addHtmlImage( $id, $fileName, $mimeType, $encoding );
+		return $this->addHtmlImage( $id, $filePath, $mimeType, $encoding );
 	}
 
 	/**
 	 *	Encodes a mail header value string if needed.
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
-	 *	@param		string		$encoding		base64 (default) or quoted-printable (deprecated)
+	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
 	 *	@throws		InvalidArgumentException	if given encoding is not supported
 	 */
@@ -256,7 +260,7 @@ class Message{
 	 *	@access		public
 	 *	@return		string
 	 *	@deprecated	use getUserAgent instead
-	 *	@todo   	to be removed in 1.2
+	 *	@todo   	to be removed in 1.3
 	 */
 	public function getAgent(){
 		trigger_error( 'Use getUserAgent instead', E_USER_DEPRECATED );
@@ -375,7 +379,7 @@ class Message{
 	 *	@param		string		$userAgent		Mailer user agent
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use setUserAgent instead
-	 *	@todo   	to be removed in 1.2
+	 *	@todo   	to be removed in 1.3
 	 */
 	public function setAgent( $userAgent ){
 		trigger_error( 'Use setUserAgent instead', E_USER_DEPRECATED );
@@ -390,7 +394,7 @@ class Message{
 	 *	@param		string		$encoding		Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use addHtml or addPart instead
-	 *	@todo    	to be removed in 1.2
+	 *	@todo    	to be removed in 1.3
 	 */
 	public function setHTML( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		trigger_error( 'Use addHtml instead', E_USER_DEPRECATED );
@@ -410,7 +414,7 @@ class Message{
 	 *	Sets sender address and name.
 	 *	@access		public
 	 *	@param		string|object	$participant	Mail sender address or participant object
-	 *	@param		string			$name			Mail sender name
+	 *	@param		string			$name			Optional: Mail sender name
 	 *	@return		object			Message object for chaining
 	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Participant
 	 */
@@ -444,7 +448,7 @@ class Message{
 	 *	@param		string		$encoding		Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 *	@deprecated	use addText or addPart instead
-	 *	@todo    	to be removed in 1.2
+	 *	@todo    	to be removed in 1.3
 	 */
 	public function setText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		trigger_error( 'Use addText instead', E_USER_DEPRECATED );
