@@ -141,8 +141,8 @@ class Attachment extends \CeusMedia\Mail\Message\Part{
 	 *	Sets attachment by content string.
 	 *	@access		public
 	 *	@param		string		$content		String containing file content
-	 *	@param		string		$mimeType		MIME type of file (will NOT be detected if not given)
-	 *	@param		string		$encoding		Encoding of file
+	 *	@param		string		$mimeType		Optional: MIME type of file (will NOT be detected if not given)
+	 *	@param		string		$encoding		Optional: Encoding of file
 	 *	@return		object  	Self instance for chaining
 	 *	@todo   	use mime magic to detect MIME type
 	 *	@todo  		scan file for malware
@@ -160,23 +160,24 @@ class Attachment extends \CeusMedia\Mail\Message\Part{
 	 *	Sets attachment by existing file.
 	 *	Will gather file size, file dates (access, creation, modification).
 	 *	@access		public
-	 *	@param		string		$fileName		Name of file to attach
-	 *	@param		string		$mimeType		MIME type of file (will be detected if not given)
-	 *	@param		string		$encoding		Encoding of file
+	 *	@param		string		$filePath		Path of file to attach
+	 *	@param		string		$mimeType		Optional: MIME type of file (will be detected if not given)
+	 *	@param		string		$encoding		Optional: Encoding of file
+	 *	@param		string		$fileName		Optional: Name of file
 	 *	@return		object  	Self instance for chaining
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
-	public function setFile( $fileName, $mimeType = NULL, $encoding = NULL ){
-		if( !file_exists( $fileName ) )
-			throw new \InvalidArgumentException( 'Attachment file "'.$fileName.'" is not existing' );
-		$this->content	= file_get_contents( $fileName );
-		$this->setFileName( $fileName );
-		$this->setFileSize( filesize( $fileName ) );
-		$this->setFileATime( fileatime( $fileName ) );
-		$this->setFileCTime( filectime( $fileName ) );
-		$this->setFileMTime( filemtime( $fileName ) );
-		$this->setMimeType( $mimeType ? $mimeType : $this->getMimeTypeFromFile( $fileName ) );
+	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL ){
+		if( !file_exists( $filePath ) )
+			throw new \InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
+		$this->content	= file_get_contents( $filePath );
+		$this->setFileName( $fileName ? $fileName : $filePath );
+		$this->setFileSize( filesize( $filePath ) );
+		$this->setFileATime( fileatime( $filePath ) );
+		$this->setFileCTime( filectime( $filePath ) );
+		$this->setFileMTime( filemtime( $filePath ) );
+		$this->setMimeType( $mimeType ? $mimeType : $this->getMimeTypeFromFile( $filePath ) );
 		if( $encoding )
 			$this->setEncoding( $encoding );
 		return $this;

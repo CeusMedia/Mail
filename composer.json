@@ -1,7 +1,7 @@
 {
   "name": "ceus-media/mail",
   "license": [
-    "GPL-3.0+"
+    "GPL-3.0-or-later"
   ],
   "authors": [
     {
