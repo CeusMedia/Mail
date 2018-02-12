@@ -187,11 +187,11 @@ class Section{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function toArray(){
+	public function toArray( $keepCase = FALSE, $fold = FALSE ){
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
 			foreach( $fields as $field )
-				$list[]	= $field->toString();
+				$list[]	= $field->toString( $keepCase, $fold );
 		return $list;
 	}
 
@@ -200,8 +200,8 @@ class Section{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function toString(){
-		$list	= $this->toArray();
+	public function toString( $keepCase = FALSE, $fold = TRUE ){
+		$list	= $this->toArray( $keepCase, $fold );
 		if( $list )
 			return implode( \CeusMedia\Mail\Message::$delimiter, $list );
 		return "";
