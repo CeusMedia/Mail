@@ -65,12 +65,11 @@ class Field{
 	 *	@return		string		Header name
 	 */
 	public function getName( $keepCase = FALSE, $ignoreMbConvertCase = FALSE ){
-		if( !$keepCase ){
-			if( function_exists( 'mb_convert_case' ) && !$ignoreMbConvertCase )
-				return mb_convert_case( $this->name, MB_CASE_TITLE );
-			return str_replace( " ", "-", ucwords( str_replace( "-", " ", strtolower( $this->name ) ) ) );
-		}
-		return str_replace( " ", "-", ucwords( str_replace( "-", " ", $this->name ) ) );
+		if( $keepCase )
+			return $this->name;
+		if( function_exists( 'mb_convert_case' ) && !$ignoreMbConvertCase )
+			return mb_convert_case( $this->name, MB_CASE_TITLE );
+		return str_replace( " ", "-", ucwords( str_replace( "-", " ", strtolower( $this->name ) ) ) );
 	}
 
 	/**
@@ -78,8 +77,14 @@ class Field{
 	 *	@access		public
 	 *	@return		string		Header value
 	 */
-	public function getValue(){
-		return $this->value;
+	public function getValue( $fold = FALSE ){
+		if( !$fold )
+			return $this->value;
+		$maxLength	= \CeusMedia\Mail\Message::$lineLength;
+		$delim		= \CeusMedia\Mail\Message::$delimiter;
+		if( strlen( $this->value ) < $maxLength )
+			return $this->value;
+		return wordwrap( $this->value, $maxLength, $delim.' ', TRUE );
 	}
 
 	/**
@@ -107,11 +112,13 @@ class Field{
 
 	/**
 	 *	Returns a representative string of header.
+	 *	@param		boolean		$keepCase		...
+	 *	@param		boolean		$fold			...
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function toString(){
-		return $this->getName().": ".$this->getValue();
+	public function toString( $keepCase = TRUE, $fold = TRUE ){
+		return $this->getName( $keepCase ).": ".$this->getValue( $fold );
 	}
 
 	/**
@@ -120,7 +127,7 @@ class Field{
 	 *	@return		string
 	 */
 	public function __toString(){
-		return $this->toString();
+		return $this->toString( TRUE, TRUE );
 	}
 }
 ?>
