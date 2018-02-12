@@ -1,6 +1,6 @@
 <?php
 (php_sapi_name() == 'cli' ) or die('Access denied: CLI only.');
-(@include '../vendor/autoload.php') or die('Please use composer to install required packages!' . PHP_EOL);
+(@include '../../vendor/autoload.php') or die('Please use composer to install required packages!' . PHP_EOL);
 
 //  --  PLEASE CONFIGURE!  --  //
 
@@ -17,7 +17,7 @@ $mail       = new \CeusMedia\Mail\Message();
 $mail->setSender( $config->senderAddress, $config->senderName );
 $mail->addRecipient( $receiverAddress, $config->receiverName );
 $mail->setSubject( sprintf( $config->subject, uniqid() ) );
-$mail->addPart( new \CeusMedia\Mail\Part\HTML( $body ) );
+$mail->addPart( new \CeusMedia\Mail\Message\Part\HTML( $body ) );
 
 $transport  = new \CeusMedia\Mail\Transport\SMTP( $config->host, $config->port );
 $transport->setUsername( $config->username );

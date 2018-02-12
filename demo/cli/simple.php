@@ -6,9 +6,9 @@ error_reporting( E_ALL );
 use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Transport\SMTP;
 
-if(!file_exists("../config.ini"))
+if(!file_exists("config.ini"))
 	die('Please copy "config.ini.dist" to "config.ini" and configure it.');
-$config		= (object) parse_ini_file("../config.ini");
+$config		= (object) parse_ini_file("config.ini");
 
 $verbose	= !TRUE;
 

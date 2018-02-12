@@ -1,18 +1,19 @@
 <?php
 (@include '../../vendor/autoload.php') or die('Please use composer to install required packages.');
+new UI_DevOutput;
 
-if(!file_exists("../config.ini"))
+if(!file_exists("config.ini"))
 	die('Please copy "config.ini.dist" to "config.ini" and configure it.');
 
-$config	= parse_ini_file("../config.ini");
+$config	= (object) parse_ini_file("config.ini");
 
 /*  PREPARATION  */
 $verbose		= !TRUE;
 
-$smtpServer		= $config['host'];
-$smtpPort		= $config['port'];
-$smtpUsername	= $config['username'];
-$smtpPassword	= $config['password'];
+$smtpServer		= $config->host;
+$smtpPort		= $config->port;
+$smtpUsername	= $config->username;
+$smtpPassword	= $config->password;
 
 $sender			= "dev@ceusmedia.de";
 $receiverTo		= "dev@ceusmedia.de";
@@ -47,11 +48,13 @@ try {
 	$transport->setVerbose($verbose);												//  toggle verbosity - you can remove this line
 
 	//  check if receiver exists on server
-	$check		= new \CeusMedia\Mail\Check\Recipient($sender);						//  create checker for receiver
-	$check->setVerbose($verbose);													//  toggle verbosity - you can remove this line
+	$check		= new \CeusMedia\Mail\Address\Check\Availability($sender);						//  create checker for receiver
+	$check->setVerbose(!$verbose);													//  toggle verbosity - you can remove this line
 	if (!$check->test($receiverTo)) {												//  receiver is not existing
-		print "Receiver <".$receiverTo->getAddress()."> is not existing.";
-		exit;
+		$error	= $check->getLastError();
+		print_m( $error );
+//		print "Receiver <".$receiverTo."> is not existing.";
+//		exit;
 	}
 
 	//  create message
