@@ -106,35 +106,31 @@ class Attachment extends \CeusMedia\Mail\Message\Part{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function render(){
-		$headers		= array(
-			'Content-Disposition'		=> array(
-				"attachment",
-				'filename="'.$this->fileName.'"',
-			),
-			'Content-Type'				=> array(
-				$this->mimeType,
-			),
-			'Content-Transfer-Encoding'	=> $this->encoding,
-			'Content-Description'		=> $this->fileName,
+	public function render( $headers = NULL ){
+		if( !$headers )
+			$headers	= new \CeusMedia\Mail\Message\Header\Section();
+
+		$headers->setFieldPair( 'Content-Type', $this->mimeType );
+		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+		$headers->setFieldPair( 'Content-Description', $this->fileName );
+
+		$disposition	= array(
+			'attachment',
+			'filename="'.$this->fileName.'"'
 		);
 		if( $this->fileSize !== NULL )
-			$headers['Content-Disposition'][]	= 'size='.$this->fileSize;
+			$disposition[]	= 'size='.$this->fileSize;
 		if( $this->fileATime !== NULL )
-			$headers['Content-Disposition'][]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
+			$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
 		if( $this->fileCTime !== NULL )
-			$headers['Content-Disposition'][]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
+			$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
 		if( $this->fileMTime !== NULL )
-			$headers['Content-Disposition'][]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
-		$headers['Content-Disposition']	= join( ";\r\n ", $headers['Content-Disposition'] );
-		$headers['Content-Type']		= join( ";\r\n ", $headers['Content-Type'] );
-
-		$section	= new \CeusMedia\Mail\Message\Header\Section();
-		foreach( $headers as $key => $value )
-			$section->setFieldPair( $key, $value );
+			$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
+		$headers->setFieldPair( 'Content-Disposition', join( '; ', $disposition ) );
 
 		$content	= $this->encode( $this->content, $this->encoding );
-		return $section->toString()."\r\n\r\n".$content;
+		$delim		= \CeusMedia\Mail\Message::$delimiter;
+		return $headers->toString( TRUE ).$delim.$delim.$content;
 	}
 
 	/**
@@ -168,7 +164,7 @@ class Attachment extends \CeusMedia\Mail\Message\Part{
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
-	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL ){
+	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
 		if( !file_exists( $filePath ) )
 			throw new \InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
 		$this->content	= file_get_contents( $filePath );

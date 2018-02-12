@@ -51,17 +51,17 @@ class Text extends \CeusMedia\Mail\Message\Part{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function render(){
-		$headers		= new \CeusMedia\Mail\Message\Header\Section();
-		$contentType	= array(
+	public function render( $headers = NULL ){
+		if( !$headers )
+			$headers	= new \CeusMedia\Mail\Message\Header\Section();
+		$delim	= \CeusMedia\Mail\Message::$delimiter;
+		$headers->setFieldPair( 'Content-Type', join( '; ', array(
 			$this->mimeType,
 			'charset="'.strtolower( trim( $this->charset ) ).'"',
-		//	'format='.$this->format
-		);
-		$delim	= \CeusMedia\Mail\Message::$delimiter;
-		$headers->addFieldPair( 'Content-Type', join( ";".$delim." ", $contentType ) );
-		$headers->addFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-		$content		= $this->encode( $this->content, $this->encoding );
-		return $headers->toString().$delim.$delim.$content;
+			'format='.$this->format
+		) ) );
+		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+		$content	= $this->encode( $this->content, $this->encoding );
+		return $headers->toString( TRUE ).$delim.$delim.$content;
 	}
 }

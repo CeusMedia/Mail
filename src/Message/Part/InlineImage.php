@@ -136,35 +136,30 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function render(){
-		$headers		= array(
-			'Content-Disposition'		=> array(
-				"INLINE"
-			),
-			'Content-Type'				=> array(
-				$this->mimeType,
-				'name="'.$this->fileName.'"',
-			),
-			'Content-Transfer-Encoding'	=> $this->encoding,
-			'Content-ID'				=> '<'.$this->id.'>',
+	public function render( $headers = NULL ){
+		if( !$headers )
+			$headers	= new \CeusMedia\Mail\Message\Header\Section();
+		$headers->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
+		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+		$headers->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
+
+		$disposition	= array(
+			'INLINE',
+			'filename="'.$this->fileName.'"'
 		);
 		if( $this->fileSize !== NULL )
-			$headers['Content-Disposition'][]	= 'size='.$this->fileSize;
+			$disposition[]	= 'size='.$this->fileSize;
 		if( $this->fileATime !== NULL )
-			$headers['Content-Disposition'][]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
+			$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
 		if( $this->fileCTime !== NULL )
-			$headers['Content-Disposition'][]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
+			$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
 		if( $this->fileMTime !== NULL )
-			$headers['Content-Disposition'][]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
-		$headers['Content-Disposition']	= join( ";\r\n ", $headers['Content-Disposition'] );
-		$headers['Content-Type']		= join( ";\r\n ", $headers['Content-Type'] );
-
-		$section	= new \CeusMedia\Mail\Message\Header\Section();
-		foreach( $headers as $key => $value )
-			$section->setFieldPair( $key, $value );
+			$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
+		$headers->setFieldPair( 'Content-Disposition', join( '; ', $disposition ) );
 
 		$content	= $this->encode( $this->content, $this->encoding );
-		return $section->toString()."\r\n\r\n".$content;
+		$delim		= \CeusMedia\Mail\Message::$delimiter;
+		return $headers->toString().$delim.$delim.$content;
 	}
 
 	/**
