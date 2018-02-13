@@ -77,7 +77,7 @@ class Local
 	{
 		$body		= \CeusMedia\Mail\Renderer::render();
 		$headers	= $message->getHeaders();
-		$receivers	= $message->getRecipients();
+		$receivers	= $message->getRecipients( 'to' );
 		$subject	= $message->getSubject();
 
 		//  --  VALIDATION & SECURITY CHECK  --  //

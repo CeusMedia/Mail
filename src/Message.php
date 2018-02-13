@@ -48,7 +48,11 @@ class Message{
 	/**	@var		string									$sender			Sender mail address */
 	protected $sender;
 	/**	@var		string									$recipients		List of recipients */
-	protected $recipients;
+	protected $recipients	= array(
+		'to'	=> array(),
+		'cc'	=> array(),
+		'bcc'	=> array(),
+	);
 	/**	@var		string									$subject		Mail subject */
 	protected $subject;
 	/**	@var		string									$mailer			Mailer agent */
@@ -151,14 +155,19 @@ class Message{
 
 		if( $name )
 			$participant->setName( $name );
-		$this->recipients[]	= $participant;
+		$this->recipients[strtolower( $type )][]	= $participant;
 		$recipient	= '<'.$participant->getAddress().'>';
 		if( strlen( trim( $name ) ) ){
 			$recipient	= self::encodeIfNeeded( $name ).' '.$recipient;
 		}
 		$recipient	= $participant->get();
-		if( strtoupper( $type ) !== "BCC" )
+		if( strtoupper( $type ) !== "BCC" ){
+			$fields	= $this->headers->getFieldsByName( $type );
+			foreach( $fields as $field )
+				if( $field->getValue() == $recipient )
+					return $this;
 			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $recipient );
+		}
 		return $this;
 	}
 
@@ -264,7 +273,12 @@ class Message{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getRecipients(){
+	public function getRecipients( $type = NULL ){
+		if( $type ){
+			if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
+				throw new DomainException( 'Type must be of to, cc or bcc' );
+			return $this->recipients[strtolower( $type )];
+		}
 		return $this->recipients;
 	}
 

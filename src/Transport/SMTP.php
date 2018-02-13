@@ -112,7 +112,7 @@ class SMTP{
 		$delim		= \CeusMedia\Mail\Message::$delimiter;
 		if( !$message->getSender() )
 			throw new \RuntimeException( 'No mail sender set' );
-		if( !$message->getRecipients() )
+		if( !$message->getRecipients( 'to') )
 			throw new \RuntimeException( 'No mail receiver(s) set' );
 		if( !$message->getParts() )
 			throw new \RuntimeException( 'No mail body parts set' );
@@ -141,7 +141,7 @@ class SMTP{
 			$sender		= $message->getSender();
 			$this->sendChunk( $conn, "MAIL FROM: <".$sender->getAddress().">" );
 			$this->checkResponse( $conn, array( 250 ) );
-			foreach( $message->getRecipients() as $receiver ){
+			foreach( $message->getRecipients( 'to' ) as $receiver ){
 				$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
 				$this->checkResponse( $conn, array( 250 ) );
 			}

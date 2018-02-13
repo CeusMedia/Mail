@@ -60,9 +60,17 @@ class Parser{
 		$headers	= \CeusMedia\Mail\Message\Header\Parser::parse( $parts[0] );
 		foreach( $headers->getFields() as $field ){
 			$message->addHeader( $field );
-			switch( $field->getName() ){
-				case 'Subject':
+			switch( strtolower( $field->getName() ) ){
+				case 'from':
+					$message->setSender( $field->getValue() );
+					break;
+				case 'subject':
 					$message->setSubject( $field->getValue() );
+					break;
+				case 'to':
+				case 'cc':
+				case 'bcc':
+					$message->addRecipient( $field->getValue(), NULL, $field->getName() );
 					break;
 			}
 		}
