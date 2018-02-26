@@ -70,7 +70,9 @@ class Parser{
 				case 'to':
 				case 'cc':
 				case 'bcc':
-					$message->addRecipient( $field->getValue(), NULL, $field->getName() );
+					$addresses	= \CeusMedia\Mail\Address\Collection\Parser::parse( $field->getValue() );
+					foreach( $addresses as $address )
+						$message->addRecipient( $address );
 					break;
 			}
 		}
