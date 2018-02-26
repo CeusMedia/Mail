@@ -181,7 +181,7 @@ class Address{
 	 *	@return		void
 	 */
 	public function setName( $name ){
-		$this->name		= $name;
+		$this->name		= \CeusMedia\Mail\Message::decodeIfNeeded( $name );
 	}
 }
 ?>

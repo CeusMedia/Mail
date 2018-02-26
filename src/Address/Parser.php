@@ -41,7 +41,7 @@ class Parser{
 		}
 		else{																			//  not matching any pattern
 			$list		= '"'.implode( '" or "', array_keys( self::$patterns ) ).'"';
-			$message	= 'Invalid address given (must match '.$list.')' ;
+			$message	= 'Invalid address given (must match '.$list.') - got '.$string ;
 			throw new \InvalidArgumentException( $message );
 		}
 		$address	= new \CeusMedia\Mail\Address();

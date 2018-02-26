@@ -202,17 +202,51 @@ class Message{
 	 *	@return		string
 	 *	@throws		InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function encodeIfNeeded( $string, $encoding = "base64" ){
+	static public function encodeIfNeeded( $string, $encoding = "base64", $fold = TRUE ){
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
-		switch( strtolower( $encoding ) ){
-			case 'base64':
-				return "=?UTF-8?B?".base64_encode( $string )."?=";
-			case 'quoted-printable':
+		if( strtolower( $encoding ) == 'base64' )
+			return "=?UTF-8?B?".base64_encode( $string )."?=";
+		if( strtolower( $encoding ) == 'quoted-printable' ){
+			if( !$fold )
+				return "=?UTF-8?Q?".quoted_printable_encode( $string )."?=";
+			$length	= \CeusMedia\Mail\Message::$lineLength;
+			$delim	= \CeusMedia\Mail\Message::$delimiter;
+			$lines	= str_split( $string, $length );
+			foreach( $lines as $nr => $string ){
 				$string	= quoted_printable_encode( $string );
 				$string	= str_replace( '?', '=3F', $string );
 				$string	= str_replace( ' ', '_', $string );
-				return "=?UTF-8?Q?".$string."?=";
+				$lines[$nr]	= "=?UTF-8?Q?".$string."?=";
+			}
+			return join( $delim."\t", $lines );
+		}
+		return $string;
+	}
+
+	/**
+	 *	Encodes a mail header value string if needed.
+	 *	@access		public
+	 *	@param		string		$string			A mail header value string, subject for example.
+	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
+	 *	@return		string
+	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 */
+	static public function decodeIfNeeded( $string, $encoding = "base64" ){
+		if( !preg_match( "/^=\?(\S+)\?(\S)\?(.+)\?=$/", $string ) )
+			return $string;
+		$charset	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\1', $string );
+		$encoding	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\2', $string );
+		$content	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\3', $string );
+
+		switch( strtolower( $encoding ) ){
+			case 'b':
+				return base64_decode( $content );
+			case 'q':
+				$content	= str_replace( "_", " ", $content );
+				if( function_exists( 'imap_qprint' ) )
+					return imap_qprint( $content );
+				return quoted_printable_decode( $content );
 		}
 		throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 	}
@@ -299,7 +333,7 @@ class Message{
 	 */
 	public function getSubject( $encoding = NULL ){
 		if( $encoding )
-			return self::encodeIfNeeded( $this->subject, $encoding );
+			return self::encodeIfNeeded( $this->subject, $encoding, TRUE );
 		return $this->subject;
 	}
 
@@ -337,6 +371,7 @@ class Message{
 		if( $name )
 			$participant->setName( $name );
 		$this->sender	= $participant;
+		$this->headers->removeFieldByName( 'From' );
 		$this->addHeaderPair( "From", $participant->get() );
 		return $this;
 	}
@@ -348,7 +383,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function setSubject( $subject ){
-		$this->subject	= $subject;
+		$this->subject	= \CeusMedia\Mail\Message::decodeIfNeeded( $subject );
 		return $this;
 	}
 

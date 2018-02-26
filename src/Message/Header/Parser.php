@@ -39,7 +39,7 @@ class Parser{
 
 	static public function parse( $content ){
 		$section	= new \CeusMedia\Mail\Message\Header\Section();
-		$content	= preg_replace( "/\r?\n[\t ]/", " ", $content );			//  unfold field values
+		$content	= preg_replace( "/\r?\n[\t ]/", "", $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
 		foreach( $lines as $line ){
 			$parts	= explode( ":", $line, 2 );

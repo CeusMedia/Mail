@@ -77,14 +77,8 @@ class Field{
 	 *	@access		public
 	 *	@return		string		Header value
 	 */
-	public function getValue( $fold = FALSE ){
-		if( !$fold )
-			return $this->value;
-		$maxLength	= \CeusMedia\Mail\Message::$lineLength;
-		$delim		= \CeusMedia\Mail\Message::$delimiter;
-		if( strlen( $this->value ) < $maxLength )
-			return $this->value;
-		return wordwrap( $this->value, $maxLength, $delim.' ', TRUE );
+	public function getValue(){
+		return $this->value;
 	}
 
 	/**
@@ -117,8 +111,8 @@ class Field{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function toString( $keepCase = TRUE, $fold = TRUE ){
-		return $this->getName( $keepCase ).": ".$this->getValue( $fold );
+	public function toString( $keepCase = TRUE ){
+		return $this->getName( $keepCase ).": ".$this->getValue();
 	}
 
 	/**
@@ -127,7 +121,7 @@ class Field{
 	 *	@return		string
 	 */
 	public function __toString(){
-		return $this->toString( TRUE, TRUE );
+		return $this->toString( TRUE );
 	}
 }
 ?>
