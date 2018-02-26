@@ -37,6 +37,8 @@ namespace CeusMedia\Mail\Message;
  */
 class Renderer{
 
+	static public $encodingSubject	= 'quoted-printable';
+
 	static public function render( \CeusMedia\Mail\Message $message ){
 		if( !count( $message->getParts( TRUE ) ) )
 			throw new \RuntimeException( "No content part set" );
@@ -50,7 +52,7 @@ class Renderer{
 		}
 		if( !$headers->hasField( 'Date' ) )
 			$headers->setFieldPair( 'Date', date( "D, d M Y H:i:s O", time() ) );
-		$headers->setFieldPair( 'Subject', $message->getSubject( 'base64' ) );
+		$headers->setFieldPair( 'Subject', $message->getSubject( self::$encodingSubject ) );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->addFieldPair( 'X-Mailer', $message->getUserAgent() );
 
