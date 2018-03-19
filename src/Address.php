@@ -70,6 +70,16 @@ class Address{
 
 	/**
 	 *	Returns full address of mail participant with brackets and username (if available).
+	 *	Alias for get.
+	 *	@access		public
+	 *	@return		string		Full mail address with brackets and username (if available)
+	 */
+	public function __toString(){
+		return $this->get();
+	}
+
+	/**
+	 *	Returns full address of mail participant with brackets and username (if available).
 	 *	@access		public
 	 *	@return		string		Full mail address with brackets and username (if available)
 	 */
