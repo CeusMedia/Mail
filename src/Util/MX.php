@@ -44,7 +44,8 @@ class MX{
 	public function __construct(){}
 
 	public function fromAddress( $address, $useCache = TRUE, $strict = TRUE ){
-		$address	= new \CeusMedia\Mail\Address( $address );
+		if( is_string( $address ) )
+			$address	= new \CeusMedia\Mail\Address( $address );
 		$hostname	= $address->getDomain();
 		return $this->fromHostname( $address->getDomain(), $useCache, $strict );
 	}
