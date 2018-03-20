@@ -43,8 +43,10 @@ class Parser{
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
 		foreach( $lines as $line ){
 			$parts	= explode( ":", $line, 2 );
-			if( count( $parts ) > 1 )
-				$section->addFieldPair( $parts[0], trim( $parts[1] ) );
+			if( count( $parts ) > 1 ){
+				$value	= \CeusMedia\Mail\Message::decodeIfNeeded( trim( $parts[1] ) );
+				$section->addFieldPair( $parts[0], $value );
+			}
 		}
 		return $section;
 	}
