@@ -44,7 +44,9 @@ class Parser{
 		foreach( $lines as $line ){
 			$parts	= explode( ":", $line, 2 );
 			if( count( $parts ) > 1 ){
-				$value	= \CeusMedia\Mail\Message::decodeIfNeeded( trim( $parts[1] ) );
+				$value	= trim( $parts[1] );
+				if( substr( $value, 0, 2 ) == "=?" )
+					$value	= \CeusMedia\Mail\Message::decodeIfNeeded( $value );
 				$section->addFieldPair( $parts[0], $value );
 			}
 		}

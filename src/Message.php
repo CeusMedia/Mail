@@ -121,6 +121,22 @@ class Message{
 
 	/**
 	 *	Add image for HTML part by content.
+	 *	Alias for addInlineImage.
+	 *	@access		public
+	 *	@param		string		$id				Content ID of image to be used in HTML part
+	 *	@param		string		$filePath		File Path of image to embed
+	 *	@param		string		$mimeType		Optional: MIME type of file
+	 *	@param		string		$encoding		Optional: Encoding to apply
+	 *	@return		object		Message object for chaining
+	 *	@deprecated	use addInlineImage instead
+	 *	@todo		remove in 2.1
+	 */
+	public function addHtmlImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
+		return $this->addInlineImage( $id, $filePath, $mimeType, $encoding );
+	}
+
+	/**
+	 *	Add image for HTML part by content.
 	 *	@access		public
 	 *	@param		string		$id				Content ID of image to be used in HTML part
 	 *	@param		string		$filePath		File Path of image to embed
@@ -128,8 +144,21 @@ class Message{
 	 *	@param		string		$encoding		Optional: Encoding to apply
 	 *	@return		object		Message object for chaining
 	 */
-	public function addHtmlImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
+	public function addInlineImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
 		$part	= new \CeusMedia\Mail\Message\Part\InlineImage( $id, $filePath, $mimeType, $encoding );
+		return $this->addPart( $part );
+	}
+
+	/**
+	 *	Add forwared mail part by plain content.
+	 *	@access		public
+	 *	@param		string		$content		Nested mail content to add as message part
+	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
+	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
+	 *	@return		object		Message object for chaining
+	 */
+	public function addMail( $content, $charset = 'UTF-8', $encoding = 'base64' ){
+		$part	= new \CeusMedia\Mail\Message\Part\Mail( $content, $mimeType, $encoding );
 		return $this->addPart( $part );
 	}
 
@@ -235,20 +264,29 @@ class Message{
 	static public function decodeIfNeeded( $string, $encoding = "base64" ){
 		if( !preg_match( "/^=\?(\S+)\?(\S)\?(.+)\?=$/", $string ) )
 			return $string;
-		$charset	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\1', $string );
-		$encoding	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\2', $string );
-		$content	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\3', $string );
-
-		switch( strtolower( $encoding ) ){
-			case 'b':
-				return base64_decode( $content );
-			case 'q':
-				$content	= str_replace( "_", " ", $content );
-				if( function_exists( 'imap_qprint' ) )
-					return imap_qprint( $content );
-				return quoted_printable_decode( $content );
+		$matches	= array();
+		$list		= array();
+		preg_match_all( "/(=\?.+\?=)/U", $string, $matches );
+		foreach( $matches[1] as $string ){
+			$charset	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\1', $string );
+			$encoding	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\2', $string );
+			$content	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\3', $string );
+			switch( strtolower( $encoding ) ){
+				case 'b':
+					$list[]	= base64_decode( $content );
+					break;
+				case 'q':
+					$content	= str_replace( "_", " ", $content );
+					if( function_exists( 'imap_qprint' ) )
+						$list[]	= imap_qprint( $content );
+					else
+						$list[]	= quoted_printable_decode( $content );
+					break;
+				default:
+					throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+			}
 		}
-		throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+		return join( $list );
 	}
 
 	/**
@@ -265,6 +303,8 @@ class Message{
 			if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
 				if( $withInlineImages )
 					$list[]	= $part;
+			if( $part instanceof \CeusMedia\Mail\Message\Part\Mail )
+				$list[]	= $part;
 		}
 		return $list;
 	}

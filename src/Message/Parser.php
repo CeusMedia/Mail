@@ -91,10 +91,10 @@ class Parser{
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= \CeusMedia\Mail\Message\Header\Parser::parse( $parts[0] );
 		$body		= $parts[1];
-
-		$contentType	= $headers->getField( 'Content-Type' );
-		if( preg_match( '/boundary/', $contentType ) ){
-			$mimeBoundary	= preg_replace( "/^.+boundary=\"(.+)\"$/", "\\1", $contentType );
+		$contentType	= $headers->getField( 'Content-Type' )->getValue();
+		$contentType	= self::parseAttributedHeaderValue( $contentType );
+		$mimeBoundary	= $contentType->attributes->get( 'boundary' );
+		if( $mimeBoundary ){
 			$lines	= array();
 			$status	= 0;
 			foreach( preg_split( "/\r?\n/", $body ) as $nr => $line ){
@@ -120,31 +120,77 @@ class Parser{
 		}
 	}
 
+
+	static protected function parseAttributedHeaderValue( $string ){
+		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
+		$parts	= preg_split( '/\s*;\s*/', $string );
+		$value	= array_shift( $parts );
+		$list	= array();
+		if( $parts ){
+			foreach( $parts as $part ){
+				if( preg_match( '/=/', $part ) ){
+					$p = preg_split( '/\s?=\s?/', $part, 2 );
+					if( trim( $p[1][0] ) === '"' )
+						$p[1]	= substr( trim( $p[1] ), 1, -1 );
+					if( preg_match( '/\*[0-9]$/', $p[0] ) ){
+						$label	= preg_replace( '/^(.+)\*[0-9]$/', '\\1', $p[0] );
+						if( !isset( $list[$label] ) )
+							$list[$label]	= '';
+						$list[$label]	.= $p[1];
+					}
+					else
+						$list[$p[0]]	= $p[1];
+				}
+			}
+		}
+		return (object) array(
+			'value'			=> $value,
+			'attributes'	=> new \ADT_List_Dictionary( $list ),
+		);
+	}
+
 	static protected function parseAtomicBodyPart( $content ){
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= \CeusMedia\Mail\Message\Header\Parser::parse( $parts[0] );
 		$content	= $parts[1];
 
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		$mimeType		= self::getMimeFromContentType( $contentType );
-		$charset		= self::getCharsetFromContentType( $contentType );
+		$contentType	= self::parseAttributedHeaderValue( $contentType );
+		$mimeType		= $contentType->value;
+		$charset		= $contentType->attributes->get( 'charset' );
+		$format			= $contentType->attributes->get( 'format' );
+		$encoding		= NULL;
+
+		if( $headers->hasField( 'Content-Transfer-Encoding' ) )
+			$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
+
+		if( $mimeType === 'message/rfc822' ){
+			$part	= new \CeusMedia\Mail\Message\Part\Mail( $content, $charset );
+			$part->setMimeType( $mimeType );
+			if( $encoding )
+				$part->setEncoding( $encoding );
+			if( $format )
+				$part->setFormat( $format );
+			return $part;
+		}
 
 		if( $headers->hasField( 'Content-Disposition' ) ){
-			if( preg_match( "/attachment/", $headers->getField( 'Content-Disposition' )->getValue() ) ){
+			$disposition	= $headers->getField( 'Content-Disposition' )->getValue();
+			$disposition	= self::parseAttributedHeaderValue( $disposition );
+			$filename		= $disposition->attributes->get( 'filename' );
+			if( strtolower( $disposition->value ) === "attachment" ){
 				$part	= new \CeusMedia\Mail\Message\Part\Attachment();
-				if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
-					$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
+				$part->setMimeType( $mimeType );
+				if( $encoding ){
 					$part->setEncoding( $encoding );
 					if( $encoding === "base64" )
 						$content	= base64_decode( $content );
 				}
-				$part->setContent( $content, $contentType );
-//				if( $object->format )
-//					$part->setFormat( $object->format );
-				if( $headers->hasField( 'Content-Description' ) )
-					$filename	= $headers->getField( 'Content-Description' );
-				else
-					$filename	= preg_replace( "/^.+filename=\"?(.+)\"?$/", "\\1", $headers->getField( 'Content-Disposition' )->getValue() );
+				$part->setContent( $content );
+				if( $format )
+					$part->setFormat( $format );
+				if( !$filename && $contentType->attributes->has( 'name' ) )
+					$filename	= $contentType->attributes->get( 'name' );
 				if( $filename )
 					$part->setFilename( $filename );
 				return $part;
@@ -153,18 +199,20 @@ class Parser{
 		switch( strtolower( $mimeType ) ){
 			case 'text/html':
 				$part	= new \CeusMedia\Mail\Message\Part\HTML( $content, $charset );
-				if( $headers->hasField( 'Content-Transfer-Encoding' ) )
-					$part->setEncoding( $headers->getField( 'Content-Transfer-Encoding' )->getValue() );
-//				if( $object->format )
-//					$part->setFormat( $object->format );
+				$part->setMimeType( $mimeType );
+				if( $encoding )
+					$part->setEncoding( $encoding );
+				if( $format )
+					$part->setFormat( $format );
 				return $part;
 			case 'text/plain':
 			default:
 				$part	= new \CeusMedia\Mail\Message\Part\Text( $content, $charset );
-				if( $headers->hasField( 'Content-Transfer-Encoding' ) )
-					$part->setEncoding( $headers->getField( 'Content-Transfer-Encoding' )->getValue() );
-//				if( $object->format )
-//					$part->setFormat( $object->format );
+				$part->setMimeType( $mimeType );
+				if( $encoding )
+					$part->setEncoding( $encoding );
+				if( $format )
+					$part->setFormat( $format );
 				return $part;
 		}
 	}
