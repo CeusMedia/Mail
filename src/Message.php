@@ -254,15 +254,17 @@ class Message{
 	/**
 	 *	Returns list set attachment parts.
 	 *	@access		public
+	 *	@param		boolean		$withInlineImages		Flag: list inline images, also
 	 *	@return		array
 	 */
-	public function getAttachments(){
+	public function getAttachments( $withInlineImages = TRUE ){
 		$list	= array();
 		foreach( $this->parts as $part ){
 			if( $part instanceof \CeusMedia\Mail\Message\Part\Attachment )
 				$list[]	= $part;
 			if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
-				$list[]	= $part;
+				if( $withInlineImages )
+					$list[]	= $part;
 		}
 		return $list;
 	}
