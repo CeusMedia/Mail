@@ -143,7 +143,7 @@ class Mailbox{
 		if( !in_array( strtolower( $flag ), $flags ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
-		return imap_setflag_full( $this->connection, array( $mailId ), $flag, ST_UID );
+		return imap_setflag_full( $this->connection, $mailId, $flag, ST_UID );
 	}
 
 	public function setSecure( $secure = TRUE, $validateCertificates = TRUE ){
@@ -156,7 +156,7 @@ class Mailbox{
 		if( !in_array( strtolower( $flag ), $flags ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
-		return imap_clearflag_full( $this->connection, array( $mailId ), $flag, ST_UID );
+		return imap_clearflag_full( $this->connection, $mailId, $flag, ST_UID );
 	}
 
 	public function removeMail( $mailId, $expunge = FALSE ){
