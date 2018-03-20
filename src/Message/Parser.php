@@ -132,15 +132,19 @@ class Parser{
 		if( $headers->hasField( 'Content-Disposition' ) ){
 			if( preg_match( "/attachment/", $headers->getField( 'Content-Disposition' )->getValue() ) ){
 				$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+				if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
+					$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
+					$part->setEncoding( $encoding );
+					if( $encoding === "base64" )
+						$content	= base64_decode( $content );
+				}
 				$part->setContent( $content, $contentType );
-				if( $headers->hasField( 'Content-Transfer-Encoding' ) )
-					$part->setEncoding( $headers->getField( 'Content-Transfer-Encoding' )->getValue() );
 //				if( $object->format )
 //					$part->setFormat( $object->format );
 				if( $headers->hasField( 'Content-Description' ) )
 					$filename	= $headers->getField( 'Content-Description' );
 				else
-					$filename	= preg_replace( "/^.+filename=\"(.+)\"$/", "\\1", $headers->getField( 'Content-Disposition' )->getValue() );
+					$filename	= preg_replace( "/^.+filename=\"?(.+)\"?$/", "\\1", $headers->getField( 'Content-Disposition' )->getValue() );
 				if( $filename )
 					$part->setFilename( $filename );
 				return $part;
