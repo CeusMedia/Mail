@@ -1,6 +1,7 @@
 vendor
 composer.lock
 demo/cli/config.ini
+demo/render/config.ini
 demo/send/config.ini
 
 doc
