@@ -65,7 +65,7 @@ class Renderer{
 		$delim			= \CeusMedia\Mail\Message::$delimiter;
 		$mimeBoundary	= "------".md5( microtime( TRUE ) );					//  main multipart boundary
 		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );				//  nested multipart boundary
-		if( count( $message->getParts() ) > 1 ){								//  alternative content parts
+		if( count( $message->getParts( TRUE ) ) > 1 ){							//  alternative content parts
 			$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
 			$contents	= array( "This is a multi-part message in MIME format." );
 			$contents[]	= "--".$mimeBoundary;
