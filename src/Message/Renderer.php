@@ -39,6 +39,9 @@ class Renderer{
 
 	static public $encodingSubject	= 'quoted-printable';
 
+	/**
+	 *	@see		https://stackoverflow.com/questions/40389103/create-html-mail-with-inline-image-and-pdf-attachment/40420648#40420648
+	 */
 	static public function render( \CeusMedia\Mail\Message $message ){
 		if( !count( $message->getParts( TRUE ) ) )
 			throw new \RuntimeException( "No content part set" );
@@ -62,32 +65,114 @@ class Renderer{
 			return $part->render( $headers );									//  render part and apply part headers as message headers
 		}
 
+
+		$parts	= (object) array(
+			'body'	=> (object) array(
+				'html'	=> NULL,
+				'text'	=> NULL,
+			),
+			'files'		=> array(),
+			'images'	=> array(),
+		);
+		foreach( $message->getParts( TRUE ) as $part ){
+			if( $part instanceof \CeusMedia\Mail\Message\Part\HTML )
+				$parts->body->html	= $part;
+			else if( $part instanceof \CeusMedia\Mail\Message\Part\Text )
+				$parts->body->text	= $part;
+			else if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
+				$parts->images[]	= $part;
+			else if( $part instanceof \CeusMedia\Mail\Message\Part\Attachment )
+				$parts->files[]	= $part;
+			else if( $part instanceof \CeusMedia\Mail\Message\Part\Mail )
+				$parts->files[]	= $part;
+		}
+
 		$delim			= \CeusMedia\Mail\Message::$delimiter;
-		$mimeBoundary	= "------".md5( microtime( TRUE ) );					//  main multipart boundary
-		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );				//  nested multipart boundary
-		if( count( $message->getParts( TRUE ) ) > 1 ){							//  alternative content parts
-			$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
-			$contents	= array( "This is a multi-part message in MIME format." );
+		$mimeBoundary	= "------".md5( microtime( TRUE ) );					//  mixed multipart boundary
+		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );				//  related multipart boundary
+		$mimeBoundary2	= "------".md5( microtime( TRUE ) + 2 );				//  alternative multipart boundary
+		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
+		$contents	= array(
+			"This is a multi-part message in MIME format.",
+		);
+		if( count( $message->getParts( FALSE ) ) > 1 ){							//  alternative content parts
 			$contents[]	= "--".$mimeBoundary;
 			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
 			$contents[]	= "";
-			foreach( $message->getParts() as $part )
+			foreach( $message->getParts( FALSE ) as $part )
 				$contents[]	= "--".$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
 			$contents[]	= "--".$mimeBoundary1."--".$delim;
-			foreach( $message->getAttachments() as $part )
-				$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
-			$contents[]	= "--".$mimeBoundary."--".$delim;
 		}
 		else{
-			$headers->setFieldPair( 'Content-Type', 'multipart/mixed;'.$delim.' boundary="'.$mimeBoundary.'"' );
-			$contents	= array( "This is a multi-part message in MIME format." );
-			foreach( $message->getParts() as $part )
+			foreach( $message->getParts( FALSE ) as $part )
 				$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
-			foreach( $message->getAttachments() as $part )
-				$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
-			$contents[]	= "--".$mimeBoundary."--".$delim;
 		}
+		foreach( $parts->images as $part )
+			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		foreach( $parts->files as $part )
+			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		$contents[]	= "--".$mimeBoundary."--".$delim;
 		return $headers->toString( TRUE ).$delim.$delim.join( $delim, $contents );
+
+/*		$delim			= \CeusMedia\Mail\Message::$delimiter;
+		$mimeBoundary	= "------".md5( microtime( TRUE ) );					//  mixed multipart boundary
+		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );				//  related multipart boundary
+		$mimeBoundary2	= "------".md5( microtime( TRUE ) + 2 );				//  alternative multipart boundary
+		$headers->setFieldPair( 'Content-Type', 'multipart/mixed;'.$delim.' boundary="'.$mimeBoundary.'"' );
+		$contents	= array(
+			"This is a multi-part message in MIME format.",
+			$mimeBoundary,
+		);
+		$contents[]	= 'Content-Type: multipart/related; boundary="'.$mimeBoundary1.'"';
+		$contents[]	= '';
+		if( count( $message->getParts( FALSE ) ) > 1 ){							//  alternative content parts
+			$contents[]	= "--".$mimeBoundary1;
+			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
+			$contents[]	= "";
+			foreach( $message->getParts( FALSE ) as $part )
+				$contents[]	= "--".$mimeBoundary2.$delim.rtrim( $part->render() ).$delim;
+			$contents[]	= "--".$mimeBoundary2."--".$delim;
+		}
+		else{
+			foreach( $message->getParts( FALSE ) as $part )
+				$contents[]	= "--".$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
+		}
+		foreach( $parts->images as $part )
+			$contents[]	= "--".$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
+		$contents[]	= "--".$mimeBoundary1."--".$delim;
+		foreach( $parts->files as $part )
+			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		$contents[]	= "--".$mimeBoundary."--".$delim;
+		return $headers->toString( TRUE ).$delim.$delim.join( $delim, $contents );*/
 	}
 }
+/*
+		$delim			= \CeusMedia\Mail\Message::$delimiter;
+		$mimeBoundary	= "------".md5( microtime( TRUE ) );					//  mixed multipart boundary
+		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );				//  related multipart boundary
+		$mimeBoundary2	= "------".md5( microtime( TRUE ) + 2 );				//  alternative multipart boundary
+		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
+		$contents	= array(
+			"This is a multi-part message in MIME format.",
+		);
+		if( count( $message->getParts( FALSE ) ) > 1 ){							//  alternative content parts
+			$contents[]	= "--".$mimeBoundary;
+			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
+			$contents[]	= "";
+			foreach( $message->getParts( FALSE ) as $part )
+				$contents[]	= "--".$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
+			$contents[]	= "--".$mimeBoundary1."--".$delim;
+		}
+		else{
+			foreach( $message->getParts( FALSE ) as $part )
+				$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		}
+		foreach( $parts->images as $part )
+			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		$contents[]	= "--".$mimeBoundary."--".$delim;
+		foreach( $parts->files as $part )
+			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		$contents[]	= "--".$mimeBoundary."--".$delim;
+		return $headers->toString( TRUE ).$delim.$delim.join( $delim, $contents );
+*/
 ?>
