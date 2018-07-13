@@ -133,30 +133,58 @@ class Mailbox{
 		return imap_sort( $this->connection, $sort, $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 	}
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		object		Own instance for chainability
+	 *	@todo		code doc
+	 */
 	public function setAuth( $username, $password ){
 		$this->username	= $username;
 		$this->password	= $password;
+		return $this;
 	}
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		object		Own instance for chainability
+	 *	@todo		code doc
+	 */
 	public function setMailFlag( $mailId, $flag ){
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
 		if( !in_array( strtolower( $flag ), $flags ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
-		return imap_setflag_full( $this->connection, $mailId, $flag, ST_UID );
+		imap_setflag_full( $this->connection, $mailId, $flag, ST_UID );
+		return $this;
 	}
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		object		Own instance for chainability
+	 *	@todo		code doc
+	 */
 	public function setSecure( $secure = TRUE, $validateCertificates = TRUE ){
 		$this->secure				= $secure;
 		$this->validateCertificates	= $validateCertificates;
+		return $this;
 	}
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		object		Own instance for chainability
+	 *	@todo		code doc
+	 */
 	public function unsetMailFlag( $mailId, $flag ){
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
 		if( !in_array( strtolower( $flag ), $flags ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
-		return imap_clearflag_full( $this->connection, $mailId, $flag, ST_UID );
+		imap_clearflag_full( $this->connection, $mailId, $flag, ST_UID );
+		return $this;
 	}
 
 	public function removeMail( $mailId, $expunge = FALSE ){

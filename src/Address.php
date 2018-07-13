@@ -151,7 +151,7 @@ class Address{
 	 *	Sets an full mail address.
 	 *	@access		public
 	 *	@param		string		$string			Full mail address to set
-	 *	@return		void
+	 *	@return		object		Own instance for chainability
 	 *	@throws		InvalidArgumentException	if given string is empty
 	 */
 	public function set( $string ){
@@ -162,36 +162,40 @@ class Address{
 		$this->setDomain( $address->getDomain() );
 		$this->setLocalPart( $address->getLocalPart() );
 		$this->setName( $address->getName() );
+		return $this;
 	}
 
 	/**
 	 *	Sets domain of mail participant.
 	 *	@access		public
 	 *	@param		string		$domain			Domain of mail participant.
-	 *	@return		void
+	 *	@return		object		Own instance for chainability
 	 */
 	public function setDomain( $domain ){
 		$this->domain	= $domain;
+		return $this;
 	}
 
 	/**
 	 *	Sets local part of of mail participant.
 	 *	@access		public
 	 *	@param		string		$localPart		Local part of of mail participant
-	 *	@return		void
+	 *	@return		object		Own instance for chainability
 	 */
 	public function setLocalPart( $localPart ){
 		$this->localPart	= $localPart;
+		return $this;
 	}
 
 	/**
 	 *	Sets name of mail participant.
 	 *	@access		public
 	 *	@param		string		$name			Name of mail participant
-	 *	@return		void
+	 *	@return		object		Own instance for chainability
 	 */
 	public function setName( $name ){
 		$this->name		= \CeusMedia\Mail\Message::decodeIfNeeded( $name );
+		return $this;
 	}
 }
 ?>
