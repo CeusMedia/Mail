@@ -2,7 +2,7 @@
 /**
  *	Sends Mail using PHPs mail function and local SMTP server.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,22 +20,27 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Transport;
+
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Renderer;
+
+
 /**
  *	Sends Mails of different Types.
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Local
-{
+class Local{
+
 	/**	@var		string		$mailer		Mailer Agent */
 	public $mailer;
 
@@ -45,9 +50,8 @@ class Local
 	 *	@param		string		$mailer		Mailer Agent
 	 *	@return		void
 	 */
-	public function __construct( $mailer = NULL )
-	{
-		$this->mailer	= 'CeusMedia/Mail/'.CMC_VERSION;
+	public function __construct( $mailer = NULL ){
+		$this->mailer	= Message::$userAgent;
 		if( is_string( $mailer ) && strlen( trim( $mailer ) ) )
 			$this->mailer	= $mailer;
 	}
@@ -59,8 +63,7 @@ class Local
 	 *	@return		void
 	 *	@throws		InvalidArgumentException
 	 */
-	protected function checkForInjection( $value )
-	{
+	protected function checkForInjection( $value ){
 		if( preg_match( '/(\r|\n)/', $value ) )
 			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
@@ -73,15 +76,13 @@ class Local
 	 *	@return		void
 	 *	@throws		RuntimeException|InvalidArgumentException
 	 */
-	public function send( \CeusMedia\Mail\Message $message, $parameters = array() )
-	{
-		$body		= \CeusMedia\Mail\Renderer::render();
+	public function send( \CeusMedia\Mail\Message $message, $parameters = array() ){
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipients( 'to' );
 		$subject	= $message->getSubject();
+		$body		= Renderer::render( $message );
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
-		$this->checkForInjection( $receiver );
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new \InvalidArgumentException( 'No mail sender defined' );
@@ -105,9 +106,35 @@ class Local
 		if( is_array( $parameters ) )
 			$parameters	= implode( PHP_EOL, $parameters );
 
-		foreach( $receivers as $receiver )
-			if( !mail( $receiver->participant->getAddress(), $subject, $body, $headers->toString(), $parameters ) )
-				throw new \RuntimeException( 'Mail could not been sent' );
+		$list	= array();
+		$buffer	= new \UI_OutputBuffer();
+		foreach( $receivers as $receiver ){
+			try{
+				$this->checkForInjection( $receiver );
+				$result	= mail(
+					$receiver->getAddress(),
+					$subject,
+					$body,
+					$headers->toString(),
+					$parameters
+				);
+				if( !$result ){
+					throw new \RuntimeException( $buffer->get() );
+				}
+				$list[]	= array(
+					'status'		=> 'ok',
+					'message'		=> 'mail sent to '.$receiver->participant->getAddress(),
+				);
+			}
+			catch( \Exception $e ){
+				$list[]	= array(
+					'status'		=> 'failed',
+					'message'		=> $e->getMessage(),
+				);
+			}
+		}
+		$buffer->close();
+		return $list;
 	}
 
 
@@ -119,9 +146,8 @@ class Local
 	 *	@param		array		$parameters	Additional mail parameters
 	 *	@return		void
 	 */
-	public static function sendMail( \CeusMedia\Mail\Message $message, $parameters = array() )
-	{
-		$transport	= new \CeusMedia\Mail\Transport\Local();
+	public static function sendMail( Message $message, $parameters = array() ){
+		$transport	= new static();
 		$transport->send( $message, $parameters );
 	}
 }
