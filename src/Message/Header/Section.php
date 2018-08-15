@@ -77,10 +77,11 @@ class Section{
 	 *	@access		public
 	 *	@param		string		$name		Header field name
 	 *	@return		\CeusMedia\Mail\Message\Header\Field
+	 *	@throws		\RangeException			if request header field name is not existing
 	 */
 	public function getField( $name ){
 		if( !$this->hasField( $name ) )
-			return NULL;
+			throw new \RangeException( 'Header "'.$name.'" is not availabe' );
 		$values	= $this->getFieldsByName( $name );
 		return array_shift( $values );
 	}

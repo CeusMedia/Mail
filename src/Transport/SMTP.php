@@ -154,7 +154,7 @@ class SMTP{
 			$this->checkResponse( $conn, array( 221 ) );
 			fclose( $conn );
 		}
-		catch( Exception $e ){
+		catch( \Exception $e ){
 			fclose( $conn );
 			throw new \RuntimeException( $e->getMessage(), $e->getCode(), $e->getPrevious() );
 		}
@@ -184,7 +184,7 @@ class SMTP{
 	/**
 	 *	Sets SMTP host.
 	 *	@access		public
-	 *	@param		integer		$host		SMTP server host
+	 *	@param		string		$host		SMTP server host
 	 *	@return		object  	Self instance for chaining.
 	 */
 	public function setHost( $host ){

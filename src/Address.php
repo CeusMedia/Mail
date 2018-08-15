@@ -102,7 +102,7 @@ class Address{
 	 *	@access		public
 	 *	@param		boolean		$strict		Flag: throw exception if no domain set
 	 *	@return		string		Domain of mail participant
-	 *	@throws		RuntimeException		if no address has been set, yet
+	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
 	public function getDomain( $strict = TRUE ){
 		if( !$this->domain && $strict )
@@ -115,7 +115,7 @@ class Address{
 	 *	@access		public
 	 *	@param		boolean		$strict		Flag: throw exception if no local part set
 	 *	@return		string		Local part of mail participant
-	 *	@throws		RuntimeException		if no address has been set, yet
+	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
 	public function getLocalPart( $strict = TRUE ){
 		if( !$this->localPart && $strict )
@@ -140,8 +140,8 @@ class Address{
 	 *	@param		string		$localPart	Local part of mail address
 	 *	@param		string		$name		Name of mail address
 	 *	@return		string		Rendered mail address
-	 *	@throws		InvalidArgumentException	if domain is empty
-	 *	@throws		InvalidArgumentException	if local part is empty
+	 *	@throws		\InvalidArgumentException	if domain is empty
+	 *	@throws		\InvalidArgumentException	if local part is empty
 	 */
 	static public function render( $domain, $localPart, $name = NULL ){
 		return \CeusMedia\Mail\Address\Renderer::render( $domain, $localPart, $name );
@@ -152,11 +152,11 @@ class Address{
 	 *	@access		public
 	 *	@param		string		$string			Full mail address to set
 	 *	@return		object		Own instance for chainability
-	 *	@throws		InvalidArgumentException	if given string is empty
+	 *	@throws		\InvalidArgumentException	if given string is empty
 	 */
 	public function set( $string ){
 		if( !strlen( trim( $string ) ) )
-			throw new InvalidArgumentException( 'No address given' );
+			throw new \InvalidArgumentException( 'No address given' );
 
 		$address	= \CeusMedia\Mail\Address\Parser::parse( $string );
 		$this->setDomain( $address->getDomain() );
