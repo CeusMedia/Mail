@@ -12,7 +12,7 @@ composer-update-dev:
 	composer update
 
 dev-analyse: composer-install-dev
-	@./vendor/bin/phan -k=.phan --color
+	@./vendor/bin/phan -k=.phan --color || true
 
 dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true

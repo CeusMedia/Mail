@@ -1,5 +1,8 @@
 <?php
 namespace CeusMedia\Mail\Address;
+
+use CeusMedia\Mail\Address;
+
 class Parser{
 
 	/**	@var	array		$patterns		Map of understandable patterns (regular expressions) */
@@ -14,7 +17,7 @@ class Parser{
 	 *	Reads patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
 	 *	@param		string		$string			Mail address to parse
-	 *	@return		void
+	 *	@return		Address		Address object
 	 *	@throws		InvalidArgumentException	if given string is not a valid mail address
 	 */
 	static public function parse( $string ){
@@ -44,7 +47,7 @@ class Parser{
 			$message	= 'Invalid address given (must match '.$list.') - got '.$string ;
 			throw new \InvalidArgumentException( $message );
 		}
-		$address	= new \CeusMedia\Mail\Address();
+		$address	= new Address();
 		$address->setDomain( $domain );
 		$address->setLocalPart( $localPart );
 		$address->setName( $name );

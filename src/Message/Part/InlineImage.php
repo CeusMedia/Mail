@@ -183,7 +183,7 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 	/**
 	 *	Sets file name.
 	 *	@access		public
-	 *	@param		string   	File name
+	 *	@param		string   	$fileName		File name
 	 *	@return		object  	Self instance for chaining
 	 */
 	public function setFileName( $fileName ){
@@ -194,7 +194,7 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 	/**
 	 *	Sets file size in bytes.
 	 *	@access		public
-	 *	@param		string   	File name.
+	 *	@param		integer  	$fileSize		File size
 	 *	@return		object  	Self instance for chaining
 	 */
 	public function setFileSize( $size ){
@@ -205,7 +205,7 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 	/**
 	 *	Sets access time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		string   	$timestamp		Timestamp of latest access
+	 *	@param		integer   	$timestamp		Timestamp of latest access
 	 *	@return		object  	Self instance for chaining
 	 */
 	public function setFileATime( $timestamp ){
@@ -216,7 +216,7 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 	/**
 	 *	Sets creation time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		string   	$timestamp		Timestamp of creation
+	 *	@param		integer   	$timestamp		Timestamp of creation
 	 *	@return		object  	Self instance for chaining
 	 */
 	public function setFileCTime( $timestamp ){
@@ -227,7 +227,7 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 	/**
 	 *	Sets modification time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		string   	$timestamp		Timestamp of last modification
+	 *	@param		integer  	$timestamp		Timestamp of last modification
 	 *	@return		object  	Self instance for chaining
 	 */
 	public function setFileMTime( $timestamp ){
