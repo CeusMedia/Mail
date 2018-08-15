@@ -78,7 +78,7 @@ class SMTP{
 			$matches	= array();
 			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
 			if( !$matches )
-				throw new \RuntimeException( 'SMTP response not understood' );
+				throw new \RuntimeException( 'SMTP response not understood: '.$lastLine );
 			$code		= (int) $matches[1];
 			$buffer[]	= $matches[3];
 			if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
