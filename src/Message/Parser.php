@@ -43,8 +43,6 @@ class Parser{
 			case '7bit':
 			case '8bit':
 				$content	= mb_convert_encoding( $content, strtolower( $encoding ), "UTF-8" );
-				if( $split )
-					$content	= wordwrap( $content, $lineLength, $delimiter, TRUE );
 				break;
 			case 'base64':
 			case 'binary':
