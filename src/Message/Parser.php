@@ -38,6 +38,28 @@ namespace CeusMedia\Mail\Message;
  */
 class Parser{
 
+	static protected function decodePartContent( $content, $encoding ){
+		switch( strtolower( $encoding ) ){
+			case '7bit':
+			case '8bit':
+				$content	= mb_convert_encoding( $content, strtolower( $encoding ), "UTF-8" );
+				if( $split )
+					$content	= wordwrap( $content, $lineLength, $delimiter, TRUE );
+				break;
+			case 'base64':
+			case 'binary':
+				$content	= base64_decode( $content );
+				break;
+			case 'quoted-printable':
+				$content	= quoted_printable_decode( $content );
+				break;
+			default:
+				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
+		}
+		return $content;
+	}
+
+
 	static protected function getCharsetFromContentType( $contentType ){
 		$parts	= explode( ";", $contentType );
 		foreach( $parts as $part ){
@@ -163,6 +185,8 @@ class Parser{
 
 		if( $headers->hasField( 'Content-Transfer-Encoding' ) )
 			$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
+
+		$content	= self::decodePartContent( $content, $encoding );
 
 		if( $mimeType === 'message/rfc822' ){
 			$part	= new \CeusMedia\Mail\Message\Part\Mail( $content, $charset );
