@@ -1,0 +1,37 @@
+Return-Path: <test1@ceusmedia.de>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on viratron.itflow.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.9 required=7.0 tests=ALL_TRUSTED,BAYES_00,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
+X-Original-To: dev@ceusmedia.de
+Delivered-To: kriss@ceusmedia.de
+Received: from 134.red-83-39-36.dynamicip.rima-tde.net (134.red-83-39-36.dynamicip.rima-tde.net [83.39.36.134])
+	by viratron.itflow.de (Postfix) with ESMTPSA id F291616182E
+	for <dev@ceusmedia.de>; Sun, 14 Oct 2018 00:06:11 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ceusmedia.de;
+	s=default; t=1539468372;
+	bh=UEL5GaE5OMIamfjTIeGvdPV/PziXSuq1jnocixeqmA4=; l=105;
+	h=From:To:Subject;
+	b=NpQ9ZgsCwskB9mTfCvResnOEfrirGy6xe5cfHnvXr42oJOKNvNb24epCb35THSb1G
+	 MmVwmLkn891DBZdYAygpAJkOf/JxzbPkU6znMxcET4ukoUMzkesrN6iVQgQiVd2wwM
+	 Fd/yOW2KG4VGuqOqDwCD8HLGrGNKjvNCJhcRlJH8=
+Authentication-Results: viratron;
+	dmarc=pass (p=QUARANTINE sp=NONE) d=ceusmedia.de; header.from=ceusmedia.de;
+	dkim=pass header.i=test1@ceusmedia.de;
+        spf=pass (sender IP is 83.39.36.134) smtp.mailfrom=test1@ceusmedia.de smtp.helo=mail.itflow.de
+Received-SPF: pass (viratron: connection is authenticated)
+From: "Ceus Media Tester 1" <test1@ceusmedia.de>
+To: "Ceus Media Developer" <dev@ceusmedia.de>
+Message-ID: <6b12c409d3fc7773cca2a6cefc52e120d4466e80@localhost>
+Date: Sun, 14 Oct 2018 00:06:10 +0200
+Subject: CeusMedia/Mail: Demo Mail #5bc26c52aeb65
+MIME-Version: 1.0
+X-Mailer: CeusMedia::Mail/2.0
+Content-Type: text/plain; charset="utf-8"; format=fixed
+Content-Transfer-Encoding: quoted-printable
+X-PPP-Message-ID: <20181013220612.8834.6615@viratron.itflow.de>
+X-PPP-Vhost: itflow.de
+
+=C3=84=C3=96=C3=9C=C3=A4=C3=B6=C3=BC: This is just a test. The current UNIX=
+ timestamp is 1539468370.
+
