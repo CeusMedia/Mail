@@ -25,6 +25,9 @@
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Util\Dmarc;
+
+use \CeusMedia\Mail\Address;
+
 /**
  *	Renderer for DMARC records.
  *
@@ -36,6 +39,7 @@ namespace CeusMedia\Mail\Util\Dmarc;
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Renderer{
+
 	static public function render( $record ){
 		$facts	= array(
 			'v'		=> 'DMARC'.$record->version,
@@ -49,7 +53,7 @@ class Renderer{
 		if( $record->reportAggregate ){
 			$list	= array();
 			foreach( $record->reportAggregate as $uri ){
-				if( $uri instanceof \CeusMedia\Mail\Address )
+				if( $uri instanceof Address )
 					$uri	= 'mailto:'.$uri->get();
 				$list[]	= $uri;
 			}
@@ -58,7 +62,7 @@ class Renderer{
 		if( $record->reportForensic ){
 			$list	= array();
 			foreach( $record->reportForensic as $uri ){
-				if( $uri instanceof \CeusMedia\Mail\Address )
+				if( $uri instanceof Address )
 					$uri	= 'mailto:'.$uri->get();
 				$list[]	= $uri;
 			}

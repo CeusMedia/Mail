@@ -2,7 +2,7 @@
 /**
  *	Container for mail message header fields.
  *
- *	Copyright (c) 2007-2017 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,18 +20,22 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Header;
+
+use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+
 /**
  *	Container for mail message header fields.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -81,7 +85,7 @@ class Section{
 	 */
 	public function getField( $name ){
 		if( !$this->hasField( $name ) )
-			throw new \RangeException( 'Header "'.$name.'" is not availabe' );
+			throw new \RangeException( 'Header "'.$name.'" is not available' );
 		$values	= $this->getFieldsByName( $name );
 		return array_shift( $values );
 	}
@@ -165,7 +169,7 @@ class Section{
 	 *	@return		void
 	 */
 	public function setFieldPair( $name, $value, $emptyBefore = TRUE ){
-		$field	= new \CeusMedia\Mail\Message\Header\Field( $name, $value );
+		$field	= new MessageHeaderField( $name, $value );
 		return $this->setField( $field, $emptyBefore );
 	}
 
@@ -204,7 +208,7 @@ class Section{
 	public function toString( $keepCase = FALSE ){
 		$list	= $this->toArray( $keepCase );
 		if( $list )
-			return implode( \CeusMedia\Mail\Message::$delimiter, $list );
+			return implode( Message::$delimiter, $list );
 		return "";
 	}
 }

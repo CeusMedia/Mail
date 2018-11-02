@@ -2,7 +2,7 @@
 /**
  *	Evaluate existence of mail receiver address.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,18 +20,22 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address\Check;
+
+use \CeusMedia\Mail\Address;
+use \CeusMedia\Mail\Message;
+
 /**
  *	Evaluate existence of mail receiver address.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
@@ -54,7 +58,7 @@ class Availability{
 
 	public function __construct( $sender, $verbose = NULL ){
 		if( is_string( $sender ) )
-			$sender		= new \CeusMedia\Mail\Address( $sender );
+			$sender		= new Address( $sender );
 		$this->sender	= $sender;
 		$this->setVerbose( $verbose );
 		$this->lastResponse	= (object) array(
@@ -153,7 +157,7 @@ class Availability{
 
 	public function test( $receiver, $host = NULL, $port = 25, $force = FALSE ){
 		if( is_string( $receiver ) )
-			$receiver	= new \CeusMedia\Mail\Address( $receiver );
+			$receiver	= new Address( $receiver );
 		if( !$force ){
 			if( $this->cache->has( 'user:'.$receiver->getAddress() ) ){
 				return $this->cache->get( 'user:'.$receiver->getAddress() );
@@ -248,7 +252,7 @@ class Availability{
 		if( $this->verbose )
 			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
 		$this->lastResponse->request	= $message;
-		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
+		fputs( $connection, $message.Message::$delimiter );
 	}
 
 	public function setCache( \CeusMedia\Cache\AdapterAbstract $cache ){

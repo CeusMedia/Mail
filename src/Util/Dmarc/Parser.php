@@ -25,6 +25,10 @@
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Util\Dmarc;
+
+use \CeusMedia\Mail\Address;
+use \CeusMedia\Mail\Util\Dmarc\Record as UtilDmarcRecord;
+
 /**
  *	Parser for DMARC records.
  *
@@ -36,8 +40,9 @@ namespace CeusMedia\Mail\Util\Dmarc;
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Parser{
+
 	static public function parse( $content ){
-		$record		= new \CeusMedia\Mail\Util\Dmarc\Record();
+		$record		= new UtilDmarcRecord();
 		$content	= rtrim( trim( $content ), ';' );
 		$pairs		= preg_split( '/\s*;\s*/', $content );
 		foreach( $pairs as $pair ){
@@ -71,14 +76,14 @@ class Parser{
 					case 'rua':
 						foreach( preg_split( '/\s*,\s*/', $pair[1] ) as $part ){
 							if( preg_match( '/^mailto:/', $part ) )
-								$part	= new \CeusMedia\Mail\Address( preg_replace( '/^mailto:/', '', $part ) );
+								$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
 							$record->reportAggregate[]	= $part;
 						}
 						break;
 					case 'ruf':
 						foreach( preg_split( '/\s*,\s*/', $pair[1] ) as $part ){
 							if( preg_match( '/^mailto:/', $part ) )
-								$part	= new \CeusMedia\Mail\Address( preg_replace( '/^mailto:/', '', $part ) );
+								$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
 							$record->reportForensic[]	= $part;
 						}
 						break;

@@ -2,7 +2,7 @@
 /**
  *	Inline Image Mail Part.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,23 +20,28 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Part;
+
+use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Part as MessagePart;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
 /**
  *	Inline Image Mail Part.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class InlineImage extends \CeusMedia\Mail\Message\Part{
+class InlineImage extends MessagePart{
 
 	protected $content;
 	protected $fileName;
@@ -138,7 +143,7 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 	 */
 	public function render( $headers = NULL ){
 		if( !$headers )
-			$headers	= new \CeusMedia\Mail\Message\Header\Section();
+			$headers	= new MessageHeaderSection();
 		$headers->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
 		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
 		$headers->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
@@ -157,8 +162,8 @@ class InlineImage extends \CeusMedia\Mail\Message\Part{
 			$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
 		$headers->setFieldPair( 'Content-Disposition', join( '; ', $disposition ) );
 
-		$content	= $this->encode( $this->content, $this->encoding );
-		$delim		= \CeusMedia\Mail\Message::$delimiter;
+		$content	= static::encodeContent( $this->content, $this->encoding );
+		$delim		= Message::$delimiter;
 		return $headers->toString().$delim.$delim.$content;
 	}
 

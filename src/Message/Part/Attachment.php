@@ -2,7 +2,7 @@
 /**
  *	Attachment Mail Part.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,23 +20,28 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Part;
+
+use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Part as MessagePart;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
 /**
  *	Attachment Mail Part.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Attachment extends \CeusMedia\Mail\Message\Part{
+class Attachment extends MessagePart{
 
 	protected $content;
 	protected $fileName;
@@ -108,11 +113,8 @@ class Attachment extends \CeusMedia\Mail\Message\Part{
 	 */
 	public function render( $headers = NULL ){
 		if( !$headers )
-			$headers	= new \CeusMedia\Mail\Message\Header\Section();
+			$headers	= new MessageHeaderSection();
 
-		$headers->setFieldPair( 'Content-Type', $this->mimeType );
-		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-		$headers->setFieldPair( 'Content-Description', $this->fileName );
 
 		$disposition	= array(
 			'attachment',
@@ -126,10 +128,14 @@ class Attachment extends \CeusMedia\Mail\Message\Part{
 			$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
 		if( $this->fileMTime !== NULL )
 			$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
-		$headers->setFieldPair( 'Content-Disposition', join( '; ', $disposition ) );
 
-		$content	= $this->encode( $this->content, $this->encoding );
-		$delim		= \CeusMedia\Mail\Message::$delimiter;
+		$delim		= Message::$delimiter;
+		$headers->setFieldPair( 'Content-Disposition', join( ';'.$delim.' ', $disposition ) );
+		$headers->setFieldPair( 'Content-Type', $this->mimeType );
+		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+		$headers->setFieldPair( 'Content-Description', $this->fileName );
+
+		$content	= static::encodeContent( $this->content, $this->encoding );
 		return $headers->toString( TRUE ).$delim.$delim.$content;
 	}
 

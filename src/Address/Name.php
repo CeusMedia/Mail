@@ -1,5 +1,6 @@
 <?php
 namespace CeusMedia\Mail\Address;
+
 class Name{
 
 	static public function splitNameParts( $list ){

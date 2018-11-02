@@ -2,7 +2,7 @@
 /**
  *	Renderer for mails.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,18 +20,27 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message;
+
+use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Part as MessagePart;
+use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
 /**
  *	Renderer for mails.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -75,19 +84,19 @@ class Renderer{
 			'images'	=> array(),
 		);
 		foreach( $message->getParts( TRUE ) as $part ){
-			if( $part instanceof \CeusMedia\Mail\Message\Part\HTML )
+			if( $part instanceof MessagePartHTML )
 				$parts->body->html	= $part;
-			else if( $part instanceof \CeusMedia\Mail\Message\Part\Text )
+			else if( $part instanceof MessagePartText )
 				$parts->body->text	= $part;
-			else if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
+			else if( $part instanceof MessagePartInlineImage )
 				$parts->images[]	= $part;
-			else if( $part instanceof \CeusMedia\Mail\Message\Part\Attachment )
+			else if( $part instanceof MessagePartAttachment )
 				$parts->files[]	= $part;
-			else if( $part instanceof \CeusMedia\Mail\Message\Part\Mail )
+			else if( $part instanceof MessagePartMail )
 				$parts->files[]	= $part;
 		}
 
-		$delim			= \CeusMedia\Mail\Message::$delimiter;
+		$delim			= Message::$delimiter;
 		$mimeBoundary	= "------".md5( microtime( TRUE ) );					//  mixed multipart boundary
 		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );				//  related multipart boundary
 		$mimeBoundary2	= "------".md5( microtime( TRUE ) + 2 );				//  alternative multipart boundary

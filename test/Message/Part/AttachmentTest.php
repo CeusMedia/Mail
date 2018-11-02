@@ -157,7 +157,7 @@ class Message_Part_AttachmentTest extends PHPUnit_Framework_TestCase
 			"Content-Description: ".basename( $file ),
 		);
 		$headers	= join( $delimiter, $headers );
-		$content	= chunk_split( base64_encode( $content ), $lineLength, $delimiter );
+		$content	= \CeusMedia\Mail\Message\Part::wrapContent( base64_encode( $content ) );
 		$assertion	= $headers.$delimiter.$delimiter.$content;
 		$this->assertEquals( $assertion, $part->render() );
 
@@ -173,6 +173,5 @@ class Message_Part_AttachmentTest extends PHPUnit_Framework_TestCase
 		$headers	= join( $delimiter, $headers );
 		$assertion	= $headers.$delimiter.$delimiter.$content;
 		$this->assertEquals( $assertion, $part->render() );
-
 	}
 }

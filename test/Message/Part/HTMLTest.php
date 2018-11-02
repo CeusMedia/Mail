@@ -41,12 +41,22 @@ class Message_Part_HTMLTest extends PHPUnit_Framework_TestCase
 		$content	= "<b>This is the content with umlauts:</b> <em>äöü</em>.";
 
 		$part		= new \CeusMedia\Mail\Message\Part\HTML( $content, 'utf-8', 'quoted-printable' );
-		$assertion	= 'Content-Type: text/html;'.$this->delimiter.' charset="utf-8"'.$this->delimiter.'Content-Transfer-Encoding: quoted-printable'.$this->delimiter.$this->delimiter.quoted_printable_encode( $content );
+		$assertion	= join( $this->delimiter, array(
+			'Content-Type: text/html; charset="utf-8"; format=fixed',
+			'Content-Transfer-Encoding: quoted-printable',
+			'',
+			\CeusMedia\Mail\Message\Part::wrapContent( quoted_printable_encode( $content ) ),
+		) );
 		$this->assertEquals( $assertion, $part->render() );
 
 		$part		= new \CeusMedia\Mail\Message\Part\HTML( $content, 'utf-8', 'base64' );
 		$part->setMimeType( "text/xhtml" );
-		$assertion	= 'Content-Type: text/xhtml;'.$this->delimiter.' charset="utf-8"'.$this->delimiter.'Content-Transfer-Encoding: base64'.$this->delimiter.$this->delimiter.chunk_split( base64_encode( $content ), $this->lineLength );
+		$assertion	= join( $this->delimiter, array(
+			'Content-Type: text/xhtml; charset="utf-8"; format=fixed',
+			'Content-Transfer-Encoding: base64',
+			'',
+			\CeusMedia\Mail\Message\Part::wrapContent( base64_encode( $content ) ),
+		) );
 		$this->assertEquals( $assertion, $part->render() );
 	}
 }

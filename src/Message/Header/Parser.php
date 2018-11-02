@@ -2,7 +2,7 @@
 /**
  *	Mail message header field data object.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,17 +20,21 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Header;
+
+use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
 /**
  *	Mail message header field data object.
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -38,7 +42,7 @@ namespace CeusMedia\Mail\Message\Header;
 class Parser{
 
 	static public function parse( $content ){
-		$section	= new \CeusMedia\Mail\Message\Header\Section();
+		$section	= new MessageHeaderSection();
 		$content	= preg_replace( "/\r?\n[\t ]/", "", $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
 		foreach( $lines as $line ){
@@ -46,7 +50,7 @@ class Parser{
 			if( count( $parts ) > 1 ){
 				$value	= trim( $parts[1] );
 				if( substr( $value, 0, 2 ) == "=?" )
-					$value	= \CeusMedia\Mail\Message::decodeIfNeeded( $value );
+					$value	= Message::decodeIfNeeded( $value );
 				$section->addFieldPair( $parts[0], $value );
 			}
 		}

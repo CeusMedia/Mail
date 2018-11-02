@@ -2,7 +2,7 @@
 /**
  *	Data object for mail participants, having an address and optionally a name.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,11 +20,16 @@
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail;
+
+use \CeusMedia\Mail\Address\Parser as AddressParser;
+use \CeusMedia\Mail\Address\Renderer as AddressRenderer;
+use \CeusMedia\Mail\Message;
+
 /**
  *	Data object for mail participants, having an address and optionally a name.
  *
@@ -38,7 +43,7 @@ namespace CeusMedia\Mail;
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
@@ -78,13 +83,17 @@ class Address{
 		return $this->get();
 	}
 
+	static public function create( $string = NULL ){
+		return new self( $string );
+	}
+
 	/**
 	 *	Returns full address of mail participant with brackets and username (if available).
 	 *	@access		public
 	 *	@return		string		Full mail address with brackets and username (if available)
 	 */
 	public function get(){
-		return self::render( $this->getDomain(), $this->getLocalPart(), $this->getName() );
+		return self::render( $this );
 	}
 
 	/**
@@ -106,7 +115,7 @@ class Address{
 	 */
 	public function getDomain( $strict = TRUE ){
 		if( !$this->domain && $strict )
-			throw new \RuntimeException( 'No address set, yet' );
+			throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
 		return $this->domain;
 	}
 
@@ -119,7 +128,7 @@ class Address{
 	 */
 	public function getLocalPart( $strict = TRUE ){
 		if( !$this->localPart && $strict )
-			throw new \RuntimeException( 'No address set, yet' );
+			throw new \RuntimeException( 'No valid address set, yet (local part missing)' );
 		return $this->localPart;
 	}
 
@@ -136,15 +145,13 @@ class Address{
 	 *	Renders full mail address by given parts.
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
-	 *	@param		string		$domain		Domain of mail address
-	 *	@param		string		$localPart	Local part of mail address
-	 *	@param		string		$name		Name of mail address
-	 *	@return		string		Rendered mail address
-	 *	@throws		\InvalidArgumentException	if domain is empty
-	 *	@throws		\InvalidArgumentException	if local part is empty
+	 *	@static
+	 *	@param		Address		$adress		Address to render
+	 *	@throws		\RuntimeException		If domain is empty
+	 *	@throws		\RuntimeException		If local part is empty
 	 */
-	static public function render( $domain, $localPart, $name = NULL ){
-		return \CeusMedia\Mail\Address\Renderer::render( $domain, $localPart, $name );
+	static public function render( $address ){
+		return AddressRenderer::render( $address );
 	}
 
 	/**
@@ -158,7 +165,7 @@ class Address{
 		if( !strlen( trim( $string ) ) )
 			throw new \InvalidArgumentException( 'No address given' );
 
-		$address	= \CeusMedia\Mail\Address\Parser::parse( $string );
+		$address	= AddressParser::parse( $string );
 		$this->setDomain( $address->getDomain() );
 		$this->setLocalPart( $address->getLocalPart() );
 		$this->setName( $address->getName() );
@@ -194,7 +201,7 @@ class Address{
 	 *	@return		object		Own instance for chainability
 	 */
 	public function setName( $name ){
-		$this->name		= \CeusMedia\Mail\Message::decodeIfNeeded( $name );
+		$this->name		= Message::decodeIfNeeded( $name );
 		return $this;
 	}
 }

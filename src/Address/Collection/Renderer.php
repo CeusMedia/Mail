@@ -1,6 +1,6 @@
 <?php
 /**
- *	HTML Mail Part.
+ *	Renderer for list of addresses.
  *
  *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
@@ -18,31 +18,38 @@
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Message_Part
+ *	@package		CeusMedia_Mail_Parser
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-namespace CeusMedia\Mail\Message\Part;
+namespace CeusMedia\Mail\Address\Collection;
 
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use \CeusMedia\Mail\Address\Collection as AddressCollection;
 
 /**
- *	HTML Mail Part.
+ *	Parser for list of addresses collected as string.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Message_Part
+ *	@package		CeusMedia_Mail_Parser
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class HTML extends MessagePartText{
+class Renderer{
 
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		parent::__construct( $content, $charset, $encoding );
-		$this->setMimeType( 'text/html' );
+	static $delimiter		= ', ';
+
+	static public function render( AddressCollection $collection, $delimiter = NULL ){
+		$delimiter	= $delimiter ? $delimiter : static::$delimiter;
+		if( !strlen( $delimiter ) )
+			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
+		$list	= array();
+		foreach( $collection->getAll() as $address ){
+			$list[]	= $address->get();
+		}
+		return join( $delimiter, $list );
 	}
 }

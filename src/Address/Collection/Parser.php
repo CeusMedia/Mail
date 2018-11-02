@@ -2,7 +2,7 @@
 /**
  *	Parser for list of addresses collected as string.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,18 +20,21 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Parser
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address\Collection;
+
+use \CeusMedia\Mail\Address;
+
 /**
  *	Parser for list of addresses collected as string.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Parser
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -45,7 +48,7 @@ class Parser{
 
 	static public function parse( $string, $delimiter = "," ){
 		if( !strlen( $delimiter ) )
-			throw new InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
+			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
 		$list		= array();
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
 		if( !strlen( trim( $string ) ) )
@@ -110,7 +113,7 @@ class Parser{
 		$addresses	= array();
 		foreach( $list as $entry ){
 			$address		= trim( $entry['fullname'].' <'.$entry['address'].'>' );
-			$addresses[]	= new \CeusMedia\Mail\Address( $address );
+			$addresses[]	= new Address( $address );
 		}
 		return $addresses;
 	}

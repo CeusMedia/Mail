@@ -1,7 +1,7 @@
 <?php
 namespace CeusMedia\Mail\Address;
 
-use CeusMedia\Mail\Address;
+use \CeusMedia\Mail\Address;
 
 class Parser{
 
@@ -18,7 +18,7 @@ class Parser{
 	 *	@access		public
 	 *	@param		string		$string			Mail address to parse
 	 *	@return		Address		Address object
-	 *	@throws		InvalidArgumentException	if given string is not a valid mail address
+	 *	@throws		\InvalidArgumentException	if given string is not a valid mail address
 	 */
 	static public function parse( $string ){
 		$string		= stripslashes( trim( $string ) );

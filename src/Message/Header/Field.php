@@ -2,7 +2,7 @@
 /**
  *	Mail message header field data object.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,22 +20,24 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Header;
+
 /**
  *	Mail message header field data object.
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2017 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
 class Field{
+
 	/**	@var		string		$name		Name of header */
 	protected $name;
 	/**	@var		string		$value		Value of header */
@@ -54,6 +56,15 @@ class Field{
 	}
 
 	/**
+	 *	Alias for toString().
+	 *	@access		public
+	 *	@return		string
+	 */
+	public function __toString(){
+		return $this->toString( TRUE );
+	}
+
+	/**
 	 *	Returns set header name.
 	 *	By default all letters will be lowercased, before the first word letter is uppercased.
 	 *	If available mb_convert_case is used. Otherwise ucwords will do the trick.
@@ -64,7 +75,7 @@ class Field{
 	 *	@param		boolean		$ignoreMbConvertCase	Flag: do not use mb_convert_case even if it is available (needed to testing)
 	 *	@return		string		Header name
 	 */
-	public function getName( $keepCase = FALSE, $ignoreMbConvertCase = FALSE ){
+	public function getName( $keepCase = TRUE, $ignoreMbConvertCase = FALSE ){
 		if( $keepCase )
 			return $this->name;
 		if( function_exists( 'mb_convert_case' ) && !$ignoreMbConvertCase )
@@ -113,15 +124,6 @@ class Field{
 	 */
 	public function toString( $keepCase = TRUE ){
 		return $this->getName( $keepCase ).": ".$this->getValue();
-	}
-
-	/**
-	 *	Alias for toString().
-	 *	@access		public
-	 *	@return		string
-	 */
-	public function __toString(){
-		return $this->toString( TRUE );
 	}
 }
 ?>

@@ -25,6 +25,7 @@
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Util\Dmarc;
+
 /**
  *	Model for DMARC records.
  *
@@ -36,6 +37,7 @@ namespace CeusMedia\Mail\Util\Dmarc;
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Record{
+
 	const POLICY_UNKNOWN		= NULL;
 	const POLICY_NONE			= 'none';
 	const POLICY_QUARANTINE		= 'quarantine';

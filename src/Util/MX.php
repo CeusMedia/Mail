@@ -25,6 +25,9 @@
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Util;
+
+use \CeusMedia\Mail\Address;
+
 /**
  *	Resolver for DNS MX records related to hostname or mail address.
  *
@@ -45,7 +48,7 @@ class MX{
 
 	public function fromAddress( $address, $useCache = TRUE, $strict = TRUE ){
 		if( is_string( $address ) )
-			$address	= new \CeusMedia\Mail\Address( $address );
+			$address	= new Address( $address );
 		$hostname	= $address->getDomain();
 		return $this->fromHostname( $address->getDomain(), $useCache, $strict );
 	}

@@ -25,6 +25,12 @@
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail;
+
+use \CeusMedia\Mail\Address;
+
+use \CeusMedia\Mail\Message\Parser as MessageParser;
+use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
+
 /**
  *	Handler for IMAP mailboxes.
  *
@@ -117,7 +123,7 @@ class Mailbox{
 		if( !$header )
 			throw new \RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
-		return (object) Message\Parser::parse( $header.PHP_EOL.PHP_EOL.$body );
+		return (object) MessageParser::parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
 	public function getMailHeaders( $mailId, $strict = TRUE ){
@@ -125,7 +131,7 @@ class Mailbox{
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( !$header )
 			throw new \RuntimeException( 'Invalid mail ID' );
-		return Message\Header\Parser::parse( $header );
+		return MessageHeaderParser::parse( $header );
 	}
 
 	public function index( $criteria = array(), $sort = SORTARRIVAL, $reverse = FALSE, $strict = TRUE ){

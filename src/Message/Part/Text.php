@@ -2,7 +2,7 @@
 /**
  *	Mail Attachment Data Object.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,30 +20,34 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Part;
+
+use \CeusMedia\Mail\Message\Part as MessagePart;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
 /**
  *	Mail Attachment Data Object.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Text extends \CeusMedia\Mail\Message\Part{
+class Text extends MessagePart{
 
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' ){
 		$this->setContent( $content );
 		$this->setMimeType( 'text/plain' );
 		$this->setCharset( $charset );
-		$this->setFormat( 'fixed' );
 		$this->setEncoding( $encoding );
+		$this->setFormat( 'fixed' );
 	}
 
 	/**
@@ -53,7 +57,7 @@ class Text extends \CeusMedia\Mail\Message\Part{
 	 */
 	public function render( $headers = NULL ){
 		if( !$headers )
-			$headers	= new \CeusMedia\Mail\Message\Header\Section();
+			$headers	= new MessageHeaderSection();
 		$delim	= \CeusMedia\Mail\Message::$delimiter;
 		$headers->setFieldPair( 'Content-Type', join( '; ', array(
 			$this->mimeType,
@@ -61,7 +65,7 @@ class Text extends \CeusMedia\Mail\Message\Part{
 			'format='.$this->format
 		) ) );
 		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-		$content	= $this->encode( $this->content, $this->encoding );
+		$content	= static::encodeContent( $this->content, $this->encoding );
 		return $headers->toString( TRUE ).$delim.$delim.$content;
 	}
 }
