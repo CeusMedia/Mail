@@ -27,6 +27,8 @@
 namespace CeusMedia\Mail\Address\Collection;
 
 use \CeusMedia\Mail\Address;
+use \CeusMedia\Mail\Address\Collection as AddressCollection;
+use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
 
 /**
  *	Parser for list of addresses collected as string.
@@ -40,13 +42,63 @@ use \CeusMedia\Mail\Address;
  */
 class Parser{
 
+	const METHOD_AUTO					= 0;
+	const METHOD_IMAP					= 1;
+	const METHOD_OWN					= 2;
+	const METHOD_IMAP_PLUS_OWN			= 3;
+
 	const STATE_SCANNING_FOR_NAME		= 0;
 	const STATE_READING_NAME			= 1;
 	const STATE_READING_QUOTED_NAME		= 2;
 	const STATE_SCANNING_FOR_ADDRESS	= 3;
 	const STATE_READING_ADDRESS			= 4;
 
+	static public $method				= 0;
+
 	static public function parse( $string, $delimiter = "," ){
+		$method		= static::$method;
+//		$hasImap	= function_exists( 'imap_rfc822_parse_adrlist' );
+		$hasImap	= extension_loaded( 'imap' );
+		/*  downgrade  */
+		if( $method === static::METHOD_IMAP_PLUS_OWN && !$hasImap )
+			$method = static::METHOD_OWN;
+		if( $method === static::METHOD_IMAP && !$hasImap )
+			$method = static::METHOD_AUTO;
+		/*  upgrade  */
+		if( $method === static::METHOD_AUTO && $hasImap )
+			$method = static::METHOD_IMAP;
+		if( $method === static::METHOD_AUTO )
+			$method = static::METHOD_OWN;
+		switch( $method ){
+			case static::METHOD_IMAP_PLUS_OWN:
+				$collection	= static::parseUsingImap( $string );									//  get collection using IMAP functions
+				$string		= AddressCollectionRenderer::render( $collection );						//  render collection string
+				return static::parseUsingOwn( $string );											//  get collection using own implementation
+			case static::METHOD_IMAP:
+				return static::parseUsingImap( $string );											//  get collection using IMAP functions
+			case static::METHOD_OWN;
+				return static::parseUsingOwn( $string );											//  get collection using own implementation
+			default:
+				throw new \RangeException( 'No supported parser set' );
+		}
+	}
+
+	static public function parseUsingImap( $string ){
+		$string			= trim( $string, '\t\r\n, ' );
+		$collection		= new AddressCollection();
+		$list			= imap_rfc822_parse_adrlist( $string, '_invalid.tld' );
+		foreach( $list as $item ){
+			$address	= new Address();
+			$address->setLocalPart( $item->mailbox );
+			$address->setDomain( $item->host );
+			if( !empty( $item->personal ) )
+				$address->setName( $item->personal );
+			$collection->add( $address );
+		}
+		return $collection;
+	}
+
+	static public function parseUsingOwn( $string, $delimiter = ',' ){
 		if( !strlen( $delimiter ) )
 			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
 		$list		= array();
@@ -110,11 +162,11 @@ class Parser{
 		if( $buffer && $status )
 			$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
 
-		$addresses	= array();
+		$collection	= new AddressCollection();
 		foreach( $list as $entry ){
 			$address		= trim( $entry['fullname'].' <'.$entry['address'].'>' );
-			$addresses[]	= new Address( $address );
+			$collection->add( new Address( $address ) );
 		}
-		return $addresses;
+		return $collection;
 	}
 }
