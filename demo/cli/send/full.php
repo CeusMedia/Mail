@@ -1,19 +1,13 @@
 <?php
-(@include '../../vendor/autoload.php') or die('Please use composer to install required packages.');
+require_once dirname( __DIR__ ).'/_bootstrap.php';
+
+$smtp		= (object) $config->getAll( 'SMTP_' );
+$sending	= (object) $config->getAll( 'sending_' );
+
 new UI_DevOutput;
-
-if(!file_exists("config.ini"))
-	die('Please copy "config.ini.dist" to "config.ini" and configure it.');
-
-$config	= (object) parse_ini_file("config.ini");
 
 /*  PREPARATION  */
 $verbose		= !TRUE;
-
-$smtpServer		= $config->host;
-$smtpPort		= $config->port;
-$smtpUsername	= $config->username;
-$smtpPassword	= $config->password;
 
 $sender			= "dev@ceusmedia.de";
 $receiverTo		= "dev@ceusmedia.de";
@@ -42,14 +36,14 @@ $bodyHtml		= '<html>
 /*  EXECUTION  */
 try {
 	//  prepare SMTP transport
-	$transport	= new \CeusMedia\Mail\Transport\SMTP($smtpServer, $smtpPort);		//  create SMTP transport
-	$transport->setUsername($smtpUsername);											//  set SMTP auth username
-	$transport->setPassword($smtpPassword);											//  set SMTP auth password
+	$transport	= new \CeusMedia\Mail\Transport\SMTP($smtp->host, $smtp->port);		//  create SMTP transport
+	$transport->setUsername($smtp->username);										//  set SMTP auth username
+	$transport->setPassword($smtp->password);										//  set SMTP auth password
 	$transport->setVerbose($verbose);												//  toggle verbosity - you can remove this line
 
 	//  check if receiver exists on server
 	$check		= new \CeusMedia\Mail\Address\Check\Availability($sender);						//  create checker for receiver
-	$check->setVerbose(!$verbose);													//  toggle verbosity - you can remove this line
+	$check->setVerbose($verbose);													//  toggle verbosity - you can remove this line
 	if (!$check->test($receiverTo)) {												//  receiver is not existing
 		$error	= $check->getLastError();
 		print_m( $error );
@@ -66,8 +60,8 @@ try {
 	$message->setSubject($subject);													//  set mail subject
 	$message->addText($bodyText);													//  set mail content as plain text part
 	$message->addHtml($bodyHtml);													//  set mail content as HTML part
-	$message->addHtmlImage('logo', '../../logo.png');								//  add inline image
-	$message->addFile("../../readme.md");
+	$message->addHtmlImage('logo', '../../../logo.png');								//  add inline image
+	$message->addFile("../../../readme.md");
 	$message->setReadNotificationRecipient($sender);
 
 	//  send message

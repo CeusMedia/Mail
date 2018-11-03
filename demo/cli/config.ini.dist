@@ -1,11 +1,18 @@
+[SMTP]
 host			= ""
 port			= 25
 username		= ""
 password		= ""
 
+[sending]
 senderAddress	= ""
 senderName		= "Sender Name"
 receiverName	= "Receiver Name"
 receiverAddress	= ""
 subject			= "CeusMedia/Mail: Demo Mail #%s"
 body			= "This is just a test. The current UNIX timestamp is %s."
+
+[mailbox]
+address			= ""
+username		= ""
+password		= ""
