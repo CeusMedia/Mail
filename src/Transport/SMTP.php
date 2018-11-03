@@ -67,17 +67,15 @@ class SMTP{
 	public function __construct( $host, $port = 25, $username = NULL, $password = NULL ){
 		$this->setHost( $host );
 		$this->setPort( $port );
-		$this->setSecure( in_array( $port, array( 465, 587 ) ) );
 		$this->setUsername( $username );
 		$this->setPassword( $password );
-
-		$this->socket	= new SmtpSocket( $this->host, $this->port );
+		$this->socket	= new SmtpSocket( $this->host, (int) $this->port );
 	}
 
 	protected function checkResponse( $acceptedCodes = array() ){
 		$response	= $this->socket->readResponse( 1024 );
 		if( $this->verbose )
-			print ' < '.$response->raw;
+			print ' < '.join( PHP_EOL."   ", $response->raw );
 		if( $acceptedCodes && !in_array( $response->code, $acceptedCodes ) )
 			throw new \RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
 		return $response;
@@ -196,11 +194,14 @@ class SMTP{
 	/**
 	 *	Sets SMTP port.
 	 *	@access		public
-	 *	@param		integer		$port		SMTP server port
+	 *	@param		integer		$port			SMTP server port
+	 * 	@param		boolean		$detectSecure	Flag: set secure depending on port (default: yes)
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setPort( $port ){
+	public function setPort( $port, $detectSecure = TRUE ){
 		$this->port		= $port;
+		if( $detectSecure )
+			$this->setSecure( in_array( $port, array( 465, 587 ) ) );
 		return $this;
 	}
 
