@@ -65,16 +65,18 @@ class Socket{
 	}
 
 	/**
-	 *	Static constructor.
+	 *	Alias for getInstance.
 	 *	@access		public
 	 *	@static
 	 *	@param		string		$host		SMTP server host name
 	 *	@param		integer		$port		SMTP server port
 	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
 	 *	@return		self
+	 *	@deprecated	use getInstance instead
+	 *	@todo		to be removed
 	 */
 	public static function create( $host = NULL, $port = NULL, $timeout = NULL ){
-		return new self( $host, $port, $timeout );
+		return static::getInstance( $host, $port, $timeout );
 	}
 
 	/**
@@ -135,6 +137,19 @@ class Socket{
 	 */
 	public function getHost(){
 		return $this->host;
+	}
+
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$host		SMTP server host name
+	 *	@param		integer		$port		SMTP server port
+	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
+	 *	@return		self
+	 */
+	public static function getInstance( $host = NULL, $port = NULL, $timeout = NULL ){
+		return new self( $host, $port, $timeout );
 	}
 
 	/**
@@ -204,7 +219,7 @@ class Socket{
 		$raw		= array();
 		do{
 			$response	= fgets( $this->connection, $length );
-			$raw[]		= $response;
+			$raw[]		= rtrim( $response, "\r\n" );
 			$matches	= array();
 			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
 			if( !$matches )

@@ -83,6 +83,11 @@ class Address{
 		return $this->get();
 	}
 
+	/**
+	 *	Alias for getInstance.
+	 *	@deprecated		use getInstance instead
+	 *	@todo			to be removed
+	 */
 	static public function create( $string = NULL ){
 		return new self( $string );
 	}
@@ -117,6 +122,16 @@ class Address{
 		if( !$this->domain && $strict )
 			throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
 		return $this->domain;
+	}
+
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@param		string		$string		Full mail address to parse, optional
+	 *	@return		void
+	 */
+	static public function getInstance( $string = NULL ){
+		return new self( $string );
 	}
 
 	/**

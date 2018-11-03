@@ -249,8 +249,16 @@ class Message{
 		return $this->addPart( $part );
 	}
 
+	/**
+	 *	Alias for getInstance.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 *	@deprecated	use getInstance instead
+	 *	@todo		to be removed
+	 */
 	public static function create(){
-		return new self();
+		return static::getInstance();
 	}
 
 	/**
@@ -376,8 +384,14 @@ class Message{
 		return $list;
 	}
 
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
 	static public function getInstance(){
-		return new self;
+		return new static;
 	}
 
 	/**
