@@ -19,7 +19,9 @@ $html->addBody( UI_HTML_Tag::create( 'div', array(
 
 $message	= new \CeusMedia\Mail\Message();
 $message->addHtml( $html->build() );
+//$message->addText( "TEXT" );
 $message->addInlineImage( 'image1', '1x1-3094d7bf.png' );
+//$message->addFile( '1x1-3094d7bf.png' );
 $message->setSubject( $config->subject );
 
 
