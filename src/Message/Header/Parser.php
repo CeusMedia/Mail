@@ -38,10 +38,17 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
+ *	@todo			implement IMAP parser
  */
 class Parser{
 
 	static public function parse( $content ){
+/*		if( function_exists( 'imap_rfc822_parse_headers' ) ){
+			$section	= new MessageHeaderSection();
+			$headers	= imap_rfc822_parse_headers( $content );
+			print_r( $headers );die;
+		}*/
+
 		$section	= new MessageHeaderSection();
 		$content	= preg_replace( "/\r?\n[\t ]/", "", $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
