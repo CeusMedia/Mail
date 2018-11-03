@@ -51,6 +51,7 @@ class Mailbox{
 	protected $validateCertificates		= TRUE;
 
 	public function __construct( $address, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
+		$this->checkExtensionInstalled( TRUE );
 		if( is_string( $address ) )
 			$address	= new Address( $address );
 		$this->address	= $address;
@@ -79,6 +80,14 @@ class Mailbox{
 		return FALSE;
 	}
 
+	static public function checkExtensionInstalled( $strict = TRUE ){
+		if( extension_loaded( 'imap' ) )
+			return TRUE;
+		if( $strict )
+			throw new RuntimeException( 'PHP extension "imap" not installed, but needed' );
+		return FALSE;
+	}
+
 	public function connect( $strict = TRUE ){
 		$port		= 143;
 		$flags		= array();
@@ -91,6 +100,8 @@ class Mailbox{
 				$options	|= OP_SECURE;
 			}
 		}
+		if( !$this->validateCertificates )
+			$flags[]	= 'novalidate-cert';
 		$flags	= $flags ? '/'.join( '/', $flags ) : '';
 
 		$mx			= new Util\MX();
@@ -115,6 +126,19 @@ class Mailbox{
 		if( $this->checkConnection( FALSE, FALSE ) )
 			return imap_close( $this->connection, CL_EXPUNGE );
 		return TRUE;
+	}
+
+	public static function getInstance( $address, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
+		return new self( $address, $username, $password, $secure, $validateCertificates );
+	}
+
+	public function getMail( $mailId, $strict = TRUE ){
+		$this->checkConnection( TRUE, $strict );
+		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
+		if( !$header )
+			throw new \RuntimeException( 'Invalid mail ID' );
+		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
+		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
 	public function getMailAsMessage( $mailId, $strict = TRUE ){
