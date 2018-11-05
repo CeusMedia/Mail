@@ -43,12 +43,6 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 class Parser{
 
 	static public function parse( $content ){
-/*		if( function_exists( 'imap_rfc822_parse_headers' ) ){
-			$section	= new MessageHeaderSection();
-			$headers	= imap_rfc822_parse_headers( $content );
-			print_r( $headers );die;
-		}*/
-
 		$section	= new MessageHeaderSection();
 		$content	= preg_replace( "/\r?\n[\t ]/", "", $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields

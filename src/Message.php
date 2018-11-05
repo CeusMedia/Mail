@@ -31,6 +31,13 @@ use \CeusMedia\Mail\Address\Collection as AddressCollection;
 use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
+use \CeusMedia\Mail\Message\Part as MessagePart;
+use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
 /**
  *	Collector container for mails
  *
@@ -86,7 +93,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addAttachment( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new MessagePartAttachment();
 		$part->setFile( $filePath, $mimeType, $encoding );
 		if( $fileName )
 			$part->setFileName( $fileName );
@@ -141,7 +148,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addHtml( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		return $this->addPart( new \CeusMedia\Mail\Message\Part\HTML( $content, $charset, $encoding ) );
+		return $this->addPart( new MessagePartHTML( $content, $charset, $encoding ) );
 	}
 
 	/**
@@ -170,7 +177,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addInlineImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
-		$part	= new \CeusMedia\Mail\Message\Part\InlineImage( $id, $filePath, $mimeType, $encoding );
+		$part	= new MessagePartInlineImage( $id, $filePath, $mimeType, $encoding );
 		return $this->addPart( $part );
 	}
 
@@ -183,7 +190,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addMail( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		$part	= new \CeusMedia\Mail\Message\Part\Mail( $content, $mimeType, $encoding );
+		$part	= new MessagePartMail( $content, $mimeType, $encoding );
 		return $this->addPart( $part );
 	}
 
@@ -191,10 +198,10 @@ class Message{
 	 *	General way to add another mail part.
 	 *	More specific: addText, addHtml, addHtmlImage, addAttachment.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Message\Part	$part		Part of mail
-	 *	@return		object							Message object for chaining
+	 *	@param		MessagePart	$part		Part of mail
+	 *	@return		object		Message object for chaining
 	 */
-	public function addPart( \CeusMedia\Mail\Message\Part $part ){
+	public function addPart( MessagePart $part ){
 		$this->parts[]	= $part;
 		return $this;
 	}
@@ -245,7 +252,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		$part	= new \CeusMedia\Mail\Message\Part\Text( $content, $charset, $encoding );
+		$part	= new MessagePartText( $content, $charset, $encoding );
 		return $this->addPart( $part );
 	}
 
@@ -299,7 +306,7 @@ class Message{
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
-	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
 	static public function decodeIfNeeded( $string, $encoding = "base64" ){
 		if( !preg_match( "/^=\?(\S+)\?(\S)\?(.+)\?=$/", $string ) )
@@ -338,12 +345,12 @@ class Message{
 	public function getAttachments( $withInlineImages = TRUE ){
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof \CeusMedia\Mail\Message\Part\Attachment )
+			if( $part instanceof MessagePartAttachment )
 				$list[]	= $part;
-			if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
+			if( $part instanceof MessagePartInlineImage )
 				if( $withInlineImages )
 					$list[]	= $part;
-			if( $part instanceof \CeusMedia\Mail\Message\Part\Mail )
+			if( $part instanceof MessagePartMail )
 				$list[]	= $part;
 		}
 		return $list;
@@ -372,6 +379,18 @@ class Message{
 	}
 
 	/**
+	 *	Returns set or empty HTML part.
+	 *	@access		public
+	 *	@return		MessagePartHTML
+	 */
+	public function getHtml(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartHTML )
+				return $part;
+		return new MessagePartHtml( '' );
+	}
+
+	/**
 	 *	Returns list inline images to be embeded with HTML.
 	 *	@access		public
 	 *	@return		array
@@ -379,7 +398,7 @@ class Message{
 	public function getInlineImages(){
 		$list	= array();
 		foreach( $this->parts as $part )
-			if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
+			if( $part instanceof MessagePartInlineImage )
 				$list[]	= $part;
 		return $list;
 	}
@@ -402,7 +421,7 @@ class Message{
 	public function getMails(){
 		$list	= array();
 		foreach( $this->parts as $part )
-			if( $part instanceof \CeusMedia\Mail\Message\Part\Mail )
+			if( $part instanceof MessagePartMail )
 				$list[]	= $part;
 		return $list;
 	}
@@ -418,10 +437,10 @@ class Message{
 			return $this->parts;
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof \CeusMedia\Mail\Message\Part\Attachment )
+			if( $part instanceof MessagePartAttachment )
 				if( !$withAttachments)
 					continue;
-			if( $part instanceof \CeusMedia\Mail\Message\Part\InlineImage )
+			if( $part instanceof MessagePartInlineImage )
 				if( !$withAttachments)
 					continue;
 			$list[]	= $part;
@@ -465,12 +484,84 @@ class Message{
 	}
 
 	/**
+	 *	Returns set or empty text part.
+	 *	@access		public
+	 *	@return		MessagePartText
+	 */
+	public function getText(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartText )
+				return $part;
+		return new MessagePartText( '' );
+	}
+
+	/**
 	 *	Returns mail user agent.
 	 *	@access		public
 	 *	@return		string
 	 */
 	public function getUserAgent(){
 		return $this->userAgent;
+	}
+
+	/**
+	 *	Indicates whether attachments are set.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasAttachments(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartAttachment )
+				return TRUE;
+		return FALSE;
+	}
+
+	/**
+	 *	Indicates whether an HTML part is set.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasHTML(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartHTML )
+				return TRUE;
+		return FALSE;
+	}
+
+	/**
+	 *	Indicates whether inline images are set.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasInlineImages(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartInlineImage )
+				return TRUE;
+		return FALSE;
+	}
+
+	/**
+	 *	Indicates whether mails where attached.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasMails(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartMail )
+				return TRUE;
+		return FALSE;
+	}
+
+	/**
+	 *	Indicates whether a text part is set.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasText(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartText )
+				return TRUE;
+		return FALSE;
 	}
 
 	public function setReadNotificationRecipient( $participant, $name = NULL ){
@@ -510,7 +601,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function setSubject( $subject ){
-		$this->subject	= \CeusMedia\Mail\Message::decodeIfNeeded( $subject );
+		$this->subject	= Message::decodeIfNeeded( $subject );
 		return $this;
 	}
 
