@@ -24,7 +24,6 @@ $message->addInlineImage( 'image1', '1x1-3094d7bf.png' );
 //$message->addFile( '1x1-3094d7bf.png' );
 $message->setSubject( $config->subject );
 
-
 if( $config->username && $config->password ){
 	if( $config->senderAddress && $config->receiverAddress ){
 		$message->setSender( $config->senderAddress, $config->senderName );
