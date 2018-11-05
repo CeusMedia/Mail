@@ -72,7 +72,7 @@ abstract class Part{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
-				$content	= mb_convert_encoding( $content, strtolower( $encoding ), "UTF-8" );
+				$content	= mb_convert_encoding( $content, strtolower( $encoding ), 'UTF-8' );
 				break;
 			case 'base64':
 			case 'binary':
@@ -83,6 +83,8 @@ abstract class Part{
 					$content	= imap_qprint( $content );
 				else
 					$content	= quoted_printable_decode( $content );
+				break;
+			case '':
 				break;
 			default:
 				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
@@ -96,7 +98,7 @@ abstract class Part{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
-				$content	= mb_convert_encoding( $content, "UTF-8", strtolower( $encoding ) );
+				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
 				if( $split && strlen( $content ) > $lineLength )
 					$content	= static::wrapContent( $content, $lineLength, $delimiter, TRUE );
 				break;
@@ -111,6 +113,8 @@ abstract class Part{
 					$content	= imap_8bit( $content );
 				else
 					$content	= quoted_printable_encode( $content );
+				break;
+			case '':
 				break;
 			default:
 				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
@@ -203,14 +207,14 @@ abstract class Part{
 	}
 
 	public function setEncoding( $encoding ){
-		$encodings	= array( "7bit", "8bit", "base64", "quoted-printable", "binary" );
+		$encodings	= array( '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' );
 		if( !in_array( $encoding, $encodings ) )
 			throw new \InvalidArgumentException( 'Invalid encoding: '.$encoding );
 		$this->encoding	= $encoding;
 	}
 
 	public function setFormat( $format ){
-		$formats	= array( "fixed", "flowed" );
+		$formats	= array( 'fixed', 'flowed' );
 		if( !in_array( $format, $formats ) )
 			throw new \InvalidArgumentException( 'Invalid format' );
 		$this->format	= $format;
