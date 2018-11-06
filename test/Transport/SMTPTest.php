@@ -85,7 +85,7 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 		return $this->log;
 	}
 
-	public function open(){
+	public function open( $forceReopen = FALSE ){
 		$this->connection	= TRUE;
 	}
 

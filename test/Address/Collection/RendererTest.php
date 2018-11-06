@@ -68,4 +68,16 @@ class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
 		$assertion	= 'Developer <dev@ceusmedia.de>, "Alpha Tester" <test@ceusmedia.de>';
 		$this->assertEquals( $assertion, Renderer::render( $collection ) );
 	}
+
+	public function testRender7(){
+		$collection		= new \CeusMedia\Mail\Address\Collection( array() );
+		$assertion	= '';
+		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+	}
+
+	public function testRenderException(){
+		$collection	= new \CeusMedia\Mail\Address\Collection();
+		$this->setExpectedException( 'InvalidArgumentException' );
+		Renderer::render( $collection, ' ' );
+	}
 }
