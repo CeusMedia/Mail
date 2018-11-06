@@ -18,7 +18,7 @@ class Header_FieldTest extends PHPUnit_Framework_TestCase
 	{
 		$header	= new \CeusMedia\Mail\Header\Field( "key", "value" );
 		$assertion	= true;
-		$creation	= (bool) count( $header->toString() );
+		$creation	= (bool) strlen( $header->toString() );
 		$this->assertEquals( $assertion, $creation );
 	}
 

@@ -48,6 +48,9 @@ class Check_AddressTest extends PHPUnit_Framework_TestCase{
 		$this->assertEquals( $assertion, $creation );
 	}
 
+	/**
+	 *	@expected	\InvalidArgumentException
+	 */
 	public function testCheckException(){
 		$this->setExpectedException( "InvalidArgumentException" );
 		\CeusMedia\Mail\Check\Address::check( "foo.bar.@example.com" );

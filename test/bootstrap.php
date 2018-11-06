@@ -15,5 +15,10 @@ if( !@include_once dirname( __DIR__ ).'/vendor/autoload.php' ){
 	require_once $path . 'Parser/AddressList.php';
 	require_once $path . 'Renderer.php';
 }
+if( !class_exists( 'PHPUnit_Framework_TestCase' ) ){
+	if( class_exists( 'PHPUnit\\Framework\\TestCase' ) ){
+		class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase{}
+	}
+}
 
 //class Test_Case extends PHPUnit_Framework_TestCase{}
