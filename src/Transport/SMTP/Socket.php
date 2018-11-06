@@ -64,6 +64,10 @@ class Socket{
 			$this->setPort( abs( $timeout ) );
 	}
 
+	public function __destruct(){
+		$this->close();
+	}
+
 	/**
 	 *	Alias for getInstance.
 	 *	@access		public
@@ -85,8 +89,10 @@ class Socket{
 	 *	@return		self
 	 */
 	public function close(){
-		if( $this->connection )
+		if( $this->connection ){
 			fclose( $this->connection );
+			$this->connection	= NULL;
+		}
 		return $this;
 	}
 
