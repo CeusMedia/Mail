@@ -44,8 +44,8 @@ class Renderer{
 
 	static public function render( AddressCollection $collection, $delimiter = NULL ){
 		$delimiter	= $delimiter ? $delimiter : static::$delimiter;
-		if( !strlen( $delimiter ) )
-			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
+		if( !strlen( trim( $delimiter ) ) )
+			throw new \InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$list	= array();
 		foreach( $collection->getAll() as $address ){
 			$list[]	= $address->get();
