@@ -44,17 +44,16 @@ use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 class Mailbox{
 
 	protected $connection;
-	protected $address;
+//	protected $address;
 	protected $username;
 	protected $password;
+	protected $host;
 	protected $secure					= TRUE;
 	protected $validateCertificates		= TRUE;
 
-	public function __construct( $address, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
+	public function __construct( $host, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
 		$this->checkExtensionInstalled( TRUE );
-		if( is_string( $address ) )
-			$address	= new Address( $address );
-		$this->address	= $address;
+		$this->setHost( $host );
 		if( $username && $password )
 			$this->setAuth( $username, $password );
 		$this->setSecure( $secure, $validateCertificates );
@@ -104,18 +103,11 @@ class Mailbox{
 			$flags[]	= 'novalidate-cert';
 		$flags	= $flags ? '/'.join( '/', $flags ) : '';
 
-		$mx			= new Util\MX();
-		$servers	= $mx->fromAddress( $this->address );
-		if( !$servers )
-			throw new \RuntimeException( 'No mail servers detected for address: '.$this->address->get() );
-
-		foreach( $servers as $server ){
-			$uri		= '{'.$server.':'.$port.$flags.'}INBOX';
-			$resource	= imap_open( $uri, $this->username, $this->password, $options );
-			if( $resource ){
-				$this->connection	= $resource;
-				return TRUE;
-			}
+		$uri		= '{'.$this->host.':'.$port.$flags.'}INBOX';
+		$resource	= imap_open( $uri, $this->username, $this->password, $options );
+		if( $resource ){
+			$this->connection	= $resource;
+			return TRUE;
 		}
 		if( $strict )
 			throw new \RuntimeException( 'Connection to server failed' );
@@ -128,8 +120,8 @@ class Mailbox{
 		return TRUE;
 	}
 
-	public static function getInstance( $address, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
-		return new self( $address, $username, $password, $secure, $validateCertificates );
+	public static function getInstance( $host, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
+		return new self( $host, $username, $password, $secure, $validateCertificates );
 	}
 
 	public function getMail( $mailId, $strict = TRUE ){
@@ -160,6 +152,8 @@ class Mailbox{
 
 	public function index( $criteria = array(), $sort = SORTARRIVAL, $reverse = FALSE, $strict = TRUE ){
 		$this->checkConnection( TRUE, $strict );
+		if( !is_array( $criteria ) && is_string( $criteria ) )
+			$criteria	= array( $criteria );
 		return imap_sort( $this->connection, $sort, $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 	}
 
@@ -173,6 +167,10 @@ class Mailbox{
 		$this->username	= $username;
 		$this->password	= $password;
 		return $this;
+	}
+
+	public function setHost( $host ){
+		$this->host	= $host;
 	}
 
 	/**
@@ -200,6 +198,18 @@ class Mailbox{
 		$this->secure				= $secure;
 		$this->validateCertificates	= $validateCertificates;
 		return $this;
+	}
+
+	public function setTimeout( $type, $seconds ){
+		$timeoutTypes	= array(
+			IMAP_OPENTIMEOUT,
+			IMAP_READTIMEOUT,
+			IMAP_WRITETIMEOUT,
+			IMAP_CLOSETIMEOUT
+		);
+		if( !in_array( $type, $timeoutTypes ) )
+			throw new \InvalidArgumentException( 'Invalid timeout type' );
+		imap_timeout( $timeoutTypes, $seconds );
 	}
 
 	/**

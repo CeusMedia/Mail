@@ -14,5 +14,6 @@ body			= "This is just a test. The current UNIX timestamp is %s."
 
 [mailbox]
 address			= ""
+host			= ""
 username		= ""
 password		= ""

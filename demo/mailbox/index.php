@@ -73,7 +73,7 @@ class DemoMailboxApp{
 			die( 'Error: No mailbox user name defined.' );
 		if( !$this->config->password )
 			die( 'Error: No mailbox user password defined.' );
-		$this->mailbox	= new Mailbox( $this->config->address, $this->config->username, $this->config->password );
+		$this->mailbox	= new Mailbox( $this->config->host, $this->config->username, $this->config->password );
 		$this->mailbox->setSecure( FALSE, FALSE );
 		$this->mailbox->connect();
 	}
