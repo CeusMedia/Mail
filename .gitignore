@@ -1,5 +1,6 @@
 vendor
 composer.lock
 demo/config.ini
+demo/cli/config.ini
 doc
 Mail.ini

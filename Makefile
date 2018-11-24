@@ -15,8 +15,8 @@ dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
 	@php vendor/ceus-media/doc-creator/doc.php --config-file=doc.xml
 
-dev-test: composer-install-dev
-	vendor/bin/phpunit
+dev-test: composer-install-dev composer-update-dev
+	@vendor/bin/phpunit
 
 dev-test-syntax:
 	@find src -type f -print0 | xargs -0 -n1 xargs php -l

@@ -40,6 +40,7 @@ class Parser{
 
 	static public function parse( $content ){
 		$mail	= new \CeusMedia\Mail\Message();
+		$parts	= self::parseBody( $content );
 		foreach( $parts as $part ){
 			$mail->addPart( $part );
 		}
