@@ -8,7 +8,7 @@ if( !file_exists( $fileName ) )
 	die( "Add a mail.txt or configure another file name in script!" );
 error_reporting( E_ALL );
 ini_set( 'display_errors', 'On' );
-$mail	= file_get_contents( 'mail.txt' );
+$mail	= file_get_contents( $fileName );
 $object	= \CeusMedia\Mail\Message\Parser::parse( $mail );
 $output	= \CeusMedia\Mail\Message\Renderer::render( $object );
 if( getEnv( 'HTTP_HOST' ) ){

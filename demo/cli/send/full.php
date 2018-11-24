@@ -41,7 +41,7 @@ try {
 	$transport->setPassword($smtp->password);										//  set SMTP auth password
 	$transport->setVerbose($verbose);												//  toggle verbosity - you can remove this line
 
-	//  check if receiver exists on server
+/*	//  check if receiver exists on server
 	$check		= new \CeusMedia\Mail\Address\Check\Availability($sender);						//  create checker for receiver
 	$check->setVerbose($verbose);													//  toggle verbosity - you can remove this line
 	if (!$check->test($receiverTo)) {												//  receiver is not existing
@@ -50,7 +50,7 @@ try {
 //		print "Receiver <".$receiverTo."> is not existing.";
 //		exit;
 	}
-
+*/
 	//  create message
 	$message	= new \CeusMedia\Mail\Message();									//  create mail message object
 	$message->setSender($sender);													//  set sender
