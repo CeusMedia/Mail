@@ -79,14 +79,9 @@ class Section{
 	/**
 	 *	Returns a header field object by its name if set.
 	 *	@access		public
-<<<<<<< HEAD:src/Header/Section.php
-	 *	@param		string		$name		Header Field Name
-	 *	@return		CeusMedia\Mail\Header\Field
-=======
 	 *	@param		string		$name		Header field name
 	 *	@return		\CeusMedia\Mail\Message\Header\Field
 	 *	@throws		\RangeException			if request header field name is not existing
->>>>>>> 2.0:src/Message/Header/Section.php
 	 */
 	public function getField( $name ){
 		if( !$this->hasField( $name ) )

@@ -161,49 +161,11 @@ class Parser{
 		}
 		if( $buffer && $status )
 			$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
-<<<<<<< HEAD:src/Parser/AddressList.php
-		$list	= $this->decodeNameIfNeeded( $list );
-		if( $splitNameParts ){
-			$list	= $this->splitNameParts( $list, $swapCommaSeparatedNameParts );
-		}
-		return $list;
-	}
-
-	public function decodeNameIfNeeded( $list ){
-		foreach( $list as $nr => $entry ){
-			if( preg_match( "/^=\?/", $entry['fullname'] ) ){
-				$list[$nr]['fullname']	=  iconv_mime_decode( $entry['fullname'], 0, 'UTF-8' );
-			}
-		}
-		return $list;
-	}
-
-	public function splitNameParts( $list, $swapCommaSeparatedNameParts = FALSE ){
-		if( $swapCommaSeparatedNameParts )
-			$list	= $this->swapCommaSeparatedNameParts( $list );
-		foreach( $list as $nr => $entry ){
-			if( preg_match( "/ +/", $entry['fullname'] ) ){
-				$parts	= preg_split( "/ +/", $entry['fullname'] );
-				$list[$nr]['surname']	= array_pop( $parts );
-				$list[$nr]['firstname']	= join( ' ', $parts );
-			}
-		}
-		return $list;
-	}
-
-	public function swapCommaSeparatedNameParts( $list ){
-		foreach( $list as $nr => $entry ){
-			if( preg_match( "/, +/", $entry['fullname'] ) ){
-				$parts	= preg_split( "/, +/", $entry['fullname'], 2 );
-				$list[$nr]['fullname']	= $parts[1].' '.$parts[0];
-			}
-=======
 
 		$collection	= new AddressCollection();
 		foreach( $list as $entry ){
 			$address		= trim( $entry['fullname'].' <'.$entry['address'].'>' );
 			$collection->add( new Address( $address ) );
->>>>>>> 2.0:src/Address/Collection/Parser.php
 		}
 		return $collection;
 	}
