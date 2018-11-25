@@ -58,9 +58,9 @@ class Message{
 	protected $parts						= array();
 	/**	@var		MessageHeaderSection	$headers		Mail header section */
 	protected $headers;
-	/**	@var		string					$sender			Sender mail address */
+	/**	@var		Address					$sender			Sender mail address */
 	protected $sender;
-	/**	@var		string					$recipients		List of recipients */
+	/**	@var		array					$recipients		List of recipients */
 	protected $recipients	= array(
 		'to'	=> array(),
 		'cc'	=> array(),
@@ -190,7 +190,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addMail( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		$part	= new MessagePartMail( $content, $mimeType, $encoding );
+		$part	= new MessagePartMail( $content, $charset, $encoding );
 		return $this->addPart( $part );
 	}
 
@@ -274,7 +274,7 @@ class Message{
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
-	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
 	static public function encodeIfNeeded( $string, $encoding = "base64", $fold = TRUE ){
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
@@ -372,7 +372,7 @@ class Message{
 	/**
 	 *	Returns set headers.
 	 *	@access		public
-	 *	@return		array
+	 *	@return		MessageHeaderSection
 	 */
 	public function getHeaders(){
 		return $this->headers;
@@ -465,7 +465,7 @@ class Message{
 	/**
 	 *	Returns assigned mail sender.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		Address
 	 */
 	public function getSender(){
 		return $this->sender;
@@ -616,4 +616,3 @@ class Message{
 		return $this;
 	}
 }
-?>

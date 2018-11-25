@@ -27,7 +27,6 @@
 namespace CeusMedia\Mail\Message;
 
 use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
@@ -97,9 +96,9 @@ class Renderer{
 		}
 
 		$delim			= Message::$delimiter;
-		$mimeBoundary	= "------".md5( microtime( TRUE ) );					//  mixed multipart boundary
-		$mimeBoundary1	= "------".md5( microtime( TRUE ) + 1 );				//  related multipart boundary
-		$mimeBoundary2	= "------".md5( microtime( TRUE ) + 2 );				//  alternative multipart boundary
+		$mimeBoundary	= "------".md5( (string) microtime( TRUE ) );			//  mixed multipart boundary
+		$mimeBoundary1	= "------".md5( (string) ( microtime( TRUE ) + 1 ) );	//  related multipart boundary
+		$mimeBoundary2	= "------".md5( (string) ( microtime( TRUE ) + 2 ) );	//  alternative multipart boundary
 		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
 		$contents	= array(
 			"This is a multi-part message in MIME format.",
@@ -184,4 +183,3 @@ class Renderer{
 		$contents[]	= "--".$mimeBoundary."--".$delim;
 		return $headers->toString( TRUE ).$delim.$delim.join( $delim, $contents );
 */
-?>

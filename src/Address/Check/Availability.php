@@ -47,6 +47,9 @@ class Availability{
 	protected $verbose;
 	protected $lastResponse;
 
+	/** @var		\CeusMedia\Cache\AdapterAbstract */
+	protected $cache;
+
 	const ERROR_NONE					= 0;
 	const ERROR_MX_RESOLUTION_FAILED	= 1;
 	const ERROR_SOCKET_FAILED			= 2;
@@ -75,8 +78,8 @@ class Availability{
 	 *	...
 	 *	@access		public
 	 *	@param		string		$key			Response data key (error|code|message)
-	 *	@throws		RangeException				if given key is invalid
-	 *	@return		array|string|integer
+	 *	@throws		\RangeException				if given key is invalid
+	 *	@return		object|string|integer|NULL
 	 */
 	public function getLastError( $key = NULL ){
 		if( $this->lastResponse ){
@@ -96,8 +99,8 @@ class Availability{
 	 *	...
 	 *	@access		public
 	 *	@param		string		$key			Response data key (error|request|response|code|message)
-	 *	@throws		RangeException				if given key is invalid
-	 *	@return		array|string|integer
+	 *	@throws		\RangeException				if given key is invalid
+	 *	@return		object|string|integer|NULL
 	 */
 	public function getLastResponse( $key = NULL ){
 		if( $this->lastResponse ){
@@ -224,7 +227,7 @@ class Availability{
 			$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
 			return TRUE;
 		}
-		catch( Exception $e ){
+		catch( \Exception $e ){
 			fclose( $conn );
 			$this->lastResponse->error		= self::ERROR_SOCKET_EXCEPTION;
 			$this->lastResponse->message	= $e->getMessage();
@@ -287,4 +290,3 @@ if( !function_exists( 'getmxrr' ) ){
 		return FALSE;
 	}
 }
-?>

@@ -169,12 +169,10 @@ class Parser{
 		$charset		= $contentType->attributes->get( 'charset' );
 		$format			= $contentType->attributes->get( 'format' );
 		$encoding		= NULL;
-
-		if( $headers->hasField( 'Content-Transfer-Encoding' ) )
+		if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
 			$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
-
-		$content	= MessagePart::decodeContent( $content, $encoding );
-
+			$content	= MessagePart::decodeContent( $content, $encoding );
+		}
 		if( $mimeType === 'message/rfc822' ){
 			$part	= new MessagePartMail( $content, $charset );
 			$part->setMimeType( $mimeType );
@@ -228,4 +226,3 @@ class Parser{
 		}
 	}
 }
-?>

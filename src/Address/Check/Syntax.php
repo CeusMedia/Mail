@@ -53,7 +53,7 @@ class Syntax{
 	 *	@param		string		$address		Mail address to validate
 	 *	@param		boolean		$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer						0 - not valid | 1 - valid simple address | 2 - valid extended address
-	 *	@throws		InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
+	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
 	 */
 	static public function check( $address, $throwException = TRUE ){
 		if( preg_match( self::$regexSimple, $address ) ){
@@ -79,4 +79,3 @@ class Syntax{
 		return self::check( $address, FALSE ) > 0;
 	}
 }
-?>

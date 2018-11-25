@@ -132,8 +132,9 @@ class Section{
 
 	/**
 	 *	Removes all header field objects by name.
+	 *	@access		public
 	 *	@param		string		$name		Header field name
-	 *	@return		Number of removed field objects
+	 *	@return		integer 	Number of removed field objects
 	 */
 	public function removeFieldByName( $name ){
 		$count	= count( $this->getFieldsByName( $name ) );
@@ -212,4 +213,3 @@ class Section{
 		return "";
 	}
 }
-?>

@@ -128,10 +128,10 @@ class Address{
 	 *	Static constructor.
 	 *	@access		public
 	 *	@param		string		$string		Full mail address to parse, optional
-	 *	@return		void
+	 *	@return		static
 	 */
 	static public function getInstance( $string = NULL ){
-		return new self( $string );
+		return new static( $string );
 	}
 
 	/**
@@ -161,7 +161,7 @@ class Address{
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
 	 *	@static
-	 *	@param		Address		$adress		Address to render
+	 *	@param		Address		$address	Address to render
 	 *	@throws		\RuntimeException		If domain is empty
 	 *	@throws		\RuntimeException		If local part is empty
 	 */
@@ -220,4 +220,3 @@ class Address{
 		return $this;
 	}
 }
-?>

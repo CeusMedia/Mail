@@ -26,8 +26,6 @@
  */
 namespace CeusMedia\Mail;
 
-use \CeusMedia\Mail\Address;
-
 use \CeusMedia\Mail\Message\Parser as MessageParser;
 use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 
@@ -44,7 +42,6 @@ use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 class Mailbox{
 
 	protected $connection;
-//	protected $address;
 	protected $username;
 	protected $password;
 	protected $host;
@@ -83,7 +80,7 @@ class Mailbox{
 		if( extension_loaded( 'imap' ) )
 			return TRUE;
 		if( $strict )
-			throw new RuntimeException( 'PHP extension "imap" not installed, but needed' );
+			throw new \RuntimeException( 'PHP extension "imap" not installed, but needed' );
 		return FALSE;
 	}
 
@@ -209,7 +206,7 @@ class Mailbox{
 		);
 		if( !in_array( $type, $timeoutTypes ) )
 			throw new \InvalidArgumentException( 'Invalid timeout type' );
-		imap_timeout( $timeoutTypes, $seconds );
+		imap_timeout( $timeoutTypes[$type], $seconds );
 	}
 
 	/**

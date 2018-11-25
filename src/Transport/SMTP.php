@@ -55,6 +55,8 @@ class SMTP{
 
 	protected $verbose			= FALSE;
 
+	protected $socket;
+
 	/**
 	 *	Constructor.
 	 *	@access		public
@@ -236,4 +238,3 @@ class SMTP{
 		return $this;
 	}
 }
-?>

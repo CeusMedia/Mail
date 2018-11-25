@@ -60,7 +60,7 @@ class InlineImage extends MessagePart{
 	 *	@param		string		$fileName		Name of file to attach
 	 *	@param		string		$mimeType		MIME type of file (will be detected if not given)
 	 *	@param		string		$encoding		Encoding of file
-	 *	@return		object  	Instance
+	 *	@return		void
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
@@ -94,7 +94,7 @@ class InlineImage extends MessagePart{
 	/**
 	 *	Returns file size in bytes.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		integer
 	 */
 	public function getFileSize(){
 		return $this->fileSize;
@@ -103,7 +103,7 @@ class InlineImage extends MessagePart{
 	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		integer
 	 */
 	public function getFileATime(){
 		return $this->fileATime;
@@ -112,7 +112,7 @@ class InlineImage extends MessagePart{
 	/**
 	 *	Returns file creation time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		integer
 	 */
 	public function getFileCTime(){
 		return $this->fileCTime;
@@ -121,7 +121,7 @@ class InlineImage extends MessagePart{
 	/**
 	 *	Returns last modification time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		integer
 	 */
 	public function getFileMTime(){
 		return $this->fileMTime;
@@ -189,7 +189,7 @@ class InlineImage extends MessagePart{
 	 *	Sets file name.
 	 *	@access		public
 	 *	@param		string   	$fileName		File name
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self	  	Self instance for chaining
 	 */
 	public function setFileName( $fileName ){
 		$this->fileName		= basename( $fileName );
@@ -200,10 +200,10 @@ class InlineImage extends MessagePart{
 	 *	Sets file size in bytes.
 	 *	@access		public
 	 *	@param		integer  	$fileSize		File size
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileSize( $size ){
-		$this->fileSize		= $size;
+	public function setFileSize( $fileSize ){
+		$this->fileSize		= $fileSize;
 		return $this;
 	}
 
@@ -211,7 +211,7 @@ class InlineImage extends MessagePart{
 	 *	Sets access time by UNIX timestamp.
 	 *	@access		public
 	 *	@param		integer   	$timestamp		Timestamp of latest access
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self  		Self instance for chaining
 	 */
 	public function setFileATime( $timestamp ){
 		$this->fileATime	= $timestamp;
@@ -222,7 +222,7 @@ class InlineImage extends MessagePart{
 	 *	Sets creation time by UNIX timestamp.
 	 *	@access		public
 	 *	@param		integer   	$timestamp		Timestamp of creation
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self  		Self instance for chaining
 	 */
 	public function setFileCTime( $timestamp ){
 		$this->fileCTime	= $timestamp;
@@ -233,7 +233,7 @@ class InlineImage extends MessagePart{
 	 *	Sets modification time by UNIX timestamp.
 	 *	@access		public
 	 *	@param		integer  	$timestamp		Timestamp of last modification
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self  		Self instance for chaining
 	 */
 	public function setFileMTime( $timestamp ){
 		$this->fileMTime	= $timestamp;
@@ -244,11 +244,10 @@ class InlineImage extends MessagePart{
 	 *	Sets content ID of image to be used in HTML part.
 	 *	@access		public
 	 *	@param		string   	$id				Content ID of image to be used in HTML part
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self	  	Self instance for chaining
 	 */
 	public function setId( $id ){
 		$this->id	= $id;
 		return $this;
 	}
 }
-?>

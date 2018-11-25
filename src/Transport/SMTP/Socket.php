@@ -41,10 +41,16 @@ namespace CeusMedia\Mail\Transport\SMTP;
 class Socket{
 
 	protected $host;
+
 	protected $port;
+
 	protected $errorNumber		= 0;
+
 	protected $errorMessage		= '';
+
+	/** @var	resource|NULL	$connection */
 	protected $connection;
+
 	protected $timeout			= 5;
 
 	/**
@@ -101,9 +107,12 @@ class Socket{
 	 *	@access		public
 	 *	@param		boolean		$enable		Power switch
 	 *	@param		integer		$crypto		Cryptography mode
+	 *	@throws		\RuntimeException		if connection is not open
 	 *	@return		self
 	 */
 	public function enableCrypto( $enable, $crypto ){
+		if( !$this->connection )
+			throw new \RuntimeException( 'Not connected' );
 		stream_socket_enable_crypto( $this->connection, $enable, $crypto );
 		return $this;
 	}
@@ -212,7 +221,8 @@ class Socket{
 	 *	Returns parsed response from SMTP server.
 	 *	@access		public
 	 *	@param		integer		$length			Size of chunks
-	 *	@throws		\RuntimeException			if not host is set
+	 *	@throws		\RuntimeException			if connection is not open
+	 *	@throws		\RuntimeException			if request failed
 	 *	@return		object
 	 */
 	public function readResponse( $length ){
@@ -240,7 +250,6 @@ class Socket{
 			'message'	=> join( "\n", $buffer ),
 			'raw'		=> $raw,
 		);
-		return $response;
 	}
 
 	/**
@@ -268,7 +277,7 @@ class Socket{
 	/**
 	 *	Set timeout (in seconds) on opening connection.
 	 *	@access		public
-	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
+	 *	@param		integer		$seconds	Timeout (in seconds) on opening connection
 	 *	@return		self
 	 */
 	public function setTimeout( $seconds ){
@@ -279,8 +288,9 @@ class Socket{
 	/**
 	 *	Sends command or data to SMTP server.
 	 *	@access		public
-	 *	@param		string		$message	Message to send t oSMTP server
+	 *	@param		string		$content	Message to send to SMTP server
 	 *	@return		integer		Number of written bytes
+	 *	@throws		\RuntimeException		if connection is not open
 	 */
 	public function sendChunk( $content ){
 		if( !$this->connection )

@@ -188,8 +188,8 @@ class Attachment extends MessagePart{
 	/**
 	 *	Sets file name.
 	 *	@access		public
-	 *	@param		string   	File name.
-	 *	@return		object  	Self instance for chaining
+	 *	@param		string   	$fileName	File name.
+	 *	@return		self  		Self instance for chaining
 	 */
 	public function setFileName( $fileName ){
 		$this->fileName		= basename( $fileName );
@@ -199,19 +199,19 @@ class Attachment extends MessagePart{
 	/**
 	 *	Sets file size in bytes.
 	 *	@access		public
-	 *	@param		string   	File name.
-	 *	@return		object  	Self instance for chaining
+	 *	@param		integer   	$fileSize		File size in bytes.
+	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileSize( $size ){
-		$this->fileSize		= $size;
+	public function setFileSize( $fileSize ){
+		$this->fileSize		= $fileSize;
 		return $this;
 	}
 
 	/**
 	 *	Sets access time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		string   	$timestamp		Timestamp of latest access.
-	 *	@return		object  	Self instance for chaining
+	 *	@param		integer   	$timestamp		Timestamp of latest access.
+	 *	@return		self	  	Self instance for chaining
 	 */
 	public function setFileATime( $timestamp ){
 		$this->fileATime	= $timestamp;
@@ -221,7 +221,7 @@ class Attachment extends MessagePart{
 	/**
 	 *	Sets creation time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		string   	$timestamp		Timestamp of creation.
+	 *	@param		integer   	$timestamp		Timestamp of creation.
 	 *	@return		object  	Self instance for chaining
 	 */
 	public function setFileCTime( $timestamp ){
@@ -232,7 +232,7 @@ class Attachment extends MessagePart{
 	/**
 	 *	Sets modification time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		string   	$timestamp		Timestamp of last modification.
+	 *	@param		integer   	$timestamp		Timestamp of last modification.
 	 *	@return		object  	Self instance for chaining
 	 */
 	public function setFileMTime( $timestamp ){
@@ -240,4 +240,3 @@ class Attachment extends MessagePart{
 		return $this;
 	}
 }
-?>

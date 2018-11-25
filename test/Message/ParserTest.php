@@ -1,4 +1,3 @@
-<
 <?php
 /**
  *	Unit test for mail message parser.
@@ -18,5 +17,4 @@ class Message_ParserTest extends PHPUnit_Framework_TestCase
 	public function testParse(){
 		$this->markTestIncomplete( 'No test defined for Message\\Parser' );
 	}
-
 }

@@ -41,19 +41,12 @@ use CeusMedia\Mail\Message\Renderer;
  */
 class Local{
 
-	/**	@var		string		$mailer		Mailer Agent */
-	public $mailer;
-
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@param		string		$mailer		Mailer Agent
 	 *	@return		void
 	 */
-	public function __construct( $mailer = NULL ){
-		$this->mailer	= Message::$userAgent;
-		if( is_string( $mailer ) && strlen( trim( $mailer ) ) )
-			$this->mailer	= $mailer;
+	public function __construct(){
 	}
 
 	/**
@@ -61,7 +54,7 @@ class Local{
 	 *	@access		protected
 	 *	@param		string		$value		Header Value
 	 *	@return		void
-	 *	@throws		InvalidArgumentException
+	 *	@throws		\InvalidArgumentException
 	 */
 	protected function checkForInjection( $value ){
 		if( preg_match( '/(\r|\n)/', $value ) )
@@ -73,8 +66,10 @@ class Local{
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
 	 *	@param		array					$parameters	Additional mail parameters
-	 *	@return		void
-	 *	@throws		RuntimeException|InvalidArgumentException
+	 *	@return		array
+	 *	@throws		\InvalidArgumentException				if sender is not set
+	 *	@throws		\InvalidArgumentException				if receiver is not set
+	 *	@throws		\InvalidArgumentException				if subject is not set
 	 */
 	public function send( \CeusMedia\Mail\Message $message, $parameters = array() ){
 		$headers	= $message->getHeaders();
@@ -99,8 +94,8 @@ class Local{
 		}
 */
 		//  --  HEADERS  --  //
-//		if( $this->mailer )
-		$headers->setFieldPair( 'X-Mailer', $this->mailer, TRUE );
+		if( $message->getUserAgent() )
+			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
 		if( is_array( $parameters ) )
@@ -151,4 +146,3 @@ class Local{
 		$transport->send( $message, $parameters );
 	}
 }
-?>

@@ -27,7 +27,6 @@
 namespace CeusMedia\Mail\Message;
 
 use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
@@ -62,12 +61,30 @@ abstract class Part{
 		'INLINE_IMAGE'		=> 'InlineImage',
 	);
 
+	/**	@var	string		$charset		Character set */
 	protected $charset;
+
+	/**	@var	string		$content		Content */
 	protected $content;
+
+	/**	@var	string		$encoding		Encoding */
 	protected $encoding;
+
+	/**	@var	string		$format			Format */
 	protected $format;
+
+	/**	@var	string		$mimeType		MIME type */
 	protected $mimeType;
 
+	/**
+	 *	Convert content to UTF-8.
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$content		Content to be decoded
+	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@return		string
+	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 */
 	static public function decodeContent( $content, $encoding ){
 		switch( strtolower( $encoding ) ){
 			case '7bit':
@@ -92,6 +109,15 @@ abstract class Part{
 		return $content;
 	}
 
+	/**
+	 *	Applies encoding to UTF-8 content.
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$content		Content to be encode
+	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@return		string
+	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 */
 	static public function encodeContent( $content, $encoding, $split = TRUE ){
 		$delimiter	= Message::$delimiter;
 		$lineLength	= Message::$lineLength;
@@ -100,7 +126,7 @@ abstract class Part{
 			case '8bit':
 				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
 				if( $split && strlen( $content ) > $lineLength )
-					$content	= static::wrapContent( $content, $lineLength, $delimiter, TRUE );
+					$content	= static::wrapContent( $content, $lineLength, $delimiter );
 				break;
 			case 'base64':
 			case 'binary':
@@ -159,7 +185,7 @@ abstract class Part{
 	}
 
 	public function getType(){
-		if( $this instanceof Text )
+		if( $this instanceof MessagePartText )
 			return static::TYPE_TEXT;
 		if( $this instanceof MessagePartMail )
 			return static::TYPE_MAIL;
@@ -198,30 +224,66 @@ abstract class Part{
 
 	abstract public function render();
 
+	/**
+	 *	Set character set.
+	 *	@access		public
+	 *	@param		string		$charset			Character set to set
+	 *	@return		self
+	 */
 	public function setCharset( $charset ){
 		$this->charset	= $charset;
+		return $this;
 	}
 
+	/**
+	 *	Set content.
+	 *	@access		public
+	 *	@param		string		$content			Content to set
+	 *	@return		self
+	 */
 	public function setContent( $content ){
 		$this->content	= $content;
+		return $this;
 	}
 
+	/**
+	 *	Set encoding.
+	 *	@access		public
+	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@return		self
+	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 */
 	public function setEncoding( $encoding ){
 		$encodings	= array( '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' );
 		if( !in_array( $encoding, $encodings ) )
 			throw new \InvalidArgumentException( 'Invalid encoding: '.$encoding );
 		$this->encoding	= $encoding;
+		return $this;
 	}
 
+	/**
+	 *	Set format.
+	 *	@access		public
+	 *	@param		string		$format			Format (fixed,flowed)
+	 *	@return		self
+	 *	@throws		\InvalidArgumentException	if format is invalid
+	 */
 	public function setFormat( $format ){
 		$formats	= array( 'fixed', 'flowed' );
 		if( !in_array( $format, $formats ) )
 			throw new \InvalidArgumentException( 'Invalid format' );
 		$this->format	= $format;
+		return $this;
 	}
 
+	/**
+	 *	Set MIME type.
+	 *	@access		public
+	 *	@param		string		$mimeType			MIME type to set
+	 *	@return		self
+	 */
 	public function setMimeType( $mimeType ){
 		$this->mimeType	= $mimeType;
+		return $this;
 	}
 }
-?>

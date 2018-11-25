@@ -1,4 +1,3 @@
-<
 <?php
 /**
  *	Unit test for mail message renderer.

@@ -274,4 +274,3 @@ class Code{
 		return self::explain( $code )->label;
 	}
 }
-?>

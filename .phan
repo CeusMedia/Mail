@@ -286,6 +286,7 @@ return [
     // your application should be included in this list.
     'directory_list' => [
         'src',
+        'test',
         'vendor/ceus-media/cache/src',
         'vendor/ceus-media/common/src',
         'vendor/ceus-media/doc-creator/src',

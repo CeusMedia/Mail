@@ -26,6 +26,7 @@ class Parser{
 		$regex1		= self::$patterns['name <local-part@domain>'];						//  get pattern of full address
 		$regex2		= self::$patterns['<local-part@domain>'];							//  get pattern of short address
 		$regex3		= self::$patterns['local-part@domain'];								//  get pattern of short address
+		$name		= '';
 		if( preg_match( $regex1, $string ) ){											//  found full address: with name or in brackets
 			$localPart	= preg_replace( $regex1, "\\4", $string );						//  extract local part
 			$domain		= preg_replace( $regex1, "\\5", $string );						//  extract domain part
@@ -35,12 +36,10 @@ class Parser{
 		else if( preg_match( $regex2, $string ) ){										//  otherwise found short address: neither name nor brackets
 			$localPart	= preg_replace( $regex2, "\\2", $string );						//  extract local part
 			$domain		= preg_replace( $regex2, "\\3", $string );						//  extract domain part
-			$name		= NULL;															//  clear user name
 		}
 		else if( preg_match( $regex3, $string ) ){										//  otherwise found short address: neither name nor brackets
 			$localPart	= preg_replace( $regex3, "\\2", $string );						//  extract local part
 			$domain		= preg_replace( $regex3, "\\3", $string );						//  extract domain part
-			$name		= NULL;															//  clear user name
 		}
 		else{																			//  not matching any pattern
 			$list		= '"'.implode( '" or "', array_keys( self::$patterns ) ).'"';

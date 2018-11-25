@@ -108,7 +108,7 @@ class Field{
 	/**
 	 *	Sets header value.
 	 *	@access		public
-	 *	@param		string		$name		Header field value
+	 *	@param		string		$value		Header field value
 	 *	@return		void
 	 */
 	public function setValue( $value ){
@@ -117,13 +117,11 @@ class Field{
 
 	/**
 	 *	Returns a representative string of header.
-	 *	@param		boolean		$keepCase		...
-	 *	@param		boolean		$fold			...
 	 *	@access		public
+	 *	@param		boolean		$keepCase		...
 	 *	@return		string
 	 */
 	public function toString( $keepCase = TRUE ){
 		return $this->getName( $keepCase ).": ".$this->getValue();
 	}
 }
-?>
