@@ -6,17 +6,23 @@ composer-install-dev:
 	@test ! -d vendor/phpunit/phpunit && composer install || true
 
 composer-update:
-	composer update --no-dev
+	@composer update --no-dev
 
 composer-update-dev:
-	composer update
+	@composer update
+
+dev-analyse: composer-install-dev
+	@./vendor/bin/phan -k=.phan --color --allow-polyfill-parser || true
+
+dev-analyse-save: composer-install-dev
+	@./vendor/bin/phan -k=.phan -m=json -o=phan.json --allow-polyfill-parser -p || true
 
 dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
 	@php vendor/ceus-media/doc-creator/doc.php --config-file=doc.xml
 
-dev-test: composer-install-dev composer-update-dev
-	@vendor/bin/phpunit
+dev-test: composer-install-dev
+	@vendor/bin/phpunit || true
 
 dev-test-syntax:
 	@find src -type f -print0 | xargs -0 -n1 xargs php -l

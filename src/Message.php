@@ -2,7 +2,7 @@
 /**
  *	Collector container for mails.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,39 +20,56 @@
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail;
+
+use \CeusMedia\Mail\Address as Address;
+use \CeusMedia\Mail\Address\Collection as AddressCollection;
+use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
+use \CeusMedia\Mail\Message\Part as MessagePart;
+use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
 /**
  *	Collector container for mails
  *
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Message{
 
-	/**	@var		string							$delimiter		Line separator, for some reasons only \n must be possible */
-	public static $delimiter						= "\r\n";
-	/**	@var		integer							$lineLength		Maximum line length of mail content */
-	public static $lineLength						= 75;
-	/**	@var		array							$parts			List of mail parts */
-	protected $parts								= array();
-	/**	@var		\CeusMedia\Mail\Header\Section	$headers		Mail header section */
+	/**	@var		string					$delimiter		Line separator, for some reasons only \n must be possible */
+	public static $delimiter				= "\r\n";
+	/**	@var		integer					$lineLength		Maximum line length of mail content */
+	public static $lineLength				= 75;
+	/**	@var		array					$parts			List of mail parts */
+	protected $parts						= array();
+	/**	@var		MessageHeaderSection	$headers		Mail header section */
 	protected $headers;
-	/**	@var		string							$sender			Sender mail address */
+	/**	@var		Address					$sender			Sender mail address */
 	protected $sender;
-	/**	@var		string							$recipients		List of recipients */
-	protected $recipients;
-	/**	@var		string							$subject		Mail subject */
+	/**	@var		array					$recipients		List of recipients */
+	protected $recipients	= array(
+		'to'	=> array(),
+		'cc'	=> array(),
+		'bcc'	=> array(),
+	);
+	/**	@var		string					$subject		Mail subject */
 	protected $subject;
-	/**	@var		string							$mailer			Mailer agent */
-	protected $userAgent							= 'CeusMedia::Mail/1.1.0';
+	/**	@var		string					$mailer			Mailer agent */
+	protected $userAgent					= 'CeusMedia::Mail/2.0';
 
 	/**
 	 *	Constructor.
@@ -60,20 +77,10 @@ class Message{
 	 *	@return		void
 	 */
 	public function __construct(){
-		$this->headers		= new \CeusMedia\Mail\Header\Section();
-	}
-
-	/**
-	 *	Add attachment.
-	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Part\Attachment	$attachment	Attachment object to add
-	 *	@return		object		Message object for chaining
-	 *	@deprecated	use addFile instead
-	 *	@todo    	to be removed in 1.3
-	 */
-	public function addAttachment( \CeusMedia\Mail\Part\Attachment $attachment ){
-		trigger_error( 'Use addFile instead', E_USER_DEPRECATED );
-		return $this->addPart( $attachment );
+		$this->headers				= new MessageHeaderSection();
+		$this->recipients['to']		= new AddressCollection();
+		$this->recipients['cc']		= new AddressCollection();
+		$this->recipients['bcc']	= new AddressCollection();
 	}
 
 	/**
@@ -85,8 +92,8 @@ class Message{
 	 *	@param		string		$fileName		Optional: Name of file
 	 *	@return		object		Message object for chaining
 	 */
-	public function addFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
-		$part	= new \CeusMedia\Mail\Part\Attachment();
+	public function addAttachment( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
+		$part	= new MessagePartAttachment();
 		$part->setFile( $filePath, $mimeType, $encoding );
 		if( $fileName )
 			$part->setFileName( $fileName );
@@ -94,12 +101,28 @@ class Message{
 	}
 
 	/**
+	 *	Add file as attachment part.
+	 *	Alias for addAttachment.
+	 *	@access		public
+	 *	@param		string		$filePath		Path of file to add
+	 *	@param		string		$mimeType		Optional: MIME type of file
+	 *	@param		string		$encoding		Optional: Encoding to apply
+	 *	@param		string		$fileName		Optional: Name of file
+	 *	@return		object		Message object for chaining
+	 *	@deprecated	use addAttachment instead
+	 *	@todo		to be removed in 2.0
+	 */
+	public function addFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
+		return $this->addAttachment( $filePath, $mimeType, $encoding, $fileName );
+	}
+
+	/**
 	 *	Adds a header.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Header\Field	$field		Mail header field object
+	 *	@param		MessageHeaderField	$field		Mail header field object
 	 *	@return		object		Message object for chaining
 	 */
-	public function addHeader( \CeusMedia\Mail\Header\Field $field ){
+	public function addHeader( MessageHeaderField $field ){
 		$this->headers->addField( $field );
 		return $this;
 	}
@@ -112,7 +135,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function addHeaderPair( $key, $value ){
-		$field	= new \CeusMedia\Mail\Header\Field( $key, $value );
+		$field	= new MessageHeaderField( $key, $value );
 		return $this->addHeader( $field );
 	}
 
@@ -120,12 +143,28 @@ class Message{
 	 *	Add HTML part by content.
 	 *	@access		public
 	 *	@param		string		$content		HTML content to add as message part
-	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: base64)
+	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
+	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 */
 	public function addHtml( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		return $this->addPart( new \CeusMedia\Mail\Part\HTML( $content, $charset, $encoding ) );
+		return $this->addPart( new MessagePartHTML( $content, $charset, $encoding ) );
+	}
+
+	/**
+	 *	Add image for HTML part by content.
+	 *	Alias for addInlineImage.
+	 *	@access		public
+	 *	@param		string		$id				Content ID of image to be used in HTML part
+	 *	@param		string		$filePath		File Path of image to embed
+	 *	@param		string		$mimeType		Optional: MIME type of file
+	 *	@param		string		$encoding		Optional: Encoding to apply
+	 *	@return		object		Message object for chaining
+	 *	@deprecated	use addInlineImage instead
+	 *	@todo		remove in 2.1
+	 */
+	public function addHtmlImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
+		return $this->addInlineImage( $id, $filePath, $mimeType, $encoding );
 	}
 
 	/**
@@ -137,48 +176,66 @@ class Message{
 	 *	@param		string		$encoding		Optional: Encoding to apply
 	 *	@return		object		Message object for chaining
 	 */
-	public function addHtmlImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
-		$part	= new \CeusMedia\Mail\Part\InlineImage( $id, $filePath, $mimeType, $encoding );
+	public function addInlineImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
+		$part	= new MessagePartInlineImage( $id, $filePath, $mimeType, $encoding );
+		return $this->addPart( $part );
+	}
+
+	/**
+	 *	Add forwared mail part by plain content.
+	 *	@access		public
+	 *	@param		string		$content		Nested mail content to add as message part
+	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
+	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
+	 *	@return		object		Message object for chaining
+	 */
+	public function addMail( $content, $charset = 'UTF-8', $encoding = 'base64' ){
+		$part	= new MessagePartMail( $content, $charset, $encoding );
 		return $this->addPart( $part );
 	}
 
 	/**
 	 *	General way to add another mail part.
-	 *	More specific: addText, addHtml, addHtmlImage, addFile.
+	 *	More specific: addText, addHtml, addHtmlImage, addAttachment.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Part	$part		Part of mail
-	 *	@return		object			Message object for chaining
+	 *	@param		MessagePart	$part		Part of mail
+	 *	@return		object		Message object for chaining
 	 */
-	public function addPart( \CeusMedia\Mail\Part $part ){
+	public function addPart( MessagePart $part ){
 		$this->parts[]	= $part;
 		return $this;
 	}
 
 	public function addRecipient( $participant, $name = NULL, $type = "To" ){
 		if( is_string( $participant ) )
-			$participant	= new \CeusMedia\Mail\Participant( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
+			$participant	= new Address( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
 			throw new \InvalidArgumentException( 'Invalid recipient type' );
 
 		if( $name )
 			$participant->setName( $name );
-		$this->recipients[]	= $participant;
+		$this->recipients[strtolower( $type )]->add( $participant );
 		$recipient	= '<'.$participant->getAddress().'>';
 		if( strlen( trim( $name ) ) ){
 			$recipient	= self::encodeIfNeeded( $name ).' '.$recipient;
 		}
 		$recipient	= $participant->get();
-		if( strtoupper( $type ) !== "BCC" )
+		if( strtoupper( $type ) !== "BCC" ){
+			$fields	= $this->headers->getFieldsByName( $type );
+			foreach( $fields as $field )
+				if( $field->getValue() == $recipient )
+					return $this;
 			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $recipient );
+		}
 		return $this;
 	}
 
 	public function addReplyTo( $participant, $name = NULL ){
 		if( is_string( $participant ) )
-			$participant	= new \CeusMedia\Mail\Participant( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
+			$participant	= new Address( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( $name )
 			$participant->setName( $name );
@@ -190,46 +247,25 @@ class Message{
 	 *	Add plaintext part by content.
 	 *	@access		public
 	 *	@param		string		$content		Plaintext content to add as message part
-	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: base64)
+	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
+	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
 	 *	@return		object		Message object for chaining
 	 */
 	public function addText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		return $this->addPart( new \CeusMedia\Mail\Part\Text( $content, $charset, $encoding ) );
+		$part	= new MessagePartText( $content, $charset, $encoding );
+		return $this->addPart( $part );
 	}
 
 	/**
-	 *	Attach a file.
-	 *	Deprecated alias for addFile.
+	 *	Alias for getInstance.
 	 *	@access		public
-	 *	@param		string		$filePath		Path of file to add
-	 *	@param		string		$mimeType		Optional: MIME type of file
-	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@param		string		$fileName		Optional: Name of file
-	 *	@return		object		Message object for chaining
-	 *	@deprecated	use addFile instead
-	 *	@todo    	to be removed in 1.3
+	 *	@static
+	 *	@return		self
+	 *	@deprecated	use getInstance instead
+	 *	@todo		to be removed
 	 */
-	public function attachFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
-		trigger_error( 'Use addFile instead', E_USER_DEPRECATED );
-		return $this->addFile( $filePath, $mimeType, $encoding, $fileName );
-	}
-
-	/**
-	 *	Embed image for HTML part.
-	 *	Alias for addHtmlImage.
-	 *	@access		public
-	 *	@param		string		$id				Content ID of image to be used in HTML part
-	 *	@param		string		$filePath		File Path of image to embed
-	 *	@param		string		$mimeType		Optional: MIME type of file
-	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@return		object		Message object for chaining
-	 *	@deprecated	use addHtmlImage instead
-	 *	@todo    	to be removed in 1.3
-	 */
-	public function embedImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
-		trigger_error( 'Use addHtmlImage instead', E_USER_DEPRECATED );
-		return $this->addHtmlImage( $id, $filePath, $mimeType, $encoding );
+	public static function create(){
+		return static::getInstance();
 	}
 
 	/**
@@ -238,62 +274,156 @@ class Message{
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
-	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function encodeIfNeeded( $string, $encoding = "base64" ){
+	static public function encodeIfNeeded( $string, $encoding = "base64", $fold = TRUE ){
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 		switch( strtolower( $encoding ) ){
 			case 'base64':
 				return "=?UTF-8?B?".base64_encode( $string )."?=";
 			case 'quoted-printable':
-				$string	= quoted_printable_encode( $string );
-				$string	= str_replace( '?', '=3F', $string );
-				$string	= str_replace( ' ', '_', $string );
-				return "=?UTF-8?Q?".$string."?=";
+				if( !$fold )
+					return "=?UTF-8?Q?".quoted_printable_encode( $string )."?=";
+				$length	= Message::$lineLength;
+				$delim	= Message::$delimiter;
+				$lines	= str_split( $string, $length );
+				foreach( $lines as $nr => $string ){
+					$string	= quoted_printable_encode( $string );
+					$string	= str_replace( '?', '=3F', $string );
+					$string	= str_replace( ' ', '_', $string );
+					$lines[$nr]	= "=?UTF-8?Q?".$string."?=";
+				}
+				return join( $delim."\t", $lines );
+			default:
+				throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 		}
-		throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 	}
 
 	/**
-	 *	Returns mail agent.
+	 *	Encodes a mail header value string if needed.
 	 *	@access		public
+	 *	@param		string		$string			A mail header value string, subject for example.
+	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
-	 *	@deprecated	use getUserAgent instead
-	 *	@todo   	to be removed in 1.3
+	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	public function getAgent(){
-		trigger_error( 'Use getUserAgent instead', E_USER_DEPRECATED );
-		return $this->userAgent;
+	static public function decodeIfNeeded( $string, $encoding = "base64" ){
+		if( !preg_match( "/^=\?(\S+)\?(\S)\?(.+)\?=$/", $string ) )
+			return $string;
+		$matches	= array();
+		$list		= array();
+		preg_match_all( "/(=\?.+\?=)/U", $string, $matches );
+		foreach( $matches[1] as $string ){
+			$charset	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\1', $string );
+			$encoding	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\2', $string );
+			$content	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\3', $string );
+			switch( strtolower( $encoding ) ){
+				case 'b':
+					$list[]	= base64_decode( $content );
+					break;
+				case 'q':
+					$content	= str_replace( "_", " ", $content );
+					if( function_exists( 'imap_qprint' ) )
+						$list[]	= imap_qprint( $content );
+					else
+						$list[]	= quoted_printable_decode( $content );
+					break;
+				default:
+					throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+			}
+		}
+		return join( $list );
 	}
 
 	/**
 	 *	Returns list set attachment parts.
 	 *	@access		public
+	 *	@param		boolean		$withInlineImages		Flag: list inline images, also
 	 *	@return		array
 	 */
-	public function getAttachments(){
+	public function getAttachments( $withInlineImages = TRUE ){
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
+			if( $part instanceof MessagePartAttachment )
 				$list[]	= $part;
-			if( $part instanceof \CeusMedia\Mail\Part\InlineImage )
+			if( $part instanceof MessagePartInlineImage )
+				if( $withInlineImages )
+					$list[]	= $part;
+			if( $part instanceof MessagePartMail )
 				$list[]	= $part;
 		}
 		return $list;
 	}
 
 	/**
+	 *	Returns list set attachment parts.
+	 *  Alias for getAttachments.
+	 *	@access		public
+	 *	@param		boolean		$withInlineImages		Flag: list inline images, also
+	 *	@return		array
+	 *	@deprecated	use getAttachments instead
+	 *	@todo		remove in 2.1
+	 */
+	public function getFiles( $withInlineImages = TRUE ){
+		return $this->getAttachments( $withInlineImages );
+	}
+
+	/**
 	 *	Returns set headers.
 	 *	@access		public
-	 *	@return		array
+	 *	@return		MessageHeaderSection
 	 */
 	public function getHeaders(){
 		return $this->headers;
 	}
 
+	/**
+	 *	Returns set or empty HTML part.
+	 *	@access		public
+	 *	@return		MessagePartHTML
+	 */
+	public function getHtml(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartHTML )
+				return $part;
+		return new MessagePartHtml( '' );
+	}
+
+	/**
+	 *	Returns list inline images to be embeded with HTML.
+	 *	@access		public
+	 *	@return		array
+	 */
+	public function getInlineImages(){
+		$list	= array();
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartInlineImage )
+				$list[]	= $part;
+		return $list;
+	}
+
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
 	static public function getInstance(){
-		return new self;
+		return new static;
+	}
+
+	/**
+	 *	Returns list attached mails.
+	 *	@access		public
+	 *	@return		array
+	 */
+	public function getMails(){
+		$list	= array();
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartMail )
+				$list[]	= $part;
+		return $list;
 	}
 
 	/**
@@ -302,15 +432,15 @@ class Message{
 	 *	@param		boolean		$withAttachments	Flag: return attachment parts also
 	 *	@return		array
 	 */
-	public function getParts( $withAttachments = FALSE ){
+	public function getParts( $withAttachments = TRUE ){
 		if( $withAttachments )
 			return $this->parts;
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
+			if( $part instanceof MessagePartAttachment )
 				if( !$withAttachments)
 					continue;
-			if( $part instanceof \CeusMedia\Mail\Part\InlineImage )
+			if( $part instanceof MessagePartInlineImage )
 				if( !$withAttachments)
 					continue;
 			$list[]	= $part;
@@ -321,16 +451,21 @@ class Message{
 	/**
 	 *	Returns set recipient addresses.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		array|AddressCollection
 	 */
-	public function getRecipients(){
+	public function getRecipients( $type = NULL ){
+		if( $type ){
+			if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
+				throw new \DomainException( 'Type must be of to, cc or bcc' );
+			return $this->recipients[strtolower( $type )];
+		}
 		return $this->recipients;
 	}
 
 	/**
 	 *	Returns assigned mail sender.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		Address
 	 */
 	public function getSender(){
 		return $this->sender;
@@ -339,13 +474,25 @@ class Message{
 	/**
 	 *	Returns set mail subject.
 	 *	@access		public
-	 *	@param		string|NULL		$encoding		Types: base64, quoted-printable. Default: none
+	 *	@param		string|NULL		$encoding		Optional: Types: base64, quoted-printable. Default: none
 	 *	@return		string
 	 */
 	public function getSubject( $encoding = NULL ){
 		if( $encoding )
-			return self::encodeIfNeeded( $this->subject, $encoding );
+			return self::encodeIfNeeded( $this->subject, $encoding, TRUE );
 		return $this->subject;
+	}
+
+	/**
+	 *	Returns set or empty text part.
+	 *	@access		public
+	 *	@return		MessagePartText
+	 */
+	public function getText(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartText )
+				return $part;
+		return new MessagePartText( '' );
 	}
 
 	/**
@@ -358,52 +505,68 @@ class Message{
 	}
 
 	/**
-	 *	Removes an added part.
+	 *	Indicates whether attachments are set.
 	 *	@access		public
-	 *	@param		integer			$index			Index number of part to be removed
 	 *	@return		boolean
 	 */
-	public function removePart( $index ){
-		foreach( array_keys( $this->parts ) as $nr ){
-			if( $nr === $index){
-				unset( $this->parts[$nr] );
+	public function hasAttachments(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartAttachment )
 				return TRUE;
-			}
-		}
 		return FALSE;
 	}
 
 	/**
-	 *	Sets mail agent for mailer header.
+	 *	Indicates whether an HTML part is set.
 	 *	@access		public
-	 *	@param		string		$userAgent		Mailer user agent
-	 *	@return		object		Message object for chaining
-	 *	@deprecated	use setUserAgent instead
-	 *	@todo   	to be removed in 1.3
+	 *	@return		boolean
 	 */
-	public function setAgent( $userAgent ){
-		trigger_error( 'Use setUserAgent instead', E_USER_DEPRECATED );
-		return $this->setUserAgent( $userAgent );
+	public function hasHTML(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartHTML )
+				return TRUE;
+		return FALSE;
 	}
 
 	/**
-	 *	...
-	 *	Alias for addHtml.
-	 *	@param		string		$content		HTML content to add as message part
-	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: base64)
-	 *	@return		object		Message object for chaining
-	 *	@deprecated	use addHtml or addPart instead
-	 *	@todo    	to be removed in 1.3
+	 *	Indicates whether inline images are set.
+	 *	@access		public
+	 *	@return		boolean
 	 */
-	public function setHTML( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		trigger_error( 'Use addHtml instead', E_USER_DEPRECATED );
-		return $this->addHtml( $content, $charset, $encoding );
+	public function hasInlineImages(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartInlineImage )
+				return TRUE;
+		return FALSE;
+	}
+
+	/**
+	 *	Indicates whether mails where attached.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasMails(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartMail )
+				return TRUE;
+		return FALSE;
+	}
+
+	/**
+	 *	Indicates whether a text part is set.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasText(){
+		foreach( $this->parts as $part )
+			if( $part instanceof MessagePartText )
+				return TRUE;
+		return FALSE;
 	}
 
 	public function setReadNotificationRecipient( $participant, $name = NULL ){
 		if( is_string( $participant ) )
-			$participant	= new \CeusMedia\Mail\Participant( $participant );
+			$participant	= new Address( $participant );
 		if( $name )
 			$participant->setName( $name );
 		$this->headers->addFieldPair( 'Disposition-Notification-To', $participant->get() );
@@ -416,17 +579,18 @@ class Message{
 	 *	@param		string|object	$participant	Mail sender address or participant object
 	 *	@param		string			$name			Optional: Mail sender name
 	 *	@return		object			Message object for chaining
-	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Participant
+	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Address
 	 */
 	public function setSender( $participant, $name = NULL ){
 		if( is_string( $participant ) )
-			$participant	= new \CeusMedia\Mail\Participant( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Participant" ) )
+			$participant	= new Address( $participant );
+		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( $name )
 			$participant->setName( $name );
 		$this->sender	= $participant;
-		$this->headers->setFieldPair( "From", $participant->get() );
+		$this->headers->removeFieldByName( 'From' );
+		$this->addHeaderPair( "From", $participant->get() );
 		return $this;
 	}
 
@@ -437,22 +601,8 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function setSubject( $subject ){
-		$this->subject	= $subject;
+		$this->subject	= Message::decodeIfNeeded( $subject );
 		return $this;
-	}
-
-	/**
-	 *	...
-	 *	@param		string		$content		HTML content to add as message part
-	 *	@param		string		$charset		Character set (default: UTF-8)
-	 *	@param		string		$encoding		Encoding to apply (default: base64)
-	 *	@return		object		Message object for chaining
-	 *	@deprecated	use addText or addPart instead
-	 *	@todo    	to be removed in 1.3
-	 */
-	public function setText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
-		trigger_error( 'Use addText instead', E_USER_DEPRECATED );
-		return $this->addText( $content, $charset, $encoding );
 	}
 
 	/**
@@ -466,4 +616,3 @@ class Message{
 		return $this;
 	}
 }
-?>

@@ -2,7 +2,7 @@
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,18 +20,23 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Transport;
+
+use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Renderer as MessageRenderer;
+use \CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
+
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://www.der-webdesigner.net/tutorials/php/anwendungen/329-php-und-oop-mailversand-via-smtp.html
@@ -50,6 +55,8 @@ class SMTP{
 
 	protected $verbose			= FALSE;
 
+	protected $socket;
+
 	/**
 	 *	Constructor.
 	 *	@access		public
@@ -62,35 +69,18 @@ class SMTP{
 	public function __construct( $host, $port = 25, $username = NULL, $password = NULL ){
 		$this->setHost( $host );
 		$this->setPort( $port );
-		$this->setSecure( in_array( $port, array( 465, 587 ) ) );
 		$this->setUsername( $username );
 		$this->setPassword( $password );
+		$this->socket	= new SmtpSocket( $this->host, (int) $this->port );
 	}
 
-	protected function checkResponse( $connection, $acceptedCodes = array() ){
-		$lastLine	= FALSE;
-		$code		= NULL;
-		$buffer		= array();
-		do{
-			$response	= fgets( $connection, 1024 );
-			if( $this->verbose )
-				print ' < '.$response;
-			$matches	= array();
-			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
-			if( !$matches )
-				throw new \RuntimeException( 'SMTP response not understood' );
-			$code		= (int) $matches[1];
-			$buffer[]	= $matches[3];
-			if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
-				throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], $code );
-			if( $matches[2] === " " )
-				$lastLine	= TRUE;
-		}
-		while( $response && !$lastLine );
-		return (object) array(
-			'code'		=> $code,
-			'message'	=> join( "\n", $buffer ),
-		);
+	protected function checkResponse( $acceptedCodes = array() ){
+		$response	= $this->socket->readResponse( 1024 );
+		if( $this->verbose )
+			print ' < '.join( PHP_EOL."   ", $response->raw );
+		if( $acceptedCodes && !in_array( $response->code, $acceptedCodes ) )
+			throw new \RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
+		return $response;
 	}
 
 	static public function getInstance( $host, $port = 25 ){
@@ -100,7 +90,7 @@ class SMTP{
 	/**
 	 *	Sends mail using a socket connection to a remote SMTP server.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
+	 *	@param		Message		$message		Mail message object
 	 *	@throws		\RuntimeException		if message has no mail sender
 	 *	@throws		\RuntimeException		if message has no mail receivers
 	 *	@throws		\RuntimeException		if message has no mail body parts
@@ -108,63 +98,61 @@ class SMTP{
 	 *	@throws		\RuntimeException		if sending mail failed
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function send( \CeusMedia\Mail\Message $message ){
-		$delim		= \CeusMedia\Mail\Message::$delimiter;
+	public function send( Message $message ){
+		$delim		= Message::$delimiter;
 		if( !$message->getSender() )
 			throw new \RuntimeException( 'No mail sender set' );
-		if( !$message->getRecipients() )
+		if( !$message->getRecipients( 'to') )
 			throw new \RuntimeException( 'No mail receiver(s) set' );
 		if( !$message->getParts() )
 			throw new \RuntimeException( 'No mail body parts set' );
-		$content	= \CeusMedia\Mail\Renderer::render( $message );
+		$content	= MessageRenderer::render( $message );
 
-		$conn	= fsockopen( $this->host, $this->port, $errno, $errstr, 5 );
-		if( !$conn )
-			throw new \RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
+		$this->socket->open();
 		try{
-			$this->checkResponse( $conn, array( 220 ) );
-			$this->sendChunk( $conn, "EHLO ".$this->host );
-			$this->checkResponse( $conn, array( 250 ) );
+			$this->checkResponse( array( 220 ) );
+			$this->sendChunk( "EHLO ".$this->host );
+			$this->checkResponse( array( 250 ) );
 			if( $this->isSecure ){
-				$this->sendChunk( $conn, "STARTTLS" );
-				$this->checkResponse( $conn, array( 220 ) );
-				stream_socket_enable_crypto( $conn, true, STREAM_CRYPTO_METHOD_TLS_CLIENT );
+				$this->sendChunk( "STARTTLS" );
+				$this->checkResponse( array( 220 ) );
+				$this->socket->enableCrypto( TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
 			}
 			if( $this->username && $this->password ){
-				$this->sendChunk( $conn, "AUTH LOGIN" );
-				$this->checkResponse( $conn, array( 334 ) );
-				$this->sendChunk( $conn, base64_encode( $this->username ) );
-				$this->checkResponse( $conn, array( 334 ) );
-				$this->sendChunk( $conn, base64_encode( $this->password ) );
-				$this->checkResponse( $conn, array( 235 ) );
+				$this->sendChunk( "AUTH LOGIN" );
+				$this->checkResponse( array( 334 ) );
+				$this->sendChunk( base64_encode( $this->username ) );
+				$this->checkResponse( array( 334 ) );
+				$this->sendChunk( base64_encode( $this->password ) );
+				$this->checkResponse( array( 235 ) );
 			}
 			$sender		= $message->getSender();
-			$this->sendChunk( $conn, "MAIL FROM: <".$sender->getAddress().">" );
-			$this->checkResponse( $conn, array( 250 ) );
-			foreach( $message->getRecipients() as $receiver ){
-				$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
-				$this->checkResponse( $conn, array( 250 ) );
+			$this->sendChunk( "MAIL FROM: <".$sender->getAddress().">" );
+			$this->checkResponse( array( 250 ) );
+			foreach( $message->getRecipients( 'to' ) as $receiver ){
+				$this->sendChunk( "RCPT TO: <".$receiver->getAddress().">" );
+				$this->checkResponse( array( 250 ) );
 			}
-			$this->sendChunk( $conn, "DATA" );
-			$this->checkResponse( $conn, array( 354 ) );
-			$this->sendChunk( $conn, $content );
-			$this->sendChunk( $conn, '.' );
-			$this->checkResponse( $conn, array( 250 ) );
-			$this->sendChunk( $conn, "QUIT" );
-			$this->checkResponse( $conn, array( 221 ) );
-			fclose( $conn );
+			$this->sendChunk( "DATA" );
+			$this->checkResponse( array( 354 ) );
+			$this->sendChunk( $content );
+			$this->sendChunk( '.' );
+			$this->checkResponse( array( 250 ) );
+			$this->sendChunk( "QUIT" );
+			$this->checkResponse( array( 221 ) );
+			$this->socket->close();
 		}
-		catch( Exception $e ){
-			fclose( $conn );
+		catch( \Exception $e ){
+			$this->socket->close();
 			throw new \RuntimeException( $e->getMessage(), $e->getCode(), $e->getPrevious() );
 		}
 		return $this;
 	}
 
-	protected function sendChunk( $connection, $message ){
+	protected function sendChunk( $message ){
 		if( $this->verbose )
 			print PHP_EOL . ' > '.$message . PHP_EOL;
-		fputs( $connection, $message.\CeusMedia\Mail\Message::$delimiter );
+		return $this->socket->sendChunk( $message.Message::$delimiter );
 	}
 
 	/**
@@ -184,7 +172,7 @@ class SMTP{
 	/**
 	 *	Sets SMTP host.
 	 *	@access		public
-	 *	@param		integer		$host		SMTP server host
+	 *	@param		string		$host		SMTP server host
 	 *	@return		object  	Self instance for chaining.
 	 */
 	public function setHost( $host ){
@@ -208,17 +196,24 @@ class SMTP{
 	/**
 	 *	Sets SMTP port.
 	 *	@access		public
-	 *	@param		integer		$port		SMTP server port
+	 *	@param		integer		$port			SMTP server port
+	 * 	@param		boolean		$detectSecure	Flag: set secure depending on port (default: yes)
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setPort( $port ){
+	public function setPort( $port, $detectSecure = TRUE ){
 		$this->port		= $port;
+		if( $detectSecure )
+			$this->setSecure( in_array( $port, array( 465, 587 ) ) );
 		return $this;
 	}
 
 	public function setSecure( $secure ){
 		$this->isSecure = (bool) $secure;
 		return $this;
+	}
+
+	public function setSocket( SmtpSocket $socket ){
+		$this->socket	= $socket;
 	}
 
 	/**
@@ -243,4 +238,3 @@ class SMTP{
 		return $this;
 	}
 }
-?>

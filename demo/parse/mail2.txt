@@ -1,0 +1,97 @@
+Return-Path: <SRS1=YOVH=deutsche-heilpraktikerschule.de==zPfG=FG=google.com=noreply-dmarc-support@seefeuer.net>
+X-Original-To: christian.wuerker@seefeuer.net
+Delivered-To: christian.wuerker@seefeuer.net
+Received: by viratron.itflow.de (Postfix, from userid 30)
+	id D20AE161B1B; Mon, 12 Feb 2018 11:16:15 +0100 (CET)
+Authentication-Results: viratron; dkim=pass
+	dkim=pass header.i=SRS1=YOVH=deutsche-heilpraktikerschule.de==zPfG=FG=google.com=noreply-dmarc-support@seefeuer.net;
+ header.i=SRS0=zPfG=FG=google.com=noreply-dmarc-support@deutsche-heilpraktikerschule.de
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on viratron.itflow.de
+X-Spam-Level: *
+X-Spam-Status: No, score=1.4 required=7.0 tests=DATE_IN_PAST_06_12,
+ HEADER_FROM_DIFFERENT_DOMAINS,SPF_HELO_PASS,SPF_PASS,TVD_SPACE_RATIO,
+ T_DKIM_INVALID,T_RP_MATCHES_RCVD,URIBL_BLOCKED autolearn=no
+ autolearn_force=no version=3.4.0
+X-Original-To: hostmaster@seefeuer.net
+Delivered-To: admin@seefeuer.net
+Received: from deutsche-heilpraktikerschule.de
+ (mail.deutsche-heilpraktikerschule.de [148.251.46.113])
+ by viratron.itflow.de (Postfix) with ESMTPS id AA6B9161A4F
+ for <hostmaster@seefeuer.net>; Mon, 12 Feb 2018 11:16:12 +0100 (CET)
+Received: by mail.deutsche-heilpraktikerschule.de (Postfix, from userid 30)
+ id 2ECD56D42793; Mon, 12 Feb 2018 11:15:54 +0100 (CET)
+Authentication-Results: mail.deutsche-heilpraktikerschule.de; dkim=pass
+ reason="2048-bit key; unprotected key"
+ header.d=google.com header.i=@google.com header.b=gQhm2+WO;
+ dkim-adsp=pass; dkim-atps=neutral
+X-Original-To: postmaster@deutsche-heilpraktikerschule.de
+Delivered-To: admin@deutsche-heilpraktikerschule.de
+Received: from mail-it0-x24a.google.com (mail-it0-x24a.google.com
+ [IPv6:2607:f8b0:4001:c0b::24a])
+ by mail.deutsche-heilpraktikerschule.de (Postfix) with ESMTPS id 81DDF6D42791
+ for <postmaster@deutsche-heilpraktikerschule.de>;
+ Mon, 12 Feb 2018 11:15:52 +0100 (CET)
+Authentication-Results: deutsche-heilpraktikerschule.de;
+ dkim=pass header.i=noreply-dmarc-support@google.com;
+ spf=none (sender IP is 2607:f8b0:4001:c0b::24a)
+ smtp.mailfrom=noreply-dmarc-support@google.com
+ smtp.helo=mail-it0-x24a.google.com
+Received-SPF: none (deutsche-heilpraktikerschule.de: no valid SPF record)
+Received: by mail-it0-x24a.google.com with SMTP id n130so5737113itg.1
+ for <postmaster@deutsche-heilpraktikerschule.de>;
+ Mon, 12 Feb 2018 02:15:52 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:date:message-id:subject:from:to:content-disposition
+ :content-transfer-encoding;
+ bh=kbW6eq3Q3fHQbgMJX5a/Y+x98sTyvNMo4re2TGDGDCs=;
+ b=gQhm2+WODUZnOOjy/rTE0BihI2grIQVG2heyLLc/8wsMlizatxNpioXOItVt1DWW7/
+ sGl3p180oDMn3jemJzthg9wtUECbuousUrugayePFfaCFwDo2ejZZJGy7YZxzLTfI12v
+ YMzAwiKyMQKS/pZ0apcvo8CU9CznuUgGuYLUt4Cq1A4ty5G/05qIab8q/nSGRXxWEgS7
+ scoVA7kWZ5/Jq9ljLhwxLNVJTdIZRF/zipinaLpflzbpVmURa2K+PZvX8HmhGMHbFzN1
+ N+T/Y6Vi670lcLt+MPf0lge9JhCfKwEolhlL0CfhRB+A+gzwm3+4IfE9fvZ1u9ieoWBB
+ LfxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:date:message-id:subject:from:to
+ :content-disposition:content-transfer-encoding;
+ bh=kbW6eq3Q3fHQbgMJX5a/Y+x98sTyvNMo4re2TGDGDCs=;
+ b=XctWeFo2rvoMK9ORihpi1LiM4alNl2+n5vp59mjHoQl9OVKQiZQ/R/2nHuXm8wKCL8
+ uQmPyA+i6Dut2Hs/r5ixRU/ElFwd+41u1WryGekxBaT8QKFDfbpjBEy/A2TwW24iR7+4
+ 2qx9L7E21/m2MsTnWQ3Vk+QQZsUpaSUe6Visf7fHckGCI1r7Fx27rI9xEmcqzlHk9pIk
+ gGS5/N4C3ome8zG0/ob8LFR/YifEz+VYwUvVyJw4FQyAkAKxIKCkN/Bm3kspMsFHPQhL
+ hB+oewtvXfdDuBVnRtwQTB3xGPwBIdcUKevK1RjiViaeIYl7ZSslH41rE9JpN5IwJSat
+ j9cA==
+X-Gm-Message-State: APf1xPBvd/jmuwTH2X0ddI+mgr7Lhr2T1s7bNNk8SHErjWr8F7jOVCZY
+ r3luh2g0jw7Sv61S2AVwJg==
+X-Google-Smtp-Source: AH8x226f8yLdPLQMWcnme7Q1fxfX2iKfOunYjrMMJeOFEfzyteWpoIAreSFsutoHkWuiUshEflBxy6ynCAuaaQ==
+MIME-Version: 1.0
+X-Received: by 10.107.203.8 with SMTP id b8mr8975983iog.14.1518430551346; Mon,
+ 12 Feb 2018 02:15:51 -0800 (PST)
+Date: Sun, 11 Feb 2018 15:59:59 -0800
+Message-ID: <10628756515235043593@google.com>
+Subject: Report domain: deutsche-heilpraktikerschule.de Submitter: google.com
+ Report-ID: 10628756515235043593
+From: noreply-dmarc-support@google.com
+To: postmaster@deutsche-heilpraktikerschule.de
+Content-Type: application/zip;
+ name="google.com!deutsche-heilpraktikerschule.de!1518307200!1518393599.zip"
+Content-Disposition: attachment;
+ filename="google.com!deutsche-heilpraktikerschule.de!1518307200!1518393599.zip"
+Content-Transfer-Encoding: base64
+X-PPP-Message-ID: <20180212101615.19832.1867@viratron.itflow.de>
+X-PPP-Vhost: seefeuer.net
+
+UEsDBAoAAAAIAGhPTEyf1NjULgIAAOIIAABEAAAAZ29vZ2xlLmNvbSFkZXV0c2NoZS1oZWlscHJh
+a3Rpa2Vyc2NodWxlLmRlITE1MTgzMDcyMDAhMTUxODM5MzU5OS54bWzdVstu2zAQvOcrDN8tSrbl
+2IXC9NQvaM8CQ64kwhLJklQef99VST2SGClgoIfkZHl2d3Zndi24uH/u2tUjWCe1ultnSbpegeJa
+SFXfrX/9/LE5rlf39KaoAMQD42d6s1oVFoy2vuzAM8E8GzBEta1LxTqgtdZ1CwnXXUEmMORAx2RL
+lUaG9mUjOmb5xvVmoPu+LAt5sebZW1ZyrTzjvpSq0rTx3rhvhMTSZC4ljDDlnsCS7f5wyI8pcr2v
+D8RRhhQ0Sw/b421+yLN8u8vT/S4/7Qoyx0M+aoXSMlVHNQg9QC0VzfLsuEtvtyl2C8gYByVC9ISU
+J5xFjWTkNdvUbWlqYXQr+Utp+odWugamQTTao6iA3jvewKYB2RrLzl6ecZO86dELAdgi5IUiJs6y
+o64g4SGCzlTUIjZ8BsjQ3z3DubxUSGEi6l7DbsQN9+ge6h4e/uq4NDNazbUdx7f6aTLI6d5yKKWh
+2f6YbPMs2R+SLEP358iYy3WvsFtBwsMIx4bwyNoePRVjYDBKOqOd9HjceHTD4EtkkTc4UuHJYcJk
+TtRdUcOcGyRXU0tyuScucZRWSAHoVSVxIVNZA0yALSuru38vb5kc2d9xFqz3TWnB9a2f2ywmvfJY
+4s9joI3q45fJgPleyNsZhuRx259i8UHhF1j8Gwn/Y/ODM9AC99oiccUwhA6NyGTTcpKveo/5lfe4
+fI9e8zoKgc9zlZfX7xvjPtxz+NleteeCzH9X/gBQSwECCgAKAAAACABoT0xMn9TY1C4CAADiCAAA
+RAAAAAAAAAAAAAAAAAAAAAAAZ29vZ2xlLmNvbSFkZXV0c2NoZS1oZWlscHJha3Rpa2Vyc2NodWxl
+LmRlITE1MTgzMDcyMDAhMTUxODM5MzU5OS54bWxQSwUGAAAAAAEAAQByAAAAkAIAAAAA

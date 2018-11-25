@@ -1,0 +1,34 @@
+Authentication-Results: viratron;
+	dkim=temperror header.i=kriss@ceusmedia.de
+Return-Path: <kriss@ceusmedia.de>
+X-Original-To: test@gruppenpost.de
+Delivered-To: test@gruppenpost.de
+Received: from [IPv6:2a02:810a:113f:eb04:25f1:e53b:6f7f:a6c2] (unknown [IPv6:2a02:810a:113f:eb04:25f1:e53b:6f7f:a6c2])
+	by viratron.itflow.de (Postfix) with ESMTPSA id 2CF231662D3
+	for <test@gruppenpost.de>; Thu, 30 Nov 2017 23:33:01 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ceusmedia.de;
+	s=default; t=1512081181;
+	bh=9mb+MPS6EpHPLmkvbNiggvje76RQw5iaeG5n7FnMqsQ=; l=8;
+	h=To:From:Subject;
+	b=vmj2xVc8416Gq+Pm/DIMIASuG7yX7i27R1l7BLLg90atRI/T+Fn507Chd7mKhz9hJ
+	 gAL1TDQ+6SHG4d3TpKLSrkES0qy2BPLO4Qn6oi/oTk6Kj0LxnYPPDUjClHOAPXhjx7
+	 YQdIZxOgTgrqfW8aKJlRlvCWIlcX6b5hpW92yJrU=
+Reply-To: kriss@ceusmedia.de
+To: test@gruppenpost.de
+From: kriss <kriss@ceusmedia.de>
+Subject: Mail 1
+Message-ID: <071b9387-7162-2247-07fd-e21b07c57d3f@ceusmedia.de>
+Date: Thu, 30 Nov 2017 23:32:46 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.5.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
+X-PPP-Message-ID: <20171130223301.26481.88722@viratron.itflow.de>
+X-PPP-Vhost: ceusmedia.de
+
+Mail 1
+
+
+

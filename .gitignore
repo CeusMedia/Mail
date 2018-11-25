@@ -2,5 +2,9 @@ vendor
 composer.lock
 demo/config.ini
 demo/cli/config.ini
+demo/render/config.ini
+demo/send/config.ini
+demo/mailbox/config.ini
+phan.json
 doc
 Mail.ini

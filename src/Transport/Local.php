@@ -2,7 +2,7 @@
 /**
  *	Sends Mail using PHPs mail function and local SMTP server.
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,17 +20,22 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Transport;
+
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Renderer;
+
+
 /**
  *	Sends Mails of different Types.
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -49,7 +54,7 @@ class Local{
 	 *	@access		protected
 	 *	@param		string		$value		Header Value
 	 *	@return		void
-	 *	@throws		InvalidArgumentException
+	 *	@throws		\InvalidArgumentException
 	 */
 	protected function checkForInjection( $value ){
 		if( preg_match( '/(\r|\n)/', $value ) )
@@ -61,18 +66,18 @@ class Local{
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
 	 *	@param		array					$parameters	Additional mail parameters
-	 *	@return		void
-	 *	@throws		RuntimeException|InvalidArgumentException
+	 *	@return		array
+	 *	@throws		\InvalidArgumentException				if sender is not set
+	 *	@throws		\InvalidArgumentException				if receiver is not set
+	 *	@throws		\InvalidArgumentException				if subject is not set
 	 */
 	public function send( \CeusMedia\Mail\Message $message, $parameters = array() ){
-		$body		= \CeusMedia\Mail\Renderer::render( $message );
 		$headers	= $message->getHeaders();
-		$receivers	= $message->getRecipients();
+		$receivers	= $message->getRecipients( 'to' );
 		$subject	= $message->getSubject();
+		$body		= Renderer::render( $message );
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
-		foreach( $receivers as $receiver )
-			$this->checkForInjection( $receiver->get() );
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new \InvalidArgumentException( 'No mail sender defined' );
@@ -89,16 +94,42 @@ class Local{
 		}
 */
 		//  --  HEADERS  --  //
-		$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
+		if( $message->getUserAgent() )
+			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
 		if( is_array( $parameters ) )
 			$parameters	= implode( PHP_EOL, $parameters );
 
-		foreach( $receivers as $receiver )
-			if( !mail( $receiver->getAddress(), $subject, $body, $headers->toString(), $parameters ) )
-				throw new \RuntimeException( 'Mail could not been sent' );
-		return TRUE;
+		$list	= array();
+		$buffer	= new \UI_OutputBuffer();
+		foreach( $receivers as $receiver ){
+			try{
+				$this->checkForInjection( $receiver );
+				$result	= mail(
+					$receiver->getAddress(),
+					$subject,
+					$body,
+					$headers->toString(),
+					$parameters
+				);
+				if( !$result ){
+					throw new \RuntimeException( $buffer->get() );
+				}
+				$list[]	= array(
+					'status'		=> 'ok',
+					'message'		=> 'mail sent to '.$receiver->participant->getAddress(),
+				);
+			}
+			catch( \Exception $e ){
+				$list[]	= array(
+					'status'		=> 'failed',
+					'message'		=> $e->getMessage(),
+				);
+			}
+		}
+		$buffer->close();
+		return $list;
 	}
 
 
@@ -110,9 +141,8 @@ class Local{
 	 *	@param		array		$parameters	Additional mail parameters
 	 *	@return		void
 	 */
-	public static function sendMail( \CeusMedia\Mail\Message $message, $parameters = array() ){
-		$transport	= new \CeusMedia\Mail\Transport\Local();
+	public static function sendMail( Message $message, $parameters = array() ){
+		$transport	= new static();
 		$transport->send( $message, $parameters );
 	}
 }
-?>

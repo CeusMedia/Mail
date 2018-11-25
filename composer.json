@@ -22,10 +22,10 @@
     "ceus-media/cache": "*"
   },
   "require-dev": {
-    "ceus-media/common": "^0.8",
-    "ceus-media/cache": "dev-master",
-    "ceus-media/doc-creator": "^0.9",
-    "phpunit/phpunit": "^4"
+    "phpunit/phpunit": "*",
+    "squizlabs/php_codesniffer": "*",
+    "phan/phan": "dev-master",
+    "ceus-media/doc-creator": "^0.9"
   },
   "autoload": {
     "psr-4": {

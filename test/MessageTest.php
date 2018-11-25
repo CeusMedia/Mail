@@ -2,21 +2,25 @@
 /**
  *	Unit test for mail message.
  *	@category		Test
- *	@package		CeusMedia_Mail_Header
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 require_once __DIR__.'/bootstrap.php';
+
+use \CeusMedia\Mail\Address as Address;
+use \CeusMedia\Mail\Address\Collection as AddressCollection;
+
 /**
  *	Unit test for mail message.
  *	@category		Test
- *	@package		CeusMedia_Mail_Header
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 class MessageTest extends PHPUnit_Framework_TestCase
 {
 	public function testAddText(){
 		$text		= "TestText123";
-		$part		= new \CeusMedia\Mail\Part\Text($text);
+		$part		= new \CeusMedia\Mail\Message\Part\Text($text);
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$message->addText($text);
 
@@ -26,7 +30,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 
 	public function testAddHtml(){
 		$html		= "<b>TestText123</b>";
-		$part		= new \CeusMedia\Mail\Part\HTML($html);
+		$part		= new \CeusMedia\Mail\Message\Part\HTML($html);
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$message->addHtml($html);
 
@@ -36,20 +40,9 @@ class MessageTest extends PHPUnit_Framework_TestCase
 
 	public function testAddHtmlImage(){
 		$fileName	= __DIR__."/../logo.png";
-		$part		= new \CeusMedia\Mail\Part\InlineImage('id', $fileName);
+		$part		= new \CeusMedia\Mail\Message\Part\InlineImage('id', $fileName);
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$message->addHtmlImage('id', $fileName);
-
-		$parts	= $message->getParts( TRUE );
-		$this->assertEquals( $parts[0], $part );
-	}
-
-	public function testEmbedImage(){
-		$this->setExpectedException( 'PHPUnit_Framework_Error' );
-		$fileName	= __DIR__."/../logo.png";
-		$part		= new \CeusMedia\Mail\Part\InlineImage('id', $fileName);
-		$message	= \CeusMedia\Mail\Message::getInstance();
-		$message->embedImage('id', $fileName);
 
 		$parts	= $message->getParts( TRUE );
 		$this->assertEquals( $parts[0], $part );
@@ -60,26 +53,26 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$creation	= $message->setSender( "test@example.com" );
 		$this->assertEquals( $message, $creation );
 
-		$assertion	= new \CeusMedia\Mail\Participant( "test@example.com" );
+		$assertion	= new \CeusMedia\Mail\Address( "test@example.com" );
 		$creation	= $message->getSender();
 		$this->assertEquals( $assertion, $creation );
 
 		$message	= \CeusMedia\Mail\Message::getInstance();
-		$message->setSender( new \CeusMedia\Mail\Participant( "test@example.com" ) );
-		$assertion	= new \CeusMedia\Mail\Participant( "test@example.com" );
+		$message->setSender( new \CeusMedia\Mail\Address( "test@example.com" ) );
+		$assertion	= new \CeusMedia\Mail\Address( "test@example.com" );
 		$creation	= $message->getSender();
 		$this->assertEquals( $assertion, $creation );
 
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$message->setSender( "test@example.com", "Test Name" );
-		$assertion	= new \CeusMedia\Mail\Participant( "test@example.com" );
+		$assertion	= new \CeusMedia\Mail\Address( "test@example.com" );
 		$assertion->setName( "Test Name" );
 		$creation	= $message->getSender();
 		$this->assertEquals( $assertion, $creation );
 
 		$message	= \CeusMedia\Mail\Message::getInstance();
-		$message->setSender( new \CeusMedia\Mail\Participant( "test@example.com" ), "Test Name" );
-		$assertion	= new \CeusMedia\Mail\Participant( "test@example.com" );
+		$message->setSender( new \CeusMedia\Mail\Address( "test@example.com" ), "Test Name" );
+		$assertion	= new \CeusMedia\Mail\Address( "test@example.com" );
 		$assertion->setName( "Test Name" );
 		$creation	= $message->getSender();
 		$this->assertEquals( $assertion, $creation );
@@ -94,21 +87,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $subject, $message->getSubject() );
 	}
 
-	/**
-	 *	@deprecated		use testGetAndSetUserAgent instead
-	 *	@todo   		to be removed in 1.1
-	 */
-	public function testGetAndSetAgent(){
-		$this->setExpectedException( 'PHPUnit_Framework_Error' );
-		$agent		= "Test User Agent";
-		$message	= \CeusMedia\Mail\Message::getInstance();
-		$creation	= $message->setAgent( $agent );
-		$this->assertEquals( $message, $creation );
 
-		$this->assertEquals( $agent, $message->getAgent() );
-	}
-
-	public function testGetAndSetUsetAgent(){
+	public function testGetAndSetUserAgent(){
 		$agent		= "Test User Agent";
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$creation	= $message->setUserAgent( $agent );
@@ -120,12 +100,12 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	public function testAddAndGetRecipients(){
 		$message	= \CeusMedia\Mail\Message::getInstance();
 
-		$receiverTo		= new \CeusMedia\Mail\Participant( "receiver_to@example.com" );
-		$receiverCc1	= new \CeusMedia\Mail\Participant( "receiver_cc1@example.com" );
-		$receiverCc2	= new \CeusMedia\Mail\Participant( "receiver_cc2@example.com" );
+		$receiverTo		= new \CeusMedia\Mail\Address( "receiver_to@example.com" );
+		$receiverCc1	= new \CeusMedia\Mail\Address( "receiver_cc1@example.com" );
+		$receiverCc2	= new \CeusMedia\Mail\Address( "receiver_cc2@example.com" );
 		$receiverCc2->setName( "Test Name 1" );
-		$receiverBcc1	= new \CeusMedia\Mail\Participant( "receiver_bcc1@example.com" );
-		$receiverBcc2	= new \CeusMedia\Mail\Participant( "receiver_bcc2@example.com" );
+		$receiverBcc1	= new \CeusMedia\Mail\Address( "receiver_bcc1@example.com" );
+		$receiverBcc2	= new \CeusMedia\Mail\Address( "receiver_bcc2@example.com" );
 		$receiverBcc2->setName( "Test Name 2" );
 
 		$creation	= $message->addRecipient( $receiverTo );
@@ -140,11 +120,17 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $message, $creation );
 
 		$assertion	= array(
-			$receiverTo,
-			$receiverCc1,
-			$receiverCc2,
-			$receiverBcc1,
-			$receiverBcc2,
+			'to'	=> new AddressCollection( array(
+				new Address( 'receiver_to@example.com' ),
+			) ),
+			'cc'	=> new AddressCollection( array(
+				new Address( 'receiver_cc1@example.com' ),
+				new Address( 'Test Name 1 <receiver_cc2@example.com>' ),
+			) ),
+			'bcc'	=> new AddressCollection( array(
+				new Address( 'receiver_bcc1@example.com' ),
+				new Address( 'Test Name 2 <receiver_bcc2@example.com>' ),
+			) ),
 		);
 		$this->assertEquals( $message->getRecipients(), $assertion );
 	}
@@ -176,9 +162,9 @@ class MessageTest extends PHPUnit_Framework_TestCase
 
 	public function testAddAndGetAttachments(){
 		$this->setExpectedException( 'PHPUnit_Framework_Error' );
-		$attachment1	= new \CeusMedia\Mail\Part\Attachment();
+		$attachment1	= new \CeusMedia\Mail\Message\Part\Attachment();
 		$attachment1->setFile( __FILE__ );
-		$attachment2	= new \CeusMedia\Mail\Part\Attachment();
+		$attachment2	= new \CeusMedia\Mail\Message\Part\Attachment();
 		$attachment2->setFile( __FILE__ );
 
 		$message	= \CeusMedia\Mail\Message::getInstance();
@@ -188,21 +174,6 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $message, $creation );
 
 		$creation	= array( $attachment1, $attachment2 );
-		$this->assertEquals( $creation, $message->getAttachments() );
-	}
-
-	public function testAttachFileAndGetAttachments(){
-		$this->setExpectedException( 'PHPUnit_Framework_Error' );
-		$message	= \CeusMedia\Mail\Message::getInstance();
-		$creation	= $message->attachFile( __FILE__ );
-		$this->assertEquals( $message, $creation );
-		$creation	= $message->attachFile( __FILE__ );
-		$this->assertEquals( $message, $creation );
-
-		$attachment	= new \CeusMedia\Mail\Part\Attachment();
-		$attachment->setFile( __FILE__ );
-
-		$creation	= array( $attachment, $attachment );
 		$this->assertEquals( $creation, $message->getAttachments() );
 	}
 }

@@ -2,7 +2,7 @@
 /**
  *	...
  *
- *	Copyright (c) 2007-2016 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,18 +20,19 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Transport\SMTP;
+
 /**
  *	...
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2016 Christian Würker
+ *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			https://www.knownhost.com/wiki/email/troubleshooting/error-numbers
@@ -273,4 +274,3 @@ class Code{
 		return self::explain( $code )->label;
 	}
 }
-?>
