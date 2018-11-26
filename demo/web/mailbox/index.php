@@ -1,7 +1,5 @@
 <?php
-(@include dirname( dirname( __DIR__ ) ).'/vendor/autoload.php') or die('Please use composer to install required packages.');
-
-error_reporting( E_ALL );
+require_once dirname( __DIR__ ).'/_bootstrap.php';
 
 use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Mailbox;
@@ -14,11 +12,8 @@ class DemoMailboxApp{
 	protected $request;
 	protected $response;
 
-	public function __construct(){
-		if( !file_exists( __DIR__.'/config.ini' ) )
-			die( 'Please copy "config.ini.dist" to "config.ini" and configure it.' );
-		$config	= parse_ini_file( __DIR__.'/config.ini', TRUE );
-		$this->config	= (object) $config['mailbox'];
+	public function __construct( $config ){
+		$this->config	= (object) $config->getAll( 'mailbox_' );
 		$this->request	= new Net_HTTP_Request_Receiver;
 		$this->response	= new Net_HTTP_Response;
 		$this->openMailbox();
@@ -79,4 +74,4 @@ class DemoMailboxApp{
 	}
 }
 
-$app	= new DemoMailboxApp();
+$app	= new DemoMailboxApp( $config );

@@ -1,5 +1,5 @@
 <?php
-(php_sapi_name() == 'cli' ) or die('Access denied: CLI only.');
+(getEnv( 'HTTP_HOST' ) !== FALSE) or die('Access denied: HTTP only.');
 (@include dirname( dirname( __DIR__ ) ).'/vendor/autoload.php') or die('Please use composer to install required packages.');
 new \UI_DevOutput;
 

@@ -49,8 +49,8 @@ try {
 		print_m( $error );
 //		print "Receiver <".$receiverTo."> is not existing.";
 //		exit;
-	}
-*/
+	}*/
+
 	//  create message
 	$message	= new \CeusMedia\Mail\Message();									//  create mail message object
 	$message->setSender($sender);													//  set sender
@@ -60,8 +60,8 @@ try {
 	$message->setSubject($subject);													//  set mail subject
 	$message->addText($bodyText);													//  set mail content as plain text part
 	$message->addHtml($bodyHtml);													//  set mail content as HTML part
-	$message->addHtmlImage('logo', '../../../logo.png');								//  add inline image
-	$message->addFile("../../../readme.md");
+	$message->addHtmlImage('logo', '../../test.png');								//  add inline image
+	$message->addFile("../../../README.MD");
 	$message->setReadNotificationRecipient($sender);
 
 	//  send message

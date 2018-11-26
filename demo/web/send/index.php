@@ -1,17 +1,13 @@
 <?php
-(@include '../../vendor/autoload.php') or die('Please use composer to install required packages.' . PHP_EOL);
-
-error_reporting( E_ALL );
-ini_set( 'display_errors', 'On' );
+require_once dirname( __DIR__ ).'/_bootstrap.php';
 
 $request	= new Net_HTTP_Request_Receiver;
-$config		= getConfig($request);
 
 $result	= '- no mail triggered -';
-if($request->has('send') && $request->get('receiverAddress')){
+if( $request->has( 'send' ) && $request->get( 'receiverAddress' ) ){
 	ob_start();
 	try{
-		sendMail($config);
+		sendMail( $config );
 	}
 	catch( Exception $e ){
 		print "\n\nException: ".$e->getMessage()."\n".$e->getTraceAsString();
@@ -28,13 +24,13 @@ $body	= '
 		<div class="span3">
 			<form action="./" method="post">
 				<label>Sender Name</label>
-				<input type="text" class="span12" readonly="readonly" value="'.htmlentities($config['senderName'], ENT_QUOTES, 'UTF-8').'"/>
+				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $config['senderName'], ENT_QUOTES, 'UTF-8' ).'"/>
 				<label>Sender Address</label>
-				<input type="text" class="span12" readonly="readonly" value="'.htmlentities($config['senderAddress'], ENT_QUOTES, 'UTF-8').'"/>
+				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $config['senderAddress'], ENT_QUOTES, 'UTF-8' ).'"/>
 				<label>Receiver Name</label>
-				<input type="text" class="span12" readonly="readonly" value="'.htmlentities($config['receiverName'], ENT_QUOTES, 'UTF-8').'"/>
+				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $config['receiverName'], ENT_QUOTES, 'UTF-8' ).'"/>
 				<label for="input_receiverAddress">Receiver Address</label>
-				<input type="text" name="receiverAddress" class="span12" value="'.htmlentities($request->get('receiverAddress'), ENT_QUOTES, 'UTF-8').'"/>
+				<input type="text" name="receiverAddress" class="span12" value="'.htmlentities( $request->get( 'receiverAddress' ), ENT_QUOTES, 'UTF-8' ).'"/>
 				<button type="submit" name="send" class="btn btn-primary btn-large">send Mail</button>
 			</form>
 		</div>
@@ -80,35 +76,29 @@ $transport->send($mail);
 ';
 
 $page	= new UI_HTML_PageFrame();
-$page->addBody($body);
-$page->addStylesheet("http://cdn.int1a.net/css/bootstrap.min.css");
+$page->addBody( $body );
+$page->addStylesheet( 'https://cdn.ceusmedia.de/css/bootstrap.min.css' );
 print $page->build();
-
-
 
 /*  --------------------------------------------------------------------  */
 
-function sendMail($config) {
-	extract( $config );
-	$body		= new \CeusMedia\Mail\Part\HTML(sprintf($body, time()));
-
+function sendMail( $config ) {
+	$configSend	= (object) $config->getAll( 'sending_' );
+	$configSmtp	= (object) $config->getAll( 'SMTP_' );
+	$body		= new \CeusMedia\Mail\Part\HTML( sprintf( $configSend->body, time() ) );
 	$mail       = new \CeusMedia\Mail\Message();
-	$mail->setSender($senderAddress, $senderName);
-	$mail->addRecipient($receiverAddress, $receiverName);
-	$mail->setSubject(sprintf($subject, uniqid()));
-	$mail->addPart($body);
+	$mail->setSender( $configSend->senderAddress, $configSend->senderName );
+	$mail->addRecipient( $configSend->receiverAddress, $configSend->receiverName );
+	$mail->setSubject( sprintf( $configSend->subject, uniqid() ) );
+	$mail->addPart( $body );
 
-	$transport  = new \CeusMedia\Mail\Transport\SMTP($host, $port, $username, $password);
-	$transport->setVerbose(TRUE);
-	$transport->setSecure($port != 25);
-	$transport->send($mail);
-}
-
-function getConfig(Net_HTTP_Request_Receiver $request){
-	if(!file_exists("config.ini"))
-		die('Please copy "config.ini.dist" to "config.ini" and configure it.');
-	$config		= parse_ini_file("config.ini");
-	if($request->get('receiverAddress'))
-		$config['receiverAddress']	= $request->get('receiverAddress');
-	return $config;
+	$transport  = new \CeusMedia\Mail\Transport\SMTP(
+		$configSmtp->host,
+		$configSmtp->port,
+		$configSmtp->username,
+		$configSmtp->password
+	);
+	$transport->setVerbose( TRUE );
+	$transport->setSecure( $configSmtp->port != 25 );
+	$transport->send( $mail );
 }

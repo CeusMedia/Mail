@@ -4,7 +4,6 @@ require_once dirname( __DIR__ ).'/_bootstrap.php';
 $smtp		= (object) $config->getAll( 'SMTP_' );
 $sending	= (object) $config->getAll( 'sending_' );
 
-
 //  --  PLEASE CONFIGURE!  --  //
 
 //$sending->receiverAddress	= "";

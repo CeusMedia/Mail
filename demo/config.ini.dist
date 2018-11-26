@@ -7,12 +7,13 @@ password		= ""
 [sending]
 senderAddress	= ""
 senderName		= "Sender Name"
-receiverName	= "Receiver Name"
 receiverAddress	= ""
+receiverName	= "Receiver Name"
 subject			= "CeusMedia/Mail: Demo Mail #%s"
-body			= "This is just a test. The current UNIX timestamp is %s."
+body			= "This is just a test. The current UNIX timestamp is %s. And here are some umlauts: äöüÄÖÜß :-)"
 
 [mailbox]
+host			= ""
 address			= ""
 host			= ""
 username		= ""

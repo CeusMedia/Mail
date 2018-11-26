@@ -12,12 +12,12 @@ if( getEnv( 'HTTP_HOST' ) )
 $smtp		= (object) $config->getAll( 'SMTP_' );
 $sending	= (object) $config->getAll( 'sending_' );
 
-SMTP::getInstance($smtp->host, $smtp->port)
-	->setAuth($smtp->username, $smtp->password)
-	->setVerbose($verbose)
-	->send(Message::getInstance()
-		->setSubject(sprintf($sending->subject, uniqid()))
-		->setSender($sending->senderAddress, $sending->senderName)
-		->addRecipient($sending->receiverAddress, $sending->receiverName)
-		->addText(sprintf($sending->body, time()), "UTF-8", "quoted-printable")
+SMTP::getInstance( $smtp->host, $smtp->port )
+	->setAuth( $smtp->username, $smtp->password )
+	->setVerbose( $verbose )
+	->send( Message::getInstance()
+		->setSubject( sprintf( $sending->subject, uniqid() ) )
+		->setSender( $sending->senderAddress, $sending->senderName )
+		->addRecipient( $sending->receiverAddress, $sending->receiverName )
+		->addText( sprintf( $sending->body, time() ), "UTF-8", "quoted-printable" )
 	);
