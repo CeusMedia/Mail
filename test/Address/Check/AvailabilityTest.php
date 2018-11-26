@@ -14,11 +14,11 @@ require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
  */
 class Address_Check_AvailabilityTest extends PHPUnit_Framework_TestCase{
 
-	public function setUp(){
+/*	public function setUp(){
 	}
 
 	public function tearUp(){
-	}
+	}*/
 
 	public function testTest(){
 		$participant	= new \CeusMedia\Mail\Address( "office@ceusmedia.de" );

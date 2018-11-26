@@ -77,9 +77,10 @@ class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
 
 	//  --  PROTECTED  --  //
 	protected function assertEqualsForAllMethods( $assertion, $string ){
-		Parser::$method	= Parser::METHOD_OWN;
-		$this->assertEquals( $assertion, Parser::parse( $string ) );
-		Parser::$method	= Parser::METHOD_IMAP;
-		$this->assertEquals( $assertion, Parser::parse( $string ) );
+		$parser	= Parser::create();
+		$parser->setMethod( Parser::METHOD_OWN );
+		$this->assertEquals( $assertion, $parser->parse( $string ) );
+		$parser->setMethod( Parser::METHOD_IMAP );
+		$this->assertEquals( $assertion, $parser->parse( $string ) );
 	}
 }

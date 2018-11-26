@@ -39,7 +39,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testAddHtmlImage(){
-		$fileName	= __DIR__."/../logo.png";
+		$fileName	= __DIR__."/../demo/outbox.png";
 		$part		= new \CeusMedia\Mail\Message\Part\InlineImage('id', $fileName);
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$message->addHtmlImage('id', $fileName);
@@ -135,10 +135,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $message->getRecipients(), $assertion );
 	}
 
-	/**
-	 *	@expectedException	\InvalidArgumentException
-	 */
 	public function testSetSenderException(){
+		$this->expectException( 'InvalidArgumentException' );
 		$message	= \CeusMedia\Mail\Message::getInstance();
 		$message->setSender( array( 'invalid' ) );
 	}
@@ -153,15 +151,13 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $creation, $assertion );
 	}
 
-	/**
-	 *	@expectedException	\InvalidArgumentException
-	 */
 	public function testEncodeIfNeededException(){
+		$this->expectException( 'InvalidArgumentException' );
 		\CeusMedia\Mail\Message::encodeIfNeeded( "ÄÖÜ", "_invalid_" );
 	}
 
 	public function testAddAndGetAttachments(){
-		$this->setExpectedException( 'PHPUnit_Framework_Error' );
+//		$this->expectException( 'PHPUnit_Framework_Error' );
 		$attachment1	= new \CeusMedia\Mail\Message\Part\Attachment();
 		$attachment1->setFile( __FILE__ );
 		$attachment2	= new \CeusMedia\Mail\Message\Part\Attachment();

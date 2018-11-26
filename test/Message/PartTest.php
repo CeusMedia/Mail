@@ -44,10 +44,8 @@ class Message_PartTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
-	/**
-	 *	@expectedException	\InvalidArgumentException
-	 */
 	public function testEncodingException(){
+		$this->expectException( 'InvalidArgumentException' );
 		$part		= new Message_Part();
 		$part->setEncoding( 'invalid' );
 	}
@@ -62,10 +60,8 @@ class Message_PartTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
-	/**
-	 *	@expectedException	\InvalidArgumentException
-	 */
 	public function testFormatException(){
+		$this->expectException( 'InvalidArgumentException' );
 		$part		= new Message_Part();
 		$part->setFormat( 'invalid' );
 	}

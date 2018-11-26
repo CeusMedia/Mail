@@ -58,10 +58,8 @@ class AddressTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 'muster-server.tld', $participant->getDomain() );
 	}
 
-	/**
-	 *	@expectedException	RuntimeException
-	 */
 	public function testGetDomain_Exception(){
+		$this->expectException( 'RuntimeException' );
 		$participant	= new Address();
 		$participant->getDomain();
 	}
@@ -75,10 +73,8 @@ class AddressTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 'Hans.Mustermann', $participant->getLocalPart() );
 	}
 
-	/**
-	 *	@expectedException	RuntimeException
-	 */
 	public function testGetLocalPart_Exception(){
+		$this->expectException( 'RuntimeException' );
 		$participant	= new Address();
 		$participant->getLocalPart();
 	}

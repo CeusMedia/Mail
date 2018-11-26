@@ -36,11 +36,8 @@ class Address_ParserTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $assertion, $address->get() );
 	}
 
-
-	/**
-	 *	@expectedException		InvalidArgumentException
-	 */
 	public function testParseException(){
+		$this->expectException( 'InvalidArgumentException' );
 		$parser	= new \CeusMedia\Mail\Address\Parser();
 		$parser->parse( 'invalid' );
 	}

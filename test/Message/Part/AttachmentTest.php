@@ -88,10 +88,8 @@ class Message_Part_AttachmentTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( 'binary', $part->getEncoding() );
 	}
 
-	/**
-	 *	@expectedException	\InvalidArgumentException
-	 */
 	public function testSetFileException(){
+		$this->expectException( 'InvalidArgumentException' );
 		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
 		$part->setFile( 'invalid' );
 	}

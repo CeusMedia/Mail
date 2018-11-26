@@ -49,7 +49,7 @@ class Message_Header_SectionTest extends PHPUnit_Framework_TestCase
 
 	public function testGetFieldException(){
 		$section	= new \CeusMedia\Mail\Message\Header\Section();
-		$this->setExpectedException( 'RangeException' );
+		$this->expectException( 'RangeException' );
 		$this->assertEquals( NULL, $section->getField( "invalid" ) );
 	}
 

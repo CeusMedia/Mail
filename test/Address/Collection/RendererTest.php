@@ -17,12 +17,19 @@ use \CeusMedia\Mail\Address\Collection\Renderer;
  */
 class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
 {
+	protected $renderer;
+
+	public function __construct(){
+		$this->renderer	= new Renderer();
+		parent::__construct();
+	}
+
 	public function testRender1(){
 		$collection		= new \CeusMedia\Mail\Address\Collection( array(
 			new \CeusMedia\Mail\Address( 'dev@ceusmedia.de' ),
 		) );
 		$assertion	= 'dev@ceusmedia.de';
-		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
 	}
 
 	public function testRender2(){
@@ -31,7 +38,7 @@ class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
 		) );
 
 		$assertion	= 'dev@ceusmedia.de';
-		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
 	}
 
 	public function testRender3(){
@@ -40,7 +47,7 @@ class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
 		) );
 
 		$assertion	= 'Developer <dev@ceusmedia.de>';
-		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
 	}
 
 	public function testRender4(){
@@ -49,7 +56,7 @@ class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
 		) );
 
 		$assertion	= 'Developer <dev@ceusmedia.de>';
-		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
 	}
 
 	public function testRender5(){
@@ -57,7 +64,7 @@ class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
 			new \CeusMedia\Mail\Address( '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>' ),
 		) );
 		$assertion	= '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>';
-		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
 	}
 
 	public function testRender6(){
@@ -66,18 +73,17 @@ class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
 			new \CeusMedia\Mail\Address( 'Alpha Tester <test@ceusmedia.de>' ),
 		) );
 		$assertion	= 'Developer <dev@ceusmedia.de>, "Alpha Tester" <test@ceusmedia.de>';
-		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
 	}
 
 	public function testRender7(){
 		$collection		= new \CeusMedia\Mail\Address\Collection( array() );
 		$assertion	= '';
-		$this->assertEquals( $assertion, Renderer::render( $collection ) );
+		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
 	}
 
-	public function testRenderException(){
-		$collection	= new \CeusMedia\Mail\Address\Collection();
-		$this->setExpectedException( 'InvalidArgumentException' );
-		Renderer::render( $collection, ' ' );
+	public function testSetDelimiterException(){
+		$this->expectException( 'InvalidArgumentException' );
+		$this->renderer->setDelimiter( '' );
 	}
 }

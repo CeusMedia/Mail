@@ -39,18 +39,14 @@ class Address_RendererTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals( $assertion, Renderer::render( $address ) );
 	}
 
-	/**
-	 *	@expectedException		RuntimeException
-	 */
 	public function testRenderExceptionNoDomain(){
+		$this->expectException( 'RuntimeException' );
 		$address	= new Address();
 		Renderer::render( $address );
 	}
 
-	/**
-	 *	@expectedException		RuntimeException
-	 */
 	public function testRenderExceptionNoLocalPart(){
+		$this->expectException( 'RuntimeException' );
 		$address	= new Address();
 		$address->setDomain( 'muster-server.tld' );
 		Renderer::render( $address );

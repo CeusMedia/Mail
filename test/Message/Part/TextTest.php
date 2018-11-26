@@ -17,7 +17,8 @@ class Message_Part_TextTest extends PHPUnit_Framework_TestCase
 	protected $delimiter;
 	protected $lineLength;
 
-	public function setUp(){
+	public function __construct(){
+		parent::__construct();
 		$this->delimiter	= \CeusMedia\Mail\Message::$delimiter;
 		$this->lineLength	= \CeusMedia\Mail\Message::$lineLength;
 	}

@@ -14,11 +14,11 @@ require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
  */
 class Address_Check_SyntaxTest extends PHPUnit_Framework_TestCase{
 
-	public function setUp(){
+/*	public function setUp(){
 	}
 
 	public function tearUp(){
-	}
+	}*/
 
 	public function testCheckValidSimple(){
 		$assertion	= 1;
@@ -49,7 +49,7 @@ class Address_Check_SyntaxTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function testCheckException(){
-		$this->setExpectedException( "InvalidArgumentException" );
+		$this->expectException( "InvalidArgumentException" );
 		\CeusMedia\Mail\Address\Check\Syntax::check( "foo.bar.@example.com" );
 	}
 
