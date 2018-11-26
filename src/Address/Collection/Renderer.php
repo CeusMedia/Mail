@@ -40,16 +40,40 @@ use \CeusMedia\Mail\Address\Collection as AddressCollection;
  */
 class Renderer{
 
-	static $delimiter		= ', ';
+	protected $delimiter		= ', ';
 
-	static public function render( AddressCollection $collection, $delimiter = NULL ){
-		$delimiter	= $delimiter ? $delimiter : static::$delimiter;
-		if( !strlen( trim( $delimiter ) ) )
-			throw new \InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
+	public static function create(){
+		return new static();
+	}
+
+	/**
+	 *	Returns set delimiter.
+	 *	@access		public
+	 *	@return		string
+	 */
+	public function getDelimiter(){
+		return $this->delimiter;
+	}
+
+	public function render( AddressCollection $collection ){
 		$list	= array();
 		foreach( $collection->getAll() as $address ){
 			$list[]	= $address->get();
 		}
-		return join( $delimiter, $list );
+		return join( $this->delimiter, $list );
+	}
+
+	/**
+	 *	Sets delimiter.
+	 *	@access		public
+	 *	@param		string		$delimiter
+	 *	@return		self
+	 *	@throws		\InvalidArgumentException	if delimiter is whitespace or empty
+	 */
+	public function setDelimiter( $delimiter ){
+		if( !strlen( trim( $delimiter ) ) )
+			throw new \InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
+		$this->delimiter	= $delimiter;
+		return $this;
 	}
 }

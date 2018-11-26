@@ -39,6 +39,7 @@ use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
  *	@copyright		2007-2018 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
+ *	@todo			Finish code documentation
  */
 class Parser{
 
@@ -53,10 +54,31 @@ class Parser{
 	const STATE_SCANNING_FOR_ADDRESS	= 3;
 	const STATE_READING_ADDRESS			= 4;
 
-	static public $method				= 0;
+	protected $method				= 0;
 
-	static public function parse( $string, $delimiter = "," ){
-		$method		= static::$method;
+	public static function create(){
+		return new static();
+	}
+
+	/**
+	 *	Get set parser method.
+	 *	@access		public
+	 *	@return		integer
+	 */
+	public function getMethod(){
+		return $this->method;
+	}
+
+	/**
+	 *	Parse address collection string and return address collection.
+	 *	@access		public
+	 *	@param		string		Address collection string
+	 *	@param		string		Delimiter (default: ,)
+	 *	@return		AddressCollection
+	 *	@throws		\RangeException		if parser method is not supported
+	 */
+	public function parse( $string, $delimiter = "," ){
+		$method		= $this->method;
 //		$hasImap	= function_exists( 'imap_rfc822_parse_adrlist' );
 		$hasImap	= extension_loaded( 'imap' );
 		/*  downgrade  */
@@ -71,19 +93,19 @@ class Parser{
 			$method = static::METHOD_OWN;
 		switch( $method ){
 			case static::METHOD_IMAP_PLUS_OWN:
-				$collection	= static::parseUsingImap( $string );									//  get collection using IMAP functions
-				$string		= AddressCollectionRenderer::render( $collection );						//  render collection string
-				return static::parseUsingOwn( $string );											//  get collection using own implementation
+				$collection	= $this->parseUsingImap( $string );										//  get collection using IMAP functions
+				$string		= AddressCollectionRenderer::create()->render( $collection );			//  render collection string
+				return $this->parseUsingOwn( $string );												//  get collection using own implementation
 			case static::METHOD_IMAP:
-				return static::parseUsingImap( $string );											//  get collection using IMAP functions
+				return $this->parseUsingImap( $string );											//  get collection using IMAP functions
 			case static::METHOD_OWN;
-				return static::parseUsingOwn( $string );											//  get collection using own implementation
+				return $this->parseUsingOwn( $string );												//  get collection using own implementation
 			default:
 				throw new \RangeException( 'No supported parser set' );
 		}
 	}
 
-	static public function parseUsingImap( $string ){
+	public function parseUsingImap( $string ){
 		$string			= trim( $string, '\t\r\n, ' );
 		$collection		= new AddressCollection();
 		$list			= imap_rfc822_parse_adrlist( $string, '_invalid.tld' );
@@ -98,62 +120,62 @@ class Parser{
 		return $collection;
 	}
 
-	static public function parseUsingOwn( $string, $delimiter = ',' ){
+	public function parseUsingOwn( $string, $delimiter = ',' ){
 		if( !strlen( $delimiter ) )
 			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
 		$list		= array();
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
 		if( !strlen( trim( $string ) ) )
 			return $list;
-		$status		= self::STATE_SCANNING_FOR_NAME;
+		$status		= static::STATE_SCANNING_FOR_NAME;
 		$part1		= "";
 		$buffer		= "";
 		$letters	= str_split( trim( $string ), 1 );
 		while( count( $letters ) ){
 			$letter = array_shift( $letters );
-			if( $status === self::STATE_SCANNING_FOR_NAME  ){
+			if( $status === static::STATE_SCANNING_FOR_NAME  ){
 				if( $letter === '"' ){
-					$status = self::STATE_READING_QUOTED_NAME;
+					$status = static::STATE_READING_QUOTED_NAME;
 					continue;
 				}
 				if( $letter === " " || $letter === $delimiter )
 					continue;
 				if( $letter === '<' ){
-					$status	= self::STATE_READING_ADDRESS;
+					$status	= static::STATE_READING_ADDRESS;
 					continue;
 				}
-				$status = self::STATE_READING_NAME;
+				$status = static::STATE_READING_NAME;
 			}
-			else if( $status === self::STATE_READING_NAME ){
+			else if( $status === static::STATE_READING_NAME ){
 				if( $letter === '<' ){
 					$part1	= trim( $buffer );
 					$buffer	= "";
-					$status = self::STATE_READING_ADDRESS;
+					$status = static::STATE_READING_ADDRESS;
 					continue;
 				}
 				if( $letter === '@' ){
-					$status	= self::STATE_READING_ADDRESS;
+					$status	= static::STATE_READING_ADDRESS;
 				}
 			}
-			else if( $status === self::STATE_READING_QUOTED_NAME ){
+			else if( $status === static::STATE_READING_QUOTED_NAME ){
 				if( $letter === '"' ){
-					$status = self::STATE_SCANNING_FOR_ADDRESS;
+					$status = static::STATE_SCANNING_FOR_ADDRESS;
 					$part1	= $buffer;
 					$buffer	= "";
 					continue;
 				}
 			}
-			else if( $status === self::STATE_SCANNING_FOR_ADDRESS ){
+			else if( $status === static::STATE_SCANNING_FOR_ADDRESS ){
 				if( $letter === " " || $letter === "<" )
 					continue;
-				$status	= self::STATE_READING_ADDRESS;
+				$status	= static::STATE_READING_ADDRESS;
 			}
-			else if( $status === self::STATE_READING_ADDRESS ){
+			else if( $status === static::STATE_READING_ADDRESS ){
 				if( $letter === '>' || $letter === " " || $letter === $delimiter ){
 					$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
 					$part1	= "";
 					$buffer	= "";
-					$status	= self::STATE_SCANNING_FOR_NAME;
+					$status	= static::STATE_SCANNING_FOR_NAME;
 					continue;
 				}
 			}
@@ -168,5 +190,20 @@ class Parser{
 			$collection->add( new Address( $address ) );
 		}
 		return $collection;
+	}
+
+	/**
+	 *	...
+	 *	@access		public
+	 *	@param		integer		$method		Parser method to set, see METHOD_* constants
+	 *	@eturn		self
+	 *	@throws		\InvalidArgumentException	if given method is unknown
+	 */
+	public function setMethod( $method ){
+		$constants	= \Alg_Object_Constant::staticGetAll( get_class( $this ), 'METHOD' );
+		if( !in_array( $method, $constants ) )
+			throw new \InvalidArgumentException( 'Invalid method' );
+		$this->method	= $method;
+		return $this;
 	}
 }
