@@ -36,5 +36,5 @@ if( $configSmtp->username && $configSmtp->password ){
 	}
 }
 
-$output	= \CeusMedia\Mail\Message\Renderer::render( $message );
+$output	= \CeusMedia\Mail\Message\Renderer::create()->render( $message );
 xmp( $output );

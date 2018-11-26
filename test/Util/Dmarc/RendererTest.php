@@ -19,9 +19,6 @@ use \CeusMedia\Mail\Util\Dmarc\Renderer;
  */
 class RendererTest extends PHPUnit_Framework_TestCase
 {
-	public function testConstruct(){
-	}
-
 	public function testRender(){
 		$record	= new Record();
 		$record->reportAggregate	= array( new Address( 'postmaster1@ceusmedia.de' ) );
@@ -34,7 +31,7 @@ class RendererTest extends PHPUnit_Framework_TestCase
 		$record->percent			= 90;
 		$record->failureOption		= Record::REPORT_IF_ANY_FAILED;
 
-		$rendered	= Renderer::render( $record );
+		$rendered	= Renderer::create()->render( $record );
 		$dmarc		= "v=DMARC1; p=quarantine; sp=reject; pct=90; rua=mailto:postmaster1@ceusmedia.de; ruf=mailto:postmaster2@ceusmedia.de; adkim=s; aspf=s; fo=1; ri=3600";
 
 		$rendered	= preg_split( '/; /', $rendered );

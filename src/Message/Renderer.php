@@ -47,6 +47,10 @@ class Renderer{
 
 	static public $encodingSubject	= 'quoted-printable';
 
+	public static function create(){
+		return new self();
+	}
+
 	/**
 	 *	@see		https://stackoverflow.com/questions/40389103/create-html-mail-with-inline-image-and-pdf-attachment/40420648#40420648
 	 */

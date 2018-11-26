@@ -106,7 +106,7 @@ class SMTP{
 			throw new \RuntimeException( 'No mail receiver(s) set' );
 		if( !$message->getParts() )
 			throw new \RuntimeException( 'No mail body parts set' );
-		$content	= MessageRenderer::render( $message );
+		$content	= MessageRenderer::create()->render( $message );
 
 		$this->socket->open();
 		try{

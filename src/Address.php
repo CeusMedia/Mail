@@ -88,8 +88,8 @@ class Address{
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 */
-	static public function create( $string = NULL ){
-		return new self( $string );
+	public static function create( $string = NULL ){
+		return new static( $string );
 	}
 
 	/**
@@ -130,7 +130,7 @@ class Address{
 	 *	@param		string		$string		Full mail address to parse, optional
 	 *	@return		static
 	 */
-	static public function getInstance( $string = NULL ){
+	public static function getInstance( $string = NULL ){
 		return new static( $string );
 	}
 
@@ -160,13 +160,12 @@ class Address{
 	 *	Renders full mail address by given parts.
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
-	 *	@static
 	 *	@param		Address		$address	Address to render
 	 *	@throws		\RuntimeException		If domain is empty
 	 *	@throws		\RuntimeException		If local part is empty
 	 */
-	static public function render( $address ){
-		return AddressRenderer::render( $address );
+	public function render( $address ){
+		return AddressRenderer::create()->render( $address );
 	}
 
 	/**
@@ -180,7 +179,7 @@ class Address{
 		if( !strlen( trim( $string ) ) )
 			throw new \InvalidArgumentException( 'No address given' );
 
-		$address	= AddressParser::parse( $string );
+		$address	= AddressParser::create()->parse( $string );
 		$this->setDomain( $address->getDomain() );
 		$this->setLocalPart( $address->getLocalPart() );
 		$this->setName( $address->getName() );

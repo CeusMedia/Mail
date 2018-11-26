@@ -42,7 +42,11 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  */
 class Parser{
 
-	static public function parse( $content ){
+	public static function create(){
+		return new static();
+	}
+
+	public function parse( $content ){
 		$section	= new MessageHeaderSection();
 		$content	= preg_replace( "/\r?\n[\t ]/", "", $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields

@@ -40,7 +40,11 @@ use \CeusMedia\Mail\Address;
  */
 class Renderer{
 
-	static public function render( $record ){
+	public static function create(){
+		return new static();
+	}
+
+	public function render( $record ){
 		$facts	= array(
 			'v'		=> 'DMARC'.$record->version,
 			'p'		=> $record->policy,

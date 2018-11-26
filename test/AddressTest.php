@@ -22,7 +22,7 @@ class AddressTest extends PHPUnit_Framework_TestCase
 		$participant	= new Address();
 		$this->assertEquals( NULL, $participant->getDomain( FALSE ) );
 		$this->assertEquals( NULL, $participant->getLocalPart( FALSE ) );
-		$this->assertEquals( NULL, $participant->getName( FALSE ) );
+		$this->assertEquals( NULL, $participant->getName() );
 
 		$participant	= new Address( 'Hans.Mustermann@muster-server.tld' );
 		$this->assertEquals( 'muster-server.tld', $participant->getDomain() );

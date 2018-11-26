@@ -75,7 +75,7 @@ class Local{
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipients( 'to' );
 		$subject	= $message->getSubject();
-		$body		= Renderer::render( $message );
+		$body		= Renderer::create()->render( $message );
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
 		$this->checkForInjection( $subject );

@@ -5,8 +5,8 @@ use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Parser;
 use \CeusMedia\Mail\Message\Part\Text;
 
-$content	= \FS_File_Reader::load( "mail.txt" );
-$message	= Parser::parse( $content );
+$content	= \FS_File_Reader::load( __DIR__."/mail.txt" );
+$message	= Parser::create()->parse( $content );
 foreach( $message->getParts() as $part ){
 	remark( "Part: ".get_class( $part ) );
 	if( $part instanceof Text ){

@@ -13,8 +13,8 @@ if( !file_exists( $fileName ) )
 	die( "Add a mail.txt or configure another file name in script!" );
 
 $mail	= file_get_contents( $fileName );
-$object	= Parser::parse( $mail );
-$output	= Renderer::render( $object );
+$object	= Parser::create()->parse( $mail );
+$output	= Renderer::create()->render( $object );
 if( getEnv( 'HTTP_HOST' ) ){
 	$page	= new UI_HTML_PageFrame();
 	$page->addStylesheet( 'https://cdn.ceusmedia.de/css/bootstrap.min.css' );

@@ -41,7 +41,11 @@ use \CeusMedia\Mail\Util\Dmarc\Record as UtilDmarcRecord;
  */
 class Parser{
 
-	static public function parse( $content ){
+	public static function create(){
+		return new static();
+	}
+
+	public function parse( $content ){
 		$record		= new UtilDmarcRecord();
 		$content	= rtrim( trim( $content ), ';' );
 		$pairs		= preg_split( '/\s*;\s*/', $content );

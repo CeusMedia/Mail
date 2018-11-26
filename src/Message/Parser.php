@@ -48,26 +48,15 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  */
 class Parser{
 
-	static protected function getCharsetFromContentType( $contentType ){
-		$parts	= explode( ";", $contentType );
-		foreach( $parts as $part ){
-			$pair	= explode( "=", trim( $part ) );
-			if( $pair[0] === "charset" )
-				return trim( $pair[1] );
-		}
-		return NULL;
+	public static function create(){
+		return new self();
 	}
 
-	static protected function getMimeFromContentType( $contentType ){
-		$parts	= explode( ";", $contentType );
-		return trim( $parts[0] );
-	}
-
-	static public function parse( $content ){
+	public function parse( $content ){
 		$message	= new Message();
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 
-		$headers	= MessageHeaderParser::parse( $parts[0] );
+		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
 		foreach( $headers->getFields() as $field ){
 			$message->addHeader( $field );
 			switch( strtolower( $field->getName() ) ){
@@ -80,7 +69,7 @@ class Parser{
 				case 'to':
 				case 'cc':
 				case 'bcc':
-					$addresses	= AddressCollectionParser::parse( $field->getValue() );
+					$addresses	= AddressCollectionParser::create()->parse( $field->getValue() );
 					foreach( $addresses as $address )
 						$message->addRecipient( $address );
 					break;
@@ -88,21 +77,37 @@ class Parser{
 		}
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
 		if( preg_match( "/multipart/", $contentType ) ){						//  is multipart message
-			self::parseMultipartBody( $message, $content );						//  parse multipart containers
+			$this->parseMultipartBody( $message, $content );					//  parse multipart containers
 		}
 		else{
-			$message->addPart( self::parseAtomicBodyPart( $content ) );			//  directly parse mail content as part
+			$message->addPart( $this->parseAtomicBodyPart( $content ) );		//  directly parse mail content as part
 		}
 		return $message;
 	}
 
-	static protected function parseMultipartBody( $message, $content ){
+	/*  --  PROTECTED  --  */
+	protected function getCharsetFromContentType( $contentType ){
+		$parts	= explode( ";", $contentType );
+		foreach( $parts as $part ){
+			$pair	= explode( "=", trim( $part ) );
+			if( $pair[0] === "charset" )
+				return trim( $pair[1] );
+		}
+		return NULL;
+	}
+
+	protected function getMimeFromContentType( $contentType ){
+		$parts	= explode( ";", $contentType );
+		return trim( $parts[0] );
+	}
+
+	protected function parseMultipartBody( $message, $content ){
 		$delim		= Message::$delimiter;
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$headers	= MessageHeaderParser::parse( $parts[0] );
+		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
 		$body		= $parts[1];
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		$contentType	= self::parseAttributedHeaderValue( $contentType );
+		$contentType	= $this->parseAttributedHeaderValue( $contentType );
 		$mimeBoundary	= $contentType->attributes->get( 'boundary' );
 		if( $mimeBoundary ){
 			$lines	= array();
@@ -113,11 +118,11 @@ class Parser{
 						$status	= 1;
 						continue;
 					}
-					self::parseMultipartBody( $message, join( $delim, $lines ) );
+					$this->parseMultipartBody( $message, join( $delim, $lines ) );
 					$lines	= array();
 				}
 				else if( $line === '--'.$mimeBoundary.'--' ){
-					self::parseMultipartBody( $message, join( $delim, $lines ) );
+					$this->parseMultipartBody( $message, join( $delim, $lines ) );
 					break;
 				}
 				else if( $status === 1 )
@@ -125,12 +130,12 @@ class Parser{
 			}
 		}
 		else{
-			$part	= self::parseAtomicBodyPart( $content );
+			$part	= $this->parseAtomicBodyPart( $content );
 			$message->addPart( $part );
 		}
 	}
 
-	static protected function parseAttributedHeaderValue( $string ){
+	protected function parseAttributedHeaderValue( $string ){
 		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
 		$parts	= preg_split( '/\s*;\s*/', $string );
 		$value	= array_shift( $parts );
@@ -158,13 +163,13 @@ class Parser{
 		);
 	}
 
-	static protected function parseAtomicBodyPart( $content ){
+	protected function parseAtomicBodyPart( $content ){
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$headers	= MessageHeaderParser::parse( $parts[0] );
+		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
 		$content	= $parts[1];
 
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		$contentType	= self::parseAttributedHeaderValue( $contentType );
+		$contentType	= $this->parseAttributedHeaderValue( $contentType );
 		$mimeType		= $contentType->value;
 		$charset		= $contentType->attributes->get( 'charset' );
 		$format			= $contentType->attributes->get( 'format' );
@@ -185,7 +190,7 @@ class Parser{
 
 		if( $headers->hasField( 'Content-Disposition' ) ){
 			$disposition	= $headers->getField( 'Content-Disposition' )->getValue();
-			$disposition	= self::parseAttributedHeaderValue( $disposition );
+			$disposition	= $this->parseAttributedHeaderValue( $disposition );
 			$filename		= $disposition->attributes->get( 'filename' );
 			if( strtolower( $disposition->value ) === "attachment" ){
 				$part	= new MessagePartAttachment();

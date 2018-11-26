@@ -19,9 +19,6 @@ use \CeusMedia\Mail\Util\Dmarc\Parser;
  */
 class ParserTest extends PHPUnit_Framework_TestCase
 {
-	public function testConstruct(){
-	}
-
 	public function testParse(){
 
 		$record	= new Record();
@@ -36,7 +33,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
 		$record->failureOption		= Record::REPORT_IF_ANY_FAILED;
 
 		$dmarc	= "v=DMARC1;p=quarantine;sp=reject;pct=90;rua=mailto:postmaster1@ceusmedia.de;ruf=mailto:postmaster2@ceusmedia.de;adkim=s;aspf=s;fo=1;ri=3600";
-		$parsed	= Parser::parse( $dmarc );
+		$parsed	= Parser::create()->parse( $dmarc );
 		$this->assertEquals( $record, $parsed );
 	}
 }

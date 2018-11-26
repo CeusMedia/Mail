@@ -105,6 +105,6 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 		$this->lastChunk	= $message;
 //		print( PHP_EOL.' > '.$message );
 		$this->log[]	= trim( ' > '. $message );
-		return;
+		return strlen( $message );
 	}
 }

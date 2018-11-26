@@ -13,6 +13,16 @@ class Parser{
 	);
 
 	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
+	public static function create(){
+		return new static();
+	}
+
+	/**
 	 *	Parse a mail address and return found parts.
 	 *	Reads patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
@@ -20,7 +30,7 @@ class Parser{
 	 *	@return		Address		Address object
 	 *	@throws		\InvalidArgumentException	if given string is not a valid mail address
 	 */
-	static public function parse( $string ){
+	public function parse( $string ){
 		$string		= stripslashes( trim( $string ) );
 		$string		= preg_replace( "/\r\n /", " ", $string );							//  unfold @see http://tools.ietf.org/html/rfc822#section-3.1
 		$regex1		= self::$patterns['name <local-part@domain>'];						//  get pattern of full address

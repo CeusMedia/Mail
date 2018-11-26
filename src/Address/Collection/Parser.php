@@ -72,10 +72,10 @@ class Parser{
 	/**
 	 *	Parse address collection string and return address collection.
 	 *	@access		public
-	 *	@param		string		Address collection string
-	 *	@param		string		Delimiter (default: ,)
+	 *	@param		string		$string		Address collection string
+	 *	@param		string		$delimiter	Delimiter (default: ,)
 	 *	@return		AddressCollection
-	 *	@throws		\RangeException		if parser method is not supported
+	 *	@throws		\RangeException			if parser method is not supported
 	 */
 	public function parse( $string, $delimiter = "," ){
 		$method		= $this->method;
