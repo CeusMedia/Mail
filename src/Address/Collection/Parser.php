@@ -78,19 +78,7 @@ class Parser{
 	 *	@throws		\RangeException			if parser method is not supported
 	 */
 	public function parse( $string, $delimiter = "," ){
-		$method		= $this->method;
-//		$hasImap	= function_exists( 'imap_rfc822_parse_adrlist' );
-		$hasImap	= extension_loaded( 'imap' );
-		/*  downgrade  */
-		if( $method === static::METHOD_IMAP_PLUS_OWN && !$hasImap )
-			$method = static::METHOD_OWN;
-		if( $method === static::METHOD_IMAP && !$hasImap )
-			$method = static::METHOD_AUTO;
-		/*  upgrade  */
-		if( $method === static::METHOD_AUTO && $hasImap )
-			$method = static::METHOD_IMAP;
-		if( $method === static::METHOD_AUTO )
-			$method = static::METHOD_OWN;
+		$method		= $this->realizeParserMethod();
 		switch( $method ){
 			case static::METHOD_IMAP_PLUS_OWN:
 				$collection	= $this->parseUsingImap( $string );										//  get collection using IMAP functions
@@ -200,10 +188,30 @@ class Parser{
 	 *	@throws		\InvalidArgumentException	if given method is unknown
 	 */
 	public function setMethod( $method ){
-		$constants	= \Alg_Object_Constant::staticGetAll( get_class( $this ), 'METHOD' );
+		$reflextion	= new \Alg_Object_Constant( get_class( $this ) );
+		$constants	= $reflextion->getAll( 'METHOD' );
 		if( !in_array( $method, $constants ) )
 			throw new \InvalidArgumentException( 'Invalid method' );
 		$this->method	= $method;
 		return $this;
+	}
+
+	/*  --  PROTECTED  --  */
+
+	protected function realizeParserMethod(){
+		$method		= $this->method;
+//		$hasImap	= function_exists( 'imap_rfc822_parse_adrlist' );
+		$hasImap	= extension_loaded( 'imap' );
+		/*  downgrade  */
+		if( $method === static::METHOD_IMAP_PLUS_OWN && !$hasImap )
+			$method = static::METHOD_OWN;
+		if( $method === static::METHOD_IMAP && !$hasImap )
+			$method = static::METHOD_AUTO;
+		/*  upgrade  */
+		if( $method === static::METHOD_AUTO && $hasImap )
+			$method = static::METHOD_IMAP;
+		if( $method === static::METHOD_AUTO )
+			$method = static::METHOD_OWN;
+		return $method;
 	}
 }
