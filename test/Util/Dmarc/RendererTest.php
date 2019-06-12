@@ -17,7 +17,7 @@ use \CeusMedia\Mail\Util\Dmarc\Renderer;
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class RendererTest extends PHPUnit_Framework_TestCase
+class RendererTest extends TestCase
 {
 	public function testRender(){
 		$record	= new Record();

@@ -12,7 +12,7 @@ require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Address_Check_AvailabilityTest extends PHPUnit_Framework_TestCase{
+class Address_Check_AvailabilityTest extends TestCase{
 
 /*	public function setUp(){
 	}
@@ -21,9 +21,16 @@ class Address_Check_AvailabilityTest extends PHPUnit_Framework_TestCase{
 	}*/
 
 	public function testTest(){
-		$participant	= new \CeusMedia\Mail\Address( "office@ceusmedia.de" );
+		$configReceiver	= $this->requireReceiverConfig();
+
+		$participant	= new \CeusMedia\Mail\Address( $configReceiver->get( 'mailbox.address' ) );
 		$check			= new \CeusMedia\Mail\Address\Check\Availability( $participant );
 		$creation		= $check->test( $participant );
-		$this->assertEquals( TRUE, $creation );
+		$this->assertTrue( $creation );
+
+		$participant	= new \CeusMedia\Mail\Address( '_not_existing@notexisting123456.org' );
+		$check			= new \CeusMedia\Mail\Address\Check\Availability( $participant );
+		$creation		= $check->test( $participant );
+		$this->assertFalse( $creation );
 	}
 }

@@ -16,7 +16,7 @@ use \CeusMedia\Mail\Address\Collection\Parser;
  *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Address_Collection_ParserTest extends PHPUnit_Framework_TestCase
+class Address_Collection_ParserTest extends TestCase
 {
 	public function testParse(){
 		$assertion	= new AddressCollection( array(

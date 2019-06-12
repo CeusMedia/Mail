@@ -15,7 +15,7 @@ use \CeusMedia\Mail\Address\Collection\Renderer;
  *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Address_Collection_RendererTest extends PHPUnit_Framework_TestCase
+class Address_Collection_RendererTest extends TestCase
 {
 	protected $renderer;
 

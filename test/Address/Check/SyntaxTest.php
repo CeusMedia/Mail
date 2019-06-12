@@ -12,7 +12,7 @@ require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Address_Check_SyntaxTest extends PHPUnit_Framework_TestCase{
+class Address_Check_SyntaxTest extends TestCase{
 
 /*	public function setUp(){
 	}

@@ -12,7 +12,7 @@ require_once dirname( __DIR__ ).'/bootstrap.php';
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Message_ParserTest extends PHPUnit_Framework_TestCase
+class Message_ParserTest extends TestCase
 {
 	public function testParse(){
 		$this->markTestIncomplete( 'No test defined for Message\\Parser' );

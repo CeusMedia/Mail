@@ -17,7 +17,7 @@ use \CeusMedia\Mail\Util\Dmarc\Parser;
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class ParserTest extends PHPUnit_Framework_TestCase
+class ParserTest extends TestCase
 {
 	public function testParse(){
 

@@ -15,7 +15,7 @@ use \CeusMedia\Mail\Address;
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class AddressTest extends PHPUnit_Framework_TestCase
+class AddressTest extends TestCase
 {
 	public function testConstruct(){
 

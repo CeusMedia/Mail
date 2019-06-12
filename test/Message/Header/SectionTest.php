@@ -12,7 +12,7 @@ require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Message_Header_SectionTest extends PHPUnit_Framework_TestCase
+class Message_Header_SectionTest extends TestCase
 {
 	public function testAddField(){
 		$field		= new \CeusMedia\Mail\Message\Header\Field( "key", "value" );

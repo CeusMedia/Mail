@@ -12,7 +12,7 @@ require_once dirname( __DIR__ ).'/bootstrap.php';
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Address_ParserTest extends PHPUnit_Framework_TestCase
+class Address_ParserTest extends TestCase
 {
 
 	public function testParse(){

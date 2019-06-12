@@ -18,7 +18,7 @@ class Message_Part extends \CeusMedia\Mail\Message\Part
 		return json_encode( $this );
 	}
 }
-class Message_PartTest extends PHPUnit_Framework_TestCase
+class Message_PartTest extends TestCase
 {
 	public function testCharset(){
 		$charset	= "whatYouWant";

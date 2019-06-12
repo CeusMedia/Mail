@@ -12,7 +12,7 @@ require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Message_Part_TextTest extends PHPUnit_Framework_TestCase
+class Message_Part_TextTest extends TestCase
 {
 	protected $delimiter;
 	protected $lineLength;

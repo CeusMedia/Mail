@@ -12,7 +12,7 @@ require_once dirname( __DIR__ ).'/bootstrap.php';
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-class Message_RendererTest extends PHPUnit_Framework_TestCase
+class Message_RendererTest extends TestCase
 {
 	public function testRender(){
 		$this->markTestIncomplete( 'No test defined for Message\\Renderer' );

@@ -164,9 +164,9 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$attachment2->setFile( __FILE__ );
 
 		$message	= \CeusMedia\Mail\Message::getInstance();
-		$creation	= $message->addAttachment( $attachment1 );
+		$creation	= $message->addPart( $attachment1 );
 		$this->assertEquals( $message, $creation );
-		$creation	= $message->addAttachment( $attachment2 );
+		$creation	= $message->addAttachment( __FILE__ );
 		$this->assertEquals( $message, $creation );
 
 		$creation	= array( $attachment1, $attachment2 );
