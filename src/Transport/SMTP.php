@@ -59,6 +59,8 @@ class SMTP{
 
 	/**
 	 *	Constructor.
+	 *	Receives connection parameters (host, port, username, passord) if given.
+	 *
 	 *	@access		public
 	 *	@param		string		$host		SMTP server host name
 	 *	@param		integer		$port		SMTP server port
@@ -81,6 +83,16 @@ class SMTP{
 		if( $acceptedCodes && !in_array( $response->code, $acceptedCodes ) )
 			throw new \RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
 		return $response;
+	}
+
+	/**
+	 *	Returns last connection error message, if connecting failed.
+	 *	Otherwise NULL.
+	 *	@access		public
+	 *	@return		null|string
+	 */
+	public function getConnectError(){
+		return $this->socket->getError();
 	}
 
 	static public function getInstance( $host, $port = 25 ){
