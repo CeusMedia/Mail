@@ -47,6 +47,7 @@ class Mailbox{
 	protected $host;
 	protected $secure					= TRUE;
 	protected $validateCertificates		= TRUE;
+	protected $error;
 
 	public function __construct( $host, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
 		$this->checkExtensionInstalled( TRUE );
@@ -64,7 +65,7 @@ class Mailbox{
 		if( !$this->connection || !imap_ping( $this->connection ) ){
 			if( !$connect ){
 				if( $strict )
-					throw new \RuntimeException( 'No connected' );
+					throw new \RuntimeException( 'Not connected' );
 				return FALSE;
 			}
 			return $this->connect();
@@ -72,7 +73,7 @@ class Mailbox{
 		if( $this->connection && is_resource( $this->connection ) )
 			return TRUE;
 		if( $strict )
-			throw new \RuntimeException( 'No connected' );
+			throw new \RuntimeException( 'Not connected' );
 		return FALSE;
 	}
 
@@ -106,6 +107,7 @@ class Mailbox{
 			$this->connection	= $resource;
 			return TRUE;
 		}
+		$this->error	= imap_last_error();
 		if( $strict )
 			throw new \RuntimeException( 'Connection to server failed' );
 		return FALSE;
@@ -119,6 +121,10 @@ class Mailbox{
 
 	public static function getInstance( $host, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
 		return new self( $host, $username, $password, $secure, $validateCertificates );
+	}
+
+	public function getError(){
+		return $this->error;
 	}
 
 	public function getMail( $mailId, $strict = TRUE ){
