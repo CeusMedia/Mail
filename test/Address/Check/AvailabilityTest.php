@@ -25,12 +25,16 @@ class Address_Check_AvailabilityTest extends TestCase{
 
 		$participant	= new \CeusMedia\Mail\Address( $configReceiver->get( 'mailbox.address' ) );
 		$check			= new \CeusMedia\Mail\Address\Check\Availability( $participant );
+//		$check->setVerbose( !TRUE );
 		$creation		= $check->test( $participant );
+//		$response		= $check->getLastResponse();
 		$this->assertTrue( $creation );
 
 		$participant	= new \CeusMedia\Mail\Address( '_not_existing@notexisting123456.org' );
 		$check			= new \CeusMedia\Mail\Address\Check\Availability( $participant );
+//		$check->setVerbose( !TRUE );
 		$creation		= $check->test( $participant );
+//		$response		= $check->getLastResponse();
 		$this->assertFalse( $creation );
 	}
 }
