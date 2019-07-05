@@ -118,14 +118,14 @@ class Socket{
 	}
 
 	/**
-	 *	Returns last error as set of number and message.
+	 *	Returns last error as map set (array) of number and message.
 	 *	@access		public
 	 *	@return		array
 	 */
 	public function getError(){
 		return array(
-			'errorNumber'	=> $this->errorNumber,
-			'errorMessage'	=> $this->errorMessage,
+			'number'	=> $this->errorNumber,
+			'message'	=> $this->errorMessage,
 		);
 	}
 
