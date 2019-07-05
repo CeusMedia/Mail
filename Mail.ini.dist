@@ -1,22 +1,29 @@
+ss
+[phpunit.tests]
+Address.Check.Availability		= yes
+Transport.SMTP.sendAndReceive	= yes
+Transport.SMTP.hasAntivirus		= yes
 
 [phpunit.sender]
-
-server.host			= "{{phpunit.sender.server.host}}"
-server.port			= "{{phpunit.sender.server.port}}"
-server.encryption	= "{{phpunit.sender.server.encryption}}"
-mailbox.name		= "{{phpunit.sender.mailbox.name}}"
-mailbox.address		= "{{phpunit.sender.mailbox.address}}"
-auth.mode			= "{{phpunit.sender.auth.mode}}"
-auth.username		= "{{phpunit.sender.auth.username}}"
-auth.password		= "{{phpunit.sender.auth.password}}"
+server.host				= "{{phpunit.sender.server.host}}"
+server.port				= "{{phpunit.sender.server.port}}"
+mailbox.address			= "{{phpunit.sender.mailbox.address}}"
+mailbox.name			= "{{phpunit.sender.mailbox.name}}"
+auth.mode				= "{{phpunit.sender.auth.mode}}"
+auth.username			= "{{phpunit.receiver.auth.username}}"
+auth.password			= "{{phpunit.sender.auth.password}}"
+security.encryption		= yes
+security.certificate	= yes
+security.antivirus		= yes
 
 [phpunit.receiver]
-
-server.host			= "{{phpunit.receiver.server.host}}"
-server.port			= "{{phpunit.receiver.server.port}}"
-server.encryption	= "{{phpunit.receiver.server.encryption}}"
-mailbox.name		= "{{phpunit.receiver.mailbox.name}}"
-mailbox.address		= "{{phpunit.receiver.mailbox.address}}"
-auth.mode			= "{{phpunit.receiver.auth.mode}}"
-auth.username		= "{{phpunit.receiver.auth.username}}"
-auth.password		= "{{phpunit.receiver.auth.password}}"
+server.host				= "{{phpunit.receiver.server.host}}"
+server.port				= "{{phpunit.receiver.server.port}}"
+mailbox.address			= "{{phpunit.receiver.mailbox.address}}"
+mailbox.name			= "{{phpunit.sender.mailbox.name}}"
+auth.mode				= "{{phpunit.receiver.auth.mode}}"
+auth.username			= "{{phpunit.receiver.auth.username}}"
+auth.password			= "{{phpunit.receiver.auth.password}}"
+security.encryption		= yes
+security.certificate	= yes
+security.antivirus		= yes

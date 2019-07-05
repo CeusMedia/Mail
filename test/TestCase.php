@@ -7,12 +7,14 @@ class TestCase extends PHPUnit\Framework\TestCase{
 	protected $configDefaultKeys	= array(
 		'server.host',
 		'server.port',
-		'server.encryption',
 		'mailbox.name',
 		'mailbox.address',
 		'auth.mode',
 		'auth.username',
 		'auth.password',
+		'security.encryption',
+		'security.certificate',
+		'security.antivirus',
 	);
 
 	public function __construct(){
