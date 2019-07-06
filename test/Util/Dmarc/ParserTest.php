@@ -1,9 +1,9 @@
 <?php
 /**
  *	Unit test for mail address.
- *	@category		Test
- *	@package		CeusMedia_Mail
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 
@@ -13,14 +13,27 @@ use \CeusMedia\Mail\Util\Dmarc\Parser;
 
 /**
  *	Unit test for mail address.
- *	@category		Test
- *	@package		CeusMedia_Mail
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
+ *  @coversDefaultClass \CeusMedia\Mail\Util\Dmarc\Parser
  */
 class ParserTest extends TestCase
 {
-	public function testParse(){
+	/**
+	 *	@covers		::create
+	 */
+	public function testCreate(){
+		$instance	= Parser::create();
+		$this->assertTrue( is_object( $instance ) );
+		$this->assertTrue( $instance instanceof Parser );
+		$this->assertTrue( get_class( $instance ) === 'CeusMedia\Mail\Util\Dmarc\Parser' );
+	}
 
+	/**
+	 *	@covers		::parse
+	 */
+	public function testParse(){
 		$record	= new Record();
 		$record->reportAggregate	= array( new Address( 'postmaster1@ceusmedia.de' ) );
 		$record->reportForensic		= array( new Address( 'postmaster2@ceusmedia.de' ) );

@@ -1,27 +1,32 @@
 <?php
 /**
  *	Unit test for mail address.
- *	@category		Test
- *	@package		CeusMedia_Mail
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
+//require_once dirname( __DIR__ ).'/bootstrap.php';
 
 use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Address;
 use \CeusMedia\Mail\Mailbox;
+use \CeusMedia\Mail\Transport\SMTP;
 
-require_once dirname( __DIR__ ).'/bootstrap.php';
 /**
  *	Unit test for mail address.
- *	@category		Test
- *	@package		CeusMedia_Mail
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
+ *  @coversDefaultClass \CeusMedia\Mail\Transport\SMTP
  */
 class Transport_SMTPTest extends TestCase
 {
 	protected $receiveLoopSleep			= 1;
 	protected $receiveLoopTimeout		= 120;
 
+	/**
+	 *	@covers		::send
+	 */
 	public function testSend_Mocked(){
 		$message	= Message::create()
 			->addRecipient( 'receiver@muster-server.tld' )
@@ -31,7 +36,7 @@ class Transport_SMTPTest extends TestCase
 
 //		print( \CeusMedia\Mail\Message\Renderer::render( $message ) );
 
-		$smtp		= new \CeusMedia\Mail\Transport\SMTP( '_not_relevant_' );	//  get SMTP instance
+		$smtp		= new SMTP( '_not_relevant_' );	//  get SMTP instance
 		$socket		= new SmtpSocketMock();										//  create mocking replacement for default SMTP socket
 		$smtp->setSocket( $socket );											//  set mocking SMTP socket
 		$smtp->setAuth( 'username', 'password' );								//  auth is supported by mock
@@ -41,7 +46,7 @@ class Transport_SMTPTest extends TestCase
 			$returned	= $smtp->send( $message );								//  try to send mail
 			$this->assertTrue( is_object( $returned ) );
 
-			$creation	= $returned instanceof \CeusMedia\Mail\Transport\SMTP;
+			$creation	= $returned instanceof SMTP;
 			$this->assertTrue( $creation );
 		}
 		catch( \Exception $e ){
@@ -50,6 +55,9 @@ class Transport_SMTPTest extends TestCase
 		}
 	}
 
+	/**
+	 *	@covers		::send
+	 */
 	public function testSend(){
 		$configSender		= $this->getSenderConfig();
 		$configReceiver		= $this->getReceiverConfig();
@@ -57,7 +65,7 @@ class Transport_SMTPTest extends TestCase
 		$subject	= 'Test-Automation-Message #'.\Alg_ID::uuid();
 
 		/*  --  SENDING  --  */
-		$smtp		= new \CeusMedia\Mail\Transport\SMTP( $configSender->get( 'server.host' ) );			//  get SMTP instance
+		$smtp		= new SMTP( $configSender->get( 'server.host' ) );			//  get SMTP instance
 		$smtp->setPort( $configSender->get( 'server.port' ) );
 		$smtp->setUsername( $configSender->get( 'auth.username' ) );
 		$smtp->setPassword( $configSender->get( 'auth.password' ) );
@@ -123,7 +131,7 @@ class Transport_SMTPTest extends TestCase
 		$subject	= 'Test-Automation-Message #EICAR-';
 
 		/*  --  SENDING  --  */
-		$smtp		= new \CeusMedia\Mail\Transport\SMTP( $configSender->get( 'server.host' ) );			//  get SMTP instance
+		$smtp		= new SMTP( $configSender->get( 'server.host' ) );			//  get SMTP instance
 		$smtp->setPort( $configSender->get( 'server.port' ) );
 		$smtp->setUsername( $configSender->get( 'auth.username' ) );
 		$smtp->setPassword( $configSender->get( 'auth.password' ) );

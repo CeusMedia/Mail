@@ -1,57 +1,86 @@
 <?php
 /**
  *	Unit test for mail message part.
- *	@category		Test
- *	@package		CeusMedia_Mail_Message_Part
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail_Message_Part
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
+//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
+
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Part;
+use CeusMedia\Mail\Message\Part\Attachment;
+
 /**
  *	Unit test for mail message part.
- *	@category		Test
- *	@package		CeusMedia_Mail_Message_Part
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail_Message_Part
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
+ *  @coversDefaultClass \CeusMedia\Mail\Message\Part\Attachment
  */
 class Message_Part_AttachmentTest extends TestCase
 {
+	/**
+	 *	@covers		::__construct
+	 */
 	public function testConstruct(){
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$this->assertEquals( 'fixed', $part->getFormat() );
 		$this->assertEquals( 'base64', $part->getEncoding() );
 		$this->assertEquals( 'application/octet-stream', $part->getMimeType() );
 	}
 
+	/**
+	 *	@covers		::getFileATime
+	 *	@covers		::setFileATime
+	 */
 	public function testFileATime(){
 		$time	= time() - 30;
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$part->setFileATime( $time );
 		$this->assertEquals( $time, $part->getFileATime() );
 	}
 
+	/**
+	 *	@covers		::getFileCTime
+	 *	@covers		::setFileCTime
+	 */
 	public function testFileCTime(){
 		$time	= time() - 30;
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$part->setFileCTime( $time );
 		$this->assertEquals( $time, $part->getFileCTime() );
 	}
 
+	/**
+	 *	@covers		::getFileMTime
+	 *	@covers		::setFileMTime
+	 */
 	public function testFileMTime(){
 		$time	= time() - 30;
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$part->setFileMTime( $time );
 		$this->assertEquals( $time, $part->getFileMTime() );
 	}
 
+	/**
+	 *	@covers		::getFileSize
+	 *	@covers		::setFileSize
+	 */
 	public function testFileSize(){
 		$size	= 1234;
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$part->setFileSize( $size );
 		$this->assertEquals( $size, $part->getFileSize() );
 	}
 
+	/**
+	 *	@covers		::getContent
+	 *	@covers		::setContent
+	 */
 	public function testContent(){
 		$content	= "This is the content. It contains umlauts: äöü.";
-		$part		= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part		= new Attachment();
 
 		$part->setContent( $content );
 		$this->assertEquals( $content, $part->getContent() );
@@ -64,6 +93,9 @@ class Message_Part_AttachmentTest extends TestCase
 		$this->assertEquals( 'binary', $part->getEncoding() );
 	}
 
+	/**
+	 *	@covers		::setFile
+	 */
 	public function testFile(){
 		$file		= __FILE__;
 		$content	= file_get_contents( $file );
@@ -72,7 +104,7 @@ class Message_Part_AttachmentTest extends TestCase
 		$fileMTime	= filemtime( $file );
 		$fileSize	= filesize( $file );
 
-		$part		= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part		= new Attachment();
 		$part->setFile( $file );
 		$this->assertEquals( basename( __FILE__ ), $part->getFileName() );
 		$this->assertEquals( $content, $part->getContent() );
@@ -88,14 +120,20 @@ class Message_Part_AttachmentTest extends TestCase
 		$this->assertEquals( 'binary', $part->getEncoding() );
 	}
 
+	/**
+	 *	@covers		::setFile
+	 */
 	public function testSetFileException(){
 		$this->expectException( 'InvalidArgumentException' );
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$part->setFile( 'invalid' );
 	}
 
+	/**
+	 *	@covers		::setFileName
+	 */
 	public function testFileName(){
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$this->assertEquals( NULL, $part->getFileName() );
 		$part->setFileName( "test.file" );
 		$this->assertEquals( "test.file", $part->getFileName() );
@@ -124,10 +162,13 @@ class Message_Part_AttachmentTest extends TestCase
 		$this->assertEquals( $fileSize, $part->getFileSize() );
 	}
 
+	/**
+	 *	@covers		::render
+	 */
 	public function testRender()
 	{
-		$delimiter	= \CeusMedia\Mail\Message::$delimiter;
-		$lineLength	= \CeusMedia\Mail\Message::$lineLength;
+		$delimiter	= Message::$delimiter;
+		$lineLength	= Message::$lineLength;
 
 		$file		= __FILE__;
 		$content	= file_get_contents( $file );
@@ -136,7 +177,7 @@ class Message_Part_AttachmentTest extends TestCase
 		$fileMTime	= filemtime( $file );
 		$fileSize	= filesize( $file );
 
-		$part	= new \CeusMedia\Mail\Message\Part\Attachment();
+		$part	= new Attachment();
 		$part->setFile( $file );
 		$part->setMimeType( "text/php" );
 
@@ -155,7 +196,7 @@ class Message_Part_AttachmentTest extends TestCase
 			"Content-Description: ".basename( $file ),
 		);
 		$headers	= join( $delimiter, $headers );
-		$content	= \CeusMedia\Mail\Message\Part::wrapContent( base64_encode( $content ) );
+		$content	= Part::wrapContent( base64_encode( $content ) );
 		$assertion	= $headers.$delimiter.$delimiter.$content;
 		$this->assertEquals( $assertion, $part->render() );
 

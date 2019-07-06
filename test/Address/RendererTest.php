@@ -1,24 +1,28 @@
 <?php
 /**
  *	Unit test for mail address parser.
- *	@category		Test
- *	@package		CeusMedia_Mail_Address
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail_Address
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-require_once dirname( __DIR__ ).'/bootstrap.php';
+//require_once dirname( __DIR__ ).'/bootstrap.php';
 
 use \CeusMedia\Mail\Address;
 use \CeusMedia\Mail\Address\Renderer;
 
 /**
  *	Unit test for mail address renderer.
- *	@category		Test
- *	@package		CeusMedia_Mail_Address
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail_Address
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
+ *  @coversDefaultClass \CeusMedia\Mail\Address\Renderer
  */
 class Address_RendererTest extends TestCase
 {
 
+	/**
+	 *	@covers		::render
+	 */
 	public function testRender(){
 		$address	= Address::create()
 			->setDomain( 'muster-server.tld' )
@@ -39,12 +43,18 @@ class Address_RendererTest extends TestCase
 		$this->assertEquals( $assertion, Renderer::render( $address ) );
 	}
 
+	/**
+	 *	@covers		::render
+	 */
 	public function testRenderExceptionNoDomain(){
 		$this->expectException( 'RuntimeException' );
 		$address	= new Address();
 		Renderer::render( $address );
 	}
 
+	/**
+	 *	@covers		::render
+	 */
 	public function testRenderExceptionNoLocalPart(){
 		$this->expectException( 'RuntimeException' );
 		$address	= new Address();

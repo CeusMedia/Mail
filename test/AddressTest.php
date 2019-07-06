@@ -14,9 +14,13 @@ use \CeusMedia\Mail\Address;
  *	@category		Test
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *  @coversDefaultClass \CeusMedia\Mail\Address
  */
 class AddressTest extends TestCase
 {
+	/**
+	 *	@covers		::__construct
+	 */
 	public function testConstruct(){
 
 		$participant	= new Address();
@@ -35,6 +39,9 @@ class AddressTest extends TestCase
 		$this->assertEquals( 'Hans Mustermann', $participant->getName() );
 	}
 
+	/**
+	 *	@covers		::get
+	 */
 	public function testGet(){
 		$participant	= new Address( 'Hans Mustermann <hans.mustermann@muster-server.tld>');
 		$this->assertEquals( '"Hans Mustermann" <hans.mustermann@muster-server.tld>', $participant->get() );
@@ -49,6 +56,9 @@ class AddressTest extends TestCase
 		$this->assertEquals( 'hans.mustermann@muster-server.tld', $participant->get() );
 	}
 
+	/**
+	 *	@covers		::getDomain
+	 */
 	public function testGetDomain(){
 		$participant	= new Address();
 		$participant->setDomain( 'muster-server.tld' );
@@ -58,12 +68,18 @@ class AddressTest extends TestCase
 		$this->assertEquals( 'muster-server.tld', $participant->getDomain() );
 	}
 
+	/**
+	 *	@covers		::getDomain
+	 */
 	public function testGetDomain_Exception(){
 		$this->expectException( 'RuntimeException' );
 		$participant	= new Address();
 		$participant->getDomain();
 	}
 
+	/**
+	 *	@covers		::getLocalPart
+	 */
 	public function testGetLocalPart(){
 		$participant	= new Address();
 		$participant->setLocalPart( 'Hans.Mustermann' );
@@ -73,12 +89,18 @@ class AddressTest extends TestCase
 		$this->assertEquals( 'Hans.Mustermann', $participant->getLocalPart() );
 	}
 
+	/**
+	 *	@covers		::getLocalPart
+	 */
 	public function testGetLocalPart_Exception(){
 		$this->expectException( 'RuntimeException' );
 		$participant	= new Address();
 		$participant->getLocalPart();
 	}
 
+	/**
+	 *	@covers		::getName
+	 */
 	public function testGetName(){
 		$participant	= new Address();
 		$participant->setName( 'Hans Mustermann' );
@@ -88,6 +110,9 @@ class AddressTest extends TestCase
 		$this->assertEquals( 'Hans Mustermann', $participant->getName() );
 	}
 
+	/**
+	 *	@covers		::getAddress
+	 */
 	public function testGetAddress(){
 		$participant	= new Address();
 		$participant->set( 'Hans.Mustermann@muster-server.tld' );
@@ -97,7 +122,10 @@ class AddressTest extends TestCase
 		$this->assertEquals( 'Hans.Mustermann@muster-server.tld', $participant->getAddress() );
 	}
 
-	public function testGetSet(){
+	/**
+	 *	@covers		::set
+	 */
+	public function testSet(){
 		$participant	= new Address();
 		$participant->set( 'Hans Mustermann <Hans.Mustermann@muster-server.tld>' );
 		$this->assertEquals( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>', $participant->get() );

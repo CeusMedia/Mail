@@ -1,11 +1,11 @@
 <?php
 /**
  *	Unit test for mail address.
- *	@category		Test
- *	@package		CeusMedia_Mail
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
+//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 
 use \CeusMedia\Mail\Address;
 use \CeusMedia\Mail\Util\Dmarc\Record;
@@ -13,12 +13,26 @@ use \CeusMedia\Mail\Util\Dmarc\Renderer;
 
 /**
  *	Unit test for mail address.
- *	@category		Test
- *	@package		CeusMedia_Mail
- *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
+ *	@category			Test
+ *	@package			CeusMedia_Mail
+ *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
+ *  @coversDefaultClass \CeusMedia\Mail\Util\Dmarc\Renderer
  */
 class RendererTest extends TestCase
 {
+	/**
+	 *	@covers		::create
+	 */
+	public function testCreate(){
+		$instance	= Renderer::create();
+		$this->assertTrue( is_object( $instance ) );
+		$this->assertTrue( $instance instanceof Renderer );
+		$this->assertTrue( get_class( $instance ) === 'CeusMedia\Mail\Util\Dmarc\Renderer' );
+	}
+
+	/**
+	 *	@covers		::render
+	 */
 	public function testRender(){
 		$record	= new Record();
 		$record->reportAggregate	= array( new Address( 'postmaster1@ceusmedia.de' ) );
