@@ -66,7 +66,7 @@ class Transport_SMTPTest extends TestCase
 
 		/*  --  SENDING  --  */
 		$smtp		= new SMTP( $configSender->get( 'server.host' ) );			//  get SMTP instance
-		$smtp->setPort( $configSender->get( 'server.port' ) );
+		$smtp->setPort( (int) $configSender->get( 'server.port' ) );
 		$smtp->setUsername( $configSender->get( 'auth.username' ) );
 		$smtp->setPassword( $configSender->get( 'auth.password' ) );
 

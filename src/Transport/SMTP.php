@@ -73,7 +73,6 @@ class SMTP{
 		$this->setPort( $port );
 		$this->setUsername( $username );
 		$this->setPassword( $password );
-		$this->socket	= new SmtpSocket( $this->host, (int) $this->port );
 	}
 
 	protected function checkResponse( $acceptedCodes = array() ){
@@ -111,6 +110,8 @@ class SMTP{
 	 *	@return		object  	Self instance for chaining.
 	 */
 	public function send( Message $message ){
+		if( !$this->socket )
+			$this->socket	= new SmtpSocket( $this->host, (int) $this->port );
 		$delim		= Message::$delimiter;
 		if( !$message->getSender() )
 			throw new \RuntimeException( 'No mail sender set' );
@@ -188,6 +189,8 @@ class SMTP{
 	 *	@return		object  	Self instance for chaining.
 	 */
 	public function setHost( $host ){
+		if( $this->socket )
+			throw new \RuntimeException( 'Connection to SMTP server already established' );
 		if( !strlen( trim( $host ) ) )
 			throw new \InvalidArgumentException( 'Missing SMTP host' );
 		$this->host		= $host;
@@ -213,7 +216,9 @@ class SMTP{
 	 *	@return		object  	Self instance for chaining.
 	 */
 	public function setPort( $port, $detectSecure = TRUE ){
-		$this->port		= $port;
+		if( $this->socket )
+			throw new \RuntimeException( 'Connection to SMTP server already established' );
+		$this->port		= (int) $port;
 		if( $detectSecure )
 			$this->setSecure( in_array( $port, array( 465, 587 ) ) );
 		return $this;

@@ -27,6 +27,7 @@
 namespace CeusMedia\Mail\Message;
 
 use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Header\Encoding;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
@@ -54,7 +55,7 @@ class Renderer{
 	/**
 	 *	@see		https://stackoverflow.com/questions/40389103/create-html-mail-with-inline-image-and-pdf-attachment/40420648#40420648
 	 */
-	static public function render( \CeusMedia\Mail\Message $message ){
+	static public function render( Message $message ){
 		if( !count( $message->getParts( TRUE ) ) )
 			throw new \RuntimeException( "No content part set" );
 		if( !strlen( trim( $message->getSubject() ) ) )
@@ -67,7 +68,7 @@ class Renderer{
 		}
 		if( !$headers->hasField( 'Date' ) )
 			$headers->setFieldPair( 'Date', date( "D, d M Y H:i:s O", time() ) );
-		$headers->setFieldPair( 'Subject', $message->getSubject( self::$encodingSubject ) );
+		$headers->setFieldPair( 'Subject', Encoding::encodeIfNeeded( $message->getSubject(), 'base64' ) );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->addFieldPair( 'X-Mailer', $message->getUserAgent() );
 

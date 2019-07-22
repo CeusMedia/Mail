@@ -29,7 +29,6 @@ namespace CeusMedia\Mail\Transport;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
 
-
 /**
  *	Sends Mails of different Types.
  *	@category		Library

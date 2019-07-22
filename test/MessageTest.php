@@ -175,27 +175,6 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 *	@covers		::encodeIfNeeded
-	 */
-	public function testEncodeIfNeeded(){
-		$creation	= Message::encodeIfNeeded( "ÄÖÜ" );
-		$assertion	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $creation, $assertion );
-
-		$creation	= Message::encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
-		$assertion	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $creation, $assertion );
-	}
-
-	/**
-	 *	@covers		::encodeIfNeeded
-	 */
-	public function testEncodeIfNeededException(){
-		$this->expectException( 'InvalidArgumentException' );
-		Message::encodeIfNeeded( "ÄÖÜ", "_invalid_" );
-	}
-
-	/**
 	 *	@covers		::addAttachment
 	 *	@covers		::getAttachments
 	 */

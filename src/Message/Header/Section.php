@@ -47,10 +47,10 @@ class Section{
 	/**
 	 *	Add a header field object.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Message\Header\Field	$field		Header field object
+	 *	@param		Field		$field		Header field object
 	 *	@return		void
 	 */
-	public function addField( \CeusMedia\Mail\Message\Header\Field $field ){
+	public function addField( Field $field ){
 		return $this->setField( $field, FALSE );
 	}
 
@@ -62,7 +62,7 @@ class Section{
 	 *	@return		void
 	 */
 	public function addFieldPair( $name, $value ){
-		$field	= new \CeusMedia\Mail\Message\Header\Field( $name, $value );
+		$field	= new Field( $name, $value );
 		$this->addField( $field );
 	}
 
@@ -80,7 +80,7 @@ class Section{
 	 *	Returns a header field object by its name if set.
 	 *	@access		public
 	 *	@param		string		$name		Header field name
-	 *	@return		\CeusMedia\Mail\Message\Header\Field
+	 *	@return		Field
 	 *	@throws		\RangeException			if request header field name is not existing
 	 */
 	public function getField( $name ){
@@ -148,11 +148,11 @@ class Section{
 	 *	Headers with already noted name will be replaced.
 	 *	To avoid this, disable emptyBefore.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Message\Header\Field	$field			Header field object to set
-	 *	@param		boolean									$emptyBefore	Flag: TRUE - set | FALSE - append
+	 *	@param		Field		$field		Header field object to set
+	 *	@param		boolean					$emptyBefore	Flag: TRUE - set | FALSE - append
 	 *	@return		void
 	 */
-	public function setField( \CeusMedia\Mail\Message\Header\Field $field, $emptyBefore = TRUE ){
+	public function setField( Field $field, $emptyBefore = TRUE ){
 		$name	= strtolower( $field->getName() );
 		if( $emptyBefore || !array_key_exists( $name, $this->fields ) )
 			$this->fields[$name]	= array();

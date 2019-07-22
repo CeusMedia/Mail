@@ -28,6 +28,7 @@ namespace CeusMedia\Mail;
 
 use \CeusMedia\Mail\Address as Address;
 use \CeusMedia\Mail\Address\Collection as AddressCollection;
+use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
@@ -219,7 +220,7 @@ class Message{
 		$this->recipients[strtolower( $type )]->add( $participant );
 		$recipient	= '<'.$participant->getAddress().'>';
 		if( strlen( trim( $name ) ) ){
-			$recipient	= self::encodeIfNeeded( $name ).' '.$recipient;
+			$recipient	= MessageHeaderEncoding::encodeIfNeeded( $name ).' '.$recipient;
 		}
 		$recipient	= $participant->get();
 		if( strtoupper( $type ) !== "BCC" ){
@@ -479,7 +480,7 @@ class Message{
 	 */
 	public function getSubject( $encoding = NULL ){
 		if( $encoding )
-			return self::encodeIfNeeded( $this->subject, $encoding, TRUE );
+			return MessageHeaderEncoding::encodeIfNeeded( $this->subject, $encoding, TRUE );
 		return $this->subject;
 	}
 
@@ -601,7 +602,7 @@ class Message{
 	 *	@return		object		Message object for chaining
 	 */
 	public function setSubject( $subject ){
-		$this->subject	= Message::decodeIfNeeded( $subject );
+		$this->subject	= $subject;
 		return $this;
 	}
 

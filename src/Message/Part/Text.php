@@ -26,6 +26,7 @@
  */
 namespace CeusMedia\Mail\Message\Part;
 
+use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
@@ -58,7 +59,7 @@ class Text extends MessagePart{
 	public function render( $headers = NULL ){
 		if( !$headers )
 			$headers	= new MessageHeaderSection();
-		$delim	= \CeusMedia\Mail\Message::$delimiter;
+		$delim	= Message::$delimiter;
 		$headers->setFieldPair( 'Content-Type', join( '; ', array(
 			$this->mimeType,
 			'charset="'.strtolower( trim( $this->charset ) ).'"',
