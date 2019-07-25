@@ -74,3 +74,28 @@ class MX{
 		$this->cache		= $cache;
 	}
 }
+
+// support windows platforms
+if( !function_exists( 'getmxrr' ) ){
+	function getmxrr( $hostname, &$mxhosts, &$mxweight ){
+		if( !is_array( $mxhosts ) ){
+			$mxhosts	= array();
+		}
+		$pattern	= "/^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$/";
+		if( !empty( $hostname ) ){
+			$output	= "";
+			@exec( "nslookup.exe -type=MX $hostname.", $output );
+			$imx	= -1;
+			foreach( $output as $line ){
+				$imx++;
+				$parts	= "";
+				if( preg_match( $pattern, $line, $parts ) ){
+					$mxweight[$imx]	= $parts[1];
+					$mxhosts[$imx]	= $parts[2];
+				}
+			}
+			return ($imx!=-1);
+		}
+		return FALSE;
+	}
+}

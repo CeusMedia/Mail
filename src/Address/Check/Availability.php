@@ -28,6 +28,7 @@ namespace CeusMedia\Mail\Address\Check;
 
 use \CeusMedia\Mail\Address;
 use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Util\MX;
 
 /**
  *	Evaluate existence of mail receiver address.
@@ -56,14 +57,15 @@ class Availability{
 	const ERROR_SOCKET_EXCEPTION		= 3;
 	const ERROR_CONNECTION_FAILED		= 4;
 	const ERROR_HELO_FAILED				= 5;
-	const ERROR_SENDER_NOT_ACCEPTED		= 6;
-	const ERROR_RECEIVER_NOT_ACCEPTED	= 7;
+	const ERROR_CRYPTO_FAILED			= 6;
+	const ERROR_SENDER_NOT_ACCEPTED		= 7;
+	const ERROR_RECEIVER_NOT_ACCEPTED	= 8;
 
 	public function __construct( $sender, $verbose = NULL ){
+		$this->setVerbose( (bool) $verbose );
 		if( is_string( $sender ) )
 			$sender		= new Address( $sender );
 		$this->sender	= $sender;
-		$this->setVerbose( $verbose );
 		$this->lastResponse	= (object) array(
 			'code'		=> 0,
 			'error'		=> self::ERROR_NONE,
@@ -113,18 +115,8 @@ class Availability{
 	}
 
 	protected function getMailServers( $hostname, $useCache = TRUE, $strict = TRUE ){
-		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
-			return $this->cache->get( 'mx:'.$hostname );
-		$servers	= array();
-		getmxrr( $hostname, $mxRecords, $mxWeights );
-		if( !$mxRecords && $strict )
-			throw new \RuntimeException( 'No MX records found for host: '.$hostname );
-		foreach( $mxRecords as $nr => $server )
-			$servers[$mxWeights[$nr]]	= $server;
-		ksort( $servers );
-		if( $useCache )
-			$this->cache->set( 'mx:'.$hostname, $servers );
-		return $servers;
+		$mx	= new MX();
+		return $mx->fromHostname( $hostname, $useCache, $strict );
 	}
 
 	protected function readResponse( $connection, $acceptedCodes = array() ){
@@ -179,12 +171,9 @@ class Availability{
 				$host		= array_shift( $servers );
 			}
 			catch( \Exception $e ){
-				if( $force ){
-					$this->lastResponse->error		= self::ERROR_MX_RESOLUTION_FAILED;
-					$this->lastResponse->message	= $e->getMessage();
-					return FALSE;
-				}
-				$host		= $receiver->getDomain();
+				$this->lastResponse->error		= self::ERROR_MX_RESOLUTION_FAILED;
+				$this->lastResponse->message	= $e->getMessage();
+				return FALSE;
 			}
 		}
 
@@ -206,8 +195,16 @@ class Availability{
 				$this->lastResponse->error	= self::ERROR_HELO_FAILED;
 				return FALSE;
 			}
+			$this->sendChunk( $conn, "STARTTLS" );
+			$this->readResponse( $conn );
+			if( $this->lastResponse->code !== 220 ){
+				$this->lastResponse->error	= self::ERROR_CRYPTO_FAILED;
+				return FALSE;
+			}
+			stream_socket_enable_crypto( $conn, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
+
 //			while( $this->lastResponse->code === 220 )									//  for telekom.de
-//				$this->parseResponse( $conn );
+//				$this->readResponse( $conn );
 			$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
 			$this->readResponse( $conn );
 			if( $this->lastResponse->code !== 250 ){
@@ -222,7 +219,6 @@ class Availability{
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "QUIT" );
-//			$this->parseResponse( $conn );
 			fclose( $conn );
 			$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
 			return TRUE;
@@ -233,22 +229,6 @@ class Availability{
 			$this->lastResponse->message	= $e->getMessage();
 			return FALSE;
 		}
-	}
-
-	/**
-	 *	@deprecated		use readResponse instead
-	 */
-	protected function parseResponse( $connection ){
-		$this->lastResponse->response	= fgets( $connection, 1024 );
-		if( $this->verbose )
-			print ' < '.$this->lastResponse->response;
-		$matches	= array();
-		preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $this->lastResponse->response ), $matches );
-		if( !$matches )
-			throw new \RuntimeException( 'SMTP response not understood' );
-		$this->lastResponse->code		= (int) $matches[1];
-		$this->lastResponse->message	= $matches[3];
-		return (int) $matches[1] < 400;
 	}
 
 	protected function sendChunk( $connection, $message ){
@@ -264,29 +244,5 @@ class Availability{
 
 	public function setVerbose( $verbose = TRUE ){
 		$this->verbose	= (bool) $verbose;
-	}
-}
-// support windows platforms
-if( !function_exists( 'getmxrr' ) ){
-	function getmxrr( $hostname, &$mxhosts, &$mxweight ){
-		if( !is_array( $mxhosts ) ){
-			$mxhosts	= array();
-		}
-		$pattern	= "/^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$/";
-		if( !empty( $hostname ) ){
-			$output	= "";
-			@exec( "nslookup.exe -type=MX $hostname.", $output );
-			$imx	= -1;
-			foreach( $output as $line ){
-				$imx++;
-				$parts	= "";
-				if( preg_match( $pattern, $line, $parts ) ){
-					$mxweight[$imx]	= $parts[1];
-					$mxhosts[$imx]	= $parts[2];
-				}
-			}
-			return ($imx!=-1);
-		}
-		return FALSE;
 	}
 }
