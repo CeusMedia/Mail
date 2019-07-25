@@ -59,8 +59,13 @@ class Transport_SMTPTest extends TestCase
 	 *	@covers		::send
 	 */
 	public function testSend(){
-		$configSender		= $this->getSenderConfig();
-		$configReceiver		= $this->getReceiverConfig();
+		try{
+			$configSender		= $this->getSenderConfig();
+			$configReceiver		= $this->getReceiverConfig();
+		}
+		catch( \Exception $e ){
+			$this->markTestIncomplete( 'No configuration for real tests available.' );
+		}
 
 		$subject	= 'Test-Automation-Message #'.\Alg_ID::uuid();
 

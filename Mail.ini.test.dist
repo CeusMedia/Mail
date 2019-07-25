@@ -1,0 +1,22 @@
+
+[phpunit.sender]
+
+server.host			= "mail.itflow.de"
+server.port			= "587"
+server.encryption	= "{{phpunit.sender.server.encryption}}"
+mailbox.name		= "X: Automated Testing"
+mailbox.address		= "x-automated-testing@ceusmedia.de"
+auth.mode			= "{{phpunit.sender.auth.mode}}"
+auth.username		= "x-automated-testing"
+auth.password		= ""
+
+[phpunit.receiver]
+
+server.host			= "mail.itflow.de"
+server.port			= "143"
+server.encryption	= "{{phpunit.receiver.server.encryption}}"
+mailbox.name		= "X: Automated Testing"
+mailbox.address		= "x-automated-testing@ceusmedia.de"
+auth.mode			= "{{phpunit.receiver.auth.mode}}"
+auth.username		= "x-automated-testing"
+auth.password		= ""
