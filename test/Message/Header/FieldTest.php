@@ -24,9 +24,9 @@ class Message_Header_FieldTest extends TestCase
 	public function testConstruct()
 	{
 		$header	= new Field( "key", "value" );
-		$assertion	= true;
-		$creation	= (bool) strlen( $header->toString() );
-		$this->assertEquals( $assertion, $creation );
+		$expected	= true;
+		$actual	= (bool) strlen( $header->toString() );
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -35,20 +35,20 @@ class Message_Header_FieldTest extends TestCase
 	public function testName()
 	{
 		$header		= new Field( "Key-with-Value", "Value with Space" );
-		$assertion	= "Key-with-Value";
-		$this->assertEquals( $assertion, $header->getName() );
+		$expected	= "Key-with-Value";
+		$this->assertEquals( $expected, $header->getName() );
 
 		$header		= new Field( "as-HTML", "Value with Space" );
-		$assertion	= "as-HTML";
-		$this->assertEquals( $assertion, $header->getName() );
+		$expected	= "as-HTML";
+		$this->assertEquals( $expected, $header->getName() );
 
 		$header		= new Field( "as HTML", "Value with Space" );
-		$assertion	= "as-HTML";
-		$this->assertEquals( $assertion, $header->getName() );
+		$expected	= "as-HTML";
+		$this->assertEquals( $expected, $header->getName() );
 
 		$header->setName( "key with spaces" );
-		$assertion	= "key-with-spaces";
-		$this->assertEquals( $assertion, $header->getName() );
+		$expected	= "key-with-spaces";
+		$this->assertEquals( $expected, $header->getName() );
 	}
 
 	/**
@@ -57,12 +57,12 @@ class Message_Header_FieldTest extends TestCase
 	public function testNameNotKeepCase()
 	{
 		$header		= new Field( "Key-with-Value", "Value with Space" );
-		$assertion	= "Key-With-Value";
-		$this->assertEquals( $assertion, $header->getName( FALSE ) );
+		$expected	= "Key-With-Value";
+		$this->assertEquals( $expected, $header->getName( FALSE ) );
 
 		$header		= new Field( "as-HTML", "Value with Space" );
-		$assertion	= "As-Html";
-		$this->assertEquals( $assertion, $header->getName( FALSE ) );
+		$expected	= "As-Html";
+		$this->assertEquals( $expected, $header->getName( FALSE ) );
 	}
 
 	/**
@@ -71,11 +71,11 @@ class Message_Header_FieldTest extends TestCase
 	public function testNameIgnoreMbConvert()
 	{
 		$header		= new Field( "as-HTML", "Value with Space" );
-		$assertion	= "As-Html";
-		$this->assertEquals( $assertion, $header->getName( FALSE, TRUE ) );
+		$expected	= "As-Html";
+		$this->assertEquals( $expected, $header->getName( FALSE, TRUE ) );
 
-		$assertion	= "as-HTML";
-		$this->assertEquals( $assertion, $header->getName( TRUE, TRUE ) );
+		$expected	= "as-HTML";
+		$this->assertEquals( $expected, $header->getName( TRUE, TRUE ) );
 	}
 
 	/**
@@ -84,9 +84,9 @@ class Message_Header_FieldTest extends TestCase
 	public function testValue()
 	{
 		$header		= new Field( "Key-with-Value", "Value with Space" );
-		$assertion	= "Value with Space";
-		$creation	= $header->getValue();
-		$this->assertEquals( $assertion, $creation );
+		$expected	= "Value with Space";
+		$actual	= $header->getValue();
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -95,14 +95,14 @@ class Message_Header_FieldTest extends TestCase
 	public function testToString()
 	{
 		$header		= new Field( "key", "value" );
-		$assertion	= "key: value";
-		$creation	= $header->toString();
-		$this->assertEquals( $assertion, $creation );
+		$expected	= "key: value";
+		$actual	= $header->toString();
+		$this->assertEquals( $expected, $actual );
 
 		$header		= new Field( "key-with-more-words", "value" );
-		$assertion	= "key-with-more-words: value";
-		$creation	= $header->toString();
-		$this->assertEquals( $assertion, $creation );
+		$expected	= "key-with-more-words: value";
+		$actual	= $header->toString();
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -111,9 +111,9 @@ class Message_Header_FieldTest extends TestCase
 	public function testToStringByConversion()
 	{
 		$header		= new Field( "key", "value" );
-		$assertion	= "key: value";
-		$creation	= (string) $header;
-		$this->assertEquals( $assertion, $creation );
+		$expected	= "key: value";
+		$actual	= (string) $header;
+		$this->assertEquals( $expected, $actual );
 	}
 }
 ?>

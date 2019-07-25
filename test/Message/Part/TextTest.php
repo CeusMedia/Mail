@@ -54,31 +54,31 @@ class Message_Part_TextTest extends TestCase
 		$content	= "This is the content with umlauts: äöü.";
 
 		$part		= new Text( $content, 'utf-8' );
-		$assertion	= join( $this->delimiter, array(
+		$expected	= join( $this->delimiter, array(
 			'Content-Type: text/plain; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: base64',
 			'',
 			Part::wrapContent( base64_encode( $content ) ),
 		) );
-		$this->assertEquals( $assertion, $part->render() );
+		$this->assertEquals( $expected, $part->render() );
 
 		$part		= new Text( $content, 'utf-8', 'quoted-printable' );
-		$assertion	= join( $this->delimiter, array(
+		$expected	= join( $this->delimiter, array(
 			'Content-Type: text/plain; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: quoted-printable',
 			'',
 			Part::wrapContent( quoted_printable_encode( $content ) ),
 		) );
-		$this->assertEquals( $assertion, $part->render() );
+		$this->assertEquals( $expected, $part->render() );
 
 		$part		= new Text( $content );
 		$part->setMimeType( "text/PLAIN" );
-		$assertion	= join( $this->delimiter, array(
+		$expected	= join( $this->delimiter, array(
 			'Content-Type: text/PLAIN; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: base64',
 			'',
 			Part::wrapContent( base64_encode( $content ) ),
 		) );
-		$this->assertEquals( $assertion, $part->render() );
+		$this->assertEquals( $expected, $part->render() );
 	}
 }

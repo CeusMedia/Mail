@@ -70,32 +70,32 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testGetAndSetSender(){
 		$message	= Message::getInstance();
-		$creation	= $message->setSender( "test@example.com" );
-		$this->assertEquals( $message, $creation );
+		$actual	= $message->setSender( "test@example.com" );
+		$this->assertEquals( $message, $actual );
 
-		$assertion	= new Address( "test@example.com" );
-		$creation	= $message->getSender();
-		$this->assertEquals( $assertion, $creation );
+		$expected	= new Address( "test@example.com" );
+		$actual	= $message->getSender();
+		$this->assertEquals( $expected, $actual );
 
 		$message	= Message::getInstance();
 		$message->setSender( new Address( "test@example.com" ) );
-		$assertion	= new Address( "test@example.com" );
-		$creation	= $message->getSender();
-		$this->assertEquals( $assertion, $creation );
+		$expected	= new Address( "test@example.com" );
+		$actual	= $message->getSender();
+		$this->assertEquals( $expected, $actual );
 
 		$message	= Message::getInstance();
 		$message->setSender( "test@example.com", "Test Name" );
-		$assertion	= new Address( "test@example.com" );
-		$assertion->setName( "Test Name" );
-		$creation	= $message->getSender();
-		$this->assertEquals( $assertion, $creation );
+		$expected	= new Address( "test@example.com" );
+		$expected->setName( "Test Name" );
+		$actual	= $message->getSender();
+		$this->assertEquals( $expected, $actual );
 
 		$message	= Message::getInstance();
 		$message->setSender( new Address( "test@example.com" ), "Test Name" );
-		$assertion	= new Address( "test@example.com" );
-		$assertion->setName( "Test Name" );
-		$creation	= $message->getSender();
-		$this->assertEquals( $assertion, $creation );
+		$expected	= new Address( "test@example.com" );
+		$expected->setName( "Test Name" );
+		$actual	= $message->getSender();
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -105,8 +105,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	public function testGetAndSetSubject(){
 		$subject	= "Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject";
 		$message	= Message::getInstance();
-		$creation	= $message->setSubject( $subject );
-		$this->assertEquals( $message, $creation );
+		$actual	= $message->setSubject( $subject );
+		$this->assertEquals( $message, $actual );
 
 		$this->assertEquals( $subject, $message->getSubject() );
 
@@ -136,8 +136,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	public function testGetAndSetUserAgent(){
 		$agent		= "Test User Agent";
 		$message	= Message::getInstance();
-		$creation	= $message->setUserAgent( $agent );
-		$this->assertEquals( $message, $creation );
+		$actual	= $message->setUserAgent( $agent );
+		$this->assertEquals( $message, $actual );
 
 		$this->assertEquals( $agent, $message->getUserAgent() );
 	}
@@ -157,18 +157,18 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$receiverBcc2	= new Address( "receiver_bcc2@example.com" );
 		$receiverBcc2->setName( "Test Name 2" );
 
-		$creation	= $message->addRecipient( $receiverTo );
-		$this->assertEquals( $message, $creation );
-		$creation	= $message->addRecipient( $receiverCc1, NULL, 'cc' );
-		$this->assertEquals( $message, $creation );
-		$creation	= $message->addRecipient( $receiverCc2, "Test Name 1", 'cc' );
-		$this->assertEquals( $message, $creation );
-		$creation	= $message->addRecipient( $receiverBcc1, NULL, 'bcc' );
-		$this->assertEquals( $message, $creation );
-		$creation	= $message->addRecipient( $receiverBcc2, "Test Name 2", 'bcc' );
-		$this->assertEquals( $message, $creation );
+		$actual	= $message->addRecipient( $receiverTo );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverCc1, NULL, 'cc' );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverCc2, "Test Name 1", 'cc' );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverBcc1, NULL, 'bcc' );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverBcc2, "Test Name 2", 'bcc' );
+		$this->assertEquals( $message, $actual );
 
-		$assertion	= array(
+		$expected	= array(
 			'to'	=> new AddressCollection( array(
 				new Address( 'receiver_to@example.com' ),
 			) ),
@@ -181,7 +181,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 				new Address( 'Test Name 2 <receiver_bcc2@example.com>' ),
 			) ),
 		);
-		$this->assertEquals( $message->getRecipients(), $assertion );
+		$this->assertEquals( $expected, $message->getRecipients() );
 	}
 
 	/**
@@ -205,12 +205,12 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$attachment2->setFile( __FILE__ );
 
 		$message	= Message::getInstance();
-		$creation	= $message->addPart( $attachment1 );
-		$this->assertEquals( $message, $creation );
-		$creation	= $message->addAttachment( __FILE__ );
-		$this->assertEquals( $message, $creation );
+		$actual	= $message->addPart( $attachment1 );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addAttachment( __FILE__ );
+		$this->assertEquals( $message, $actual );
 
-		$creation	= array( $attachment1, $attachment2 );
-		$this->assertEquals( $creation, $message->getAttachments() );
+		$actual	= array( $attachment1, $attachment2 );
+		$this->assertEquals( $actual, $message->getAttachments() );
 	}
 }

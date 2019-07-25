@@ -46,8 +46,8 @@ class Transport_SMTPTest extends TestCase
 			$returned	= $smtp->send( $message );								//  try to send mail
 			$this->assertTrue( is_object( $returned ) );
 
-			$creation	= $returned instanceof SMTP;
-			$this->assertTrue( $creation );
+			$actual	= $returned instanceof SMTP;
+			$this->assertTrue( $actual );
 		}
 		catch( \Exception $e ){
 //			print_r( $socket->getLog() );
@@ -59,13 +59,8 @@ class Transport_SMTPTest extends TestCase
 	 *	@covers		::send
 	 */
 	public function testSend(){
-		try{
-			$configSender		= $this->getSenderConfig();
-			$configReceiver		= $this->getReceiverConfig();
-		}
-		catch( \Exception $e ){
-			$this->markTestIncomplete( 'No configuration for real tests available.' );
-		}
+		$configSender		= $this->requireSenderConfig();
+		$configReceiver		= $this->requireReceiverConfig();
 
 		$subject	= 'Test-Automation-Message #'.\Alg_ID::uuid();
 

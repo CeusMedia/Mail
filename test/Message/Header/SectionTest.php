@@ -184,11 +184,11 @@ class Message_Header_SectionTest extends TestCase
 		$this->assertEquals( '', $section->toString() );
 
 		$section->addFields( array( $field1, $field1, $field2 ) );
-		$assertion	= "Key: value".$delimiter."Key: value".$delimiter."Key: vALUE";
-		$this->assertEquals( $assertion, $section->toString() );
+		$expected	= "Key: value".$delimiter."Key: value".$delimiter."Key: vALUE";
+		$this->assertEquals( $expected, $section->toString() );
 
 		$section->setFields( array( $field1, $field1, $field2 ) );
-		$assertion	= "Key: vALUE";
-		$this->assertEquals( $assertion, $section->toString() );
+		$expected	= "Key: vALUE";
+		$this->assertEquals( $expected, $section->toString() );
 	}
 }

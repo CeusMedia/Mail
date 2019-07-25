@@ -21,22 +21,22 @@ class Address_ParserTest extends TestCase
 	public function testParse(){
 		$parser	= new \CeusMedia\Mail\Address\Parser();
 
-		$assertion	= 'Hans.Mustermann@muster-server.tld';
+		$expected	= 'Hans.Mustermann@muster-server.tld';
 		$address	= $parser->parse( 'Hans.Mustermann@muster-server.tld' );
-		$this->assertEquals( $assertion, $address->get() );
+		$this->assertEquals( $expected, $address->get() );
 		$address	= $parser->parse( '<Hans.Mustermann@muster-server.tld>' );
-		$this->assertEquals( $assertion, $address->get() );
+		$this->assertEquals( $expected, $address->get() );
 
-		$assertion	= '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
+		$expected	= '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
 		$address	= $parser->parse( 'Hans Mustermann <Hans.Mustermann@muster-server.tld>' );
-		$this->assertEquals( $assertion, $address->get() );
+		$this->assertEquals( $expected, $address->get() );
 
 		$address	= $parser->parse( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>' );
-		$this->assertEquals( $assertion, $address->get() );
+		$this->assertEquals( $expected, $address->get() );
 
-		$assertion	= 'Hans_Mustermann <Hans_Mustermann@muster-server.tld>';
+		$expected	= 'Hans_Mustermann <Hans_Mustermann@muster-server.tld>';
 		$address	= $parser->parse( 'Hans_Mustermann <Hans_Mustermann@muster-server.tld>' );
-		$this->assertEquals( $assertion, $address->get() );
+		$this->assertEquals( $expected, $address->get() );
 	}
 
 	/**

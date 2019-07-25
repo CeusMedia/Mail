@@ -197,8 +197,8 @@ class Message_Part_AttachmentTest extends TestCase
 		);
 		$headers	= join( $delimiter, $headers );
 		$content	= Part::wrapContent( base64_encode( $content ) );
-		$assertion	= $headers.$delimiter.$delimiter.$content;
-		$this->assertEquals( $assertion, $part->render() );
+		$expected	= $headers.$delimiter.$delimiter.$content;
+		$this->assertEquals( $expected, $part->render() );
 
 		$part->setEncoding( "binary" );
 		$part->setMimeType( "application/octet-stream" );
@@ -210,7 +210,7 @@ class Message_Part_AttachmentTest extends TestCase
 			"Content-Description: ".basename( $file ),
 		);
 		$headers	= join( $delimiter, $headers );
-		$assertion	= $headers.$delimiter.$delimiter.$content;
-		$this->assertEquals( $assertion, $part->render() );
+		$expected	= $headers.$delimiter.$delimiter.$content;
+		$this->assertEquals( $expected, $part->render() );
 	}
 }

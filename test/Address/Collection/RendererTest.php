@@ -34,8 +34,8 @@ class Address_Collection_RendererTest extends TestCase
 		$collection		= new AddressCollection( array(
 			new Address( 'dev@ceusmedia.de' ),
 		) );
-		$assertion	= 'dev@ceusmedia.de';
-		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
+		$expected	= 'dev@ceusmedia.de';
+		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -46,8 +46,8 @@ class Address_Collection_RendererTest extends TestCase
 			new Address( '<dev@ceusmedia.de>' ),
 		) );
 
-		$assertion	= 'dev@ceusmedia.de';
-		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
+		$expected	= 'dev@ceusmedia.de';
+		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -58,8 +58,8 @@ class Address_Collection_RendererTest extends TestCase
 			new Address( 'Developer <dev@ceusmedia.de>' ),
 		) );
 
-		$assertion	= 'Developer <dev@ceusmedia.de>';
-		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
+		$expected	= 'Developer <dev@ceusmedia.de>';
+		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -70,8 +70,8 @@ class Address_Collection_RendererTest extends TestCase
 			new Address( '"Developer" <dev@ceusmedia.de>' ),
 		) );
 
-		$assertion	= 'Developer <dev@ceusmedia.de>';
-		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
+		$expected	= 'Developer <dev@ceusmedia.de>';
+		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -81,8 +81,8 @@ class Address_Collection_RendererTest extends TestCase
 		$collection		= new AddressCollection( array(
 			new Address( '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>' ),
 		) );
-		$assertion	= '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>';
-		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
+		$expected	= '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>';
+		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -93,8 +93,8 @@ class Address_Collection_RendererTest extends TestCase
 			new Address( 'Developer <dev@ceusmedia.de>' ),
 			new Address( 'Alpha Tester <test@ceusmedia.de>' ),
 		) );
-		$assertion	= 'Developer <dev@ceusmedia.de>, "Alpha Tester" <test@ceusmedia.de>';
-		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
+		$expected	= 'Developer <dev@ceusmedia.de>, "Alpha Tester" <test@ceusmedia.de>';
+		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -102,8 +102,8 @@ class Address_Collection_RendererTest extends TestCase
 	 */
 	public function testRender7(){
 		$collection		= new AddressCollection( array() );
-		$assertion	= '';
-		$this->assertEquals( $assertion, $this->renderer->render( $collection ) );
+		$expected	= '';
+		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**

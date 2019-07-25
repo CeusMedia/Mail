@@ -40,7 +40,8 @@ class AddressTest extends TestCase
 	}
 
 	/**
-	 *	@covers		::get
+	*	@covers		::get
+	 *	@covers		::__construct
 	 */
 	public function testGet(){
 		$participant	= new Address( 'Hans Mustermann <hans.mustermann@muster-server.tld>');
@@ -58,6 +59,7 @@ class AddressTest extends TestCase
 
 	/**
 	 *	@covers		::getDomain
+	 *	@covers		::setDomain
 	 */
 	public function testGetDomain(){
 		$participant	= new Address();
@@ -78,7 +80,8 @@ class AddressTest extends TestCase
 	}
 
 	/**
-	 *	@covers		::getLocalPart
+	*	@covers		::getLocalPart
+	*	@covers		::setLocalPart
 	 */
 	public function testGetLocalPart(){
 		$participant	= new Address();
@@ -99,7 +102,8 @@ class AddressTest extends TestCase
 	}
 
 	/**
-	 *	@covers		::getName
+	*	@covers		::getName
+	*	@covers		::setName
 	 */
 	public function testGetName(){
 		$participant	= new Address();
@@ -111,7 +115,8 @@ class AddressTest extends TestCase
 	}
 
 	/**
-	 *	@covers		::getAddress
+	*	@covers		::getAddress
+	*	@covers		::set
 	 */
 	public function testGetAddress(){
 		$participant	= new Address();
@@ -123,7 +128,8 @@ class AddressTest extends TestCase
 	}
 
 	/**
-	 *	@covers		::set
+	*	@covers		::set
+	*	@covers		::get
 	 */
 	public function testSet(){
 		$participant	= new Address();

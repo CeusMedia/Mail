@@ -76,4 +76,14 @@ class TestCase extends PHPUnit\Framework\TestCase{
 			$this->markTestSkipped( 'Runtime incomplete: '.$e->getMessage() );
 		}
 	}
+
+	protected function getAddressIP( $address ){
+		if( is_string( $address ) )
+			$address	= new \CeusMedia\Mail\Address( $address );
+		return gethostbyname( $address->getDomain() );
+	}
+
+	protected function getCurrentIP(){
+		return file_get_contents( 'https://ipecho.net/plain' );
+	}
 }

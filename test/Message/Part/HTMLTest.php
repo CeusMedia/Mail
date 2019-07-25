@@ -54,22 +54,22 @@ class Message_Part_HTMLTest extends TestCase
 		$content	= "<b>This is the content with umlauts:</b> <em>äöü</em>.";
 
 		$part		= new HTML( $content, 'utf-8', 'quoted-printable' );
-		$assertion	= join( $this->delimiter, array(
+		$expected	= join( $this->delimiter, array(
 			'Content-Type: text/html; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: quoted-printable',
 			'',
 			Part::wrapContent( quoted_printable_encode( $content ) ),
 		) );
-		$this->assertEquals( $assertion, $part->render() );
+		$this->assertEquals( $expected, $part->render() );
 
 		$part		= new HTML( $content, 'utf-8', 'base64' );
 		$part->setMimeType( "text/xhtml" );
-		$assertion	= join( $this->delimiter, array(
+		$expected	= join( $this->delimiter, array(
 			'Content-Type: text/xhtml; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: base64',
 			'',
 			Part::wrapContent( base64_encode( $content ) ),
 		) );
-		$this->assertEquals( $assertion, $part->render() );
+		$this->assertEquals( $expected, $part->render() );
 	}
 }

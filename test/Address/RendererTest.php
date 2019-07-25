@@ -28,20 +28,20 @@ class Address_RendererTest extends TestCase
 		$address	= Address::create()
 			->setDomain( 'muster-server.tld' )
 			->setLocalPart( 'Hans.Mustermann' );
-		$assertion	= 'Hans.Mustermann@muster-server.tld';
-		$this->assertEquals( $assertion, $renderer->render( $address ) );
+		$expected	= 'Hans.Mustermann@muster-server.tld';
+		$this->assertEquals( $expected, $renderer->render( $address ) );
 
 		$address->setName( 'Hans Mustermann' );
-		$assertion	= '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
-		$this->assertEquals( $assertion, $renderer->render( $address ) );
+		$expected	= '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
+		$this->assertEquals( $expected, $renderer->render( $address ) );
 
 		$address->setName( 'Hans_Mustermann' );
-		$assertion	= 'Hans_Mustermann <Hans.Mustermann@muster-server.tld>';
-		$this->assertEquals( $assertion, $renderer->render( $address ) );
+		$expected	= 'Hans_Mustermann <Hans.Mustermann@muster-server.tld>';
+		$this->assertEquals( $expected, $renderer->render( $address ) );
 
 		$address	= new Address( '<Hans.Mustermann@muster-server.tld>' );
-		$assertion	= 'Hans.Mustermann@muster-server.tld';
-		$this->assertEquals( $assertion, $renderer->render( $address ) );
+		$expected	= 'Hans.Mustermann@muster-server.tld';
+		$this->assertEquals( $expected, $renderer->render( $address ) );
 	}
 
 	/**

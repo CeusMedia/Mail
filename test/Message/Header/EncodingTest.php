@@ -39,13 +39,13 @@ class Message_Header_EncodingTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::encodeIfNeeded
 	 */
 	public function testEncodeIfNeeded(){
-		$creation	= Encoding::encodeIfNeeded( "ÄÖÜ" );
-		$assertion	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $creation, $assertion );
+		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ" );
+		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
+		$this->assertEquals( $expected, $actual );
 
-		$creation	= Encoding::encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
-		$assertion	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $creation, $assertion );
+		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
+		$expected	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**

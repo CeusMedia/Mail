@@ -22,37 +22,37 @@ class Address_Check_SyntaxTest extends TestCase{
 	 *	@covers		::check
 	 */
 	public function testCheckValidSimple(){
-		$assertion	= 1;
-		$creation	= Syntax::check( "foo.bar@example.com" );
-		$this->assertEquals( $assertion, $creation );
+		$expected	= 1;
+		$actual	= Syntax::check( "foo.bar@example.com" );
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
 	 *	@covers		::check
 	 */
 	public function testCheckValidExtended(){
-		$assertion	= 2;
-		$creation	= Syntax::check( "foo+bar!@example.com" );
-		$this->assertEquals( $assertion, $creation );
+		$expected	= 2;
+		$actual	= Syntax::check( "foo+bar!@example.com" );
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
 	 *	@covers		::check
 	 */
 	public function testCheckInvalid(){
-		$assertion	= 0;
+		$expected	= 0;
 
-		$creation	= Syntax::check( "foo.bar.@example.com", FALSE );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::check( "foo.bar.@example.com", FALSE );
+		$this->assertEquals( $expected, $actual );
 
-		$creation	= Syntax::check( "@example.com", FALSE );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::check( "@example.com", FALSE );
+		$this->assertEquals( $expected, $actual );
 
-		$creation	= Syntax::check( "test", FALSE );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::check( "test", FALSE );
+		$this->assertEquals( $expected, $actual );
 
-		$creation	= Syntax::check( "_____@####.++", FALSE );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::check( "_____@####.++", FALSE );
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -67,36 +67,36 @@ class Address_Check_SyntaxTest extends TestCase{
 	 *	@covers		::check
 	 */
 	public function testIsValidValidSimple(){
-		$assertion	= 1;
-		$creation	= Syntax::check( "foo.bar@example.com" );
-		$this->assertEquals( $assertion, $creation );
+		$expected	= 1;
+		$actual	= Syntax::check( "foo.bar@example.com" );
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
 	 *	@covers		::check
 	 */
 	public function testIsValidValidExtended(){
-		$assertion	= 2;
-		$creation	= Syntax::check( "foo+bar!@example.com" );
-		$this->assertEquals( $assertion, $creation );
+		$expected	= 2;
+		$actual	= Syntax::check( "foo+bar!@example.com" );
+		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
 	 *	@covers		::isValid
 	 */
 	public function testIsValidInvalid(){
-		$assertion	= FALSE;
+		$expected	= FALSE;
 
-		$creation	= Syntax::isValid( "foo.bar.@example.com" );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::isValid( "foo.bar.@example.com" );
+		$this->assertEquals( $expected, $actual );
 
-		$creation	= Syntax::isValid( "@example.com" );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::isValid( "@example.com" );
+		$this->assertEquals( $expected, $actual );
 
-		$creation	= Syntax::isValid( "test" );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::isValid( "test" );
+		$this->assertEquals( $expected, $actual );
 
-		$creation	= Syntax::isValid( "_____@####.++" );
-		$this->assertEquals( $assertion, $creation );
+		$actual	= Syntax::isValid( "_____@####.++" );
+		$this->assertEquals( $expected, $actual );
 	}
 }
