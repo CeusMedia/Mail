@@ -7,8 +7,8 @@ server.encryption	= "{{phpunit.sender.server.encryption}}"
 mailbox.name		= "X: Automated Testing"
 mailbox.address		= "x-automated-testing@ceusmedia.de"
 auth.mode			= "{{phpunit.sender.auth.mode}}"
-auth.username		= "x-automated-testing"
-auth.password		= ""
+auth.username		= "x-automated-testing@ceusmedia.de"
+auth.password		= "8e5Ssm8%69Kdzi4&9Gaa3e6~"
 
 [phpunit.receiver]
 
@@ -18,5 +18,5 @@ server.encryption	= "{{phpunit.receiver.server.encryption}}"
 mailbox.name		= "X: Automated Testing"
 mailbox.address		= "x-automated-testing@ceusmedia.de"
 auth.mode			= "{{phpunit.receiver.auth.mode}}"
-auth.username		= "x-automated-testing"
-auth.password		= ""
+auth.username		= "x-automated-testing@ceusmedia.de"
+auth.password		= "8e5Ssm8%69Kdzi4&9Gaa3e6~"
