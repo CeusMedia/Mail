@@ -68,7 +68,8 @@ class Renderer{
 		}
 		if( !$headers->hasField( 'Date' ) )
 			$headers->setFieldPair( 'Date', date( "D, d M Y H:i:s O", time() ) );
-		$headers->setFieldPair( 'Subject', Encoding::encodeIfNeeded( $message->getSubject(), 'base64' ) );
+		$encodedSubject	= Encoding::encodeIfNeeded( $message->getSubject(), self::$encodingSubject );
+		$headers->setFieldPair( 'Subject', $encodedSubject );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->addFieldPair( 'X-Mailer', $message->getUserAgent() );
 

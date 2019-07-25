@@ -14,6 +14,7 @@ use \CeusMedia\Mail\Message\Part\Attachment;
 use \CeusMedia\Mail\Message\Part\HTML;
 use \CeusMedia\Mail\Message\Part\InlineImage;
 use \CeusMedia\Mail\Message\Part\Text;
+use \CeusMedia\Mail\Message\Renderer;
 
 /**
  *	Unit test for mail message.
@@ -102,12 +103,30 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::setSubject
 	 */
 	public function testGetAndSetSubject(){
-		$subject	= "Test Subject";
+		$subject	= "Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject";
 		$message	= Message::getInstance();
 		$creation	= $message->setSubject( $subject );
 		$this->assertEquals( $message, $creation );
 
 		$this->assertEquals( $subject, $message->getSubject() );
+
+		$message->addText( 'Test Text.' );
+
+
+		$subject	= "[Gruppenpost] Gruppe \"Deli_124\": Mike ist beigetreten und benötigt Freigabe";
+
+/*		$headers	= new \CeusMedia\Mail\Message\Header\Section();
+		$headers->addFieldPair( 'Subject', $subject );
+		var_export( $headers->getField( 'Subject' ) );
+		print( $headers->toString( TRUE ) );*/
+
+		$message->setSubject( $subject );
+		$message->setSender( 'kriss@ceusmedia.de' );
+		$message->addRecipient( 'test2@ceusmedia.de' );
+//		print( Renderer::render( $message ) );die;
+		$smtp	= new \CeusMedia\Mail\Transport\SMTP( 'mail.itflow.de', 25, 'kriss@ceusmedia.de', 'dialog');
+		$smtp->send( $message );
+
 	}
 
 	/**

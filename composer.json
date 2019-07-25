@@ -24,8 +24,10 @@
   "require-dev": {
     "phpunit/phpunit": "^7",
     "squizlabs/php_codesniffer": "*",
-    "phan/phan": "dev-master",
     "ceus-media/doc-creator": "^0.9"
+  },
+  "require-dev-php71": {
+	  "phan/phan": "dev-master"
   },
   "autoload": {
     "psr-4": {

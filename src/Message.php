@@ -284,18 +284,17 @@ class Message{
 			case 'base64':
 				return "=?UTF-8?B?".base64_encode( $string )."?=";
 			case 'quoted-printable':
+				$quotedString	= quoted_printable_encode( $string );
+				$quotedString	= str_replace( '='.Message::$delimiter, '', $quotedString );
 				if( !$fold )
-					return "=?UTF-8?Q?".quoted_printable_encode( $string )."?=";
-				$length	= Message::$lineLength;
-				$delim	= Message::$delimiter;
-				$lines	= str_split( $string, $length );
+					return "=?UTF-8?Q?".$quotedString."?=";
+				$lines	= str_split( $quotedString, Message::$lineLength );
 				foreach( $lines as $nr => $string ){
-					$string	= quoted_printable_encode( $string );
 					$string	= str_replace( '?', '=3F', $string );
 					$string	= str_replace( ' ', '_', $string );
 					$lines[$nr]	= "=?UTF-8?Q?".$string."?=";
 				}
-				return join( $delim."\t", $lines );
+				return join( Message::$delimiter."\t", $lines );
 			default:
 				throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 		}
@@ -479,8 +478,6 @@ class Message{
 	 *	@return		string
 	 */
 	public function getSubject( $encoding = NULL ){
-		if( $encoding )
-			return MessageHeaderEncoding::encodeIfNeeded( $this->subject, $encoding, TRUE );
 		return $this->subject;
 	}
 
