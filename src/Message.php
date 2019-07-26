@@ -49,26 +49,33 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Message{
-
+class Message
+{
 	/**	@var		string					$delimiter		Line separator, for some reasons only \n must be possible */
 	public static $delimiter				= "\r\n";
+
 	/**	@var		integer					$lineLength		Maximum line length of mail content */
 	public static $lineLength				= 75;
+
 	/**	@var		array					$parts			List of mail parts */
 	protected $parts						= array();
+
 	/**	@var		MessageHeaderSection	$headers		Mail header section */
 	protected $headers;
+
 	/**	@var		Address					$sender			Sender mail address */
 	protected $sender;
+
 	/**	@var		array					$recipients		List of recipients */
 	protected $recipients	= array(
 		'to'	=> array(),
 		'cc'	=> array(),
 		'bcc'	=> array(),
 	);
+
 	/**	@var		string					$subject		Mail subject */
 	protected $subject;
+
 	/**	@var		string					$mailer			Mailer agent */
 	protected $userAgent					= 'CeusMedia::Mail/2.0';
 
@@ -77,7 +84,8 @@ class Message{
 	 *	@access		public
 	 *	@return		void
 	 */
-	public function __construct(){
+	public function __construct()
+	{
 		$this->headers				= new MessageHeaderSection();
 		$this->recipients['to']		= new AddressCollection();
 		$this->recipients['cc']		= new AddressCollection();
@@ -91,9 +99,10 @@ class Message{
 	 *	@param		string		$mimeType		Optional: MIME type of file
 	 *	@param		string		$encoding		Optional: Encoding to apply
 	 *	@param		string		$fileName		Optional: Name of file
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addAttachment( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
+	public function addAttachment( string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL, ?string $fileName = NULL ): self
+	{
 		$part	= new MessagePartAttachment();
 		$part->setFile( $filePath, $mimeType, $encoding );
 		if( $fileName )
@@ -109,11 +118,12 @@ class Message{
 	 *	@param		string		$mimeType		Optional: MIME type of file
 	 *	@param		string		$encoding		Optional: Encoding to apply
 	 *	@param		string		$fileName		Optional: Name of file
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 *	@deprecated	use addAttachment instead
 	 *	@todo		to be removed in 2.0
 	 */
-	public function addFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
+	public function addFile( string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL, ?string $fileName = NULL ): self
+	{
 		return $this->addAttachment( $filePath, $mimeType, $encoding, $fileName );
 	}
 
@@ -121,9 +131,10 @@ class Message{
 	 *	Adds a header.
 	 *	@access		public
 	 *	@param		MessageHeaderField	$field		Mail header field object
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addHeader( MessageHeaderField $field ){
+	public function addHeader( MessageHeaderField $field ): self
+	{
 		$this->headers->addField( $field );
 		return $this;
 	}
@@ -133,9 +144,10 @@ class Message{
 	 *	@access		public
 	 *	@param		string		$key		Key of header
 	 *	@param		string		$value		Value of header
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addHeaderPair( $key, $value ){
+	public function addHeaderPair( string $key, string $value ): self
+	{
 		$field	= new MessageHeaderField( $key, $value );
 		return $this->addHeader( $field );
 	}
@@ -146,9 +158,10 @@ class Message{
 	 *	@param		string		$content		HTML content to add as message part
 	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
 	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addHtml( $content, $charset = 'UTF-8', $encoding = 'base64' ){
+	public function addHtml( string $content, ?string $charset = 'UTF-8', ?string $encoding = 'base64' ): self
+	{
 		return $this->addPart( new MessagePartHTML( $content, $charset, $encoding ) );
 	}
 
@@ -160,11 +173,12 @@ class Message{
 	 *	@param		string		$filePath		File Path of image to embed
 	 *	@param		string		$mimeType		Optional: MIME type of file
 	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 *	@deprecated	use addInlineImage instead
 	 *	@todo		remove in 2.1
 	 */
-	public function addHtmlImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
+	public function addHtmlImage( $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
+	{
 		return $this->addInlineImage( $id, $filePath, $mimeType, $encoding );
 	}
 
@@ -175,9 +189,10 @@ class Message{
 	 *	@param		string		$filePath		File Path of image to embed
 	 *	@param		string		$mimeType		Optional: MIME type of file
 	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addInlineImage( $id, $filePath, $mimeType = NULL, $encoding = NULL ){
+	public function addInlineImage( $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
+	{
 		$part	= new MessagePartInlineImage( $id, $filePath, $mimeType, $encoding );
 		return $this->addPart( $part );
 	}
@@ -188,9 +203,10 @@ class Message{
 	 *	@param		string		$content		Nested mail content to add as message part
 	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
 	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addMail( $content, $charset = 'UTF-8', $encoding = 'base64' ){
+	public function addMail( string $content, ?string $charset = 'UTF-8', ?string $encoding = 'base64' ): self
+	{
 		$part	= new MessagePartMail( $content, $charset, $encoding );
 		return $this->addPart( $part );
 	}
@@ -200,14 +216,16 @@ class Message{
 	 *	More specific: addText, addHtml, addHtmlImage, addAttachment.
 	 *	@access		public
 	 *	@param		MessagePart	$part		Part of mail
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addPart( MessagePart $part ){
+	public function addPart( MessagePart $part ): self
+	{
 		$this->parts[]	= $part;
 		return $this;
 	}
 
-	public function addRecipient( $participant, $name = NULL, $type = "To" ){
+	public function addRecipient( $participant, ?string $name = NULL, ?string $type = "To" ): self
+	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
@@ -233,7 +251,8 @@ class Message{
 		return $this;
 	}
 
-	public function addReplyTo( $participant, $name = NULL ){
+	public function addReplyTo( $participant, ?string $name = NULL ): self
+	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
@@ -250,9 +269,10 @@ class Message{
 	 *	@param		string		$content		Plaintext content to add as message part
 	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
 	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function addText( $content, $charset = 'UTF-8', $encoding = 'base64' ){
+	public function addText( string $content, ?string $charset = 'UTF-8', ?string $encoding = 'base64' ): self
+	{
 		$part	= new MessagePartText( $content, $charset, $encoding );
 		return $this->addPart( $part );
 	}
@@ -265,7 +285,8 @@ class Message{
 	 *	@deprecated	use getInstance instead
 	 *	@todo		to be removed
 	 */
-	public static function create(){
+	public static function create(): self
+	{
 		return static::getInstance();
 	}
 
@@ -277,7 +298,7 @@ class Message{
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function encodeIfNeeded( $string, $encoding = "base64", $fold = TRUE ){
+	static public function encodeIfNeeded( string $string, ?string $encoding = "base64", ?bool $fold = TRUE ){
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 		switch( strtolower( $encoding ) ){
@@ -308,7 +329,8 @@ class Message{
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function decodeIfNeeded( $string, $encoding = "base64" ){
+	static public function decodeIfNeeded( string $string, ?string $encoding = "base64" ): string
+	{
 		if( !preg_match( "/^=\?(\S+)\?(\S)\?(.+)\?=$/", $string ) )
 			return $string;
 		$matches	= array();
@@ -342,7 +364,8 @@ class Message{
 	 *	@param		boolean		$withInlineImages		Flag: list inline images, also
 	 *	@return		array
 	 */
-	public function getAttachments( $withInlineImages = TRUE ){
+	public function getAttachments( ?bool $withInlineImages = TRUE ): array
+	{
 		$list	= array();
 		foreach( $this->parts as $part ){
 			if( $part instanceof MessagePartAttachment )
@@ -365,7 +388,8 @@ class Message{
 	 *	@deprecated	use getAttachments instead
 	 *	@todo		remove in 2.1
 	 */
-	public function getFiles( $withInlineImages = TRUE ){
+	public function getFiles( ?bool $withInlineImages = TRUE ): array
+	{
 		return $this->getAttachments( $withInlineImages );
 	}
 
@@ -374,7 +398,8 @@ class Message{
 	 *	@access		public
 	 *	@return		MessageHeaderSection
 	 */
-	public function getHeaders(){
+	public function getHeaders(): MessageHeaderSection
+	{
 		return $this->headers;
 	}
 
@@ -383,7 +408,8 @@ class Message{
 	 *	@access		public
 	 *	@return		MessagePartHTML
 	 */
-	public function getHtml(){
+	public function getHtml(): MessagePartHTML
+	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartHTML )
 				return $part;
@@ -395,7 +421,8 @@ class Message{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function getInlineImages(){
+	public function getInlineImages(): array
+	{
 		$list	= array();
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartInlineImage )
@@ -409,7 +436,8 @@ class Message{
 	 *	@static
 	 *	@return		self
 	 */
-	static public function getInstance(){
+	static public function getInstance(): self
+	{
 		return new static;
 	}
 
@@ -418,7 +446,8 @@ class Message{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function getMails(){
+	public function getMails(): array
+	{
 		$list	= array();
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartMail )
@@ -432,7 +461,8 @@ class Message{
 	 *	@param		boolean		$withAttachments	Flag: return attachment parts also
 	 *	@return		array
 	 */
-	public function getParts( $withAttachments = TRUE ){
+	public function getParts( ?bool $withAttachments = TRUE ): array
+	{
 		if( $withAttachments )
 			return $this->parts;
 		$list	= array();
@@ -453,7 +483,8 @@ class Message{
 	 *	@access		public
 	 *	@return		array|AddressCollection
 	 */
-	public function getRecipients( $type = NULL ){
+	public function getRecipients( ?string $type = NULL )
+	{
 		if( $type ){
 			if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
 				throw new \DomainException( 'Type must be of to, cc or bcc' );
@@ -467,7 +498,8 @@ class Message{
 	 *	@access		public
 	 *	@return		Address
 	 */
-	public function getSender(){
+	public function getSender(): Address
+	{
 		return $this->sender;
 	}
 
@@ -477,7 +509,8 @@ class Message{
 	 *	@param		string|NULL		$encoding		Optional: Types: base64, quoted-printable. Default: none
 	 *	@return		string
 	 */
-	public function getSubject( $encoding = NULL ){
+	public function getSubject( ?string $encoding = NULL ): string
+	{
 		return $this->subject;
 	}
 
@@ -486,7 +519,8 @@ class Message{
 	 *	@access		public
 	 *	@return		MessagePartText
 	 */
-	public function getText(){
+	public function getText(): MessagePartText
+	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartText )
 				return $part;
@@ -498,7 +532,8 @@ class Message{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getUserAgent(){
+	public function getUserAgent(): string
+	{
 		return $this->userAgent;
 	}
 
@@ -507,7 +542,8 @@ class Message{
 	 *	@access		public
 	 *	@return		boolean
 	 */
-	public function hasAttachments(){
+	public function hasAttachments(): bool
+	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartAttachment )
 				return TRUE;
@@ -519,7 +555,8 @@ class Message{
 	 *	@access		public
 	 *	@return		boolean
 	 */
-	public function hasHTML(){
+	public function hasHTML(): bool
+	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartHTML )
 				return TRUE;
@@ -531,7 +568,8 @@ class Message{
 	 *	@access		public
 	 *	@return		boolean
 	 */
-	public function hasInlineImages(){
+	public function hasInlineImages(): bool
+	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartInlineImage )
 				return TRUE;
@@ -543,7 +581,8 @@ class Message{
 	 *	@access		public
 	 *	@return		boolean
 	 */
-	public function hasMails(){
+	public function hasMails(): bool
+	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartMail )
 				return TRUE;
@@ -555,14 +594,16 @@ class Message{
 	 *	@access		public
 	 *	@return		boolean
 	 */
-	public function hasText(){
+	public function hasText(): bool
+	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartText )
 				return TRUE;
 		return FALSE;
 	}
 
-	public function setReadNotificationRecipient( $participant, $name = NULL ){
+	public function setReadNotificationRecipient( $participant, ?string $name = NULL ): self
+	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
 		if( $name )
@@ -576,10 +617,11 @@ class Message{
 	 *	@access		public
 	 *	@param		string|object	$participant	Mail sender address or participant object
 	 *	@param		string			$name			Optional: Mail sender name
-	 *	@return		object			Message object for chaining
+	 *	@return		self			Message object for chaining
 	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Address
 	 */
-	public function setSender( $participant, $name = NULL ){
+	public function setSender( $participant, ?string $name = NULL ): self
+	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
@@ -596,9 +638,10 @@ class Message{
 	 *	Sets Mail Subject.
 	 *	@access		public
 	 *	@param		string		$subject	Subject of Mail
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function setSubject( $subject ){
+	public function setSubject( string $subject ): self
+	{
 		$this->subject	= $subject;
 		return $this;
 	}
@@ -607,9 +650,10 @@ class Message{
 	 *	Sets mail user agent for mailer header.
 	 *	@access		public
 	 *	@param		string		$userAgent		Mailer user agent
-	 *	@return		object		Message object for chaining
+	 *	@return		self		Message object for chaining
 	 */
-	public function setUserAgent( $userAgent ){
+	public function setUserAgent( string $userAgent ): self
+	{
 		$this->userAgent = $userAgent;
 		return $this;
 	}

@@ -27,7 +27,7 @@
 namespace CeusMedia\Mail\Util\Dmarc;
 
 use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Util\Dmarc\Record as UtilDmarcRecord;
+use \CeusMedia\Mail\Util\Dmarc\Record;
 
 /**
  *	Parser for DMARC records.
@@ -39,14 +39,21 @@ use \CeusMedia\Mail\Util\Dmarc\Record as UtilDmarcRecord;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Parser{
-
-	public static function create(){
+class Parser
+{
+	public static function create()
+	{
 		return new static();
 	}
 
-	public function parse( $content ){
-		$record		= new UtilDmarcRecord();
+	/**
+	 *	@access		public
+	 *	@param		string		$content		...
+	 *	@return		Record
+	 */
+	public function parse( string $content ): Record
+	{
+		$record		= new Record();
 		$content	= rtrim( trim( $content ), ';' );
 		$pairs		= preg_split( '/\s*;\s*/', $content );
 		foreach( $pairs as $pair ){
@@ -54,7 +61,7 @@ class Parser{
 				$pair	= preg_split( '/\s*=\s*/', $pair, 2 );
 				switch( $pair[0] ){
 					case 'v':
-						$record->version			= preg_replace( '/^DMARC/', '', $pair[1] );
+						$record->version	= preg_replace( '/^DMARC/', '', $pair[1] );
 						break;
 					case 'p':
 						$values	= array( 'none', 'quarantine', 'reject' );

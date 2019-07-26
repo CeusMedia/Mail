@@ -63,7 +63,8 @@ class Encoding
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function decodeIfNeeded( $string ){
+	static public function decodeIfNeeded( string $string ): string
+	{
 		$pattern	= "/^=\?(\S+)\?(\S)\?(.+)\?=$/s";
 		if( !preg_match( $pattern, $string ) )
 			return $string;
@@ -100,7 +101,8 @@ class Encoding
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function encodeIfNeeded( $string, $encoding = "base64", $fold = TRUE ){
+	static public function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
+	{
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 		switch( strtolower( $encoding ) ){

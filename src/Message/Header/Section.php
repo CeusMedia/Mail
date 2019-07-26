@@ -40,17 +40,18 @@ use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Section{
-
+class Section
+{
 	protected $fields			= array();
 
 	/**
 	 *	Add a header field object.
 	 *	@access		public
 	 *	@param		Field		$field		Header field object
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function addField( Field $field ){
+	public function addField( Field $field ): self
+	{
 		return $this->setField( $field, FALSE );
 	}
 
@@ -59,21 +60,23 @@ class Section{
 	 *	@access		public
 	 *	@param		string		$name		Header field name
 	 *	@param		string		$value		Header Field value
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function addFieldPair( $name, $value ){
+	public function addFieldPair( string $name, string $value ): self
+	{
 		$field	= new Field( $name, $value );
-		$this->addField( $field );
+		return $this->addField( $field );
 	}
 
 	/**
 	 *	Add several header Field Objects.
 	 *	@access		public
 	 *	@param		array		$fields		List of header field objects
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function addFields( $fields ){
-		$this->setFields( $fields, FALSE );
+	public function addFields( array $fields ): self
+	{
+		return $this->setFields( $fields, FALSE );
 	}
 
 	/**
@@ -83,7 +86,8 @@ class Section{
 	 *	@return		Field
 	 *	@throws		\RangeException			if request header field name is not existing
 	 */
-	public function getField( $name ){
+	public function getField( string $name ): Field
+	{
 		if( !$this->hasField( $name ) )
 			throw new \RangeException( 'Header "'.$name.'" is not available' );
 		$values	= $this->getFieldsByName( $name );
@@ -95,7 +99,8 @@ class Section{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function getFields(){
+	public function getFields(): array
+	{
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
 			if( count( $fields ) )
@@ -110,7 +115,8 @@ class Section{
 	 *	@param		string		$name		Header field name
 	 *	@return		array
 	 */
-	public function getFieldsByName( $name ){
+	public function getFieldsByName( string $name ): array
+	{
 		$name	= strtolower( $name );
 		if( isset( $this->fields[$name] ) )
 			return $this->fields[$name];
@@ -123,7 +129,8 @@ class Section{
 	 *	@param		string		$name		Header field name
 	 *	@return		boolean
 	 */
-	public function hasField( $name ){
+	public function hasField( string $name ): bool
+	{
 		$name	= strtolower( $name );
 		if( !isset( $this->fields[$name] ) )
 			return FALSE;
@@ -136,7 +143,8 @@ class Section{
 	 *	@param		string		$name		Header field name
 	 *	@return		integer 	Number of removed field objects
 	 */
-	public function removeFieldByName( $name ){
+	public function removeFieldByName( string $name ): int
+	{
 		$count	= count( $this->getFieldsByName( $name ) );
 		if( $count )
 			unset( $this->fields[strtolower( $name )] );
@@ -150,13 +158,15 @@ class Section{
 	 *	@access		public
 	 *	@param		Field		$field		Header field object to set
 	 *	@param		boolean					$emptyBefore	Flag: TRUE - set | FALSE - append
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function setField( Field $field, $emptyBefore = TRUE ){
+	public function setField( Field $field, ?bool $emptyBefore = TRUE ): self
+	{
 		$name	= strtolower( $field->getName() );
 		if( $emptyBefore || !array_key_exists( $name, $this->fields ) )
 			$this->fields[$name]	= array();
 		$this->fields[$name][]	= $field;
+		return $this;
 	}
 
 	/**
@@ -167,9 +177,10 @@ class Section{
 	 *	@param		string		$name			Header field name
 	 *	@param		string		$value			Header field value
 	 *	@param		boolean		$emptyBefore	Flag: TRUE - set | FALSE - append
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function setFieldPair( $name, $value, $emptyBefore = TRUE ){
+	public function setFieldPair( string $name, string $value, ?bool $emptyBefore = TRUE ): self
+	{
 		$field	= new MessageHeaderField( $name, $value );
 		return $this->setField( $field, $emptyBefore );
 	}
@@ -181,11 +192,13 @@ class Section{
 	 *	@access		public
 	 *	@param		array		$fields			List of header field objects
 	 *	@param		boolean		$emptyBefore	Flag: TRUE - set | FALSE - append
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function setFields( $fields, $emptyBefore = TRUE ){
+	public function setFields( array $fields, ?bool $emptyBefore = TRUE ): self
+	{
 		foreach( $fields as $field )
 			$this->setField( $field, $emptyBefore );
+		return $this;
 	}
 
 	/**
@@ -193,7 +206,8 @@ class Section{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function toArray( $keepCase = FALSE ){
+	public function toArray( ?bool $keepCase = FALSE ): array
+	{
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
 			foreach( $fields as $field )
@@ -206,7 +220,8 @@ class Section{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function toString( $keepCase = FALSE ){
+	public function toString( ?bool $keepCase = FALSE ): string
+	{
 		$list	= $this->toArray( $keepCase );
 		if( $list )
 			return implode( Message::$delimiter, $list );

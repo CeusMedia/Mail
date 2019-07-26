@@ -36,10 +36,11 @@ namespace CeusMedia\Mail\Message\Header;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Field{
-
+class Field
+{
 	/**	@var		string		$name		Name of header */
 	protected $name;
+
 	/**	@var		string		$value		Value of header */
 	protected $value;
 
@@ -50,7 +51,8 @@ class Field{
 	 *	@param		string		$value		Value of header
 	 *	@return		void
 	 */
-	public function __construct( $name, $value ){
+	public function __construct( string $name, string $value )
+	{
 		$this->setName( $name );
 		$this->setValue( $value );
 	}
@@ -60,7 +62,8 @@ class Field{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function __toString(){
+	public function __toString(): string
+	{
 		return $this->toString( TRUE );
 	}
 
@@ -75,7 +78,8 @@ class Field{
 	 *	@param		boolean		$ignoreMbConvertCase	Flag: do not use mb_convert_case even if it is available (needed to testing)
 	 *	@return		string		Header name
 	 */
-	public function getName( $keepCase = TRUE, $ignoreMbConvertCase = FALSE ){
+	public function getName( ?bool $keepCase = TRUE, ?bool $ignoreMbConvertCase = FALSE ): string
+	{
 		if( $keepCase )
 			return $this->name;
 		if( function_exists( 'mb_convert_case' ) && !$ignoreMbConvertCase )
@@ -88,7 +92,8 @@ class Field{
 	 *	@access		public
 	 *	@return		string		Header value
 	 */
-	public function getValue(){
+	public function getValue(): string
+	{
 		return $this->value;
 	}
 
@@ -96,12 +101,14 @@ class Field{
 	 *	Sets header name.
 	 *	@access		public
 	 *	@param		string		$name		Header field name
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function setName( $name ){
+	public function setName( string $name ): self
+	{
 		if( !trim( $name ) )
 			throw new \InvalidArgumentException( 'Field name cannot be empty' );
 		$this->name	= preg_replace( "/( |-)+/", "-", trim( $name ) );
+		return $this;
 	}
 
 
@@ -109,10 +116,12 @@ class Field{
 	 *	Sets header value.
 	 *	@access		public
 	 *	@param		string		$value		Header field value
-	 *	@return		void
+	 *	@return		self
 	 */
-	public function setValue( $value ){
+	public function setValue( string $value ): self
+	{
 		$this->value	= $value;
+		return $this;
 	}
 
 	/**
@@ -121,7 +130,8 @@ class Field{
 	 *	@param		boolean		$keepCase		...
 	 *	@return		string
 	 */
-	public function toString( $keepCase = TRUE ){
+	public function toString( ?bool $keepCase = TRUE ): string
+	{
 		return $this->getName( $keepCase ).": ".$this->getValue();
 	}
 }

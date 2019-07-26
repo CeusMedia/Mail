@@ -27,6 +27,7 @@
 namespace CeusMedia\Mail\Util\Dmarc;
 
 use \CeusMedia\Mail\Address;
+use \CeusMedia\Mail\Util\Dmarc\Record;
 
 /**
  *	Renderer for DMARC records.
@@ -38,13 +39,15 @@ use \CeusMedia\Mail\Address;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Renderer{
-
-	public static function create(){
+class Renderer
+{
+	public static function create()
+	{
 		return new static();
 	}
 
-	public function render( $record ){
+	public function render( Record $record ): string
+	{
 		$facts	= array(
 			'v'		=> 'DMARC'.$record->version,
 			'p'		=> $record->policy,

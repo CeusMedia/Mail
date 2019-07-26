@@ -26,8 +26,9 @@
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+
 
 /**
  *	Mail message header field data object.
@@ -40,13 +41,15 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  *	@todo			implement IMAP parser
  */
-class Parser{
-
-	public static function create(){
+class Parser
+{
+	public static function create()
+	{
 		return new static();
 	}
 
-	public function parse( $content ){
+	public function parse( string $content ): MessageHeaderSection
+	{
 		$section	= new MessageHeaderSection();
 		$content	= preg_replace( "/\r?\n[\t ]/", "", $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
@@ -55,7 +58,7 @@ class Parser{
 			if( count( $parts ) > 1 ){
 				$value	= trim( $parts[1] );
 				if( substr( $value, 0, 2 ) == "=?" )
-					$value	= Message::decodeIfNeeded( $value );
+					$value	= MessageHeaderEncoding::decodeIfNeeded( $value );
 				$section->addFieldPair( $parts[0], $value );
 			}
 		}

@@ -38,8 +38,8 @@ use \CeusMedia\Mail\Address;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class MX{
-
+class MX
+{
 	protected $cache;
 
 	protected $useCache		= FALSE;

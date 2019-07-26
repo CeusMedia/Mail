@@ -150,7 +150,7 @@ class Availability{
 		);
 	}
 
-	public function test( $receiver, $host = NULL, $port = 25, $force = FALSE ){
+	public function test( $receiver, $host = NULL, $port = 587, $force = FALSE ){
 		if( is_string( $receiver ) )
 			$receiver	= new Address( $receiver );
 		if( !$force ){

@@ -28,6 +28,7 @@ namespace CeusMedia\Mail;
 
 use \CeusMedia\Mail\Message\Parser as MessageParser;
 use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
 /**
  *	Handler for IMAP mailboxes.
@@ -39,8 +40,8 @@ use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Mailbox{
-
+class Mailbox
+{
 	protected $connection;
 	protected $username;
 	protected $password;
@@ -49,7 +50,8 @@ class Mailbox{
 	protected $validateCertificates		= TRUE;
 	protected $error;
 
-	public function __construct( $host, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
+	public function __construct( string $host, ?string $username = NULL, ?string $password = NULL, ?bool $secure = TRUE, ?bool $validateCertificates = TRUE )
+	{
 		$this->checkExtensionInstalled( TRUE );
 		$this->setHost( $host );
 		if( $username && $password )
@@ -57,11 +59,13 @@ class Mailbox{
 		$this->setSecure( $secure, $validateCertificates );
 	}
 
-	public function __destruct() {
+	public function __destruct()
+	{
 		$this->disconnect();
 	}
 
-	protected function checkConnection( $connect = FALSE, $strict = TRUE ){
+	protected function checkConnection( ?bool $connect = FALSE, ?bool $strict = TRUE ): bool
+	{
 		if( !$this->connection || !imap_ping( $this->connection ) ){
 			if( !$connect ){
 				if( $strict )
@@ -77,7 +81,8 @@ class Mailbox{
 		return FALSE;
 	}
 
-	static public function checkExtensionInstalled( $strict = TRUE ){
+	static public function checkExtensionInstalled( ?bool $strict = TRUE ): bool
+	{
 		if( extension_loaded( 'imap' ) )
 			return TRUE;
 		if( $strict )
@@ -85,7 +90,8 @@ class Mailbox{
 		return FALSE;
 	}
 
-	public function connect( $strict = TRUE ){
+	public function connect( ?bool $strict = TRUE ): bool
+	{
 		$port		= 143;
 		$flags		= array();
 		$options	= 0;
@@ -113,21 +119,25 @@ class Mailbox{
 		return FALSE;
 	}
 
-	public function disconnect() {
+	public function disconnect()
+	{
 		if( $this->checkConnection( FALSE, FALSE ) )
 			return imap_close( $this->connection, CL_EXPUNGE );
 		return TRUE;
 	}
 
-	public static function getInstance( $host, $username = NULL, $password = NULL, $secure = TRUE, $validateCertificates = TRUE ){
+	public static function getInstance( string $host, ?string $username = NULL, ?string $password = NULL, ?bool $secure = TRUE, ?bool $validateCertificates = TRUE ): self
+	{
 		return new self( $host, $username, $password, $secure, $validateCertificates );
 	}
 
-	public function getError(){
+	public function getError(): ?string
+	{
 		return $this->error;
 	}
 
-	public function getMail( $mailId, $strict = TRUE ){
+	public function getMail( $mailId, ?bool $strict = TRUE ): string
+	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( !$header )
@@ -136,7 +146,8 @@ class Mailbox{
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
-	public function getMailAsMessage( $mailId, $strict = TRUE ){
+	public function getMailAsMessage( $mailId, ?bool $strict = TRUE ): Message
+	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( !$header )
@@ -145,7 +156,8 @@ class Mailbox{
 		return (object) MessageParser::parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
-	public function getMailHeaders( $mailId, $strict = TRUE ){
+	public function getMailHeaders( $mailId, ?bool $strict = TRUE ): MessageHeaderSection
+	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( !$header )
@@ -153,7 +165,8 @@ class Mailbox{
 		return MessageHeaderParser::parse( $header );
 	}
 
-	public function index( $criteria = array(), $sort = SORTARRIVAL, $reverse = FALSE, $strict = TRUE ){
+	public function index( ?array $criteria = array(), ?int $sort = SORTARRIVAL, ?bool $reverse = FALSE, ?bool $strict = TRUE ): array
+	{
 		$this->checkConnection( TRUE, $strict );
 		if( !is_array( $criteria ) && is_string( $criteria ) )
 			$criteria	= array( $criteria );
@@ -163,26 +176,36 @@ class Mailbox{
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setAuth( $username, $password ){
+	public function setAuth( $username, $password ): self
+	{
 		$this->username	= $username;
 		$this->password	= $password;
 		return $this;
 	}
 
-	public function setHost( $host ){
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		self		Own instance for chainability
+	 *	@todo		code doc
+	 */
+	public function setHost( $host ): self
+	{
 		$this->host	= $host;
+		return $this;
 	}
 
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setMailFlag( $mailId, $flag ){
+	public function setMailFlag( $mailId, string $flag ): self
+	{
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
 		if( !in_array( strtolower( $flag ), $flags ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
@@ -194,16 +217,24 @@ class Mailbox{
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setSecure( $secure = TRUE, $validateCertificates = TRUE ){
+	public function setSecure( ?bool $secure = TRUE, ?bool $validateCertificates = TRUE ): self
+	{
 		$this->secure				= $secure;
 		$this->validateCertificates	= $validateCertificates;
 		return $this;
 	}
 
-	public function setTimeout( $type, $seconds ){
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		self		Own instance for chainability
+	 *	@todo		code doc
+	 */
+	public function setTimeout( int $type, int $seconds ): self
+	{
 		$timeoutTypes	= array(
 			IMAP_OPENTIMEOUT,
 			IMAP_READTIMEOUT,
@@ -213,15 +244,17 @@ class Mailbox{
 		if( !in_array( $type, $timeoutTypes ) )
 			throw new \InvalidArgumentException( 'Invalid timeout type' );
 		imap_timeout( $timeoutTypes[$type], $seconds );
+		return $this;
 	}
 
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function unsetMailFlag( $mailId, $flag ){
+	public function unsetMailFlag( $mailId, string $flag ): self
+	{
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
 		if( !in_array( strtolower( $flag ), $flags ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
@@ -230,10 +263,12 @@ class Mailbox{
 		return $this;
 	}
 
-	public function removeMail( $mailId, $expunge = FALSE ){
+	public function removeMail( $mailId, ?bool $expunge = FALSE ): bool
+	{
 		$this->checkConnection( TRUE );
 		$result	= imap_delete( $this->connection, $mailId, FT_UID );
 		if( $expunge )
 			imap_expunge( $this->connection );
+		return $result;
 	}
 }

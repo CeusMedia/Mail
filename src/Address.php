@@ -50,8 +50,8 @@ use \CeusMedia\Mail\Message;
  *	@todo			create tests
  *	@todo			use in Message class
  */
-class Address{
-
+class Address
+{
 	/**	@var	string		$domain			Domain of mail participant */
 	protected $domain;
 
@@ -67,7 +67,8 @@ class Address{
 	 *	@param		string		$string		Full mail address to parse, optional
 	 *	@return		void
 	 */
-	public function __construct( $string = NULL ){
+	public function __construct( $string = NULL )
+	{
 		if( $string ){
 			$this->set( $string );
 		}
@@ -79,7 +80,8 @@ class Address{
 	 *	@access		public
 	 *	@return		string		Full mail address with brackets and username (if available)
 	 */
-	public function __toString(){
+	public function __toString(): string
+	{
 		return $this->get();
 	}
 
@@ -88,7 +90,8 @@ class Address{
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 */
-	public static function create( $string = NULL ){
+	public static function create( $string = NULL ): self
+	{
 		return new static( $string );
 	}
 
@@ -97,7 +100,8 @@ class Address{
 	 *	@access		public
 	 *	@return		string		Full mail address with brackets and username (if available)
 	 */
-	public function get(){
+	public function get(): string
+	{
 		return self::render( $this );
 	}
 
@@ -107,7 +111,8 @@ class Address{
 	 *	@param		boolean		$strict		Flag: throw exception if no local part set
 	 *	@return		string		Short mail address (without name or brackets)
 	 */
-	public function getAddress( $strict = TRUE ){
+	public function getAddress( $strict = TRUE ): string
+	{
 		return $this->getLocalPart( $strict )."@".$this->getDomain( $strict );
 	}
 
@@ -118,19 +123,21 @@ class Address{
 	 *	@return		string		Domain of mail participant
 	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
-	public function getDomain( $strict = TRUE ){
+	public function getDomain( $strict = TRUE ): string
+	{
 		if( !$this->domain && $strict )
 			throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
-		return $this->domain;
+		return (string) $this->domain;
 	}
 
 	/**
 	 *	Static constructor.
 	 *	@access		public
 	 *	@param		string		$string		Full mail address to parse, optional
-	 *	@return		static
+	 *	@return		self
 	 */
-	public static function getInstance( $string = NULL ){
+	public static function getInstance( $string = NULL ): self
+	{
 		return new static( $string );
 	}
 
@@ -141,10 +148,11 @@ class Address{
 	 *	@return		string		Local part of mail participant
 	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
-	public function getLocalPart( $strict = TRUE ){
+	public function getLocalPart( $strict = TRUE ): string
+	{
 		if( !$this->localPart && $strict )
 			throw new \RuntimeException( 'No valid address set, yet (local part missing)' );
-		return $this->localPart;
+		return (string) $this->localPart;
 	}
 
 	/**
@@ -152,8 +160,9 @@ class Address{
 	 *	@access		public
 	 *	@return		string		Name of mail participant
 	 */
-	public function getName(){
-		return $this->name;
+	public function getName(): string
+	{
+		return (string) $this->name;
 	}
 
 	/**
@@ -161,10 +170,12 @@ class Address{
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
 	 *	@param		Address		$address	Address to render
+	 *	@return		string
 	 *	@throws		\RuntimeException		If domain is empty
 	 *	@throws		\RuntimeException		If local part is empty
 	 */
-	public function render( $address ){
+	public function render( $address ): string
+	{
 		return AddressRenderer::create()->render( $address );
 	}
 
@@ -172,10 +183,11 @@ class Address{
 	 *	Sets an full mail address.
 	 *	@access		public
 	 *	@param		string		$string			Full mail address to set
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 *	@throws		\InvalidArgumentException	if given string is empty
 	 */
-	public function set( $string ){
+	public function set( $string ): self
+	{
 		if( !strlen( trim( $string ) ) )
 			throw new \InvalidArgumentException( 'No address given' );
 
@@ -190,9 +202,10 @@ class Address{
 	 *	Sets domain of mail participant.
 	 *	@access		public
 	 *	@param		string		$domain			Domain of mail participant.
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 */
-	public function setDomain( $domain ){
+	public function setDomain( $domain ): self
+	{
 		$this->domain	= $domain;
 		return $this;
 	}
@@ -201,9 +214,10 @@ class Address{
 	 *	Sets local part of of mail participant.
 	 *	@access		public
 	 *	@param		string		$localPart		Local part of of mail participant
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 */
-	public function setLocalPart( $localPart ){
+	public function setLocalPart( $localPart ): self
+	{
 		$this->localPart	= $localPart;
 		return $this;
 	}
@@ -212,9 +226,10 @@ class Address{
 	 *	Sets name of mail participant.
 	 *	@access		public
 	 *	@param		string		$name			Name of mail participant
-	 *	@return		object		Own instance for chainability
+	 *	@return		self		Own instance for chainability
 	 */
-	public function setName( $name ){
+	public function setName( $name ): self
+	{
 		$this->name		= Message::decodeIfNeeded( $name );
 		return $this;
 	}

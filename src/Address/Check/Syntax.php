@@ -36,36 +36,80 @@ namespace CeusMedia\Mail\Address\Check;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Syntax{
+class Syntax
+{
+	const MODE_AUTO				= 0;
+	const MODE_ALL				= 1;
+	const MODE_FILTER			= 2;
+	const MODE_SIMPLE_REGEX		= 4;
+	const MODE_EXTENDED_REGEX	= 8;
 
-	static protected $regexSimple	= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
-	static protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
+	protected $mode				= 2;
+	protected $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
+	protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
+
+	public function __construct( $mode = NULL )
+	{
+		if( $mode !== NULL )
+			$this->setMode( $mode );
+	}
+
+	/**
+	 *	Validate an mail address against set mode and map of results.
+	 *	@access		public
+	 *	@param		string		$address		Mail address to validate
+	 *	@param		boolean		$throwException	Flag: throw exception if invalid, default: TRUE
+	 *	@return		array						0 - not valid | 1 - valid simple address | 2 - valid extended address
+	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
+	 */
+	public function check( $address, ?bool $throwException = TRUE ): array
+	{
+		$result		= 0;
+		$wildcard	= $this->mode & self::MODE_ALL;
+		$constants	= \Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
+		foreach( $constants as $key => $value ){
+			$result[$value]	= NULL;
+			if( $this->mode & $value || $wildcard ){
+				if( $value === self::MODE_FILTER || $wildcard ){
+					if( filter_var( $address, FILTER_VALIDATE_EMAIL ) )
+						$result	&= $value;
+				}
+				else if( $value === self::MODE_SIMPLE_REGEX || $wildcard ){
+					if( preg_match( $this->regexSimple, $address ) )
+						$result	&= $value;
+				}
+				else if( $value === self::MODE_EXTENDED_REGEX || $wildcard ){
+					if( preg_match( $this->regexExtended, $address ) )
+						$result	&= $value;
+				}
+			}
+		}
+		return $result;
+	}
 
 	/**
 	 *	Tries to validate an mail address and returns found type.
 	 *	Types:
 	 *		0 - not valid
-	 *		1 - simple address
-	 *		2 - extended address
+	 *		1 - filter
+	 *		2 - simple address
+	 *		3 - extended address
 	 *
 	 *	@static
 	 *	@access		public
 	 *	@param		string		$address		Mail address to validate
 	 *	@param		boolean		$throwException	Flag: throw exception if invalid, default: TRUE
-	 *	@return		integer						0 - not valid | 1 - valid simple address | 2 - valid extended address
+	 *	@return		integer						0 - not valid | 2 - filter | 4 - valid simple address | 8 - valid extended address
 	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
 	 */
-	static public function check( $address, $throwException = TRUE ){
-		if( preg_match( self::$regexSimple, $address ) ){
-			return 1;
-		}
-		if( preg_match( self::$regexExtended, $address ) ){
-			return 2;
-		}
-		if( $throwException ){
-			throw new \InvalidArgumentException( 'Given mail address is not valid' );
-		}
-		return 0;
+	public function evaluate( $address, $throwException = TRUE ): int
+	{
+		$result	= 0;
+		$modes	= array( self::MODE_FILTER, self::MODE_SIMPLE_REGEX, self::MODE_EXTENDED_REGEX );
+		foreach( $modes as $mode )
+			if( $this->isValidByMode( $address, $mode ) )
+				$result	|= $mode;
+		return $result;
 	}
 
 	/**
@@ -75,7 +119,25 @@ class Syntax{
 	 *	@param		string		$address		Mail address to validate
 	 *	@return		boolean
 	 */
-	static public function isValid( $address ){
+	public function isValid( $address ): bool
+	{
 		return self::check( $address, FALSE ) > 0;
+	}
+
+	public function isValidByMode( $address, $mode ): bool
+	{
+		if( $mode === self::MODE_FILTER )
+			return filter_var( $address, FILTER_VALIDATE_EMAIL );
+		if( $mode === self::MODE_SIMPLE_REGEX )
+			return preg_match( $this->regexSimple, $address );
+		if( $mode === self::MODE_EXTENDED_REGEX )
+			return preg_match( $this->regexExtended, $address );
+		throw new \InvalidArgumentException( 'Invalid mode given' );
+	}
+
+	public function setMode( int $mode ): self
+	{
+		$this->mode		= $mode;
+		return $this;
 	}
 }

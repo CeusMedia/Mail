@@ -36,8 +36,8 @@ namespace CeusMedia\Mail\Util\Dmarc;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Record{
-
+class Record
+{
 	const POLICY_UNKNOWN		= NULL;
 	const POLICY_NONE			= 'none';
 	const POLICY_QUARANTINE		= 'quarantine';
