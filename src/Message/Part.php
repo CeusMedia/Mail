@@ -85,7 +85,7 @@ abstract class Part{
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	static public function decodeContent( $content, $encoding ){
+	public static function decodeContent( $content, $encoding ){
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':

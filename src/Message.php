@@ -278,87 +278,6 @@ class Message
 	}
 
 	/**
-	 *	Alias for getInstance.
-	 *	@access		public
-	 *	@static
-	 *	@return		self
-	 *	@deprecated	use getInstance instead
-	 *	@todo		to be removed
-	 */
-	public static function create(): self
-	{
-		return static::getInstance();
-	}
-
-	/**
-	 *	Encodes a mail header value string if needed.
-	 *	@access		public
-	 *	@param		string		$string			A mail header value string, subject for example.
-	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
-	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if given encoding is not supported
-	 */
-	static public function encodeIfNeeded( string $string, ?string $encoding = "base64", ?bool $fold = TRUE ){
-		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
-			return $string;
-		switch( strtolower( $encoding ) ){
-			case 'base64':
-				return "=?UTF-8?B?".base64_encode( $string )."?=";
-			case 'quoted-printable':
-				$quotedString	= quoted_printable_encode( $string );
-				$quotedString	= str_replace( '='.Message::$delimiter, '', $quotedString );
-				if( !$fold )
-					return "=?UTF-8?Q?".$quotedString."?=";
-				$lines	= str_split( $quotedString, Message::$lineLength );
-				foreach( $lines as $nr => $string ){
-					$string	= str_replace( '?', '=3F', $string );
-					$string	= str_replace( ' ', '_', $string );
-					$lines[$nr]	= "=?UTF-8?Q?".$string."?=";
-				}
-				return join( Message::$delimiter."\t", $lines );
-			default:
-				throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
-		}
-	}
-
-	/**
-	 *	Encodes a mail header value string if needed.
-	 *	@access		public
-	 *	@param		string		$string			A mail header value string, subject for example.
-	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
-	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if given encoding is not supported
-	 */
-	static public function decodeIfNeeded( string $string, ?string $encoding = "base64" ): string
-	{
-		if( !preg_match( "/^=\?(\S+)\?(\S)\?(.+)\?=$/", $string ) )
-			return $string;
-		$matches	= array();
-		$list		= array();
-		preg_match_all( "/(=\?.+\?=)/U", $string, $matches );
-		foreach( $matches[1] as $string ){
-			$charset	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\1', $string );
-			$encoding	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\2', $string );
-			$content	= preg_replace( "/^=\?(\S+)\?(\S)\?(.+)\?=$/s", '\\3', $string );
-			switch( strtolower( $encoding ) ){
-				case 'b':
-					$list[]	= base64_decode( $content );
-					break;
-				case 'q':
-					$content	= str_replace( "_", " ", $content );
-					if( function_exists( 'imap_qprint' ) )
-						$list[]	= imap_qprint( $content );
-					else
-						$list[]	= quoted_printable_decode( $content );
-					break;
-				default:
-					throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
-			}
-		}
-		return join( $list );
-	}
-
-	/**
 	 *	Returns list set attachment parts.
 	 *	@access		public
 	 *	@param		boolean		$withInlineImages		Flag: list inline images, also
@@ -377,20 +296,6 @@ class Message
 				$list[]	= $part;
 		}
 		return $list;
-	}
-
-	/**
-	 *	Returns list set attachment parts.
-	 *  Alias for getAttachments.
-	 *	@access		public
-	 *	@param		boolean		$withInlineImages		Flag: list inline images, also
-	 *	@return		array
-	 *	@deprecated	use getAttachments instead
-	 *	@todo		remove in 2.1
-	 */
-	public function getFiles( ?bool $withInlineImages = TRUE ): array
-	{
-		return $this->getAttachments( $withInlineImages );
 	}
 
 	/**
@@ -413,7 +318,7 @@ class Message
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartHTML )
 				return $part;
-		return new MessagePartHtml( '' );
+		throw new \RangeDomain( 'No HTML part assigned' );
 	}
 
 	/**
@@ -436,7 +341,7 @@ class Message
 	 *	@static
 	 *	@return		self
 	 */
-	static public function getInstance(): self
+	public static function getInstance(): self
 	{
 		return new static;
 	}
@@ -479,18 +384,26 @@ class Message
 	}
 
 	/**
+	 *	Returns list of set recipient addresses grouped by type.
+	 *	@access		public
+	 *	@return		array
+	 */
+	public function getRecipients(): array
+	{
+		return $this->recipients;
+	}
+
+	/**
 	 *	Returns set recipient addresses.
 	 *	@access		public
-	 *	@return		array|AddressCollection
+	 *	@param		string		$type		One of {TO, CC, BCC}
+	 *	@return		AddressCollection
 	 */
-	public function getRecipients( ?string $type = NULL )
+	public function getRecipientsByType( string $type = 'TO' ): AddressCollection
 	{
-		if( $type ){
-			if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
-				throw new \DomainException( 'Type must be of to, cc or bcc' );
-			return $this->recipients[strtolower( $type )];
-		}
-		return $this->recipients;
+		if( in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
+			throw new \DomainException( 'Type must be of to, cc or bcc' );
+		return $this->recipients[strtolower( $type )];
 	}
 
 	/**
@@ -524,7 +437,7 @@ class Message
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartText )
 				return $part;
-		return new MessagePartText( '' );
+		throw new \RangeDomain( 'No text part assigned' );
 	}
 
 	/**
