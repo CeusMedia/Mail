@@ -35,7 +35,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$message->addText($text);
 
 		$parts	= $message->getParts();
-		$this->assertEquals( $parts[0], $part );
+		$this->assertEquals( $part, $parts[0] );
 	}
 
 	/**
@@ -48,7 +48,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$message->addHtml($html);
 
 		$parts	= $message->getParts();
-		$this->assertEquals( $parts[0], $part );
+		$this->assertEquals( $part, $parts[0] );
 	}
 
 	/**
@@ -61,7 +61,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 		$message->addHtmlImage('id', $fileName);
 
 		$parts	= $message->getParts( TRUE );
-		$this->assertEquals( $parts[0], $part );
+		$this->assertEquals( $part, $parts[0] );
 	}
 
 	/**
@@ -70,32 +70,28 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testGetAndSetSender(){
 		$message	= Message::getInstance();
-		$actual	= $message->setSender( "test@example.com" );
+		$actual		= $message->setSender( "test@example.com" );
 		$this->assertEquals( $message, $actual );
 
 		$expected	= new Address( "test@example.com" );
-		$actual	= $message->getSender();
-		$this->assertEquals( $expected, $actual );
+		$this->assertEquals( $expected, $message->getSender() );
 
 		$message	= Message::getInstance();
 		$message->setSender( new Address( "test@example.com" ) );
 		$expected	= new Address( "test@example.com" );
-		$actual	= $message->getSender();
-		$this->assertEquals( $expected, $actual );
+		$this->assertEquals( $expected, $message->getSender() );
 
 		$message	= Message::getInstance();
 		$message->setSender( "test@example.com", "Test Name" );
 		$expected	= new Address( "test@example.com" );
 		$expected->setName( "Test Name" );
-		$actual	= $message->getSender();
-		$this->assertEquals( $expected, $actual );
+		$this->assertEquals( $expected, $message->getSender() );
 
 		$message	= Message::getInstance();
 		$message->setSender( new Address( "test@example.com" ), "Test Name" );
 		$expected	= new Address( "test@example.com" );
 		$expected->setName( "Test Name" );
-		$actual	= $message->getSender();
-		$this->assertEquals( $expected, $actual );
+		$this->assertEquals( $expected, $message->getSender() );
 	}
 
 	/**
@@ -105,28 +101,9 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	public function testGetAndSetSubject(){
 		$subject	= "Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject";
 		$message	= Message::getInstance();
-		$actual	= $message->setSubject( $subject );
+		$actual		= $message->setSubject( $subject );
 		$this->assertEquals( $message, $actual );
-
 		$this->assertEquals( $subject, $message->getSubject() );
-
-		$message->addText( 'Test Text.' );
-
-
-		$subject	= "[Gruppenpost] Gruppe \"Deli_124\": Mike ist beigetreten und benötigt Freigabe";
-
-/*		$headers	= new \CeusMedia\Mail\Message\Header\Section();
-		$headers->addFieldPair( 'Subject', $subject );
-		var_export( $headers->getField( 'Subject' ) );
-		print( $headers->toString( TRUE ) );*/
-
-		$message->setSubject( $subject );
-		$message->setSender( 'kriss@ceusmedia.de' );
-		$message->addRecipient( 'test2@ceusmedia.de' );
-//		print( Renderer::render( $message ) );die;
-		$smtp	= new \CeusMedia\Mail\Transport\SMTP( 'mail.itflow.de', 25, 'kriss@ceusmedia.de', 'dialog');
-		$smtp->send( $message );
-
 	}
 
 	/**

@@ -18,85 +18,101 @@ use \CeusMedia\Mail\Address\Check\Syntax;
  */
 class Address_Check_SyntaxTest extends TestCase{
 
-	/**
-	 *	@covers		::check
-	 */
-	public function testCheckValidSimple(){
-		$expected	= 1;
-		$actual	= Syntax::check( "foo.bar@example.com" );
+	public function testEvaluate(){
+		$checker	= new Syntax();
+		$expected	= Syntax::MODE_FILTER | Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX;
+		$actual		= $checker->evaluate( "foo.bar@example.com" );
+		$this->assertEquals( $expected, $actual );
+
+		$expected	= Syntax::MODE_FILTER | Syntax::MODE_EXTENDED_REGEX;
+		$actual		= $checker->evaluate( "foo+bar!@example.com" );
+		$this->assertEquals( $expected, $actual );
+
+		$expected	= 0;
+		$actual		= $checker->evaluate( "foo.bar.@example.com" );
 		$this->assertEquals( $expected, $actual );
 	}
 
 	/**
 	 *	@covers		::check
 	 */
-	public function testCheckValidExtended(){
+/*	public function testCheckValidSimple(){
+		$checker	= new Syntax();
+		$expected	= Syntax::MODE_FILTER;
+		$actual		= $checker->check( "foo.bar@example.com" );
+		$this->assertEquals( $expected, $actual );
+	}*/
+
+	/**
+	 *	@covers		::check
+	 */
+/*	public function testCheckValidExtended(){
 		$expected	= 2;
-		$actual	= Syntax::check( "foo+bar!@example.com" );
+		$actual		= Syntax::check( "foo+bar!@example.com" );
 		$this->assertEquals( $expected, $actual );
-	}
+	}*/
 
 	/**
 	 *	@covers		::check
 	 */
-	public function testCheckInvalid(){
+/*	public function testCheckInvalid(){
 		$expected	= 0;
 
-		$actual	= Syntax::check( "foo.bar.@example.com", FALSE );
+		$actual		= Syntax::check( "foo.bar.@example.com", FALSE );
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Syntax::check( "@example.com", FALSE );
+		$actual		= Syntax::check( "@example.com", FALSE );
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Syntax::check( "test", FALSE );
+		$actual		= Syntax::check( "test", FALSE );
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Syntax::check( "_____@####.++", FALSE );
+		$actual		= Syntax::check( "_____@####.++", FALSE );
 		$this->assertEquals( $expected, $actual );
-	}
+	}*/
 
 	/**
 	 *	@covers		::check
 	 */
-	public function testCheckException(){
+/*	public function testCheckException(){
 		$this->expectException( "InvalidArgumentException" );
 		Syntax::check( "foo.bar.@example.com" );
-	}
+	}*/
 
 	/**
 	 *	@covers		::check
 	 */
-	public function testIsValidValidSimple(){
+/*	public function testIsValidValidSimple(){
 		$expected	= 1;
-		$actual	= Syntax::check( "foo.bar@example.com" );
+		$actual		= Syntax::check( "foo.bar@example.com" );
 		$this->assertEquals( $expected, $actual );
-	}
+	}*/
 
 	/**
 	 *	@covers		::check
 	 */
-	public function testIsValidValidExtended(){
+/*	public function testIsValidValidExtended(){
 		$expected	= 2;
-		$actual	= Syntax::check( "foo+bar!@example.com" );
+		$actual		= Syntax::check( "foo+bar!@example.com" );
 		$this->assertEquals( $expected, $actual );
-	}
+	}*/
 
 	/**
 	 *	@covers		::isValid
 	 */
-	public function testIsValidInvalid(){
+/*	public function testIsValidInvalid(){
 		$expected	= FALSE;
 
-		$actual	= Syntax::isValid( "foo.bar.@example.com" );
+		$actual		= Syntax::isValid( "foo.bar.@example.com" );
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Syntax::isValid( "@example.com" );
+		$actual		= Syntax::isValid( "@example.com" );
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Syntax::isValid( "test" );
+		$actual		= Syntax::isValid( "test" );
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Syntax::isValid( "_____@####.++" );
+		$actual		= Syntax::isValid( "_____@####.++" );
 		$this->assertEquals( $expected, $actual );
-	}
+	}*/
 }

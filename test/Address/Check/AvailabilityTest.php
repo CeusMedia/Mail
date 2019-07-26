@@ -32,16 +32,16 @@ class Address_Check_AvailabilityTest extends TestCase{
 		$configReceiver	= $this->requireReceiverConfig();
 
 		$sender			= new Address( $configSender->get( 'mailbox.address' ) );
-/*		if( $this->getAddressIP( $sender ) !== $this->getCurrentIP() )
-			$this->markTestSkipped( 'Sending server IP mismatches sender host.' );*/
+//		if( $this->getAddressIP( $sender ) !== $this->getCurrentIP() )
+//			$this->markTestSkipped( 'Sending server IP mismatches sender host.' );
 
 		$check			= new Availability( $sender, !TRUE );
 
 		$participant	= new Address( $configReceiver->get( 'mailbox.address' ) );
 
-//		$check->setVerbose( !TRUE );
+//		$check->setVerbose( TRUE );
 		$actual		= $check->test( $participant );
-		$this->assertTrue( $actual );
+		$this->assertTrue( $actual, $check->getLastError( 'message' ) );
 
 		$actual		= $check->getLastError();
 		$expected	= (object) array(
@@ -69,21 +69,21 @@ class Address_Check_AvailabilityTest extends TestCase{
 		$this->assertEquals( "250 2.1.5 Ok\r\n", $check->getLastResponse( 'response' ) );
 		$this->assertEquals( 'QUIT', $check->getLastResponse( 'request' ) );
 
-//		$check->setVerbose( !TRUE );
+//		$check->setVerbose( TRUE );
 		$participant	= new Address( '_not_existing@'.$participant->getDomain() );
 		$this->assertFalse( $check->test( $participant ) );
 		$this->assertEquals( Availability::ERROR_RECEIVER_NOT_ACCEPTED, $check->getLastError( 'error' ) );
 
-//		$check->setVerbose( !TRUE );
+//		$check->setVerbose( TRUE );
 		$participant	= new Address( '_not_existing@notexisting123456.org' );
 		$this->assertFalse( $check->test( $participant ) );
 		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastError( 'error' ) );
 
-//		$check->setVerbose( !TRUE );
+//		$check->setVerbose( TRUE );
 		$this->assertFalse( $check->test( '_not_existing@notexisting123456.org' ) );
 		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastError( 'error' ) );
 
-//		$check->setVerbose( !TRUE );
+//		$check->setVerbose( TRUE );
 		$this->assertFalse( $check->test( '_not_existing@_not_important', 'notexisting123456.org' ) );
 		$this->assertEquals( Availability::ERROR_SOCKET_FAILED, $check->getLastError( 'error' ) );
 	}

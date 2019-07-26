@@ -22,6 +22,8 @@ class Address_Collection_ParserTest extends TestCase
 {
 	/**
 	 *	@covers		::parse
+	 *	@covers		::parseUsingImap
+	 *	@covers		::parseUsingOwn
 	 */
 	public function testParse(){
 		$expected	= new AddressCollection( array(
@@ -38,6 +40,8 @@ class Address_Collection_ParserTest extends TestCase
 
 	/**
 	 *	@covers		::parse
+	 *	@covers		::parseUsingImap
+	 *	@covers		::parseUsingOwn
 	 */
 	public function testParseNameless(){
 		$expected	= new AddressCollection( array(
@@ -58,6 +62,8 @@ class Address_Collection_ParserTest extends TestCase
 
 	/**
 	 *	@covers		::parse
+	 *	@covers		::parseUsingImap
+	 *	@covers		::parseUsingOwn
 	 */
 	public function testParseWithName(){
 		$expected	= new AddressCollection( array(
@@ -72,6 +78,8 @@ class Address_Collection_ParserTest extends TestCase
 
 	/**
 	 *	@covers		::parse
+	 *	@covers		::parseUsingImap
+	 *	@covers		::parseUsingOwn
 	 */
 	public function testParseWithNameHavingComma(){
 		$expected	= new AddressCollection( array(
@@ -83,6 +91,8 @@ class Address_Collection_ParserTest extends TestCase
 
 	/**
 	 *	@covers		::parse
+	 *	@covers		::parseUsingImap
+	 *	@covers		::parseUsingOwn
 	 */
 	public function testParseWithNameHavingSymbols(){
 		$expected	= new AddressCollection( array(
