@@ -57,6 +57,12 @@ class Transport_SMTPTest extends TestCase
 
 	/**
 	 *	@covers		::send
+	 *	@covers		::sendChunk
+	 *	@covers		::checkResponse
+	 *	@covers		::setHost
+	 *	@covers		::setPort
+	 *	@covers		::setUsername
+	 *	@covers		::setPassword
 	 */
 	public function testSend(){
 		$configSender		= $this->requireSenderConfig();
