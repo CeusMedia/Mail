@@ -195,11 +195,8 @@ class Parser{
 			if( strtolower( $disposition->value ) === "attachment" ){
 				$part	= new MessagePartAttachment();
 				$part->setMimeType( $mimeType );
-				if( $encoding ){
+				if( $encoding )
 					$part->setEncoding( $encoding );
-					if( $encoding === "base64" )
-						$content	= base64_decode( $content );
-				}
 				$part->setContent( $content );
 				if( $format )
 					$part->setFormat( $format );

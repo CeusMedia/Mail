@@ -29,6 +29,7 @@ namespace CeusMedia\Mail;
 use \CeusMedia\Mail\Address\Parser as AddressParser;
 use \CeusMedia\Mail\Address\Renderer as AddressRenderer;
 use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
 /**
  *	Data object for mail participants, having an address and optionally a name.
@@ -230,7 +231,7 @@ class Address
 	 */
 	public function setName( $name ): self
 	{
-		$this->name		= Message::decodeIfNeeded( $name );
+		$this->name		= MessageHeaderEncoding::decodeIfNeeded( $name );
 		return $this;
 	}
 }
