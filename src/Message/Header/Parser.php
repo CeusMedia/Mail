@@ -1,8 +1,8 @@
 <?php
 /**
- *	Mail message header field data object.
+ *	Parser for mail headers.
  *
- *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2019 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2018 Christian Würker
+ *	@copyright		2007-2019 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -29,13 +29,12 @@ namespace CeusMedia\Mail\Message\Header;
 use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
-
 /**
- *	Mail message header field data object.
+ *	Parser for mail headers.
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2018 Christian Würker
+ *	@copyright		2007-2019 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3

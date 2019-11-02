@@ -20,7 +20,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2018 Christian Würker
+ *	@copyright		2007-2019 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -49,7 +49,7 @@ use \CeusMedia\Mail\Message;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2018 Christian Würker
+ *	@copyright		2007-2019 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
