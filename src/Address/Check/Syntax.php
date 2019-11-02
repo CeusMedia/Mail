@@ -48,6 +48,11 @@ class Syntax
 	protected $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
 	protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
 
+	/**
+	 *	Constructor. Sets mode if given.
+	 *	@access		public
+	 *	@param		integer		$mode		Optional: Mode to apply, see class constants
+	 */
 	public function __construct( ?int $mode = NULL )
 	{
 		if( $mode !== NULL )
@@ -59,7 +64,7 @@ class Syntax
 	 *	@access		public
 	 *	@param		string		$address		Mail address to validate
 	 *	@param		boolean		$throwException	Flag: throw exception if invalid, default: TRUE
-	 *	@return		array						0 - not valid | 1 - valid simple address | 2 - valid extended address
+	 *	@return		integer						Bitmask of successfully applied test modes
 	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
 	 */
 	public function check( string $address, ?bool $throwException = TRUE ): int
@@ -99,7 +104,7 @@ class Syntax
 	 *	@access		public
 	 *	@param		string		$address		Mail address to validate
 	 *	@param		boolean		$throwException	Flag: throw exception if invalid, default: TRUE
-	 *	@return		integer						0 - not valid | 2 - filter | 4 - valid simple address | 8 - valid extended address
+	 *	@return		integer						Bitmask of successfully applied test modes
 	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
 	 */
 	public function evaluate( string $address, ?bool $throwException = TRUE ): int
@@ -124,6 +129,9 @@ class Syntax
 		return self::check( $address, FALSE ) > 0;
 	}
 
+	/**
+	 *	@todo		implement MODE_AUTO and MODE_ALL
+	 */
 	public function isValidByMode( string $address, int $mode ): bool
 	{
 		if( $mode === self::MODE_FILTER )
@@ -135,6 +143,12 @@ class Syntax
 		throw new \InvalidArgumentException( 'Invalid mode given' );
 	}
 
+	/**
+	 *	Sets mode of test to apply to given address.
+	 *	@access		public
+	 *	@param		integer		$mode		Mode to apply, see class constants
+	 *	@return		self
+	 */
 	public function setMode( int $mode ): self
 	{
 		$this->mode		= $mode;

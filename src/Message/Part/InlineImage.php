@@ -146,6 +146,7 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
+	 *	@param		boolean		$headers		Flag: render part with headers
 	 *	@return		string
 	 */
 	public function render( $headers = NULL ): string

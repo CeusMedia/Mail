@@ -65,7 +65,7 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns set file name.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
 	public function getFileName()
 	{
@@ -75,7 +75,7 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns file size in bytes.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
 	public function getFileSize()
 	{
@@ -85,7 +85,7 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
 	public function getFileATime()
 	{
@@ -95,7 +95,7 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns file creation time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
 	public function getFileCTime()
 	{

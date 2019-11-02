@@ -48,6 +48,12 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  */
 class Parser
 {
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
 	public static function create(): self
 	{
 		return new self();

@@ -110,7 +110,7 @@ class Socket
 	 *	Sets cryptography mode.
 	 *	@access		public
 	 *	@param		boolean		$enable		Power switch
-	 *	@param		integer		$crypto		Cryptography mode
+	 *	@param		integer		$crypto		Cryptography mode, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 *	@throws		\RuntimeException		if connection is not open
 	 *	@return		self
 	 */

@@ -41,6 +41,12 @@ use \CeusMedia\Mail\Util\Dmarc\Record;
  */
 class Parser
 {
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
 	public static function create(): self
 	{
 		return new static();

@@ -56,6 +56,12 @@ class Parser
 
 	protected $method				= 0;
 
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
 	public static function create(): self
 	{
 		return new static();

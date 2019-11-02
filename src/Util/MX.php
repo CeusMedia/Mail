@@ -44,6 +44,11 @@ class MX
 
 	protected $useCache		= FALSE;
 
+	/**
+	 *	Constructor.
+	 *	@access		public
+	 *	@return		self
+	 */
 	public function __construct()
 	{
 	}

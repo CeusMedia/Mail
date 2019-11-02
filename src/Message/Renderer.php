@@ -48,6 +48,12 @@ class Renderer
 {
 	static public $encodingSubject	= 'quoted-printable';
 
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
 	public static function create(): self
 	{
 		return new self();
