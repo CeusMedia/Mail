@@ -412,7 +412,7 @@ class Message
 	 */
 	public function getRecipientsByType( string $type = 'TO' ): AddressCollection
 	{
-		if( in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
+		if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
 			throw new \DomainException( 'Type must be of to, cc or bcc' );
 		return $this->recipients[strtolower( $type )];
 	}
@@ -442,13 +442,14 @@ class Message
 	 *	Returns set or empty text part.
 	 *	@access		public
 	 *	@return		MessagePartText
+	 *	@throws		\RangeException		if no text part is available
 	 */
 	public function getText(): MessagePartText
 	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartText )
 				return $part;
-		throw new \RangeDomain( 'No text part assigned' );
+		throw new \RangeException( 'No text part assigned' );
 	}
 
 	/**

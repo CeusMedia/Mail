@@ -123,7 +123,6 @@ class Attachment extends MessagePart
 		if( !$headers )
 			$headers	= new MessageHeaderSection();
 
-
 		$disposition	= array(
 			'attachment',
 			'filename="'.$this->fileName.'"'
@@ -145,25 +144,6 @@ class Attachment extends MessagePart
 
 		$content	= static::encodeContent( $this->content, $this->encoding );
 		return $headers->toString( TRUE ).$delim.$delim.$content;
-	}
-
-	/**
-	 *	Sets attachment by content string.
-	 *	@access		public
-	 *	@param		string		$content		String containing file content
-	 *	@param		string		$mimeType		Optional: MIME type of file (will NOT be detected if not given)
-	 *	@param		string		$encoding		Optional: Encoding of file
-	 *	@return		object  	Self instance for chaining
-	 *	@todo   	use mime magic to detect MIME type
-	 *	@todo  		scan file for malware
-	 */
-	public function setContent( $content, $mimeType = NULL, $encoding = NULL ){
-		$this->content	= $content;
-		if( $mimeType )
-			$this->setMimeType( $mimeType );
-		if( $encoding )
-			$this->setEncoding( $encoding );
-		return $this;
 	}
 
 	/**

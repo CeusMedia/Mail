@@ -148,7 +148,7 @@ class SMTP
 			$sender		= $message->getSender();
 			$this->sendChunk( "MAIL FROM: <".$sender->getAddress().">" );
 			$this->checkResponse( array( 250 ) );
-			foreach( $message->getRecipients( 'to' ) as $receiver ){
+			foreach( $message->getRecipientsByType( 'TO' ) as $receiver ){
 				$this->sendChunk( "RCPT TO: <".$receiver->getAddress().">" );
 				$this->checkResponse( array( 250 ) );
 			}

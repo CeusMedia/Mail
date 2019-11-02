@@ -54,7 +54,7 @@ class Parser
 	const STATE_SCANNING_FOR_ADDRESS	= 3;
 	const STATE_READING_ADDRESS			= 4;
 
-	protected $method				= 0;
+	protected $method					= 0;
 
 	/**
 	 *	Static constructor.

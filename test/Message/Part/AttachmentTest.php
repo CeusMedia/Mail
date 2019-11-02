@@ -87,7 +87,9 @@ class Message_Part_AttachmentTest extends TestCase
 		$this->assertEquals( 'application/octet-stream', $part->getMimeType() );
 		$this->assertEquals( 'base64', $part->getEncoding() );
 
-		$part->setContent( $content, 'x-zip', 'binary' );
+		$part->setContent( $content );
+		$part->setMimeType( 'x-zip' );
+		$part->setEncoding( 'binary' );
 		$this->assertEquals( $content, $part->getContent() );
 		$this->assertEquals( 'x-zip', $part->getMimeType() );
 		$this->assertEquals( 'binary', $part->getEncoding() );
