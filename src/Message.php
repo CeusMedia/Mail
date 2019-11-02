@@ -93,6 +93,17 @@ class Message
 	}
 
 	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
+	public static function create(): self
+	{
+		return new static();
+	}
+
+	/**
 	 *	Add file as attachment part.
 	 *	@access		public
 	 *	@param		string		$filePath		Path of file to add

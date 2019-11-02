@@ -53,6 +53,17 @@ class MX
 	{
 	}
 
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
+	public static function create(): self
+	{
+		return new static();
+	}
+
 	public function fromAddress( $address, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		if( is_string( $address ) )
