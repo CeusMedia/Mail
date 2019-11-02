@@ -1,22 +1,31 @@
+[library]
+version							= "2.1"
+
+[phpunit.tests]
+Address.Check.Availability		= yes
+Transport.SMTP.sendAndReceive	= yes
+Transport.SMTP.hasAntivirus		= yes
 
 [phpunit.sender]
-
-server.host			= "mail.itflow.de"
-server.port			= "587"
-server.encryption	= "{{phpunit.sender.server.encryption}}"
-mailbox.name		= "X: Automated Testing"
-mailbox.address		= "x-automated-testing@ceusmedia.de"
-auth.mode			= "{{phpunit.sender.auth.mode}}"
-auth.username		= "x-automated-testing@ceusmedia.de"
-auth.password		= ""
+server.host						= "mail.itflow.de"
+server.port						= "587"
+mailbox.address					= "x-automated-testing@ceusmedia.de"
+mailbox.name					= "X: Automated Testing"
+auth.mode						= "{{phpunit.sender.auth.mode}}"
+auth.username					= "x-automated-testing@ceusmedia.de"
+auth.password					= ""
+security.encryption				= yes
+security.certificate			= yes
+security.antivirus				= yes
 
 [phpunit.receiver]
-
-server.host			= "mail.itflow.de"
-server.port			= "143"
-server.encryption	= "{{phpunit.receiver.server.encryption}}"
-mailbox.name		= "X: Automated Testing"
-mailbox.address		= "x-automated-testing@ceusmedia.de"
-auth.mode			= "{{phpunit.receiver.auth.mode}}"
-auth.username		= "x-automated-testing@ceusmedia.de"
-auth.password		= ""
+server.host						= "mail.itflow.de"
+server.port						= "143"
+mailbox.address					= "x-automated-testing@ceusmedia.de"
+mailbox.name					= "X: Automated Testing"
+auth.mode						= "{{phpunit.receiver.auth.mode}}"
+auth.username					= "x-automated-testing@ceusmedia.de"
+auth.password					= ""
+security.encryption				= yes
+security.certificate			= yes
+security.antivirus				= yes
