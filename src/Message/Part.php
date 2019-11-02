@@ -44,8 +44,8 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-abstract class Part{
-
+abstract class Part
+{
 	const TYPE_UNKNOWN			= 0;
 	const TYPE_TEXT				= 1;
 	const TYPE_MAIL				= 2;
@@ -85,7 +85,8 @@ abstract class Part{
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	public static function decodeContent( $content, $encoding ){
+	public static function decodeContent( $content, $encoding ): string
+	{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
@@ -118,7 +119,8 @@ abstract class Part{
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	static public function encodeContent( $content, $encoding, $split = TRUE ){
+	static public function encodeContent( $content, $encoding, $split = TRUE ): string
+	{
 		$delimiter	= Message::$delimiter;
 		$lineLength	= Message::$lineLength;
 		switch( strtolower( $encoding ) ){
@@ -148,34 +150,41 @@ abstract class Part{
 		return $content;
 	}
 
-	static function wrapContent( $content, $length = NULL, $delimiter = NULL ){
+	static function wrapContent( $content, $length = NULL, $delimiter = NULL ): string
+	{
 		$delimiter	= $delimiter ? $delimiter : Message::$delimiter;
 		$lineLength	= $length ? $length : Message::$lineLength;
 		$content	= chunk_split( $content, $lineLength, $delimiter );
 		return rtrim( $content, $delimiter );
 	}
 
-	public function getCharset(){
+	public function getCharset(): string
+	{
 		return $this->charset;
 	}
 
-	public function getContent(){
+	public function getContent(): string
+	{
 		return $this->content;
 	}
 
-	public function getEncoding(){
+	public function getEncoding(): string
+	{
 		return $this->encoding;
 	}
 
-	public function getFormat(){
+	public function getFormat(): string
+	{
 		return $this->format;
 	}
 
-	public function getMimeType(){
+	public function getMimeType(): string
+	{
 		return $this->mimeType;
 	}
 
-	protected function getMimeTypeFromFile( $fileName ){
+	protected function getMimeTypeFromFile( $fileName ): string
+	{
 		if( !file_exists( $fileName ) )
 			throw new \InvalidArgumentException( 'File "'.$fileName.'" is not existing' );
 		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
@@ -184,7 +193,8 @@ abstract class Part{
 		return $type;
 	}
 
-	public function getType(){
+	public function getType(): int
+	{
 		if( $this instanceof MessagePartText )
 			return static::TYPE_TEXT;
 		if( $this instanceof MessagePartMail )
@@ -198,31 +208,37 @@ abstract class Part{
 		return static::TYPE_UNKNOWN;
 	}
 
-	public function isAttachment(){
+	public function isAttachment(): bool
+	{
 		return $this->getType() === static::TYPE_ATTACHMENT;
 	}
 
-	public function isHTML(){
+	public function isHTML(): bool
+	{
 		return $this->getType() === static::TYPE_HTML;
 	}
 
-	public function isInlineImage(){
+	public function isInlineImage(): bool
+	{
 		return $this->getType() === static::TYPE_INLINE_IMAGE;
 	}
 
-	public function isMail(){
+	public function isMail(): bool
+	{
 		return $this->getType() === static::TYPE_MAIL;
 	}
 
-	public function isOfType( $type ){
+	public function isOfType( $type ): bool
+	{
 		return $this->getType() === $type;
 	}
 
-	public function isText(){
+	public function isText(): bool
+	{
 		return $this->getType() === static::TYPE_TEXT;
 	}
 
-	abstract public function render();
+	abstract public function render( $headers = NULL ): string;
 
 	/**
 	 *	Set character set.
@@ -230,7 +246,8 @@ abstract class Part{
 	 *	@param		string		$charset			Character set to set
 	 *	@return		self
 	 */
-	public function setCharset( $charset ){
+	public function setCharset( $charset ): self
+	{
 		$this->charset	= $charset;
 		return $this;
 	}
@@ -241,7 +258,8 @@ abstract class Part{
 	 *	@param		string		$content			Content to set
 	 *	@return		self
 	 */
-	public function setContent( $content ){
+	public function setContent( $content ): self
+	{
 		$this->content	= $content;
 		return $this;
 	}
@@ -253,7 +271,8 @@ abstract class Part{
 	 *	@return		self
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	public function setEncoding( $encoding ){
+	public function setEncoding( $encoding ): self
+	{
 		$encodings	= array( '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' );
 		if( !in_array( $encoding, $encodings ) )
 			throw new \InvalidArgumentException( 'Invalid encoding: '.$encoding );
@@ -268,7 +287,8 @@ abstract class Part{
 	 *	@return		self
 	 *	@throws		\InvalidArgumentException	if format is invalid
 	 */
-	public function setFormat( $format ){
+	public function setFormat( $format ): self
+	{
 		$formats	= array( 'fixed', 'flowed' );
 		if( !in_array( $format, $formats ) )
 			throw new \InvalidArgumentException( 'Invalid format' );
@@ -282,7 +302,8 @@ abstract class Part{
 	 *	@param		string		$mimeType			MIME type to set
 	 *	@return		self
 	 */
-	public function setMimeType( $mimeType ){
+	public function setMimeType( $mimeType ): self
+	{
 		$this->mimeType	= $mimeType;
 		return $this;
 	}

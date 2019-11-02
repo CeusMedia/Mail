@@ -177,7 +177,7 @@ class Message
 	 *	@deprecated	use addInlineImage instead
 	 *	@todo		remove in 2.1
 	 */
-	public function addHtmlImage( $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
+	public function addHtmlImage( string $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
 	{
 		return $this->addInlineImage( $id, $filePath, $mimeType, $encoding );
 	}
@@ -191,7 +191,7 @@ class Message
 	 *	@param		string		$encoding		Optional: Encoding to apply
 	 *	@return		self		Message object for chaining
 	 */
-	public function addInlineImage( $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
+	public function addInlineImage( string $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
 	{
 		$part	= new MessagePartInlineImage( $id, $filePath, $mimeType, $encoding );
 		return $this->addPart( $part );

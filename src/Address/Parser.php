@@ -28,8 +28,6 @@ namespace CeusMedia\Mail\Address;
 
 use \CeusMedia\Mail\Address;
 
-class Parser{
-
 /**
  *	Parser for mail addresses.
  *
@@ -41,6 +39,8 @@ class Parser{
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
  */
+class Parser
+{
 	/**	@var	array		$patterns		Map of understandable patterns (regular expressions) */
 	static protected $patterns	= array(												//  define name patterns
 		'name <local-part@domain>'	=> "/^(.*)\s(<((\S+)@(\S+))>)$/U",					//  full address: name and local-part at domain with (maybe in brackets)
@@ -54,7 +54,8 @@ class Parser{
 	 *	@static
 	 *	@return		self
 	 */
-	public static function create(){
+	public static function create(): self
+	{
 		return new static();
 	}
 
@@ -66,7 +67,8 @@ class Parser{
 	 *	@return		Address		Address object
 	 *	@throws		\InvalidArgumentException	if given string is not a valid mail address
 	 */
-	public function parse( $string ){
+	public function parse( string $string ): Address
+	{
 		$string		= stripslashes( trim( $string ) );
 		$string		= preg_replace( "/\r\n /", " ", $string );							//  unfold @see http://tools.ietf.org/html/rfc822#section-3.1
 		$regex1		= self::$patterns['name <local-part@domain>'];						//  get pattern of full address

@@ -41,7 +41,8 @@ use \CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://www.der-webdesigner.net/tutorials/php/anwendungen/329-php-und-oop-mailversand-via-smtp.html
  */
-class SMTP{
+class SMTP
+{
 	/**	@var		string		$host		SMTP server host name */
 	protected $host;
 	/**	@var		integer		$port		SMTP server port */
@@ -68,14 +69,16 @@ class SMTP{
 	 *	@param		string		$password	SMTP auth password
 	 *	@return		void
 	 */
-	public function __construct( $host, $port = 25, $username = NULL, $password = NULL ){
+	public function __construct( $host, $port = 25, $username = NULL, $password = NULL )
+	{
 		$this->setHost( $host );
 		$this->setPort( $port );
 		$this->setUsername( $username );
 		$this->setPassword( $password );
 	}
 
-	protected function checkResponse( $acceptedCodes = array() ){
+	protected function checkResponse( $acceptedCodes = array() )
+	{
 		$response	= $this->socket->readResponse( 1024 );
 		if( $this->verbose )
 			print ' < '.join( PHP_EOL."   ", $response->raw );
@@ -90,11 +93,13 @@ class SMTP{
 	 *	@access		public
 	 *	@return		null|string
 	 */
-	public function getConnectError(){
+	public function getConnectError()
+	{
 		return $this->socket->getError();
 	}
 
-	static public function getInstance( $host, $port = 25 ){
+	static public function getInstance( $host, $port = 25 )
+	{
 		return new self( $host, $port );
 	}
 
@@ -109,7 +114,8 @@ class SMTP{
 	 *	@throws		\RuntimeException		if sending mail failed
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function send( Message $message ){
+	public function send( Message $message )
+	{
 		if( !$this->socket )
 			$this->socket	= new SmtpSocket( $this->host, (int) $this->port );
 		$delim		= Message::$delimiter;
@@ -162,7 +168,8 @@ class SMTP{
 		return $this;
 	}
 
-	protected function sendChunk( $message ){
+	protected function sendChunk( $message )
+	{
 		if( $this->verbose )
 			print PHP_EOL . ' > '.$message . PHP_EOL;
 		return $this->socket->sendChunk( $message.Message::$delimiter );
@@ -176,7 +183,8 @@ class SMTP{
 	 *	@param		string		$password	SMTP password
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setAuth( $username, $password ){
+	public function setAuth( $username, $password ): self
+	{
 		$this->setUsername( $username );
 		$this->setPassword( $password );
 		return $this;
@@ -188,7 +196,8 @@ class SMTP{
 	 *	@param		string		$host		SMTP server host
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setHost( $host ){
+	public function setHost( $host ): self
+	{
 		if( $this->socket )
 			throw new \RuntimeException( 'Connection to SMTP server already established' );
 		if( !strlen( trim( $host ) ) )
@@ -203,7 +212,8 @@ class SMTP{
 	 *	@param		string		$password	SMTP password
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setPassword( $password ){
+	public function setPassword( $password ): self
+	{
 		$this->password	= $password;
 		return $this;
 	}
@@ -215,7 +225,8 @@ class SMTP{
 	 * 	@param		boolean		$detectSecure	Flag: set secure depending on port (default: yes)
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setPort( $port, $detectSecure = TRUE ){
+	public function setPort( $port, $detectSecure = TRUE ): self
+	{
 		if( $this->socket )
 			throw new \RuntimeException( 'Connection to SMTP server already established' );
 		$this->port		= (int) $port;
@@ -224,13 +235,16 @@ class SMTP{
 		return $this;
 	}
 
-	public function setSecure( $secure ){
+	public function setSecure( $secure ): self
+	{
 		$this->isSecure = (bool) $secure;
 		return $this;
 	}
 
-	public function setSocket( SmtpSocket $socket ){
+	public function setSocket( SmtpSocket $socket ): self
+	{
 		$this->socket	= $socket;
+		return $this;
 	}
 
 	/**
@@ -239,7 +253,8 @@ class SMTP{
 	 *	@param		string		$username	SMTP username
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setUsername( $username ){
+	public function setUsername( $username ): self
+	{
 		$this->username	= $username;
 		return $this;
 	}
@@ -250,7 +265,8 @@ class SMTP{
 	 *	@param		boolean		$verbose	Be verbose during transportation (default: FALSE)
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setVerbose( $verbose ){
+	public function setVerbose( $verbose ): self
+	{
 		$this->verbose = (bool) $verbose;
 		return $this;
 	}

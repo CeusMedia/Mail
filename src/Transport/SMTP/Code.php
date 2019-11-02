@@ -38,8 +38,8 @@ namespace CeusMedia\Mail\Transport\SMTP;
  *	@see			https://www.knownhost.com/wiki/email/troubleshooting/error-numbers
  *	@see			http://www.serversmtp.com/en/smtp-error
  */
-class Code{
-
+class Code
+{
 	static protected $codes	= array(
 		101		=> array(
 			'label'		=> 'Cannot open connection',
@@ -248,8 +248,8 @@ class Code{
 		)
 	);
 
-	static public function explain( $code ){
-		$code		= (int) $code;
+	static public function explain( int $code )
+	{
 		$explained	= FALSE;
 		$label		= 'Unknown STMP status code: '.$code;
 		$message	= 'Unknown STMP status code: '.$code;
@@ -270,7 +270,8 @@ class Code{
 		);
 	}
 
-	static public function getText( $code ){
+	static public function getText( int $code ): string
+	{
 		return self::explain( $code )->label;
 	}
 }

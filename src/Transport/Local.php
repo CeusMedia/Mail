@@ -38,14 +38,15 @@ use CeusMedia\Mail\Message\Renderer;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Local{
-
+class Local
+{
 	/**
 	 *	Constructor.
 	 *	@access		public
 	 *	@return		void
 	 */
-	public function __construct(){
+	public function __construct()
+	{
 	}
 
 	/**
@@ -55,7 +56,8 @@ class Local{
 	 *	@return		void
 	 *	@throws		\InvalidArgumentException
 	 */
-	protected function checkForInjection( $value ){
+	protected function checkForInjection( $value )
+	{
 		if( preg_match( '/(\r|\n)/', $value ) )
 			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
@@ -70,7 +72,8 @@ class Local{
 	 *	@throws		\InvalidArgumentException				if receiver is not set
 	 *	@throws		\InvalidArgumentException				if subject is not set
 	 */
-	public function send( \CeusMedia\Mail\Message $message, $parameters = array() ){
+	public function send( \CeusMedia\Mail\Message $message, $parameters = array() )
+	{
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipients( 'to' );
 		$subject	= $message->getSubject();
@@ -140,7 +143,8 @@ class Local{
 	 *	@param		array		$parameters	Additional mail parameters
 	 *	@return		void
 	 */
-	public static function sendMail( Message $message, $parameters = array() ){
+	public static function sendMail( Message $message, $parameters = array() )
+	{
 		$transport	= new static();
 		$transport->send( $message, $parameters );
 	}

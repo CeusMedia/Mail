@@ -46,13 +46,15 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			finish: parse mail headers too
  */
-class Parser{
-
-	public static function create(){
+class Parser
+{
+	public static function create(): self
+	{
 		return new self();
 	}
 
-	public function parse( $content ){
+	public function parse( $content )
+	{
 		$message	= new Message();
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 
@@ -86,7 +88,8 @@ class Parser{
 	}
 
 	/*  --  PROTECTED  --  */
-	protected function getCharsetFromContentType( $contentType ){
+	protected function getCharsetFromContentType( $contentType )
+	{
 		$parts	= explode( ";", $contentType );
 		foreach( $parts as $part ){
 			$pair	= explode( "=", trim( $part ) );
@@ -96,12 +99,14 @@ class Parser{
 		return NULL;
 	}
 
-	protected function getMimeFromContentType( $contentType ){
+	protected function getMimeFromContentType( $contentType )
+	{
 		$parts	= explode( ";", $contentType );
 		return trim( $parts[0] );
 	}
 
-	protected function parseMultipartBody( $message, $content ){
+	protected function parseMultipartBody( $message, $content )
+	{
 		$delim		= Message::$delimiter;
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
@@ -135,7 +140,8 @@ class Parser{
 		}
 	}
 
-	protected function parseAttributedHeaderValue( $string ){
+	protected function parseAttributedHeaderValue( $string )
+	{
 		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
 		$parts	= preg_split( '/\s*;\s*/', $string );
 		$value	= array_shift( $parts );
@@ -163,7 +169,8 @@ class Parser{
 		);
 	}
 
-	protected function parseAtomicBodyPart( $content ){
+	protected function parseAtomicBodyPart( $content )
+	{
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
 		$content	= $parts[1];

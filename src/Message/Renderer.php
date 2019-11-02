@@ -44,18 +44,20 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Renderer{
-
+class Renderer
+{
 	static public $encodingSubject	= 'quoted-printable';
 
-	public static function create(){
+	public static function create(): self
+	{
 		return new self();
 	}
 
 	/**
 	 *	@see		https://stackoverflow.com/questions/40389103/create-html-mail-with-inline-image-and-pdf-attachment/40420648#40420648
 	 */
-	static public function render( Message $message ){
+	static public function render( Message $message ): string
+	{
 		if( !count( $message->getParts( TRUE ) ) )
 			throw new \RuntimeException( "No content part set" );
 		if( !strlen( trim( $message->getSubject() ) ) )

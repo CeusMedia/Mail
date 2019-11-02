@@ -39,9 +39,10 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class HTML extends MessagePartText{
-
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' ){
+class HTML extends MessagePartText
+{
+	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' )
+	{
 		parent::__construct( $content, $charset, $encoding );
 		$this->setMimeType( 'text/html' );
 	}

@@ -136,7 +136,7 @@ class Mailbox
 		return $this->error;
 	}
 
-	public function getMail( $mailId, ?bool $strict = TRUE ): string
+	public function getMail( string $mailId, ?bool $strict = TRUE ): string
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
@@ -146,7 +146,7 @@ class Mailbox
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
-	public function getMailAsMessage( $mailId, ?bool $strict = TRUE ): Message
+	public function getMailAsMessage( string $mailId, ?bool $strict = TRUE ): Message
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
@@ -156,7 +156,7 @@ class Mailbox
 		return (object) MessageParser::parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
-	public function getMailHeaders( $mailId, ?bool $strict = TRUE ): MessageHeaderSection
+	public function getMailHeaders( string $mailId, ?bool $strict = TRUE ): MessageHeaderSection
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
@@ -179,7 +179,7 @@ class Mailbox
 	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setAuth( $username, $password ): self
+	public function setAuth( string $username, string $password ): self
 	{
 		$this->username	= $username;
 		$this->password	= $password;
@@ -192,7 +192,7 @@ class Mailbox
 	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setHost( $host ): self
+	public function setHost( string $host ): self
 	{
 		$this->host	= $host;
 		return $this;
@@ -204,7 +204,7 @@ class Mailbox
 	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setMailFlag( $mailId, string $flag ): self
+	public function setMailFlag( string $mailId, string $flag ): self
 	{
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
 		if( !in_array( strtolower( $flag ), $flags ) )
@@ -253,7 +253,7 @@ class Mailbox
 	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function unsetMailFlag( $mailId, string $flag ): self
+	public function unsetMailFlag( string $mailId, string $flag ): self
 	{
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
 		if( !in_array( strtolower( $flag ), $flags ) )
@@ -263,7 +263,7 @@ class Mailbox
 		return $this;
 	}
 
-	public function removeMail( $mailId, ?bool $expunge = FALSE ): bool
+	public function removeMail( string $mailId, ?bool $expunge = FALSE ): bool
 	{
 		$this->checkConnection( TRUE );
 		$result	= imap_delete( $this->connection, $mailId, FT_UID );

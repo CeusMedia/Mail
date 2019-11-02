@@ -1,9 +1,10 @@
 <?php
 namespace CeusMedia\Mail\Address;
 
-class Name{
-
-	static public function splitNameParts( $list ){
+class Name
+{
+	static public function splitNameParts( array $list ): array
+	{
 		foreach( $list as $nr => $entry ){
 			if( preg_match( "/ +/", $entry['fullname'] ) ){
 				$parts	= preg_split( "/ +/", $entry['fullname'] );
@@ -14,7 +15,8 @@ class Name{
 		return $list;
 	}
 
-	static public function swapCommaSeparatedNameParts( $list ){
+	static public function swapCommaSeparatedNameParts( array $list ): array
+	{
 		foreach( $list as $nr => $entry ){
 			if( preg_match( "/, +/", $entry['fullname'] ) ){
 				$parts	= preg_split( "/, +/", $entry['fullname'], 2 );

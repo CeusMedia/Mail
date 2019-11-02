@@ -41,9 +41,10 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Mail extends MessagePart{
-
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' ){
+class Mail extends MessagePart
+{
+	public function __construct( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' )
+	{
 		$this->setContent( $content );
 		$this->setMimeType( 'text/plain' );
 		$this->setCharset( $charset );
@@ -56,7 +57,8 @@ class Mail extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function render( $headers = NULL ){
+	public function render( $headers = NULL ): string
+	{
 		$delim	= Message::$delimiter;
 		if( !$headers )
 			$headers	= new MessageHeaderSection();

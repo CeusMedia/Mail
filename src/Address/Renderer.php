@@ -28,8 +28,6 @@ namespace CeusMedia\Mail\Address;
 
 use \CeusMedia\Mail\Address;
 
-class Renderer{
-
 /**
  *	Renderer for mail addresses.
  *
@@ -41,13 +39,16 @@ class Renderer{
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
  */
+class Renderer
+{
 	/**
 	 *	Static constructor.
 	 *	@access		public
 	 *	@static
 	 *	@return		self
 	 */
-	public static function create(){
+	public static function create(): self
+	{
 		return new static();
 	}
 
@@ -60,7 +61,8 @@ class Renderer{
 	 *	@throws		\RuntimeException			If domain is empty
 	 *	@throws		\RuntimeException			If local part is empty
 	 */
-	public function render( Address $address ){
+	public function render( Address $address ): string
+	{
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
 		$name		= $address->getName();

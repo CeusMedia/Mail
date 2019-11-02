@@ -48,7 +48,7 @@ class Syntax
 	protected $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
 	protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
 
-	public function __construct( $mode = NULL )
+	public function __construct( ?int $mode = NULL )
 	{
 		if( $mode !== NULL )
 			$this->setMode( $mode );
@@ -62,7 +62,7 @@ class Syntax
 	 *	@return		array						0 - not valid | 1 - valid simple address | 2 - valid extended address
 	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
 	 */
-	public function check( $address, ?bool $throwException = TRUE ): array
+	public function check( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result		= 0;
 		$wildcard	= $this->mode & self::MODE_ALL;
@@ -102,7 +102,7 @@ class Syntax
 	 *	@return		integer						0 - not valid | 2 - filter | 4 - valid simple address | 8 - valid extended address
 	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
 	 */
-	public function evaluate( $address, $throwException = TRUE ): int
+	public function evaluate( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result	= 0;
 		$modes	= array( self::MODE_FILTER, self::MODE_SIMPLE_REGEX, self::MODE_EXTENDED_REGEX );
@@ -119,12 +119,12 @@ class Syntax
 	 *	@param		string		$address		Mail address to validate
 	 *	@return		boolean
 	 */
-	public function isValid( $address ): bool
+	public function isValid( string $address ): bool
 	{
 		return self::check( $address, FALSE ) > 0;
 	}
 
-	public function isValidByMode( $address, $mode ): bool
+	public function isValidByMode( string $address, int $mode ): bool
 	{
 		if( $mode === self::MODE_FILTER )
 			return filter_var( $address, FILTER_VALIDATE_EMAIL );

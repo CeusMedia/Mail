@@ -38,11 +38,12 @@ use \CeusMedia\Mail\Address\Collection as AddressCollection;
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Renderer{
-
+class Renderer
+{
 	protected $delimiter		= ', ';
 
-	public static function create(){
+	public static function create(): self
+	{
 		return new static();
 	}
 
@@ -51,11 +52,13 @@ class Renderer{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getDelimiter(){
+	public function getDelimiter(): string
+	{
 		return $this->delimiter;
 	}
 
-	public function render( AddressCollection $collection ){
+	public function render( AddressCollection $collection ): string
+	{
 		$list	= array();
 		foreach( $collection->getAll() as $address ){
 			$list[]	= $address->get();
@@ -70,7 +73,8 @@ class Renderer{
 	 *	@return		self
 	 *	@throws		\InvalidArgumentException	if delimiter is whitespace or empty
 	 */
-	public function setDelimiter( $delimiter ){
+	public function setDelimiter( string $delimiter ): self
+	{
 		if( !strlen( trim( $delimiter ) ) )
 			throw new \InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$this->delimiter	= $delimiter;

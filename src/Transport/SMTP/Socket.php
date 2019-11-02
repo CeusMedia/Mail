@@ -38,8 +38,8 @@ namespace CeusMedia\Mail\Transport\SMTP;
  *	@see			https://www.knownhost.com/wiki/email/troubleshooting/error-numbers
  *	@see			http://www.serversmtp.com/en/smtp-error
  */
-class Socket{
-
+class Socket
+{
 	protected $host;
 
 	protected $port;
@@ -61,7 +61,8 @@ class Socket{
 	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
 	 *	@return		void
 	 */
-	public function __construct( $host = NULL, $port = NULL, $timeout = NULL ){
+	public function __construct( ?string $host = NULL, ?int $port = NULL, $timeout = NULL )
+	{
 		if( !is_null( $host ) && strlen( trim( $host ) ) )
 			$this->setHost( $host );
 		if( is_integer( $port ) )
@@ -70,7 +71,8 @@ class Socket{
 			$this->setPort( abs( $timeout ) );
 	}
 
-	public function __destruct(){
+	public function __destruct()
+	{
 		$this->close();
 	}
 
@@ -85,7 +87,8 @@ class Socket{
 	 *	@deprecated	use getInstance instead
 	 *	@todo		to be removed
 	 */
-	public static function create( $host = NULL, $port = NULL, $timeout = NULL ){
+	public static function create( ?string $host = NULL, ?int $port = NULL, ?int $timeout = NULL ): self
+	{
 		return static::getInstance( $host, $port, $timeout );
 	}
 
@@ -94,7 +97,8 @@ class Socket{
 	 *	@access		public
 	 *	@return		self
 	 */
-	public function close(){
+	public function close(): self
+	{
 		if( $this->connection ){
 			fclose( $this->connection );
 			$this->connection	= NULL;
@@ -110,7 +114,8 @@ class Socket{
 	 *	@throws		\RuntimeException		if connection is not open
 	 *	@return		self
 	 */
-	public function enableCrypto( $enable, $crypto ){
+	public function enableCrypto( bool $enable, ?int $crypto = NULL ): self
+	{
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
 		stream_socket_enable_crypto( $this->connection, $enable, $crypto );
@@ -122,7 +127,8 @@ class Socket{
 	 *	@access		public
 	 *	@return		array
 	 */
-	public function getError(){
+	public function getError(): array
+	{
 		return array(
 			'number'	=> $this->errorNumber,
 			'message'	=> $this->errorMessage,
@@ -133,7 +139,8 @@ class Socket{
 	 *	Returns last error message.
 	 *	@return		string
 	 */
-	public function getErrorMessage(){
+	public function getErrorMessage(): string
+	{
 		return $this->errorMessage;
 	}
 
@@ -141,7 +148,8 @@ class Socket{
 	 *	Returns last error number.
 	 *	@return		integer
 	 */
-	public function getErrorNumber(){
+	public function getErrorNumber(): int
+	{
 		return $this->errorNumber;
 	}
 
@@ -150,7 +158,8 @@ class Socket{
 	 *	@access		public
 	 *	@return		null|string
 	 */
-	public function getHost(){
+	public function getHost()
+	{
 		return $this->host;
 	}
 
@@ -163,7 +172,8 @@ class Socket{
 	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
 	 *	@return		self
 	 */
-	public static function getInstance( $host = NULL, $port = NULL, $timeout = NULL ){
+	public static function getInstance( ?string $host = NULL, ?int $port = NULL, ?int $timeout = NULL )
+	{
 		return new self( $host, $port, $timeout );
 	}
 
@@ -172,7 +182,8 @@ class Socket{
 	 *	@access		public
 	 *	@return		null|integer
 	 */
-	public function getPort(){
+	public function getPort()
+	{
 		return $this->port;
 	}
 
@@ -181,7 +192,8 @@ class Socket{
 	 *	@access		public
 	 *	@return		integer
 	 */
-	public function getTimeout(){
+	public function getTimeout(): int
+	{
 		return $this->timeout;
 	}
 
@@ -194,7 +206,8 @@ class Socket{
 	 *	@throws		\RuntimeException			if connection failed
 	 *	@return		self
 	 */
-	public function open( $forceReopen = FALSE ){
+	public function open( ?bool $forceReopen = FALSE ): self
+	{
 		if( $this->connection ){
 			if( $forceReopen )
 				$this->close();
@@ -225,7 +238,8 @@ class Socket{
 	 *	@throws		\RuntimeException			if request failed
 	 *	@return		object
 	 */
-	public function readResponse( $length ){
+	public function readResponse( int $length )
+	{
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
 
@@ -258,7 +272,8 @@ class Socket{
 	 *	@param		string		$host		SMTP server host name
 	 *	@return		self
 	 */
-	public function setHost( $host ){
+	public function setHost( string $host ): self
+	{
 		$this->host	= $host;
 		return $this;
 	}
@@ -269,7 +284,8 @@ class Socket{
 	 *	@param		integer		$port		SMTP server port
 	 *	@return		self
 	 */
-	public function setPort( $port ){
+	public function setPort( int $port ): self
+	{
 		$this->port	= $port;
 		return $this;
 	}
@@ -280,7 +296,8 @@ class Socket{
 	 *	@param		integer		$seconds	Timeout (in seconds) on opening connection
 	 *	@return		self
 	 */
-	public function setTimeout( $seconds ){
+	public function setTimeout( int $seconds ): self
+	{
 		$this->timeout	= $seconds;
 		return $this;
 	}
@@ -292,7 +309,8 @@ class Socket{
 	 *	@return		integer		Number of written bytes
 	 *	@throws		\RuntimeException		if connection is not open
 	 */
-	public function sendChunk( $content ){
+	public function sendChunk( string $content ): int
+	{
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
 		return fwrite( $this->connection, $content );

@@ -68,7 +68,7 @@ class Address
 	 *	@param		string		$string		Full mail address to parse, optional
 	 *	@return		void
 	 */
-	public function __construct( $string = NULL )
+	public function __construct( ?string $string = NULL )
 	{
 		if( $string ){
 			$this->set( $string );
@@ -91,7 +91,7 @@ class Address
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 */
-	public static function create( $string = NULL ): self
+	public static function create( ?string $string = NULL ): self
 	{
 		return new static( $string );
 	}
@@ -112,7 +112,7 @@ class Address
 	 *	@param		boolean		$strict		Flag: throw exception if no local part set
 	 *	@return		string		Short mail address (without name or brackets)
 	 */
-	public function getAddress( $strict = TRUE ): string
+	public function getAddress( ?bool $strict = TRUE ): string
 	{
 		return $this->getLocalPart( $strict )."@".$this->getDomain( $strict );
 	}
@@ -124,7 +124,7 @@ class Address
 	 *	@return		string		Domain of mail participant
 	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
-	public function getDomain( $strict = TRUE ): string
+	public function getDomain( ?bool $strict = TRUE ): string
 	{
 		if( !$this->domain && $strict )
 			throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
@@ -137,7 +137,7 @@ class Address
 	 *	@param		string		$string		Full mail address to parse, optional
 	 *	@return		self
 	 */
-	public static function getInstance( $string = NULL ): self
+	public static function getInstance( ?string $string = NULL ): self
 	{
 		return new static( $string );
 	}
@@ -149,7 +149,7 @@ class Address
 	 *	@return		string		Local part of mail participant
 	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
-	public function getLocalPart( $strict = TRUE ): string
+	public function getLocalPart( ?bool $strict = TRUE ): string
 	{
 		if( !$this->localPart && $strict )
 			throw new \RuntimeException( 'No valid address set, yet (local part missing)' );
@@ -174,8 +174,9 @@ class Address
 	 *	@return		string
 	 *	@throws		\RuntimeException		If domain is empty
 	 *	@throws		\RuntimeException		If local part is empty
+	 *	@todo		Check behaviour: render methods always return member data, why with argument here?
 	 */
-	public function render( $address ): string
+	public function render( Address $address ): string
 	{
 		return AddressRenderer::create()->render( $address );
 	}
@@ -187,7 +188,7 @@ class Address
 	 *	@return		self		Own instance for chainability
 	 *	@throws		\InvalidArgumentException	if given string is empty
 	 */
-	public function set( $string ): self
+	public function set( string $string ): self
 	{
 		if( !strlen( trim( $string ) ) )
 			throw new \InvalidArgumentException( 'No address given' );
@@ -205,7 +206,7 @@ class Address
 	 *	@param		string		$domain			Domain of mail participant.
 	 *	@return		self		Own instance for chainability
 	 */
-	public function setDomain( $domain ): self
+	public function setDomain( string $domain ): self
 	{
 		$this->domain	= $domain;
 		return $this;
@@ -217,7 +218,7 @@ class Address
 	 *	@param		string		$localPart		Local part of of mail participant
 	 *	@return		self		Own instance for chainability
 	 */
-	public function setLocalPart( $localPart ): self
+	public function setLocalPart( string $localPart ): self
 	{
 		$this->localPart	= $localPart;
 		return $this;
@@ -229,7 +230,7 @@ class Address
 	 *	@param		string		$name			Name of mail participant
 	 *	@return		self		Own instance for chainability
 	 */
-	public function setName( $name ): self
+	public function setName( string $name ): self
 	{
 		$this->name		= MessageHeaderEncoding::decodeIfNeeded( $name );
 		return $this;

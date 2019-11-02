@@ -42,7 +42,7 @@ use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
  */
 class Parser
 {
-	public static function create()
+	public static function create(): self
 	{
 		return new static();
 	}

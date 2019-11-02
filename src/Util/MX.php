@@ -44,16 +44,20 @@ class MX
 
 	protected $useCache		= FALSE;
 
-	public function __construct(){}
+	public function __construct()
+	{
+	}
 
-	public function fromAddress( $address, $useCache = TRUE, $strict = TRUE ){
+	public function fromAddress( $address, bool $useCache = TRUE, bool $strict = TRUE ): array
+	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
 		$hostname	= $address->getDomain();
 		return $this->fromHostname( $address->getDomain(), $useCache, $strict );
 	}
 
-	public function fromHostname( $hostname, $useCache = TRUE, $strict = TRUE ){
+	public function fromHostname( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
+	{
 		$useCache	= $useCache && $this->useCache;
 		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
 			return $this->cache->get( 'mx:'.$hostname );
@@ -69,14 +73,17 @@ class MX
 		return $servers;
 	}
 
-	public function setCache( $cache ){
+	public function setCache( $cache ): self
+	{
 		$this->useCache		= (bool) $cache;
 		$this->cache		= $cache;
+		return $this;
 	}
 }
 
 // support windows platforms
-if( !function_exists( 'getmxrr' ) ){
+if( !function_exists( 'getmxrr' ) )
+{
 	function getmxrr( $hostname, &$mxhosts, &$mxweight ){
 		if( !is_array( $mxhosts ) ){
 			$mxhosts	= array();

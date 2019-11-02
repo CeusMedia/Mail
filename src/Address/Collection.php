@@ -29,8 +29,6 @@ namespace CeusMedia\Mail\Address;
 use \CeusMedia\Mail\Address;
 use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
 
-class Collection implements \Countable, \Iterator{
-
 /**
  *	Collection of mail addresses.
  *
@@ -41,21 +39,27 @@ class Collection implements \Countable, \Iterator{
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
+class Collection implements \Countable, \Iterator
+{
 	protected $list		= array();
 	protected $position	= 0;
 
-	public function __construct( $addresses = array() ){
+	public function __construct( ?array $addresses = array() )
+	{
 		if( $addresses )
 			foreach( $addresses as $address )
 				$this->add( $address );
 	}
 
-	public function __toString(){
+	public function __toString(): string
+	{
 		return $this->render();
 	}
 
-	public function add( Address $address ){
+	public function add( Address $address ): self
+	{
 		$this->list[]	= $address;
+		return $this;
 	}
 
 	/**
@@ -63,7 +67,7 @@ class Collection implements \Countable, \Iterator{
 	 *	@access		public
 	 *	@return		integer
 	 */
-	public function count()
+	public function count(): int
 	{
 		return count( $this->list );
 	}
@@ -81,7 +85,8 @@ class Collection implements \Countable, \Iterator{
 		return $this->list[$this->position];
 	}
 
-	public function getAll(){
+	public function getAll(): array
+	{
 		return $this->list;
 	}
 
@@ -105,7 +110,8 @@ class Collection implements \Countable, \Iterator{
 		$this->position++;
 	}
 
-	public function render(){
+	public function render(): string
+	{
 		return AddressCollectionRenderer::create()->render( $this );
 	}
 
@@ -119,7 +125,8 @@ class Collection implements \Countable, \Iterator{
 		$this->position	= 0;
 	}
 
-	public function toArray( $renderValues = FALSE ){
+	public function toArray( ?bool $renderValues = FALSE ): array
+	{
 		$list	= $this->list;
 		if( $renderValues ){
 			$list	= array();
@@ -134,7 +141,7 @@ class Collection implements \Countable, \Iterator{
 	 *	@access		public
 	 *	@return		boolean
 	 */
-	public function valid()
+	public function valid(): bool
 	{
 		return $this->position < $this->count();
 	}

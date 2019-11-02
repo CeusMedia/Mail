@@ -209,15 +209,19 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 
 	public function __construct(){}
 
-	public function close(){
+	public function close(): \CeusMedia\Mail\Transport\SMTP\Socket
+	{
 		$this->connection	= FALSE;
+		return $this;
 	}
 
-	public function enableCrypto( $enable, $crypto ){
-		return TRUE;
+	public function enableCrypto( bool $enable, ?int $crypto = NULL ): \CeusMedia\Mail\Transport\SMTP\Socket
+	{
+		return $this;
 	}
 
-	protected function getFakeAnswer(){
+	protected function getFakeAnswer()
+	{
 		if( count( $this->nextResponses ) > 0 )
 			return array_shift( $this->nextResponses );
 		$last	= trim( $this->lastChunk );
@@ -238,15 +242,19 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 		return [0, "Unmocked request"];
 	}
 
-	public function getLog(){
+	public function getLog()
+	{
 		return $this->log;
 	}
 
-	public function open( $forceReopen = FALSE ){
+	public function open( ?bool $forceReopen = FALSE ): \CeusMedia\Mail\Transport\SMTP\Socket
+	{
 		$this->connection	= TRUE;
+		return $this;
 	}
 
-	public function readResponse( $length ){
+	public function readResponse( int $length )
+	{
 		$response	= $this->getFakeAnswer();
 		$raw		= $response[0].' '.$response[1];
 //		print( PHP_EOL.' < '. $raw );
@@ -258,7 +266,8 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 		);
 	}
 
-	public function sendChunk( $message ){
+	public function sendChunk( string $message ): int
+	{
 		$this->lastChunk	= $message;
 //		print( PHP_EOL.' > '.$message );
 		$this->log[]	= trim( ' > '. $message );

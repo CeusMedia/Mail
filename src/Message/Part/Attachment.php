@@ -41,8 +41,8 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Attachment extends MessagePart{
-
+class Attachment extends MessagePart
+{
 	protected $content;
 	protected $fileName;
 	protected $fileATime		= NULL;
@@ -55,7 +55,8 @@ class Attachment extends MessagePart{
 	 *	@access		public
 	 *	@return		void
 	 */
-	public function __construct(){
+	public function __construct()
+	{
 		$this->setFormat( 'fixed' );
 		$this->setEncoding( 'base64' );
 		$this->setMimeType( 'application/octet-stream' );
@@ -66,7 +67,8 @@ class Attachment extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getFileName(){
+	public function getFileName()
+	{
 		return $this->fileName;
 	}
 
@@ -75,7 +77,8 @@ class Attachment extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getFileSize(){
+	public function getFileSize()
+	{
 		return $this->fileSize;
 	}
 
@@ -84,7 +87,8 @@ class Attachment extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getFileATime(){
+	public function getFileATime()
+	{
 		return $this->fileATime;
 	}
 
@@ -93,25 +97,29 @@ class Attachment extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getFileCTime(){
+	public function getFileCTime()
+	{
 		return $this->fileCTime;
 	}
 
 	/**
 	 *	Returns last modification time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
-	public function getFileMTime(){
+	public function getFileMTime()
+	{
 		return $this->fileMTime;
 	}
 
 	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
+	 *	@param		boolean		$headers		Flag: render part with headers
 	 *	@return		string
 	 */
-	public function render( $headers = NULL ){
+	public function render( $headers = NULL ): string
+	{
 		if( !$headers )
 			$headers	= new MessageHeaderSection();
 
@@ -170,7 +178,8 @@ class Attachment extends MessagePart{
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
-	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ){
+	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ): self
+	{
 		if( !file_exists( $filePath ) )
 			throw new \InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
 		$this->content	= file_get_contents( $filePath );
@@ -191,7 +200,8 @@ class Attachment extends MessagePart{
 	 *	@param		string   	$fileName	File name.
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileName( $fileName ){
+	public function setFileName( $fileName ): self
+	{
 		$this->fileName		= basename( $fileName );
 		return $this;
 	}
@@ -202,7 +212,8 @@ class Attachment extends MessagePart{
 	 *	@param		integer   	$fileSize		File size in bytes.
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileSize( $fileSize ){
+	public function setFileSize( $fileSize ): self
+	{
 		$this->fileSize		= $fileSize;
 		return $this;
 	}
@@ -213,7 +224,8 @@ class Attachment extends MessagePart{
 	 *	@param		integer   	$timestamp		Timestamp of latest access.
 	 *	@return		self	  	Self instance for chaining
 	 */
-	public function setFileATime( $timestamp ){
+	public function setFileATime( $timestamp ): self
+	{
 		$this->fileATime	= $timestamp;
 		return $this;
 	}
@@ -224,7 +236,8 @@ class Attachment extends MessagePart{
 	 *	@param		integer   	$timestamp		Timestamp of creation.
 	 *	@return		object  	Self instance for chaining
 	 */
-	public function setFileCTime( $timestamp ){
+	public function setFileCTime( $timestamp ): self
+	{
 		$this->fileCTime	= $timestamp;
 		return $this;
 	}
@@ -235,7 +248,8 @@ class Attachment extends MessagePart{
 	 *	@param		integer   	$timestamp		Timestamp of last modification.
 	 *	@return		object  	Self instance for chaining
 	 */
-	public function setFileMTime( $timestamp ){
+	public function setFileMTime( $timestamp ): self
+	{
 		$this->fileMTime	= $timestamp;
 		return $this;
 	}

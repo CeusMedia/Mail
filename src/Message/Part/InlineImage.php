@@ -41,8 +41,8 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class InlineImage extends MessagePart{
-
+class InlineImage extends MessagePart
+{
 	protected $content;
 	protected $fileName;
 	protected $fileATime		= NULL;
@@ -64,7 +64,8 @@ class InlineImage extends MessagePart{
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
-	public function __construct( $id, $fileName, $mimeType = NULL, $encoding = NULL ){
+	public function __construct( $id, $fileName, $mimeType = NULL, $encoding = NULL )
+	{
 		if( !file_exists( $fileName ) )
 			throw new \InvalidArgumentException( 'Attachment file "'.$fileName.'" is not existing' );
 		$this->setFormat( 'fixed' );
@@ -87,7 +88,8 @@ class InlineImage extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getFileName(){
+	public function getFileName()
+	{
 		return $this->fileName;
 	}
 
@@ -96,7 +98,8 @@ class InlineImage extends MessagePart{
 	 *	@access		public
 	 *	@return		integer
 	 */
-	public function getFileSize(){
+	public function getFileSize()
+	{
 		return $this->fileSize;
 	}
 
@@ -105,7 +108,8 @@ class InlineImage extends MessagePart{
 	 *	@access		public
 	 *	@return		integer
 	 */
-	public function getFileATime(){
+	public function getFileATime()
+	{
 		return $this->fileATime;
 	}
 
@@ -114,7 +118,8 @@ class InlineImage extends MessagePart{
 	 *	@access		public
 	 *	@return		integer
 	 */
-	public function getFileCTime(){
+	public function getFileCTime()
+	{
 		return $this->fileCTime;
 	}
 
@@ -123,7 +128,8 @@ class InlineImage extends MessagePart{
 	 *	@access		public
 	 *	@return		integer
 	 */
-	public function getFileMTime(){
+	public function getFileMTime()
+	{
 		return $this->fileMTime;
 	}
 
@@ -132,7 +138,8 @@ class InlineImage extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getId(){
+	public function getId()
+	{
 		return $this->id;
 	}
 
@@ -141,7 +148,8 @@ class InlineImage extends MessagePart{
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function render( $headers = NULL ){
+	public function render( $headers = NULL ): string
+	{
 		if( !$headers )
 			$headers	= new MessageHeaderSection();
 		$headers->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
@@ -180,7 +188,8 @@ class InlineImage extends MessagePart{
 	 *	@deprecated	use constructor instead
 	 *	@todo    	to be removed in 1.2
 	 */
-	public function setFile( $id, $fileName, $mimeType = NULL, $encoding = NULL ){
+	public function setFile( $id, $fileName, $mimeType = NULL, $encoding = NULL )
+	{
 		trigger_error( 'Use constructor instead', E_USER_DEPRECATED );
 		return new self( $id, $fileName, $mimeType, $encoding );
 	}
@@ -191,7 +200,8 @@ class InlineImage extends MessagePart{
 	 *	@param		string   	$fileName		File name
 	 *	@return		self	  	Self instance for chaining
 	 */
-	public function setFileName( $fileName ){
+	public function setFileName( $fileName ): self
+	{
 		$this->fileName		= basename( $fileName );
 		return $this;
 	}
@@ -202,7 +212,8 @@ class InlineImage extends MessagePart{
 	 *	@param		integer  	$fileSize		File size
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileSize( $fileSize ){
+	public function setFileSize( $fileSize ): self
+	{
 		$this->fileSize		= $fileSize;
 		return $this;
 	}
@@ -213,7 +224,8 @@ class InlineImage extends MessagePart{
 	 *	@param		integer   	$timestamp		Timestamp of latest access
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileATime( $timestamp ){
+	public function setFileATime( $timestamp ): self
+	{
 		$this->fileATime	= $timestamp;
 		return $this;
 	}
@@ -224,7 +236,8 @@ class InlineImage extends MessagePart{
 	 *	@param		integer   	$timestamp		Timestamp of creation
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileCTime( $timestamp ){
+	public function setFileCTime( $timestamp ): self
+	{
 		$this->fileCTime	= $timestamp;
 		return $this;
 	}
@@ -235,7 +248,8 @@ class InlineImage extends MessagePart{
 	 *	@param		integer  	$timestamp		Timestamp of last modification
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileMTime( $timestamp ){
+	public function setFileMTime( $timestamp ): self
+	{
 		$this->fileMTime	= $timestamp;
 		return $this;
 	}
@@ -246,7 +260,8 @@ class InlineImage extends MessagePart{
 	 *	@param		string   	$id				Content ID of image to be used in HTML part
 	 *	@return		self	  	Self instance for chaining
 	 */
-	public function setId( $id ){
+	public function setId( $id ): self
+	{
 		$this->id	= $id;
 		return $this;
 	}

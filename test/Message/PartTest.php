@@ -99,7 +99,8 @@ class Message_PartTest extends TestCase
 }
 class Message_Part extends Part
 {
-	public function render(){
+	public function render( $headers = NULL ): string
+	{
 		return json_encode( $this );
 	}
 }

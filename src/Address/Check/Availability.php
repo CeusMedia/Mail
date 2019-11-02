@@ -41,8 +41,8 @@ use \CeusMedia\Mail\Util\MX;
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
  */
-class Availability{
-
+class Availability
+{
 	/**	@var	\CeusMedia\Mail\Address	$sender		... */
 	protected $sender;
 	protected $verbose;
@@ -61,7 +61,8 @@ class Availability{
 	const ERROR_SENDER_NOT_ACCEPTED		= 7;
 	const ERROR_RECEIVER_NOT_ACCEPTED	= 8;
 
-	public function __construct( $sender, $verbose = NULL ){
+	public function __construct( $sender, bool $verbose = NULL )
+	{
 		$this->setVerbose( (bool) $verbose );
 		if( is_string( $sender ) )
 			$sender		= new Address( $sender );
@@ -83,7 +84,8 @@ class Availability{
 	 *	@throws		\RangeException				if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 */
-	public function getLastError( $key = NULL ){
+	public function getLastError( ?string $key = NULL )
+	{
 		if( $this->lastResponse ){
 			if( $key === NULL )
 				return (object) array(
@@ -104,7 +106,8 @@ class Availability{
 	 *	@throws		\RangeException				if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 */
-	public function getLastResponse( $key = NULL ){
+	public function getLastResponse( ?string $key = NULL )
+	{
 		if( $this->lastResponse ){
 			if( $key === NULL )
 				return $this->lastResponse;
@@ -114,12 +117,13 @@ class Availability{
 		}
 	}
 
-	protected function getMailServers( $hostname, $useCache = TRUE, $strict = TRUE ){
-		$mx	= new MX();
-		return $mx->fromHostname( $hostname, $useCache, $strict );
+	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE )
+	{
+		return MX::create()->fromHostname( $hostname, $useCache, $strict );
 	}
 
-	protected function readResponse( $connection, $acceptedCodes = array() ){
+	protected function readResponse( $connection, $acceptedCodes = array() )
+	{
 		$lastLine	= FALSE;
 		$code		= NULL;
 		$buffer		= array();
@@ -150,7 +154,8 @@ class Availability{
 		);
 	}
 
-	public function test( $receiver, $host = NULL, $port = 587, $force = FALSE ){
+	public function test( $receiver, ?string $host = NULL, ?int $port = 587, ?bool $force = FALSE )
+	{
 		if( is_string( $receiver ) )
 			$receiver	= new Address( $receiver );
 		if( !$force ){
@@ -176,6 +181,7 @@ class Availability{
 				return FALSE;
 			}
 		}
+
 
 		$conn	= @fsockopen( $host, $port, $errno, $errstr, 5 );
 		if( !$conn ){
@@ -231,18 +237,23 @@ class Availability{
 		}
 	}
 
-	protected function sendChunk( $connection, $message ){
+	protected function sendChunk( $connection, string $message )
+	{
 		if( $this->verbose )
 			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
 		$this->lastResponse->request	= $message;
 		fputs( $connection, $message.Message::$delimiter );
 	}
 
-	public function setCache( \CeusMedia\Cache\AdapterAbstract $cache ){
+	public function setCache( \CeusMedia\Cache\AdapterAbstract $cache ): self
+	{
 		$this->cache	= $cache;
+		return $this;
 	}
 
-	public function setVerbose( $verbose = TRUE ){
-		$this->verbose	= (bool) $verbose;
+	public function setVerbose( ?bool $verbose = TRUE ): self
+	{
+		$this->verbose	= $verbose;
+		return $this;
 	}
 }

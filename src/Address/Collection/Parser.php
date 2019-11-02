@@ -41,8 +41,8 @@ use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
  */
-class Parser{
-
+class Parser
+{
 	const METHOD_AUTO					= 0;
 	const METHOD_IMAP					= 1;
 	const METHOD_OWN					= 2;
@@ -56,7 +56,8 @@ class Parser{
 
 	protected $method				= 0;
 
-	public static function create(){
+	public static function create(): self
+	{
 		return new static();
 	}
 
@@ -65,7 +66,8 @@ class Parser{
 	 *	@access		public
 	 *	@return		integer
 	 */
-	public function getMethod(){
+	public function getMethod(): int
+	{
 		return $this->method;
 	}
 
@@ -77,7 +79,8 @@ class Parser{
 	 *	@return		AddressCollection
 	 *	@throws		\RangeException			if parser method is not supported
 	 */
-	public function parse( $string, $delimiter = "," ){
+	public function parse( string $string, string $delimiter = "," ): AddressCollection
+	{
 		$method		= $this->realizeParserMethod();
 		switch( $method ){
 			case static::METHOD_IMAP_PLUS_OWN:
@@ -93,7 +96,8 @@ class Parser{
 		}
 	}
 
-	public function parseUsingImap( $string ){
+	public function parseUsingImap( string $string ): AddressCollection
+	{
 		$string			= trim( $string, '\t\r\n, ' );
 		$collection		= new AddressCollection();
 		$list			= imap_rfc822_parse_adrlist( $string, '_invalid.tld' );
@@ -108,7 +112,8 @@ class Parser{
 		return $collection;
 	}
 
-	public function parseUsingOwn( $string, $delimiter = ',' ){
+	public function parseUsingOwn( string $string, string $delimiter = ',' ): AddressCollection
+	{
 		if( !strlen( $delimiter ) )
 			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
 		$list		= array();
@@ -184,10 +189,11 @@ class Parser{
 	 *	...
 	 *	@access		public
 	 *	@param		integer		$method		Parser method to set, see METHOD_* constants
-	 *	@eturn		self
+	 *	@return		self
 	 *	@throws		\InvalidArgumentException	if given method is unknown
 	 */
-	public function setMethod( $method ){
+	public function setMethod( int $method ): self
+	{
 		$reflextion	= new \Alg_Object_Constant( get_class( $this ) );
 		$constants	= $reflextion->getAll( 'METHOD' );
 		if( !in_array( $method, $constants ) )
@@ -198,7 +204,8 @@ class Parser{
 
 	/*  --  PROTECTED  --  */
 
-	protected function realizeParserMethod(){
+	protected function realizeParserMethod(): int
+	{
 		$method		= $this->method;
 //		$hasImap	= function_exists( 'imap_rfc822_parse_adrlist' );
 		$hasImap	= extension_loaded( 'imap' );
