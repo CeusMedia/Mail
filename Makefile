@@ -18,6 +18,9 @@ composer-update-dev:
 dev-analyse: composer-install-dev
 	@./vendor/bin/phan -k=.phan --color --allow-polyfill-parser || true
 
+dev-analyse-report: dev-analyse-save
+	@php vendor/ceus-media/phan-viewer/console generate --source=phan.json --target=doc/phan/
+
 dev-analyse-save: composer-install-dev
 	@./vendor/bin/phan -k=.phan -m=json -o=phan.json --allow-polyfill-parser -p || true
 
