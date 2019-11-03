@@ -125,7 +125,7 @@ class Parser
 		$list		= array();
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
 		if( !strlen( trim( $string ) ) )
-			return $list;
+			return new AddressCollection();
 		$status		= static::STATE_SCANNING_FOR_NAME;
 		$part1		= "";
 		$buffer		= "";

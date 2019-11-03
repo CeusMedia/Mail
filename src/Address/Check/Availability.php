@@ -48,7 +48,7 @@ class Availability
 	protected $verbose;
 	protected $lastResponse;
 
-	/** @var		\CeusMedia\Cache\AdapterAbstract */
+	/** @var		\CeusMedia\Cache\AdapterInterface */
 	protected $cache;
 
 	const ERROR_NONE					= 0;

@@ -47,7 +47,6 @@ class MX
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@return		self
 	 */
 	public function __construct()
 	{
