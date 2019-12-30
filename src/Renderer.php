@@ -76,11 +76,20 @@ class Renderer{
 		$contents[]	= "--".$mimeBoundary;
 		$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
 		$contents[]	= "";
-		foreach( $message->getParts() as $part )
-			$contents[]	= "--".$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
+		foreach( $message->getParts() as $part ){
+			$renderedPart	= rtrim( $part->render() );
+			if( strlen( trim( $renderedPart ) ) )
+				$contents[]	= "--".$mimeBoundary1.$delim.$renderedPart.$delim;
+		}
 		$contents[]	= "--".$mimeBoundary1."--".$delim;
-		foreach( $message->getAttachments() as $part )
+		$fileNames	= array();
+		foreach( $message->getAttachments() as $part ){
+			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
+				if( in_array( $part->getFileName(), $fileNames ) )
+					continue;
 			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+			$fileNames[]	= $part->getFileName();
+		}
 		$contents[]	= "--".$mimeBoundary."--".$delim;
 		return $headers->toString().$delim.$delim.join( $delim, $contents );
 	}

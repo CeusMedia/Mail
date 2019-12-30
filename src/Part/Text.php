@@ -52,6 +52,8 @@ class Text extends \CeusMedia\Mail\Part{
 	 *	@return		string
 	 */
 	public function render(){
+		if( !strlen( $this->content ) )
+			return '';
 		$headers		= new \CeusMedia\Mail\Header\Section();
 		$contentType	= array(
 			$this->mimeType,
