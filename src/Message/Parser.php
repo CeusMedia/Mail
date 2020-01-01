@@ -217,6 +217,20 @@ class Parser
 					$filename	= $contentType->attributes->get( 'name' );
 				if( $filename )
 					$part->setFilename( $filename );
+
+				$dispositionAttributesToCopy	= array(
+					'size'				=> 'setFileSize',
+					'read-date'			=> 'setFileATime',
+					'creation-date'		=> 'setFileCTime',
+					'modification-date'	=> 'setFileMTime',
+				);
+				foreach( $dispositionAttributesToCopy as $key => $method ){
+					$value	= $disposition->attributes->get( $key );
+					if( preg_match( '/-date$/', $key ) )
+						$value	= strtotime( $value );
+					if( $value )
+						\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
+				}
 				return $part;
 			}
 		}

@@ -79,7 +79,7 @@ class Renderer
 		$encodedSubject	= Encoding::encodeIfNeeded( $message->getSubject(), self::$encodingSubject );
 		$headers->setFieldPair( 'Subject', $encodedSubject );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
-		$headers->addFieldPair( 'X-Mailer', $message->getUserAgent() );
+		$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
 
 		if( count( $message->getParts( TRUE ) ) === 1 ){						//  no multipart message
 			$parts	= $message->getParts( TRUE );								//  get parts
