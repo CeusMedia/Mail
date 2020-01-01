@@ -72,16 +72,41 @@ class Renderer{
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->addFieldPair( 'X-Mailer', $message->getUserAgent() );
 
-		$contents	= array( "This is a multi-part message in MIME format." );
-		$contents[]	= "--".$mimeBoundary;
-		$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
-		$contents[]	= "";
-		foreach( $message->getParts() as $part ){
-			$renderedPart	= rtrim( $part->render() );
-			if( strlen( trim( $renderedPart ) ) )
-				$contents[]	= "--".$mimeBoundary1.$delim.$renderedPart.$delim;
+		foreach( $message->getParts() as $index => $part )
+			if( !$part->getContent() )
+				$message->removePart( $index );
+
+		$hasText	= FALSE;
+		$hasHtml	= FALSE;
+		foreach( $message->getParts() as $index => $part ){
+			if( $part instanceof \CeusMedia\Mail\Part\Text )
+				$hasText	= TRUE;
+			else if( $part instanceof \CeusMedia\Mail\Part\HTML )
+				$hasHtml	= TRUE;
 		}
-		$contents[]	= "--".$mimeBoundary1."--".$delim;
+
+		$contents	= array( "This is a multi-part message in MIME format." );
+		if( $hasText || $hasHtml ){
+			if( $hasText && $hasHtml ){
+				$contents[]	= "--".$mimeBoundary;
+				$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
+				$contents[]	= "";
+				foreach( $message->getParts() as $part ){
+					$renderedPart	= rtrim( $part->render() );
+					if( strlen( trim( $renderedPart ) ) )
+						$contents[]	= "--".$mimeBoundary1.$delim.$renderedPart.$delim;
+				}
+				$contents[]	= "--".$mimeBoundary1."--".$delim;
+			}
+			else if( $hasText || $hasHtml ){
+				foreach( $message->getParts() as $part ){
+					$renderedPart	= rtrim( $part->render() );
+					if( strlen( trim( $renderedPart ) ) )
+						$contents[]	= "--".$mimeBoundary.$delim.$renderedPart.$delim;
+				}
+			}
+		}
+
 		$fileNames	= array();
 		foreach( $message->getAttachments() as $part ){
 			if( $part instanceof \CeusMedia\Mail\Part\Attachment )
