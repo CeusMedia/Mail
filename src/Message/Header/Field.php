@@ -74,9 +74,9 @@ class Field
 	 *	This will lowercase acronyms, too.
 	 *	You can protected uppercased acronyms by keeping the letter case, using the first argument.
 	 *	@access		public
-	 *	@param		boolean		$keepCase				Flag: do not use mb_convert_case or ucwords, protected uppercased acronyms
-	 *	@param		boolean		$ignoreMbConvertCase	Flag: do not use mb_convert_case even if it is available (needed to testing)
-	 *	@return		string		Header name
+	 *	@param		boolean|NULL	$keepCase				Flag: do not use mb_convert_case or ucwords, protected uppercased acronyms
+	 *	@param		boolean|NULL	$ignoreMbConvertCase	Flag: do not use mb_convert_case even if it is available (needed to testing)
+	 *	@return		string			Header name
 	 */
 	public function getName( ?bool $keepCase = TRUE, ?bool $ignoreMbConvertCase = FALSE ): string
 	{
@@ -127,7 +127,7 @@ class Field
 	/**
 	 *	Returns a representative string of header.
 	 *	@access		public
-	 *	@param		boolean		$keepCase		...
+	 *	@param		boolean|NULL	$keepCase		...
 	 *	@return		string
 	 */
 	public function toString( ?bool $keepCase = TRUE ): string

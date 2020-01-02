@@ -59,7 +59,6 @@ class Encoding
 	 *	Encodes a mail header value string if needed.
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
-	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */

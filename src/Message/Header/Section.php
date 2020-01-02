@@ -156,8 +156,8 @@ class Section
 	 *	Headers with already noted name will be replaced.
 	 *	To avoid this, disable emptyBefore.
 	 *	@access		public
-	 *	@param		Field		$field		Header field object to set
-	 *	@param		boolean					$emptyBefore	Flag: TRUE - set | FALSE - append
+	 *	@param		Field			$field			Header field object to set
+	 *	@param		boolean|NULL	$emptyBefore	Flag: TRUE - set | FALSE - append
 	 *	@return		self
 	 */
 	public function setField( Field $field, ?bool $emptyBefore = TRUE ): self
@@ -174,9 +174,9 @@ class Section
 	 *	Headers with already noted name will be replaced.
 	 *	To avoid this, disable emptyBefore.
 	 *	@access		public
-	 *	@param		string		$name			Header field name
-	 *	@param		string		$value			Header field value
-	 *	@param		boolean		$emptyBefore	Flag: TRUE - set | FALSE - append
+	 *	@param		string			$name			Header field name
+	 *	@param		string			$value			Header field value
+	 *	@param		boolean|NULL	$emptyBefore	Flag: TRUE - set | FALSE - append
 	 *	@return		self
 	 */
 	public function setFieldPair( string $name, string $value, ?bool $emptyBefore = TRUE ): self
@@ -190,8 +190,8 @@ class Section
 	 *	Headers with already noted name will be replaced.
 	 *	To avoid this, disable emptyBefore.
 	 *	@access		public
-	 *	@param		array		$fields			List of header field objects
-	 *	@param		boolean		$emptyBefore	Flag: TRUE - set | FALSE - append
+	 *	@param		array			$fields			List of header field objects
+	 *	@param		boolean|NULL	$emptyBefore	Flag: TRUE - set | FALSE - append
 	 *	@return		self
 	 */
 	public function setFields( array $fields, ?bool $emptyBefore = TRUE ): self
@@ -204,6 +204,7 @@ class Section
 	/**
 	 *	Returns all header fields as list.
 	 *	@access		public
+	 *	@param		boolean|NULL	$keepCase		Flag: keep original field key (default: no)
 	 *	@return		array
 	 */
 	public function toArray( ?bool $keepCase = FALSE ): array
@@ -218,6 +219,7 @@ class Section
 	/**
 	 *	Returns all set header fields as string.
 	 *	@access		public
+	 *	@param		boolean|NULL	$keepCase		Flag: keep original field key (default: no)
 	 *	@return		string
 	 */
 	public function toString( ?bool $keepCase = FALSE ): string

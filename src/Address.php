@@ -65,7 +65,7 @@ class Address
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@param		string		$string		Full mail address to parse, optional
+	 *	@param		string|NULL		$string		Full mail address to parse, optional
 	 *	@return		void
 	 */
 	public function __construct( ?string $string = NULL )
@@ -109,8 +109,8 @@ class Address
 	/**
 	 *	Returns short mail address (without name or brackets).
 	 *	@access		public
-	 *	@param		boolean		$strict		Flag: throw exception if no local part set
-	 *	@return		string		Short mail address (without name or brackets)
+	 *	@param		boolean|NULL	$strict		Flag: throw exception if no local part set
+	 *	@return		string			Short mail address (without name or brackets)
 	 */
 	public function getAddress( ?bool $strict = TRUE ): string
 	{
@@ -120,8 +120,8 @@ class Address
 	/**
 	 *	Returns domain of mail participant.
 	 *	@access		public
-	 *	@param		boolean		$strict		Flag: throw exception if no domain set
-	 *	@return		string		Domain of mail participant
+	 *	@param		boolean|NULL	$strict		Flag: throw exception if no domain set
+	 *	@return		string			Domain of mail participant
 	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
 	public function getDomain( ?bool $strict = TRUE ): string
@@ -134,7 +134,7 @@ class Address
 	/**
 	 *	Static constructor.
 	 *	@access		public
-	 *	@param		string		$string		Full mail address to parse, optional
+	 *	@param		string|NULL		$string		Full mail address to parse, optional
 	 *	@return		self
 	 */
 	public static function getInstance( ?string $string = NULL ): self
@@ -145,8 +145,8 @@ class Address
 	/**
 	 *	Returns local part of mail participant.
 	 *	@access		public
-	 *	@param		boolean		$strict		Flag: throw exception if no local part set
-	 *	@return		string		Local part of mail participant
+	 *	@param		boolean|NULL	$strict		Flag: throw exception if no local part set
+	 *	@return		string			Local part of mail participant
 	 *	@throws		\RuntimeException		if no address has been set, yet
 	 */
 	public function getLocalPart( ?bool $strict = TRUE ): string

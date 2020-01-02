@@ -51,7 +51,7 @@ class Syntax
 	/**
 	 *	Constructor. Sets mode if given.
 	 *	@access		public
-	 *	@param		integer		$mode		Optional: Mode to apply, see class constants
+	 *	@param		integer|NULL	$mode		Optional: Mode to apply, see class constants
 	 */
 	public function __construct( ?int $mode = NULL )
 	{
@@ -62,10 +62,10 @@ class Syntax
 	/**
 	 *	Validate an mail address against set mode and map of results.
 	 *	@access		public
-	 *	@param		string		$address		Mail address to validate
-	 *	@param		boolean		$throwException	Flag: throw exception if invalid, default: TRUE
-	 *	@return		integer						Bitmask of successfully applied test modes
-	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
+	 *	@param		string			$address		Mail address to validate
+	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
+	 *	@return		integer							Bitmask of successfully applied test modes
+	 *	@throws		\InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
 	 */
 	public function check( string $address, ?bool $throwException = TRUE ): int
 	{
@@ -101,10 +101,10 @@ class Syntax
 	 *
 	 *	@static
 	 *	@access		public
-	 *	@param		string		$address		Mail address to validate
-	 *	@param		boolean		$throwException	Flag: throw exception if invalid, default: TRUE
-	 *	@return		integer						Bitmask of successfully applied test modes
-	 *	@throws		\InvalidArgumentException	if address is not valid and flag 'throwException' is enabled
+	 *	@param		string			$address		Mail address to validate
+	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
+	 *	@return		integer							Bitmask of successfully applied test modes
+	 *	@throws		\InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
 	 */
 	public function evaluate( string $address, ?bool $throwException = TRUE ): int
 	{
