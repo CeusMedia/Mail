@@ -3,6 +3,21 @@
   "license": [
     "GPL-3.0-or-later"
   ],
+  "repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "ceus-media/phan-viewer",
+        "version": "dev-master",
+        "type": "package",
+        "source": {
+          "url": "git@ceusmedia.gitlab.com:ceus-media/phan-viewer.git",
+          "type": "git",
+          "reference": "master"
+        }
+      }
+    }
+  ],
   "authors": [
     {
       "name": "Christian Würker",
@@ -22,12 +37,12 @@
     "ceus-media/cache": "*"
   },
   "require-dev": {
+    "php": "^7.1",
     "phpunit/phpunit": "^7",
     "squizlabs/php_codesniffer": "*",
-    "ceus-media/doc-creator": "^0.9"
-  },
-  "require-dev-php71": {
-	  "phan/phan": "dev-master"
+    "phan/phan": "dev-master",
+    "ceus-media/doc-creator": "^0.9",
+    "ceus-media/phan-viewer": "dev-master"
   },
   "autoload": {
     "psr-4": {
