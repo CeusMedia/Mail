@@ -8,4 +8,5 @@ demo/mailbox/config.ini
 phan.json
 doc
 Mail.ini
+Mail.ini.test
 .phpunit.*
