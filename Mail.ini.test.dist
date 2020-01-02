@@ -1,4 +1,5 @@
 [library]
+identifier						= "CeusMedia::Mail"
 version							= "2.1"
 
 [phpunit.tests]
@@ -8,7 +9,7 @@ Transport.SMTP.hasAntivirus		= yes
 
 [phpunit.sender]
 server.host						= "mail.itflow.de"
-server.port						= "587"
+server.port						= "{{phpunit.sender.server.port}}"
 mailbox.address					= "x-automated-testing@ceusmedia.de"
 mailbox.name					= "X: Automated Testing"
 auth.mode						= "{{phpunit.sender.auth.mode}}"
@@ -20,7 +21,7 @@ security.antivirus				= yes
 
 [phpunit.receiver]
 server.host						= "mail.itflow.de"
-server.port						= "143"
+server.port						= "{{phpunit.receiver.server.port}}"
 mailbox.address					= "x-automated-testing@ceusmedia.de"
 mailbox.name					= "X: Automated Testing"
 auth.mode						= "{{phpunit.receiver.auth.mode}}"
