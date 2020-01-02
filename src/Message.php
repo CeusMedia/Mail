@@ -77,7 +77,9 @@ class Message
 	protected $subject;
 
 	/**	@var		string					$mailer			Mailer agent */
-	protected $userAgent					= 'CeusMedia::Mail/2.0';
+	protected $userAgent;
+
+	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.1';
 
 	/**
 	 *	Constructor.
@@ -90,6 +92,13 @@ class Message
 		$this->recipients['to']		= new AddressCollection();
 		$this->recipients['cc']		= new AddressCollection();
 		$this->recipients['bcc']	= new AddressCollection();
+		$this->evaluateUserAgent();
+	}
+
+	public function __wakeup()
+	{
+		if( !$this->userAgent )
+			$this->evaluateUserAgent();
 	}
 
 	/**
@@ -119,23 +128,6 @@ class Message
 		if( $fileName )
 			$part->setFileName( $fileName );
 		return $this->addPart( $part );
-	}
-
-	/**
-	 *	Add file as attachment part.
-	 *	Alias for addAttachment.
-	 *	@access		public
-	 *	@param		string		$filePath		Path of file to add
-	 *	@param		string		$mimeType		Optional: MIME type of file
-	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@param		string		$fileName		Optional: Name of file
-	 *	@return		self		Message object for chaining
-	 *	@deprecated	use addAttachment instead
-	 *	@todo		to be removed in 2.0
-	 */
-	public function addFile( string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL, ?string $fileName = NULL ): self
-	{
-		return $this->addAttachment( $filePath, $mimeType, $encoding, $fileName );
 	}
 
 	/**
@@ -235,6 +227,14 @@ class Message
 		return $this;
 	}
 
+	/**
+	 *	Add a receiver as string to participant object.
+	 *	@access		public
+	 *	@param		string			$participant		Address or object of participant to add as receiver
+	 *	@param		string|NULL		$name				Name of the participant if address is given as string
+	 *	@param		string|NULL		$type				Type of receiver (To, Cc, Bcc), case insensitive
+	 *	@return		self			Message object for chaining
+	 */
 	public function addRecipient( $participant, ?string $name = NULL, ?string $type = "To" ): self
 	{
 		if( is_string( $participant ) )
@@ -581,5 +581,20 @@ class Message
 	{
 		$this->userAgent = $userAgent;
 		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	protected function evaluateUserAgent()
+	{
+		$this->userAgent	= static::$defaultUserAgent;
+		$filePath			= dirname( __DIR__ ).'/Mail.ini';
+		if( file_exists( $filePath ) ){
+			$config		= parse_ini_file( $filePath, TRUE );
+			$identifier	= $config['library']['identifier'] ?? NULL;
+			$version	= $config['library']['version'] ?? NULL;
+			if( $identifier && $version )
+				$this->userAgent	= $identifier.'/'.$version;
+		}
 	}
 }

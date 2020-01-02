@@ -42,7 +42,7 @@
     "squizlabs/php_codesniffer": "*",
     "phan/phan": "dev-master",
     "ceus-media/doc-creator": "^0.9",
-	"ceus-media/phan-viewer": "dev-master"
+    "ceus-media/phan-viewer": "dev-master"
   },
   "autoload": {
     "psr-4": {
