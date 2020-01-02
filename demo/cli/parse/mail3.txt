@@ -1,0 +1,35 @@
+Return-Path: <dev@ceusmedia.de>
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on omnitron-vm1
+X-Spam-Level:
+X-Spam-Status: No, score=-2.9 required=7.0 tests=ALL_TRUSTED,BAYES_00,SPF_PASS,
+	TVD_SPACE_RATIO,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.2
+X-Original-To: test2@ceusmedia.de
+Delivered-To: kriss@ceusmedia.de
+Received: from unknown (unknown [213.95.150.116])
+	by viratron.itflow.de (Postfix) with ESMTPSA id 695E5163B48
+	for <test2@ceusmedia.de>; Thu,  2 Jan 2020 14:33:45 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ceusmedia.de;
+	s=default; t=1577972026;
+	bh=7PA96dVd+z4O6eStWQ+9NVmvuSBEsxhmbEQ+G/pUnbQ=; h=From:To:Subject;
+	b=OK7TwXPA2/9Z/PqpMDBsCsucbpW5PxhjoDiPepiwbvW4dtCFjEbUrq4vZZw7cww0W
+	 kjPSH2QW2nk9H0Iw5u+Sn8prl4cGsMusyylGbiWlLqYi0QkZzraTKVnLqy2bQIhSso
+	 Ndi4IdbYcvP2M/J54JQoEVWn14b1LqpcwqN5qrSs=
+Authentication-Results: omnitron-vm1;
+	dmarc=pass (p=QUARANTINE sp=NONE) smtp.from=ceusmedia.de header.from=ceusmedia.de;
+	dkim=pass header.d=ceusmedia.de;
+        spf=pass (sender IP is 213.95.150.116) smtp.mailfrom=dev@ceusmedia.de smtp.helo=mail.itflow.de
+Received-SPF: pass (omnitron-vm1: connection is authenticated)
+From: dev@ceusmedia.de
+To: test2@ceusmedia.de
+Message-ID: <1914d7b64e32682fe96664dd39d048e82a14d0d2@localhost>
+Date: Thu, 02 Jan 2020 14:33:44 +0100
+Subject: =?UTF-8?Q?[Prefix]_Subject?=
+MIME-Version: 1.0
+X-Mailer: CeusMedia::Mail/2.1
+Content-Type: text/plain; charset="utf-8"; format=fixed
+Content-Transfer-Encoding: base64
+X-PPP-Message-ID: <20200102133345.31858.36434@account.ceusmedia.de>
+X-PPP-Vhost: ceusmedia.de
+
+VGVzdDogMTU3Nzk3MjAyNA==
