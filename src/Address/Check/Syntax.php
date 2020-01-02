@@ -73,7 +73,6 @@ class Syntax
 		$wildcard	= $this->mode & self::MODE_ALL;
 		$constants	= \Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
 		foreach( $constants as $key => $value ){
-			$result[$value]	= NULL;
 			if( $this->mode & $value || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
 					if( filter_var( $address, FILTER_VALIDATE_EMAIL ) )

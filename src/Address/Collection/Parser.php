@@ -104,7 +104,7 @@ class Parser
 
 	public function parseUsingImap( string $string ): AddressCollection
 	{
-		$string			= trim( $string, '\t\r\n, ' );
+		$string			= trim( $string, "\t\r\n, " );
 		$collection		= new AddressCollection();
 		$list			= imap_rfc822_parse_adrlist( $string, '_invalid.tld' );
 		foreach( $list as $item ){
@@ -125,7 +125,7 @@ class Parser
 		$list		= array();
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
 		if( !strlen( trim( $string ) ) )
-			return $list;
+			return new AddressCollection();
 		$status		= static::STATE_SCANNING_FOR_NAME;
 		$part1		= "";
 		$buffer		= "";

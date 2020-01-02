@@ -75,7 +75,7 @@ class Local
 	public function send( \CeusMedia\Mail\Message $message, $parameters = array() )
 	{
 		$headers	= $message->getHeaders();
-		$receivers	= $message->getRecipients( 'to' );
+		$receivers	= $message->getRecipientsByType( 'to' );
 		$subject	= $message->getSubject();
 		$body		= Renderer::create()->render( $message );
 

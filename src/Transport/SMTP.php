@@ -121,7 +121,7 @@ class SMTP
 		$delim		= Message::$delimiter;
 		if( !$message->getSender() )
 			throw new \RuntimeException( 'No mail sender set' );
-		if( !$message->getRecipients( 'to') )
+		if( !$message->getRecipientsByType( 'to' ) )
 			throw new \RuntimeException( 'No mail receiver(s) set' );
 		if( !$message->getParts() )
 			throw new \RuntimeException( 'No mail body parts set' );

@@ -79,7 +79,7 @@ class Parser
 				case 'bcc':
 					$addresses	= AddressCollectionParser::create()->parse( $field->getValue() );
 					foreach( $addresses as $address )
-						$message->addRecipient( $address );
+						$message->addRecipient( $address, NULL, $field->getName() );
 					break;
 			}
 		}
