@@ -118,9 +118,9 @@ class Message
 	 *	Add file as attachment part.
 	 *	@access		public
 	 *	@param		string			$filePath		Path of file to add
-	 *	@param		string			$mimeType		Optional: MIME type of file
-	 *	@param		string			$encoding		Optional: Encoding to apply
-	 *	@param		string			$fileName		Optional: Name of file
+	 *	@param		string|NULL		$mimeType		Optional: MIME type of file
+	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
+	 *	@param		string|NULL		$fileName		Optional: Name of file
 	 *	@return		self			Message object for chaining
 	 */
 	public function addAttachment( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
@@ -175,8 +175,8 @@ class Message
 	 *	@access		public
 	 *	@param		string			$id				Content ID of image to be used in HTML part
 	 *	@param		string			$filePath		File Path of image to embed
-	 *	@param		string			$mimeType		Optional: MIME type of file
-	 *	@param		string			$encoding		Optional: Encoding to apply
+	 *	@param		string|NULL		$mimeType		Optional: MIME type of file
+	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
 	 *	@return		self			Message object for chaining
 	 */
 	public function addInlineImage( string $id, string $filePath, string $mimeType = NULL, string $encoding = NULL ): self
@@ -216,8 +216,8 @@ class Message
 	 *	Add a receiver as string to participant object.
 	 *	@access		public
 	 *	@param		string			$participant		Address or object of participant to add as receiver
-	 *	@param		string			$name				Name of the participant if address is given as string
-	 *	@param		string			$type				Type of receiver (TO, CC, BCC), case insensitive
+	 *	@param		string|NULL		$name				Name of the participant if address is given as string
+	 *	@param		string			$type				Type of receiver (TO, CC, BCC), case insensitive, default: TO
 	 *	@return		self			Message object for chaining
 	 */
 	public function addRecipient( $participant, string $name = NULL, string $type = "TO" ): self

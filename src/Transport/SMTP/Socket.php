@@ -80,9 +80,9 @@ class Socket
 	 *	Alias for getInstance.
 	 *	@access		public
 	 *	@static
-	 *	@param		string			$host		SMTP server host name
-	 *	@param		integer			$port		SMTP server port
-	 *	@param		integer			$timeout	Timeout (in seconds) on opening connection
+	 *	@param		string|NULL		$host		SMTP server host name
+	 *	@param		integer|NULL	$port		SMTP server port
+	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
 	 *	@return		self
 	 *	@deprecated	use getInstance instead
 	 *	@todo		to be removed
@@ -110,7 +110,7 @@ class Socket
 	 *	Sets cryptography mode.
 	 *	@access		public
 	 *	@param		boolean			$enable		Power switch
-	 *	@param		integer			$crypto		Cryptography mode, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
+	 *	@param		integer|NULL	$crypto		Cryptography mode, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 *	@throws		\RuntimeException			if connection is not open
 	 *	@return		self
 	 */
