@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__.'/../../../vendor/autoload.php';
+require_once dirname( __DIR__ ).'/_bootstrap.php';
+
 new UI_DevOutput;
 
 $s	= "dev@ceusmedia.de";

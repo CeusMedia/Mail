@@ -165,7 +165,7 @@ class Mailbox
 		return MessageHeaderParser::getInstance()->parse( $header );
 	}
 
-	public function index( array $criteria = array(), int $sort = SORTARRIVAL, bool $reverse = FALSE, bool $strict = TRUE ): array
+	public function index( array $criteria = array(), int $sort = SORTARRIVAL, bool $reverse = TRUE, bool $strict = TRUE ): array
 	{
 		$this->checkConnection( TRUE, $strict );
 		return imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );

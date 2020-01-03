@@ -1,10 +1,10 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Parser;
-use \CeusMedia\Mail\Message\Part\Text;
-use \CeusMedia\Mail\Message\Part\Attachment;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Parser;
+use CeusMedia\Mail\Message\Part\Text;
+use CeusMedia\Mail\Message\Part\Attachment;
 
 $mailFile		= "mail.txt";
 

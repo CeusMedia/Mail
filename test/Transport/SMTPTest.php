@@ -116,7 +116,7 @@ class Transport_SMTPTest extends TestCase
 			$mailIds	= $mailbox->index( $searchCriteria );
 			if( count( $mailIds ) ){
 				foreach( $mailIds as $mailId )
-					$mailbox->removeMail( $mailId );
+					$mailbox->removeMail( $mailId, TRUE );
 				$isMailReceived	= TRUE;
 				break;
 			}
