@@ -1,9 +1,10 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-use \CeusMedia\Mail\Message\Parser;
-use \CeusMedia\Mail\Message\Renderer;
-use \UI_HTML_Tag as Tag;
+use CeusMedia\Mail\Message\Parser;
+use CeusMedia\Mail\Message\Renderer;
+use UI_HTML_PageFrame as Page;
+use UI_HTML_Tag as Tag;
 
 new UI_DevOutput;
 
@@ -13,10 +14,10 @@ if( !file_exists( $fileName ) )
 	die( "Add a mail.txt or configure another file name in script!" );
 
 $mail	= file_get_contents( $fileName );
-$object	= Parser::create()->parse( $mail );
-$output	= Renderer::create()->render( $object );
+$object	= Parser::getInstance()->parse( $mail );
+$output	= Renderer::getInstance()->render( $object );
 if( getEnv( 'HTTP_HOST' ) ){
-	$page	= new UI_HTML_PageFrame();
+	$page	= new Page();
 	$page->addStylesheet( 'https://cdn.ceusmedia.de/css/bootstrap.min.css' );
 	$page->addBody( Tag::create( 'div', array(
 		Tag::create( 'div', array(

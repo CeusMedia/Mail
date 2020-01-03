@@ -56,12 +56,12 @@ class Socket
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@param		string		$host		SMTP server host name
-	 *	@param		integer		$port		SMTP server port
-	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
+	 *	@param		string|NULL		$host			SMTP server host name
+	 *	@param		integer|NULL	$port			SMTP server port
+	 *	@param		integer|NULL	$timeout		Timeout (in seconds) on opening connection
 	 *	@return		void
 	 */
-	public function __construct( ?string $host = NULL, ?int $port = NULL, $timeout = NULL )
+	public function __construct( string $host = NULL, int $port = NULL, $timeout = NULL )
 	{
 		if( !is_null( $host ) && strlen( trim( $host ) ) )
 			$this->setHost( $host );
@@ -80,14 +80,14 @@ class Socket
 	 *	Alias for getInstance.
 	 *	@access		public
 	 *	@static
-	 *	@param		string		$host		SMTP server host name
-	 *	@param		integer		$port		SMTP server port
-	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
+	 *	@param		string|NULL		$host		SMTP server host name
+	 *	@param		integer|NULL	$port		SMTP server port
+	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
 	 *	@return		self
 	 *	@deprecated	use getInstance instead
 	 *	@todo		to be removed
 	 */
-	public static function create( ?string $host = NULL, ?int $port = NULL, ?int $timeout = NULL ): self
+	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
 	{
 		return static::getInstance( $host, $port, $timeout );
 	}
@@ -109,12 +109,12 @@ class Socket
 	/**
 	 *	Sets cryptography mode.
 	 *	@access		public
-	 *	@param		boolean		$enable		Power switch
-	 *	@param		integer		$crypto		Cryptography mode, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
-	 *	@throws		\RuntimeException		if connection is not open
+	 *	@param		boolean			$enable		Power switch
+	 *	@param		integer|NULL	$crypto		Cryptography mode, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
+	 *	@throws		\RuntimeException			if connection is not open
 	 *	@return		self
 	 */
-	public function enableCrypto( bool $enable, ?int $crypto = NULL ): self
+	public function enableCrypto( bool $enable, int $crypto = NULL ): self
 	{
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
@@ -167,12 +167,12 @@ class Socket
 	 *	Static constructor.
 	 *	@access		public
 	 *	@static
-	 *	@param		string		$host		SMTP server host name
-	 *	@param		integer		$port		SMTP server port
-	 *	@param		integer		$timeout	Timeout (in seconds) on opening connection
+	 *	@param		string|NULL		$host		SMTP server host name
+	 *	@param		integer|NULL	$port		SMTP server port
+	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
 	 *	@return		self
 	 */
-	public static function getInstance( ?string $host = NULL, ?int $port = NULL, ?int $timeout = NULL )
+	public static function getInstance( string $host = NULL, int $port = NULL, int $timeout = NULL )
 	{
 		return new self( $host, $port, $timeout );
 	}
@@ -200,13 +200,13 @@ class Socket
 	/**
 	 *	Open socket connection.
 	 *	@access		public
-	 *	@param		boolean		$forceReopen	Flag: close current and open new connection (default: no)
-	 *	@throws		\RuntimeException			if not host is set
-	 *	@throws		\RuntimeException			if not port is set
-	 *	@throws		\RuntimeException			if connection failed
+	 *	@param		boolean			$forceReopen	Flag: close current and open new connection (default: no)
+	 *	@throws		\RuntimeException				if not host is set
+	 *	@throws		\RuntimeException				if not port is set
+	 *	@throws		\RuntimeException				if connection failed
 	 *	@return		self
 	 */
-	public function open( ?bool $forceReopen = FALSE ): self
+	public function open( bool $forceReopen = FALSE ): self
 	{
 		if( $this->connection ){
 			if( $forceReopen )
@@ -233,9 +233,9 @@ class Socket
 	/**
 	 *	Returns parsed response from SMTP server.
 	 *	@access		public
-	 *	@param		integer		$length			Size of chunks
-	 *	@throws		\RuntimeException			if connection is not open
-	 *	@throws		\RuntimeException			if request failed
+	 *	@param		integer			$length			Size of chunks
+	 *	@throws		\RuntimeException				if connection is not open
+	 *	@throws		\RuntimeException				if request failed
 	 *	@return		object
 	 */
 	public function readResponse( int $length )
@@ -243,7 +243,7 @@ class Socket
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
 
-		$lastLine	= FALSE;
+		$lastLine	= '';
 		$code		= NULL;
 		$buffer		= array();
 		$raw		= array();

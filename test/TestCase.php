@@ -19,7 +19,7 @@ class TestCase extends PHPUnit\Framework\TestCase{
 
 	public function __construct(){
 		parent::__construct();
-		new UI_DevOutput;
+		new UI_DevOutput();
 		$this->pathLibrary		= dirname( __DIR__ ).'/';
 		$this->pathTests		= __DIR__.'/';
 		$this->configFile		= $this->pathLibrary.'Mail.ini';

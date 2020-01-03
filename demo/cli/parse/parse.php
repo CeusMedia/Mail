@@ -1,15 +1,15 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Parser;
-use \CeusMedia\Mail\Message\Part\Text;
-use \CeusMedia\Mail\Message\Part\Attachment;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Parser;
+use CeusMedia\Mail\Message\Part\Text;
+use CeusMedia\Mail\Message\Part\Attachment;
 
 $mailFile		= "mail.txt";
 
 $content	= \FS_File_Reader::load( __DIR__."/".$mailFile );
-$message	= Parser::create()->parse( $content );
+$message	= Parser::getInstance()->parse( $content );
 
 foreach( $message->getParts() as $nr => $part ){
 	remark( "Part #".($nr + 1) );

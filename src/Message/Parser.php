@@ -50,13 +50,26 @@ class Parser
 {
 	/**
 	 *	Static constructor.
-	 *	@access		public
+	 *	@access			public
 	 *	@static
-	 *	@return		self
+	 *	@return			self
+	 *	@deprecated		use getInstance instead
+	 *	@todo			to be removed
 	 */
 	public static function create(): self
 	{
 		return new self();
+	}
+
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
+	public static function getInstance(): self
+	{
+		return new static;
 	}
 
 	public function parse( $content )
@@ -64,7 +77,7 @@ class Parser
 		$message	= new Message();
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 
-		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
+		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		foreach( $headers->getFields() as $field ){
 			$message->addHeader( $field );
 			switch( strtolower( $field->getName() ) ){
@@ -77,7 +90,7 @@ class Parser
 				case 'to':
 				case 'cc':
 				case 'bcc':
-					$addresses	= AddressCollectionParser::create()->parse( $field->getValue() );
+					$addresses	= AddressCollectionParser::getInstance()->parse( $field->getValue() );
 					foreach( $addresses as $address )
 						$message->addRecipient( $address, NULL, $field->getName() );
 					break;
@@ -115,7 +128,7 @@ class Parser
 	{
 		$delim		= Message::$delimiter;
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
+		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$body		= $parts[1];
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
 		$contentType	= $this->parseAttributedHeaderValue( $contentType );
@@ -178,7 +191,7 @@ class Parser
 	protected function parseAtomicBodyPart( $content )
 	{
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$headers	= MessageHeaderParser::create()->parse( $parts[0] );
+		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$content	= $parts[1];
 
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();

@@ -28,7 +28,6 @@ namespace CeusMedia\Mail;
 
 use \CeusMedia\Mail\Address\Parser as AddressParser;
 use \CeusMedia\Mail\Address\Renderer as AddressRenderer;
-use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
 /**
@@ -68,7 +67,7 @@ class Address
 	 *	@param		string|NULL		$string		Full mail address to parse, optional
 	 *	@return		void
 	 */
-	public function __construct( ?string $string = NULL )
+	public function __construct( string $string = NULL )
 	{
 		if( $string ){
 			$this->set( $string );
@@ -91,7 +90,7 @@ class Address
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 */
-	public static function create( ?string $string = NULL ): self
+	public static function create( string $string = NULL ): self
 	{
 		return new static( $string );
 	}
@@ -109,10 +108,10 @@ class Address
 	/**
 	 *	Returns short mail address (without name or brackets).
 	 *	@access		public
-	 *	@param		boolean|NULL	$strict		Flag: throw exception if no local part set
+	 *	@param		boolean			$strict		Flag: throw exception if no local part set
 	 *	@return		string			Short mail address (without name or brackets)
 	 */
-	public function getAddress( ?bool $strict = TRUE ): string
+	public function getAddress( bool $strict = TRUE ): string
 	{
 		return $this->getLocalPart( $strict )."@".$this->getDomain( $strict );
 	}
@@ -120,11 +119,11 @@ class Address
 	/**
 	 *	Returns domain of mail participant.
 	 *	@access		public
-	 *	@param		boolean|NULL	$strict		Flag: throw exception if no domain set
+	 *	@param		boolean			$strict		Flag: throw exception if no domain set
 	 *	@return		string			Domain of mail participant
-	 *	@throws		\RuntimeException		if no address has been set, yet
+	 *	@throws		\RuntimeException			if no address has been set, yet
 	 */
-	public function getDomain( ?bool $strict = TRUE ): string
+	public function getDomain( bool $strict = TRUE ): string
 	{
 		if( !$this->domain && $strict )
 			throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
@@ -137,7 +136,7 @@ class Address
 	 *	@param		string|NULL		$string		Full mail address to parse, optional
 	 *	@return		self
 	 */
-	public static function getInstance( ?string $string = NULL ): self
+	public static function getInstance( string $string = NULL ): self
 	{
 		return new static( $string );
 	}
@@ -145,11 +144,11 @@ class Address
 	/**
 	 *	Returns local part of mail participant.
 	 *	@access		public
-	 *	@param		boolean|NULL	$strict		Flag: throw exception if no local part set
+	 *	@param		boolean			$strict		Flag: throw exception if no local part set
 	 *	@return		string			Local part of mail participant
-	 *	@throws		\RuntimeException		if no address has been set, yet
+	 *	@throws		\RuntimeException			if no address has been set, yet
 	 */
-	public function getLocalPart( ?bool $strict = TRUE ): string
+	public function getLocalPart( bool $strict = TRUE ): string
 	{
 		if( !$this->localPart && $strict )
 			throw new \RuntimeException( 'No valid address set, yet (local part missing)' );
@@ -178,7 +177,7 @@ class Address
 	 */
 	public function render( Address $address ): string
 	{
-		return AddressRenderer::create()->render( $address );
+		return AddressRenderer::getInstance()->render( $address );
 	}
 
 	/**
@@ -193,7 +192,7 @@ class Address
 		if( !strlen( trim( $string ) ) )
 			throw new \InvalidArgumentException( 'No address given' );
 
-		$address	= AddressParser::create()->parse( $string );
+		$address	= AddressParser::getInstance()->parse( $string );
 		$this->setDomain( $address->getDomain() );
 		$this->setLocalPart( $address->getLocalPart() );
 		$this->setName( $address->getName() );

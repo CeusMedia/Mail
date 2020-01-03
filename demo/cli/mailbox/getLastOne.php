@@ -1,8 +1,8 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Mailbox;
 
 $mailboxAccess	= (object) $config->getAll( 'mailbox_' );
 
@@ -19,7 +19,7 @@ $mailbox	= new Mailbox(
 	$mailboxAccess->username,
 	$mailboxAccess->password
 );
-$mailbox->setSecure( FALSE, FALSE );
+$mailbox->setSecure( TRUE, TRUE );
 $mailbox->connect();
 $mailIndex	= array_slice( $mailbox->index(), 0, 3 );
 foreach( $mailIndex as $item ){

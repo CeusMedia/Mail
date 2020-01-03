@@ -77,7 +77,7 @@ class Local
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipientsByType( 'to' );
 		$subject	= $message->getSubject();
-		$body		= Renderer::create()->render( $message );
+		$body		= Renderer::getInstance()->render( $message );
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
 		$this->checkForInjection( $subject );

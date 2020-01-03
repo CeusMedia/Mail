@@ -23,5 +23,7 @@ class Message_ParserTest extends TestCase
 	 */
 	public function testParse(){
 		$this->markTestIncomplete( 'No test defined for Message\\Parser' );
+
+		$parser	= Parser::getInstance();
 	}
 }

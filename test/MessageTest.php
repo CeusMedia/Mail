@@ -14,7 +14,6 @@ use \CeusMedia\Mail\Message\Part\Attachment;
 use \CeusMedia\Mail\Message\Part\HTML;
 use \CeusMedia\Mail\Message\Part\InlineImage;
 use \CeusMedia\Mail\Message\Part\Text;
-use \CeusMedia\Mail\Message\Renderer;
 
 /**
  *	Unit test for mail message.
@@ -52,13 +51,13 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 *	@covers		::addHtmlImage
+	 *	@covers		::addInlineImage
 	 */
-	public function testAddHtmlImage(){
+	public function testAddInlineImage(){
 		$fileName	= __DIR__."/../demo/outbox.png";
 		$part		= new InlineImage('id', $fileName);
 		$message	= Message::getInstance();
-		$message->addHtmlImage('id', $fileName);
+		$message->addInlineImage('id', $fileName);
 
 		$parts	= $message->getParts( TRUE );
 		$this->assertEquals( $part, $parts[0] );
@@ -167,7 +166,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	public function testSetSenderException(){
 		$this->expectException( 'InvalidArgumentException' );
 		$message	= Message::getInstance();
-		$message->setSender( array( 'invalid' ) );
+		$message->setSender( (object) array( 'invalid' ) );
 	}
 
 	/**

@@ -80,8 +80,8 @@ class Availability
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		string		$key			Response data key (error|code|message)
-	 *	@throws		\RangeException				if given key is invalid
+	 *	@param		string|NULL			$key			Response data key (error|code|message)
+	 *	@throws		\RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 */
 	public function getLastError( ?string $key = NULL )
@@ -102,8 +102,8 @@ class Availability
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		string		$key			Response data key (error|request|response|code|message)
-	 *	@throws		\RangeException				if given key is invalid
+	 *	@param		string|NULL			$key			Response data key (error|request|response|code|message)
+	 *	@throws		\RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 */
 	public function getLastResponse( ?string $key = NULL )
@@ -119,7 +119,7 @@ class Availability
 
 	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE )
 	{
-		return MX::create()->fromHostname( $hostname, $useCache, $strict );
+		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
 	}
 
 	protected function readResponse( $connection, $acceptedCodes = array() )
@@ -154,7 +154,7 @@ class Availability
 		);
 	}
 
-	public function test( $receiver, ?string $host = NULL, ?int $port = 587, ?bool $force = FALSE )
+	public function test( $receiver, string $host = NULL, int $port = 587, bool $force = FALSE )
 	{
 		if( is_string( $receiver ) )
 			$receiver	= new Address( $receiver );
@@ -245,12 +245,17 @@ class Availability
 		fputs( $connection, $message.Message::$delimiter );
 	}
 
-	public function setCache( \CeusMedia\Cache\AdapterAbstract $cache ): self
+	public function setCache( \CeusMedia\Cache\AdapterInterface $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;
 	}
 
+	/**
+	 *	@access		public
+	 *	@param		boolean|NULL		$verbose		Flag: enable or disable verbosity
+	 *	@return		self
+	 */
 	public function setVerbose( ?bool $verbose = TRUE ): self
 	{
 		$this->verbose	= $verbose;

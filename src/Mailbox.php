@@ -50,7 +50,7 @@ class Mailbox
 	protected $validateCertificates		= TRUE;
 	protected $error;
 
-	public function __construct( string $host, ?string $username = NULL, ?string $password = NULL, ?bool $secure = TRUE, ?bool $validateCertificates = TRUE )
+	public function __construct( string $host, string $username = NULL, string $password = NULL, bool $secure = TRUE, bool $validateCertificates = TRUE )
 	{
 		$this->checkExtensionInstalled( TRUE );
 		$this->setHost( $host );
@@ -64,7 +64,7 @@ class Mailbox
 		$this->disconnect();
 	}
 
-	protected function checkConnection( ?bool $connect = FALSE, ?bool $strict = TRUE ): bool
+	protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
 	{
 		if( !$this->connection || !imap_ping( $this->connection ) ){
 			if( !$connect ){
@@ -81,7 +81,7 @@ class Mailbox
 		return FALSE;
 	}
 
-	static public function checkExtensionInstalled( ?bool $strict = TRUE ): bool
+	static public function checkExtensionInstalled( bool $strict = TRUE ): bool
 	{
 		if( extension_loaded( 'imap' ) )
 			return TRUE;
@@ -90,7 +90,7 @@ class Mailbox
 		return FALSE;
 	}
 
-	public function connect( ?bool $strict = TRUE ): bool
+	public function connect( bool $strict = TRUE ): bool
 	{
 		$port		= 143;
 		$flags		= array();
@@ -126,7 +126,7 @@ class Mailbox
 		return TRUE;
 	}
 
-	public static function getInstance( string $host, ?string $username = NULL, ?string $password = NULL, ?bool $secure = TRUE, ?bool $validateCertificates = TRUE ): self
+	public static function getInstance( string $host, string $username = NULL, string $password = NULL, bool $secure = TRUE, bool $validateCertificates = TRUE ): self
 	{
 		return new self( $host, $username, $password, $secure, $validateCertificates );
 	}
@@ -136,7 +136,7 @@ class Mailbox
 		return $this->error;
 	}
 
-	public function getMail( string $mailId, ?bool $strict = TRUE ): string
+	public function getMail( int $mailId, bool $strict = TRUE ): string
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
@@ -146,31 +146,29 @@ class Mailbox
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
-	public function getMailAsMessage( string $mailId, ?bool $strict = TRUE ): Message
+	public function getMailAsMessage( int $mailId, bool $strict = TRUE ): Message
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( !$header )
 			throw new \RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
-		return (object) MessageParser::parse( $header.PHP_EOL.PHP_EOL.$body );
+		return (object) MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
-	public function getMailHeaders( string $mailId, ?bool $strict = TRUE ): MessageHeaderSection
+	public function getMailHeaders( int $mailId, bool $strict = TRUE ): MessageHeaderSection
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( !$header )
 			throw new \RuntimeException( 'Invalid mail ID' );
-		return MessageHeaderParser::parse( $header );
+		return MessageHeaderParser::getInstance()->parse( $header );
 	}
 
-	public function index( ?array $criteria = array(), ?int $sort = SORTARRIVAL, ?bool $reverse = FALSE, ?bool $strict = TRUE ): array
+	public function index( array $criteria = array(), int $sort = SORTARRIVAL, bool $reverse = TRUE, bool $strict = TRUE ): array
 	{
 		$this->checkConnection( TRUE, $strict );
-		if( !is_array( $criteria ) && is_string( $criteria ) )
-			$criteria	= array( $criteria );
-		return imap_sort( $this->connection, $sort, $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+		return imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 	}
 
 	/**
@@ -220,7 +218,7 @@ class Mailbox
 	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setSecure( ?bool $secure = TRUE, ?bool $validateCertificates = TRUE ): self
+	public function setSecure( bool $secure = TRUE, bool $validateCertificates = TRUE ): self
 	{
 		$this->secure				= $secure;
 		$this->validateCertificates	= $validateCertificates;
@@ -263,7 +261,7 @@ class Mailbox
 		return $this;
 	}
 
-	public function removeMail( string $mailId, ?bool $expunge = FALSE ): bool
+	public function removeMail( int $mailId, bool $expunge = FALSE ): bool
 	{
 		$this->checkConnection( TRUE );
 		$result	= imap_delete( $this->connection, $mailId, FT_UID );

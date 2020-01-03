@@ -25,7 +25,7 @@ class Address_RendererTest extends TestCase
 	 */
 	public function testRender(){
 		$renderer	= new Renderer();
-		$address	= Address::create()
+		$address	= Address::getInstance()
 			->setDomain( 'muster-server.tld' )
 			->setLocalPart( 'Hans.Mustermann' );
 		$expected	= 'Hans.Mustermann@muster-server.tld';

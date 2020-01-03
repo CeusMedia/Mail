@@ -44,13 +44,26 @@ class Parser
 {
 	/**
 	 *	Static constructor.
-	 *	@access		public
+	 *	@access			public
 	 *	@static
-	 *	@return		self
+	 *	@return			self
+	 *	@deprecated		use getInstance instead
+	 *	@todo			to be removed
 	 */
 	public static function create(): self
 	{
 		return new static();
+	}
+
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
+	public static function getInstance(): self
+	{
+		return new static;
 	}
 
 	public function parse( string $content ): MessageHeaderSection
