@@ -233,7 +233,7 @@ class Message
 			$participant->setName( $name );
 		$this->recipients[strtolower( $type )]->add( $participant );
 		$recipient	= '<'.$participant->getAddress().'>';
-		if( strlen( trim( $name ) ) ){
+		if( is_string( $name ) && strlen( trim( $name ) ) ){
 			$recipient	= MessageHeaderEncoding::encodeIfNeeded( $name ).' '.$recipient;
 		}
 		$recipient	= $participant->get();
@@ -308,13 +308,14 @@ class Message
 	 *	Returns set or empty HTML part.
 	 *	@access		public
 	 *	@return		MessagePartHTML
+	 *	@throws		\RangeException		if no text part is available
 	 */
 	public function getHtml(): MessagePartHTML
 	{
 		foreach( $this->parts as $part )
 			if( $part instanceof MessagePartHTML )
 				return $part;
-		throw new \RangeDomain( 'No HTML part assigned' );
+		throw new \RangeException( 'No HTML part assigned' );
 	}
 
 	/**
@@ -579,7 +580,7 @@ class Message
 			$identifier	= $config['library']['identifier'] ?? NULL;
 			$version	= $config['library']['version'] ?? NULL;
 			if( $identifier && $version )
-				$this->userAgent	= $identifier.'/'.$version;
+				$this->setUserAgent( $identifier.'/'.$version );
 		}
 	}
 }

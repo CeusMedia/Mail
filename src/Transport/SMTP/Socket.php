@@ -243,7 +243,7 @@ class Socket
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
 
-		$lastLine	= FALSE;
+		$lastLine	= '';
 		$code		= NULL;
 		$buffer		= array();
 		$raw		= array();

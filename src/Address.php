@@ -28,7 +28,6 @@ namespace CeusMedia\Mail;
 
 use \CeusMedia\Mail\Address\Parser as AddressParser;
 use \CeusMedia\Mail\Address\Renderer as AddressRenderer;
-use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
 /**

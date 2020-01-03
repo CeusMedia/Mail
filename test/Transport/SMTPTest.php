@@ -51,7 +51,7 @@ class Transport_SMTPTest extends TestCase
 		}
 		catch( \Exception $e ){
 //			print_r( $socket->getLog() );
-			$this->fail( $e );
+			$this->fail( $e->getMessage() );
 		}
 	}
 
@@ -211,7 +211,7 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 
 	public function close(): \CeusMedia\Mail\Transport\SMTP\Socket
 	{
-		$this->connection	= FALSE;
+		$this->connection	= NULL;
 		return $this;
 	}
 
