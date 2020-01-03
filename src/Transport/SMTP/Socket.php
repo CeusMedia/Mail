@@ -233,9 +233,9 @@ class Socket
 	/**
 	 *	Returns parsed response from SMTP server.
 	 *	@access		public
-	 *	@param		integer		$length			Size of chunks
-	 *	@throws		\RuntimeException			if connection is not open
-	 *	@throws		\RuntimeException			if request failed
+	 *	@param		integer			$length			Size of chunks
+	 *	@throws		\RuntimeException				if connection is not open
+	 *	@throws		\RuntimeException				if request failed
 	 *	@return		object
 	 */
 	public function readResponse( int $length )

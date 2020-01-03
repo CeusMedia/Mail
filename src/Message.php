@@ -136,7 +136,7 @@ class Message
 	 *	Adds a header.
 	 *	@access		public
 	 *	@param		MessageHeaderField	$field		Mail header field object
-	 *	@return		self		Message object for chaining
+	 *	@return		self				Message object for chaining
 	 */
 	public function addHeader( MessageHeaderField $field ): self
 	{
@@ -147,9 +147,9 @@ class Message
 	/**
 	 *	Sets a header.
 	 *	@access		public
-	 *	@param		string		$key		Key of header
-	 *	@param		string		$value		Value of header
-	 *	@return		self		Message object for chaining
+	 *	@param		string			$key		Key of header
+	 *	@param		string			$value		Value of header
+	 *	@return		self			Message object for chaining
 	 */
 	public function addHeaderPair( string $key, string $value ): self
 	{
@@ -203,8 +203,8 @@ class Message
 	 *	General way to add another mail part.
 	 *	More specific: addText, addHtml, addHtmlImage, addAttachment.
 	 *	@access		public
-	 *	@param		MessagePart	$part		Part of mail
-	 *	@return		self		Message object for chaining
+	 *	@param		MessagePart		$part		Part of mail
+	 *	@return		self			Message object for chaining
 	 */
 	public function addPart( MessagePart $part ): self
 	{
@@ -392,7 +392,7 @@ class Message
 	/**
 	 *	Returns set recipient addresses.
 	 *	@access		public
-	 *	@param		string		$type		One of {TO, CC, BCC}
+	 *	@param		string			$type		One of {TO, CC, BCC}
 	 *	@return		AddressCollection
 	 */
 	public function getRecipientsByType( string $type = 'TO' ): AddressCollection
@@ -547,8 +547,8 @@ class Message
 	/**
 	 *	Sets Mail Subject.
 	 *	@access		public
-	 *	@param		string		$subject	Subject of Mail
-	 *	@return		self		Message object for chaining
+	 *	@param		string			$subject	Subject of Mail
+	 *	@return		self			Message object for chaining
 	 */
 	public function setSubject( string $subject ): self
 	{
@@ -559,8 +559,8 @@ class Message
 	/**
 	 *	Sets mail user agent for mailer header.
 	 *	@access		public
-	 *	@param		string		$userAgent		Mailer user agent
-	 *	@return		self		Message object for chaining
+	 *	@param		string			$userAgent		Mailer user agent
+	 *	@return		self			Message object for chaining
 	 */
 	public function setUserAgent( string $userAgent ): self
 	{
