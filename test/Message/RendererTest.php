@@ -23,6 +23,7 @@ class Message_RendererTest extends TestCase
 	 */
 	public function testRender(){
 		$this->markTestIncomplete( 'No test defined for Message\\Renderer' );
-	}
 
+		$renderer	= Renderer::getInstance();
+	}
 }

@@ -153,24 +153,22 @@ class Mailbox
 		if( !$header )
 			throw new \RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
-		return (object) MessageParser::parse( $header.PHP_EOL.PHP_EOL.$body );
+		return (object) MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
-	public function getMailHeaders( string $mailId, ?bool $strict = TRUE ): MessageHeaderSection
+	public function getMailHeaders( int $mailId, bool $strict = TRUE ): MessageHeaderSection
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( !$header )
 			throw new \RuntimeException( 'Invalid mail ID' );
-		return MessageHeaderParser::parse( $header );
+		return MessageHeaderParser::getInstance()->parse( $header );
 	}
 
-	public function index( ?array $criteria = array(), ?int $sort = SORTARRIVAL, ?bool $reverse = FALSE, ?bool $strict = TRUE ): array
+	public function index( array $criteria = array(), int $sort = SORTARRIVAL, bool $reverse = FALSE, bool $strict = TRUE ): array
 	{
 		$this->checkConnection( TRUE, $strict );
-		if( !is_array( $criteria ) && is_string( $criteria ) )
-			$criteria	= array( $criteria );
-		return imap_sort( $this->connection, $sort, $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+		return imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 	}
 
 	/**
@@ -220,7 +218,7 @@ class Mailbox
 	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setSecure( ?bool $secure = TRUE, ?bool $validateCertificates = TRUE ): self
+	public function setSecure( bool $secure = TRUE, bool $validateCertificates = TRUE ): self
 	{
 		$this->secure				= $secure;
 		$this->validateCertificates	= $validateCertificates;
@@ -263,7 +261,7 @@ class Mailbox
 		return $this;
 	}
 
-	public function removeMail( string $mailId, ?bool $expunge = FALSE ): bool
+	public function removeMail( int $mailId, bool $expunge = FALSE ): bool
 	{
 		$this->checkConnection( TRUE );
 		$result	= imap_delete( $this->connection, $mailId, FT_UID );

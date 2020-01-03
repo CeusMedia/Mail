@@ -104,7 +104,7 @@ class Address_Collection_ParserTest extends TestCase
 
 	//  --  PROTECTED  --  //
 	protected function assertEqualsForAllMethods( $expected, $string ){
-		$parser	= Parser::create();
+		$parser	= Parser::getInstance();
 		$parser->setMethod( Parser::METHOD_OWN );
 		$this->assertEquals( $expected, $parser->parse( $string ) );
 		$parser->setMethod( Parser::METHOD_IMAP );

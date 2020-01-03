@@ -28,7 +28,7 @@ class Transport_SMTPTest extends TestCase
 	 *	@covers		::send
 	 */
 	public function testSend_Mocked(){
-		$message	= Message::create()
+		$message	= Message::getInstance()
 			->addRecipient( 'receiver@muster-server.tld' )
 			->setSender( 'sender@muster-server.tld' )
 			->addText( 'This is a <b>test</b>.' )
@@ -76,13 +76,13 @@ class Transport_SMTPTest extends TestCase
 		$smtp->setUsername( $configSender->get( 'auth.username' ) );
 		$smtp->setPassword( $configSender->get( 'auth.password' ) );
 
-		$recipient	=  Address::create()
+		$recipient	=  Address::getInstance()
 			->set( $configReceiver->get( 'mailbox.address' ) )
 			->setName( $configReceiver->get( 'mailbox.name' ) );
-		$sender		=  Address::create()
+		$sender		=  Address::getInstance()
 			->set( $configSender->get( 'mailbox.address' ) )
 			->setName( $configSender->get( 'mailbox.name' ) );
-		$message	= Message::create()
+		$message	= Message::getInstance()
 			->addRecipient( $recipient )
 			->setSender( $sender )
 			->setSubject( $subject )
@@ -91,7 +91,7 @@ class Transport_SMTPTest extends TestCase
 				'Subject:  '.$subject,
 				'Library:  CeusMedia\Mail (https://github.com/CeusMedia/Mail)',
 				'Source:   Transport\SMTP',
-				'Client:   '.Message::create()->getUserAgent(),
+				'Client:   '.Message::getInstance()->getUserAgent(),
 				'Date:     '.date( 'Y-m-d H:i:s' ),
 			) ) );
 		$isMailSent		= $smtp->send( $message );
@@ -142,13 +142,13 @@ class Transport_SMTPTest extends TestCase
 		$smtp->setUsername( $configSender->get( 'auth.username' ) );
 		$smtp->setPassword( $configSender->get( 'auth.password' ) );
 
-		$recipient	=  Address::create()
+		$recipient	=  Address::getInstance()
 			->set( $configReceiver->get( 'mailbox.address' ) )
 			->setName( $configReceiver->get( 'mailbox.name' ) );
-		$sender		=  Address::create()
+		$sender		=  Address::getInstance()
 			->set( $configSender->get( 'mailbox.address' ) )
 			->setName( $configSender->get( 'mailbox.name' ) );
-		$message	= Message::create()
+		$message	= Message::getInstance()
 			->addRecipient( $recipient )
 			->setSender( $sender )
 			->setSubject( $subject )
@@ -158,7 +158,7 @@ class Transport_SMTPTest extends TestCase
 				'Subject:  '.$subject,
 				'Library:  CeusMedia\Mail (https://github.com/CeusMedia/Mail)',
 				'Source:   Transport\SMTP',
-				'Client:   '.Message::create()->getUserAgent(),
+				'Client:   '.Message::getInstance()->getUserAgent(),
 				'Date:     '.date( 'Y-m-d H:i:s' ),
 			) ) );
 		$isMailSent		= $smtp->send( $message );

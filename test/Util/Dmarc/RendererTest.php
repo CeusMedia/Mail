@@ -24,7 +24,7 @@ class RendererTest extends TestCase
 	 *	@covers		::create
 	 */
 	public function testCreate(){
-		$instance	= Renderer::create();
+		$instance	= Renderer::getInstance();
 		$this->assertTrue( is_object( $instance ) );
 		$this->assertTrue( $instance instanceof Renderer );
 		$this->assertTrue( get_class( $instance ) === 'CeusMedia\Mail\Util\Dmarc\Renderer' );
@@ -45,7 +45,7 @@ class RendererTest extends TestCase
 		$record->percent			= 90;
 		$record->failureOption		= Record::REPORT_IF_ANY_FAILED;
 
-		$rendered	= Renderer::create()->render( $record );
+		$rendered	= Renderer::getInstance()->render( $record );
 		$dmarc		= "v=DMARC1; p=quarantine; sp=reject; pct=90; rua=mailto:postmaster1@ceusmedia.de; ruf=mailto:postmaster2@ceusmedia.de; adkim=s; aspf=s; fo=1; ri=3600";
 
 		$rendered	= preg_split( '/; /', $rendered );

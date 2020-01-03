@@ -82,7 +82,7 @@ This is an outlook how the interface could look like in future.
 ```php
 use \CeusMedia\Mail\Client;
 
-Client::create("This is just a test")
+Client::getInstance("This is just a test")
 	->from("john@example.com", "John Doe")
 	->to("mike@example.com", "Mike Foo")
 	->bcc("spy@example.com")

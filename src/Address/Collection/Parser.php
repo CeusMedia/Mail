@@ -58,13 +58,26 @@ class Parser
 
 	/**
 	 *	Static constructor.
-	 *	@access		public
+	 *	@access			public
 	 *	@static
-	 *	@return		self
+	 *	@return			self
+	 *	@deprecated		use getInstance instead
+	 *	@todo			to be removed
 	 */
 	public static function create(): self
 	{
 		return new static();
+	}
+
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
+	public static function getInstance(): self
+	{
+		return new static;
 	}
 
 	/**
@@ -91,7 +104,7 @@ class Parser
 		switch( $method ){
 			case static::METHOD_IMAP_PLUS_OWN:
 				$collection	= $this->parseUsingImap( $string );										//  get collection using IMAP functions
-				$string		= AddressCollectionRenderer::create()->render( $collection );			//  render collection string
+				$string		= AddressCollectionRenderer::getInstance()->render( $collection );		//  render collection string
 				return $this->parseUsingOwn( $string );												//  get collection using own implementation
 			case static::METHOD_IMAP:
 				return $this->parseUsingImap( $string );											//  get collection using IMAP functions

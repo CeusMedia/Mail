@@ -119,7 +119,7 @@ class Availability
 
 	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE )
 	{
-		return MX::create()->fromHostname( $hostname, $useCache, $strict );
+		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
 	}
 
 	protected function readResponse( $connection, $acceptedCodes = array() )

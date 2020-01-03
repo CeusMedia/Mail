@@ -178,7 +178,7 @@ class Address
 	 */
 	public function render( Address $address ): string
 	{
-		return AddressRenderer::create()->render( $address );
+		return AddressRenderer::getInstance()->render( $address );
 	}
 
 	/**
@@ -193,7 +193,7 @@ class Address
 		if( !strlen( trim( $string ) ) )
 			throw new \InvalidArgumentException( 'No address given' );
 
-		$address	= AddressParser::create()->parse( $string );
+		$address	= AddressParser::getInstance()->parse( $string );
 		$this->setDomain( $address->getDomain() );
 		$this->setLocalPart( $address->getLocalPart() );
 		$this->setName( $address->getName() );

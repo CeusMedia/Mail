@@ -112,7 +112,7 @@ class Collection implements \Countable, \Iterator
 
 	public function render(): string
 	{
-		return AddressCollectionRenderer::create()->render( $this );
+		return AddressCollectionRenderer::getInstance()->render( $this );
 	}
 
 	/**

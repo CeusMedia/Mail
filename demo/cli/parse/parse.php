@@ -9,7 +9,7 @@ use \CeusMedia\Mail\Message\Part\Attachment;
 $mailFile		= "mail.txt";
 
 $content	= \FS_File_Reader::load( __DIR__."/".$mailFile );
-$message	= Parser::create()->parse( $content );
+$message	= Parser::getInstance()->parse( $content );
 
 foreach( $message->getParts() as $nr => $part ){
 	remark( "Part #".($nr + 1) );

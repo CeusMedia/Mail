@@ -103,9 +103,11 @@ class Message
 
 	/**
 	 *	Static constructor.
-	 *	@access		public
 	 *	@static
+	 *	@access		public
 	 *	@return		self
+	 *	@deprecated		use getInstance instead
+	 *	@todo			to be removed
 	 */
 	public static function create(): self
 	{
