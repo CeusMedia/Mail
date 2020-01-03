@@ -154,7 +154,7 @@ class Availability
 		);
 	}
 
-	public function test( $receiver, ?string $host = NULL, ?int $port = 587, ?bool $force = FALSE )
+	public function test( $receiver, string $host = NULL, int $port = 587, bool $force = FALSE )
 	{
 		if( is_string( $receiver ) )
 			$receiver	= new Address( $receiver );
@@ -245,7 +245,7 @@ class Availability
 		fputs( $connection, $message.Message::$delimiter );
 	}
 
-	public function setCache( \CeusMedia\Cache\AdapterAbstract $cache ): self
+	public function setCache( \CeusMedia\Cache\AdapterInterface $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;

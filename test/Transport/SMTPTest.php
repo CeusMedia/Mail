@@ -247,9 +247,9 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 		return $this->log;
 	}
 
-	public function open( ?bool $forceReopen = FALSE ): \CeusMedia\Mail\Transport\SMTP\Socket
+	public function open( bool $forceReopen = FALSE ): \CeusMedia\Mail\Transport\SMTP\Socket
 	{
-		$this->connection	= TRUE;
+		$this->connection	= NULL;
 		return $this;
 	}
 

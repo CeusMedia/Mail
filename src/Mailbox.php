@@ -50,7 +50,7 @@ class Mailbox
 	protected $validateCertificates		= TRUE;
 	protected $error;
 
-	public function __construct( string $host, ?string $username = NULL, ?string $password = NULL, ?bool $secure = TRUE, ?bool $validateCertificates = TRUE )
+	public function __construct( string $host, string $username = NULL, string $password = NULL, bool $secure = TRUE, bool $validateCertificates = TRUE )
 	{
 		$this->checkExtensionInstalled( TRUE );
 		$this->setHost( $host );
@@ -64,7 +64,7 @@ class Mailbox
 		$this->disconnect();
 	}
 
-	protected function checkConnection( ?bool $connect = FALSE, ?bool $strict = TRUE ): bool
+	protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
 	{
 		if( !$this->connection || !imap_ping( $this->connection ) ){
 			if( !$connect ){
@@ -81,7 +81,7 @@ class Mailbox
 		return FALSE;
 	}
 
-	static public function checkExtensionInstalled( ?bool $strict = TRUE ): bool
+	static public function checkExtensionInstalled( bool $strict = TRUE ): bool
 	{
 		if( extension_loaded( 'imap' ) )
 			return TRUE;
@@ -90,7 +90,7 @@ class Mailbox
 		return FALSE;
 	}
 
-	public function connect( ?bool $strict = TRUE ): bool
+	public function connect( bool $strict = TRUE ): bool
 	{
 		$port		= 143;
 		$flags		= array();
@@ -126,7 +126,7 @@ class Mailbox
 		return TRUE;
 	}
 
-	public static function getInstance( string $host, ?string $username = NULL, ?string $password = NULL, ?bool $secure = TRUE, ?bool $validateCertificates = TRUE ): self
+	public static function getInstance( string $host, string $username = NULL, string $password = NULL, bool $secure = TRUE, bool $validateCertificates = TRUE ): self
 	{
 		return new self( $host, $username, $password, $secure, $validateCertificates );
 	}
@@ -136,7 +136,7 @@ class Mailbox
 		return $this->error;
 	}
 
-	public function getMail( string $mailId, ?bool $strict = TRUE ): string
+	public function getMail( int $mailId, bool $strict = TRUE ): string
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
@@ -146,7 +146,7 @@ class Mailbox
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
-	public function getMailAsMessage( string $mailId, ?bool $strict = TRUE ): Message
+	public function getMailAsMessage( int $mailId, bool $strict = TRUE ): Message
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );

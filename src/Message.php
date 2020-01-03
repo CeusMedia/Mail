@@ -117,13 +117,13 @@ class Message
 	/**
 	 *	Add file as attachment part.
 	 *	@access		public
-	 *	@param		string		$filePath		Path of file to add
-	 *	@param		string		$mimeType		Optional: MIME type of file
-	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@param		string		$fileName		Optional: Name of file
-	 *	@return		self		Message object for chaining
+	 *	@param		string			$filePath		Path of file to add
+	 *	@param		string			$mimeType		Optional: MIME type of file
+	 *	@param		string			$encoding		Optional: Encoding to apply
+	 *	@param		string			$fileName		Optional: Name of file
+	 *	@return		self			Message object for chaining
 	 */
-	public function addAttachment( string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL, ?string $fileName = NULL ): self
+	public function addAttachment( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
 		$part	= new MessagePartAttachment();
 		$part->setFile( $filePath, $mimeType, $encoding );
@@ -160,43 +160,26 @@ class Message
 	/**
 	 *	Add HTML part by content.
 	 *	@access		public
-	 *	@param		string		$content		HTML content to add as message part
-	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
-	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
-	 *	@return		self		Message object for chaining
+	 *	@param		string			$content		HTML content to add as message part
+	 *	@param		string			$charset		Optional: Character set (default: UTF-8)
+	 *	@param		string			$encoding		Optional: Encoding to apply (default: base64)
+	 *	@return		self			Message object for chaining
 	 */
-	public function addHtml( string $content, ?string $charset = 'UTF-8', ?string $encoding = 'base64' ): self
+	public function addHtml( string $content, string $charset = 'UTF-8', string $encoding = 'base64' ): self
 	{
 		return $this->addPart( new MessagePartHTML( $content, $charset, $encoding ) );
 	}
 
 	/**
 	 *	Add image for HTML part by content.
-	 *	Alias for addInlineImage.
 	 *	@access		public
-	 *	@param		string		$id				Content ID of image to be used in HTML part
-	 *	@param		string		$filePath		File Path of image to embed
-	 *	@param		string		$mimeType		Optional: MIME type of file
-	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@return		self		Message object for chaining
-	 *	@deprecated	use addInlineImage instead
-	 *	@todo		remove in 2.1
+	 *	@param		string			$id				Content ID of image to be used in HTML part
+	 *	@param		string			$filePath		File Path of image to embed
+	 *	@param		string			$mimeType		Optional: MIME type of file
+	 *	@param		string			$encoding		Optional: Encoding to apply
+	 *	@return		self			Message object for chaining
 	 */
-	public function addHtmlImage( string $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
-	{
-		return $this->addInlineImage( $id, $filePath, $mimeType, $encoding );
-	}
-
-	/**
-	 *	Add image for HTML part by content.
-	 *	@access		public
-	 *	@param		string		$id				Content ID of image to be used in HTML part
-	 *	@param		string		$filePath		File Path of image to embed
-	 *	@param		string		$mimeType		Optional: MIME type of file
-	 *	@param		string		$encoding		Optional: Encoding to apply
-	 *	@return		self		Message object for chaining
-	 */
-	public function addInlineImage( string $id, string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL ): self
+	public function addInlineImage( string $id, string $filePath, string $mimeType = NULL, string $encoding = NULL ): self
 	{
 		$part	= new MessagePartInlineImage( $id, $filePath, $mimeType, $encoding );
 		return $this->addPart( $part );
@@ -205,12 +188,12 @@ class Message
 	/**
 	 *	Add forwared mail part by plain content.
 	 *	@access		public
-	 *	@param		string		$content		Nested mail content to add as message part
-	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
-	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
-	 *	@return		self		Message object for chaining
+	 *	@param		string			$content		Nested mail content to add as message part
+	 *	@param		string			$charset		Optional: Character set (default: UTF-8)
+	 *	@param		string			$encoding		Optional: Encoding to apply (default: base64)
+	 *	@return		self			Message object for chaining
 	 */
-	public function addMail( string $content, ?string $charset = 'UTF-8', ?string $encoding = 'base64' ): self
+	public function addMail( string $content, string $charset = 'UTF-8', string $encoding = 'base64' ): self
 	{
 		$part	= new MessagePartMail( $content, $charset, $encoding );
 		return $this->addPart( $part );
@@ -233,11 +216,11 @@ class Message
 	 *	Add a receiver as string to participant object.
 	 *	@access		public
 	 *	@param		string			$participant		Address or object of participant to add as receiver
-	 *	@param		string|NULL		$name				Name of the participant if address is given as string
-	 *	@param		string|NULL		$type				Type of receiver (To, Cc, Bcc), case insensitive
+	 *	@param		string			$name				Name of the participant if address is given as string
+	 *	@param		string			$type				Type of receiver (TO, CC, BCC), case insensitive
 	 *	@return		self			Message object for chaining
 	 */
-	public function addRecipient( $participant, ?string $name = NULL, ?string $type = "To" ): self
+	public function addRecipient( $participant, string $name = NULL, string $type = "TO" ): self
 	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
@@ -264,7 +247,7 @@ class Message
 		return $this;
 	}
 
-	public function addReplyTo( $participant, ?string $name = NULL ): self
+	public function addReplyTo( $participant, string $name = NULL ): self
 	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
@@ -279,12 +262,12 @@ class Message
 	/**
 	 *	Add plaintext part by content.
 	 *	@access		public
-	 *	@param		string		$content		Plaintext content to add as message part
-	 *	@param		string		$charset		Optional: Character set (default: UTF-8)
-	 *	@param		string		$encoding		Optional: Encoding to apply (default: base64)
-	 *	@return		self		Message object for chaining
+	 *	@param		string			$content		Plaintext content to add as message part
+	 *	@param		string			$charset		Optional: Character set (default: UTF-8)
+	 *	@param		string			$encoding		Optional: Encoding to apply (default: base64)
+	 *	@return		self			Message object for chaining
 	 */
-	public function addText( string $content, ?string $charset = 'UTF-8', ?string $encoding = 'base64' ): self
+	public function addText( string $content, string $charset = 'UTF-8', string $encoding = 'base64' ): self
 	{
 		$part	= new MessagePartText( $content, $charset, $encoding );
 		return $this->addPart( $part );
@@ -293,10 +276,10 @@ class Message
 	/**
 	 *	Returns list set attachment parts.
 	 *	@access		public
-	 *	@param		boolean		$withInlineImages		Flag: list inline images, also
+	 *	@param		boolean			$withInlineImages		Flag: list inline images, also
 	 *	@return		array
 	 */
-	public function getAttachments( ?bool $withInlineImages = TRUE ): array
+	public function getAttachments( bool $withInlineImages = TRUE ): array
 	{
 		$list	= array();
 		foreach( $this->parts as $part ){
@@ -376,10 +359,10 @@ class Message
 	/**
 	 *	Returns list of set body parts.
 	 *	@access		public
-	 *	@param		boolean		$withAttachments	Flag: return attachment parts also
+	 *	@param		boolean			$withAttachments	Flag: return attachment parts also
 	 *	@return		array
 	 */
-	public function getParts( ?bool $withAttachments = TRUE ): array
+	public function getParts( bool $withAttachments = TRUE ): array
 	{
 		if( $withAttachments )
 			return $this->parts;
@@ -435,7 +418,7 @@ class Message
 	 *	@param		string|NULL		$encoding		Optional: Types: base64, quoted-printable. Default: none
 	 *	@return		string
 	 */
-	public function getSubject( ?string $encoding = NULL ): string
+	public function getSubject( string $encoding = NULL ): string
 	{
 		return $this->subject;
 	}
@@ -529,7 +512,7 @@ class Message
 		return FALSE;
 	}
 
-	public function setReadNotificationRecipient( $participant, ?string $name = NULL ): self
+	public function setReadNotificationRecipient( $participant, string $name = NULL ): self
 	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
@@ -543,11 +526,11 @@ class Message
 	 *	Sets sender address and name.
 	 *	@access		public
 	 *	@param		string|object	$participant	Mail sender address or participant object
-	 *	@param		string			$name			Optional: Mail sender name
+	 *	@param		string|NULL		$name			Optional: Mail sender name
 	 *	@return		self			Message object for chaining
 	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Address
 	 */
-	public function setSender( $participant, ?string $name = NULL ): self
+	public function setSender( $participant, string $name = NULL ): self
 	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
