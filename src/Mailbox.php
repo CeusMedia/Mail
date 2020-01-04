@@ -26,9 +26,10 @@
  */
 namespace CeusMedia\Mail;
 
-use \CeusMedia\Mail\Message\Parser as MessageParser;
-use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Message\Parser as MessageParser;
+use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 
 /**
  *	Handler for IMAP mailboxes.
@@ -169,6 +170,22 @@ class Mailbox
 	{
 		$this->checkConnection( TRUE, $strict );
 		return imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+	}
+
+	public function search( array $conditions )
+	{
+		$this->checkConnection( TRUE, $strict );
+		return MailboxSearch::getInstance()
+			->setConnection( $this->connection )
+			->applyConditions( $conditions )
+			->getAllMessages();
+	}
+
+	public function performSearch( MailboxSearch $search ): array
+	{
+		$this->checkConnection( TRUE, TRUE );
+		$search->setConnection( $this->connection );
+		return $search->getAll();
 	}
 
 	/**
