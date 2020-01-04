@@ -77,16 +77,6 @@ class SMTP
 		$this->setPassword( $password );
 	}
 
-	protected function checkResponse( $acceptedCodes = array() )
-	{
-		$response	= $this->socket->readResponse( 1024 );
-		if( $this->verbose )
-			print ' < '.join( PHP_EOL."   ", $response->raw );
-		if( $acceptedCodes && !in_array( $response->code, $acceptedCodes ) )
-			throw new \RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
-		return $response;
-	}
-
 	/**
 	 *	Returns last connection error message, if connecting failed.
 	 *	Otherwise NULL.
@@ -98,9 +88,20 @@ class SMTP
 		return $this->socket->getError();
 	}
 
-	static public function getInstance( $host, $port = 25 )
+	/**
+	 *	Get instance of SMTP transport.
+	 *	Receives connection parameters (host, port, username, passord) if given.
+	 *	@static
+	 *	@access		public
+	 *	@param		string		$host		SMTP server host name
+	 *	@param		integer		$port		SMTP server port
+	 *	@param		string		$username	SMTP auth username
+	 *	@param		string		$password	SMTP auth password
+	 *	@return		self
+	 */
+	public static function getInstance( $host, $port = 25, $username = NULL, $password = NULL )
 	{
-		return new self( $host, $port );
+		return new static( $host, $port, $username, $password );
 	}
 
 	/**
@@ -166,13 +167,6 @@ class SMTP
 			throw new \RuntimeException( $e->getMessage(), $e->getCode(), $e->getPrevious() );
 		}
 		return $this;
-	}
-
-	protected function sendChunk( $message )
-	{
-		if( $this->verbose )
-			print PHP_EOL . ' > '.$message . PHP_EOL;
-		return $this->socket->sendChunk( $message.Message::$delimiter );
 	}
 
 	/**
@@ -269,5 +263,24 @@ class SMTP
 	{
 		$this->verbose = (bool) $verbose;
 		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	protected function checkResponse( $acceptedCodes = array() )
+	{
+		$response	= $this->socket->readResponse( 1024 );
+		if( $this->verbose )
+			print ' < '.join( PHP_EOL."   ", $response->raw );
+		if( $acceptedCodes && !in_array( $response->code, $acceptedCodes ) )
+			throw new \RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
+		return $response;
+	}
+
+	protected function sendChunk( $message )
+	{
+		if( $this->verbose )
+			print PHP_EOL . ' > '.$message . PHP_EOL;
+		return $this->socket->sendChunk( $message.Message::$delimiter );
 	}
 }

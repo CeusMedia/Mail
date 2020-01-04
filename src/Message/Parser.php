@@ -72,7 +72,7 @@ class Parser
 		return new static;
 	}
 
-	public function parse( $content )
+	public function parse( $content ): Message
 	{
 		$message	= new Message();
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );

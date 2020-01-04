@@ -6,6 +6,7 @@ use CeusMedia\Mail\Message\Renderer;
 use CeusMedia\Mail\Transport\SMTP;
 
 $configSmtp	= (object) $config->getAll( 'SMTP_' );
+$configSend	= (object) $config->getAll( 'sending_' );
 
 $message	= new Message();
 $message->setSubject( '[Prefix] Subject' );
