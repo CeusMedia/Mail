@@ -53,35 +53,13 @@ class InlineImage extends MessagePart
 
 	/**
 	 *	Constructor.
-	 *	Sets image by existing file.
-	 *	Will gather file size, file dates (access, creation, modification).
 	 *	@access		public
 	 *	@param		string		$id				Content ID of image to be used in HTML part
-	 *	@param		string		$fileName		Name of file to attach
-	 *	@param		string		$mimeType		MIME type of file (will be detected if not given)
-	 *	@param		string		$encoding		Encoding of file
-	 *	@return		void
-	 *	@throws		\InvalidArgumentException	if file is not existing
-	 *	@todo  		scan file for malware
 	 */
-	public function __construct( $id, $fileName, $mimeType = NULL, $encoding = NULL )
+	public function __construct( $id )
 	{
-		if( !file_exists( $fileName ) )
-			throw new \InvalidArgumentException( 'Attachment file "'.$fileName.'" is not existing' );
-		$this->setFormat( 'fixed' );
-		$this->setEncoding( 'base64' );
-//		$this->setMimeType( 'application/octet-stream' );
-		$this->content	= file_get_contents( $fileName );
 		$this->type		= static::TYPE_INLINE_IMAGE;
 		$this->setId( $id );
-		$this->setFileName( $fileName );
-		$this->setFileSize( filesize( $fileName ) );
-		$this->setFileATime( fileatime( $fileName ) );
-		$this->setFileCTime( filectime( $fileName ) );
-		$this->setFileMTime( filemtime( $fileName ) );
-		$this->setMimeType( $mimeType ? $mimeType : $this->getMimeTypeFromFile( $fileName ) );
-		if( $encoding )
-			$this->setEncoding( $encoding );
 	}
 
 	/**
@@ -179,22 +157,32 @@ class InlineImage extends MessagePart
 
 	/**
 	 *	Sets inline image by existing file.
+	 *	Will gather file size, file dates (access, creation, modification).
 	 *	@access		public
-	 *	@param		string		$fileName		Name of file to attach
-	 *	@param		string		$mimeType		MIME type of file (will be detected if not given)
-	 *	@param		string		$encoding		Encoding of file
-	 *	@return		object  	Self instance for chaining
+	 *	@param		string			$filePath		Path to image file
+	 *	@param		string|NULL		$mimeType		Optional: MIME type of file (will be detected if not given)
+	 *	@param		string|NULL		$encoding		Optional: Encoding of file
+	 *	@param		string|NULL		$fileName		Optional: Name of file in part
+	 *	@return		object		  	Self instance for chaining
 	 *	@throws		\InvalidArgumentException	if file is not existing
-	 *	@todo   	use mime magic to detect MIME type
 	 *	@todo  		scan file for malware
-	 *	@deprecated	use constructor instead
-	 *	@todo    	to be removed in 1.2
 	 */
-	public function setFile( $id, $fileName, $mimeType = NULL, $encoding = NULL )
-	{
-		trigger_error( 'Use constructor instead', E_USER_DEPRECATED );
-		return new self( $id, $fileName, $mimeType, $encoding );
-	}
+	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
+ 	{
+		$file	= new \FS_File( $filePath );
+ 		if( !$file->exists() )
+ 			throw new \InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
+ 		$this->content	= $file->getContent();
+		$this->setFileName( $fileName ? $fileName : basename( $filePath ) );
+ 		$this->setFileSize( filesize( $filePath ) );
+ 		$this->setFileATime( fileatime( $filePath ) );
+ 		$this->setFileCTime( filectime( $filePath ) );
+ 		$this->setFileMTime( filemtime( $filePath ) );
+ 		$this->setMimeType( $mimeType ? $mimeType : $this->getMimeTypeFromFile( $filePath ) );
+ 		if( $encoding )
+ 			$this->setEncoding( $encoding );
+ 		return $this;
+ 	}
 
 	/**
 	 *	Sets file name.

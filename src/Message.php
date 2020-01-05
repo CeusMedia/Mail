@@ -177,11 +177,13 @@ class Message
 	 *	@param		string			$filePath		File Path of image to embed
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file
 	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
+	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Message object for chaining
 	 */
-	public function addInlineImage( string $id, string $filePath, string $mimeType = NULL, string $encoding = NULL ): self
+	public function addInlineImage( string $id, string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
-		$part	= new MessagePartInlineImage( $id, $filePath, $mimeType, $encoding );
+		$part	= new MessagePartInlineImage( $id );
+		$part->setFile( $filePath, $mimeType, $encoding, $fileName );
 		return $this->addPart( $part );
 	}
 
