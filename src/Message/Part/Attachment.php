@@ -53,7 +53,6 @@ class Attachment extends MessagePart
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@return		void
 	 */
 	public function __construct()
 	{
@@ -154,7 +153,7 @@ class Attachment extends MessagePart
 	 *	@param		string		$filePath		Path of file to attach
 	 *	@param		string		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string		$encoding		Optional: Encoding of file
-	 *	@param		string		$fileName		Optional: Name of file
+	 *	@param		string		$fileName		Optional: Name of file in part
 	 *	@return		object  	Self instance for chaining
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware

@@ -41,6 +41,13 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  */
 class HTML extends MessagePartText
 {
+	/**
+	 *	Constructor.
+	 *	@access		public
+	 *	@param		string		$content		HTML content 
+	 *	@param		string		$charset		Character set to set, default: UTF-8
+	 *	@param		string		$encoding		Encoding to set, default: base64, values: 7bit,8bit,base64,quoted-printable,binary
+	 */
 	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' )
 	{
 		parent::__construct( $content, $charset, $encoding );

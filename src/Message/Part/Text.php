@@ -43,7 +43,14 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  */
 class Text extends MessagePart
 {
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' )
+	/**
+	 *	Constructor.
+	 *	@access		public
+	 *	@param		string		$content		Text content
+	 *	@param		string		$charset		Character set to set, default: UTF-8
+	 *	@param		string		$encoding		Encoding to set, default: base64, values: 7bit,8bit,base64,quoted-printable,binary
+	 */
+	public function __construct( string $content, string $charset = 'UTF-8', string $encoding = 'base64' )
 	{
 		$this->type		= static::TYPE_TEXT;
 		$this->setContent( $content );

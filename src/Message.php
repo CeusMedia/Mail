@@ -120,7 +120,7 @@ class Message
 	 *	@param		string			$filePath		Path of file to add
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file
 	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
-	 *	@param		string|NULL		$fileName		Optional: Name of file
+	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Message object for chaining
 	 */
 	public function addAttachment( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
@@ -201,7 +201,7 @@ class Message
 
 	/**
 	 *	General way to add another mail part.
-	 *	More specific: addText, addHtml, addHtmlImage, addAttachment.
+	 *	More specific: addText, addHTML, addAttachment, addInlineImage, addMail.
 	 *	@access		public
 	 *	@param		MessagePart		$part		Part of mail
 	 *	@return		self			Message object for chaining
@@ -298,12 +298,12 @@ class Message
 	}
 
 	/**
-	 *	Returns set or empty HTML part.
+	 *	Returns set HTML part.
 	 *	@access		public
 	 *	@return		MessagePartHTML
-	 *	@throws		\RangeException		if no text part is available
+	 *	@throws		\RangeException		if no HTML part is available
 	 */
-	public function getHtml(): MessagePartHTML
+	public function getHTML(): MessagePartHTML
 	{
 		foreach( $this->parts as $part )
 			if( $part->isHTML() )
@@ -337,7 +337,7 @@ class Message
 	}
 
 	/**
-	 *	Returns list attached mails.
+	 *	Returns list of attached mails.
 	 *	@access		public
 	 *	@return		array
 	 */
@@ -420,7 +420,7 @@ class Message
 	}
 
 	/**
-	 *	Returns set or empty text part.
+	 *	Returns set text part.
 	 *	@access		public
 	 *	@return		MessagePartText
 	 *	@throws		\RangeException		if no text part is available
