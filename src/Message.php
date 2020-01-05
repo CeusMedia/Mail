@@ -276,23 +276,16 @@ class Message
 	}
 
 	/**
-	 *	Returns list set attachment parts.
+	 *	Returns list of set attachment parts.
 	 *	@access		public
-	 *	@param		boolean			$withInlineImages		Flag: list inline images, also
 	 *	@return		array
 	 */
-	public function getAttachments( bool $withInlineImages = TRUE ): array
+	public function getAttachments(): array
 	{
 		$list	= array();
-		foreach( $this->parts as $part ){
-			if( $part instanceof MessagePartAttachment )
+		foreach( $this->parts as $part )
+			if( $part->isAttachment() )
 				$list[]	= $part;
-			if( $part instanceof MessagePartInlineImage )
-				if( $withInlineImages )
-					$list[]	= $part;
-			if( $part instanceof MessagePartMail )
-				$list[]	= $part;
-		}
 		return $list;
 	}
 
@@ -362,21 +355,23 @@ class Message
 	/**
 	 *	Returns list of set body parts.
 	 *	@access		public
-	 *	@param		boolean			$withAttachments	Flag: return attachment parts also
+	 *	@param		boolean		$withAttachments	Flag: return attachment parts also
+	 *	@param		boolean		$withInlineImages	Flag: include inline images, default: yes
+	 *	@param		boolean		$withMails			Flag: include attached mails, default: yes
 	 *	@return		array
 	 */
-	public function getParts( bool $withAttachments = TRUE ): array
+	public function getParts( bool $withAttachments = TRUE, bool $withInlineImages = TRUE, bool $withMails = TRUE ): array
 	{
-		if( $withAttachments )
+		if( $withAttachments && $withInlineImages && $withMails  )
 			return $this->parts;
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof MessagePartAttachment )
-				if( !$withAttachments)
-					continue;
-			if( $part instanceof MessagePartInlineImage )
-				if( !$withAttachments)
-					continue;
+			if( !$withAttachments && $part->isAttachment() )
+				continue;
+			else if( !$withInlineImages && $part->isInlineImage() )
+				continue;
+			else if( !$withMails && $part->isMail() )
+				continue;
 			$list[]	= $part;
 		}
 		return $list;
