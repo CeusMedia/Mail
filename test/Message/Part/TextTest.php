@@ -58,7 +58,7 @@ class Message_Part_TextTest extends TestCase
 			'Content-Type: text/plain; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: base64',
 			'',
-			Part::wrapContent( base64_encode( $content ) ),
+			$this->wrapContent( base64_encode( $content ) ),
 		) );
 		$this->assertEquals( $expected, $part->render() );
 
@@ -67,7 +67,7 @@ class Message_Part_TextTest extends TestCase
 			'Content-Type: text/plain; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: quoted-printable',
 			'',
-			Part::wrapContent( quoted_printable_encode( $content ) ),
+			$this->wrapContent( quoted_printable_encode( $content ) ),
 		) );
 		$this->assertEquals( $expected, $part->render() );
 
@@ -77,8 +77,12 @@ class Message_Part_TextTest extends TestCase
 			'Content-Type: text/PLAIN; charset="utf-8"; format=fixed',
 			'Content-Transfer-Encoding: base64',
 			'',
-			Part::wrapContent( base64_encode( $content ) ),
+			$this->wrapContent( base64_encode( $content ) ),
 		) );
 		$this->assertEquals( $expected, $part->render() );
+	}
+
+	protected function wrapContent( $content ){
+		return rtrim( chunk_split( $content, $this->lineLength, $this->delimiter ), $this->delimiter );
 	}
 }
