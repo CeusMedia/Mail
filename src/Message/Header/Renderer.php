@@ -1,6 +1,6 @@
 <?php
 /**
- *	HTML Mail Part.
+ *	...
  *
  *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
  *
@@ -18,40 +18,29 @@
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Message_Part
+ *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2020 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
+ *	@todo			code doc
  */
-namespace CeusMedia\Mail\Message\Part;
-
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+namespace CeusMedia\Mail\Header;
 
 /**
- *	HTML Mail Part.
+ *	...
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Message_Part
+ *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2020 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
+ *	@todo			implement
+ *	@todo			code doc
  */
-class HTML extends MessagePartText
+class Renderer
 {
-	/**
-	 *	Constructor.
-	 *	@access		public
-	 *	@param		string		$content		HTML content 
-	 *	@param		string		$charset		Character set to set, default: UTF-8
-	 *	@param		string		$encoding		Encoding to set, default: base64, values: 7bit,8bit,base64,quoted-printable,binary
-	 */
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' )
-	{
-		parent::__construct( $content, $charset, $encoding );
-		$this->type		= static::TYPE_HTML;
-		$this->setMimeType( 'text/html' );
-	}
+
 }

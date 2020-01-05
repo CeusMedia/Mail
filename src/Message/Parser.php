@@ -31,6 +31,7 @@ use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
 use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
@@ -72,7 +73,7 @@ class Parser
 		return new static;
 	}
 
-	public function parse( $content )
+	public function parse( $content ): Message
 	{
 		$message	= new Message();
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
@@ -218,8 +219,13 @@ class Parser
 			$disposition	= $headers->getField( 'Content-Disposition' )->getValue();
 			$disposition	= $this->parseAttributedHeaderValue( $disposition );
 			$filename		= $disposition->attributes->get( 'filename' );
-			if( strtolower( $disposition->value ) === "attachment" ){
+			$value			= strtoupper( $disposition->value );
+			if( in_array( $value, array( "INLINE", "ATTACHMENT" ) ) ){
 				$part	= new MessagePartAttachment();
+				if( $value === "INLINE" && $headers->hasField( 'Content-Id' ) ){
+					$id	= $headers->getField( 'Content-Id' )->getValue();
+					$part	= new MessagePartInlineImage( $id );
+				}
 				$part->setMimeType( $mimeType );
 				if( $encoding )
 					$part->setEncoding( $encoding );

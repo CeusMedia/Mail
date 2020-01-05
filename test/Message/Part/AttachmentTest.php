@@ -20,6 +20,15 @@ use CeusMedia\Mail\Message\Part\Attachment;
  */
 class Message_Part_AttachmentTest extends TestCase
 {
+	protected $delimiter;
+	protected $lineLength;
+
+	public function __construct(){
+		parent::__construct();
+		$this->delimiter	= Message::$delimiter;
+		$this->lineLength	= Message::$lineLength;
+	}
+
 	/**
 	 *	@covers		::__construct
 	 */
@@ -132,12 +141,15 @@ class Message_Part_AttachmentTest extends TestCase
 	}
 
 	/**
+	*	@covers		::getFileName
 	 *	@covers		::setFileName
 	 */
 	public function testFileName(){
 		$part	= new Attachment();
 		$this->assertEquals( NULL, $part->getFileName() );
 		$part->setFileName( "test.file" );
+		$this->assertEquals( "test.file", $part->getFileName() );
+		$part->setFileName( "path/test.file" );
 		$this->assertEquals( "test.file", $part->getFileName() );
 
 		$file		= __FILE__;
@@ -198,7 +210,7 @@ class Message_Part_AttachmentTest extends TestCase
 			"Content-Description: ".basename( $file ),
 		);
 		$headers	= join( $delimiter, $headers );
-		$content	= Part::wrapContent( base64_encode( $content ) );
+		$content	= $this->wrapContent( base64_encode( $content ) );
 		$expected	= $headers.$delimiter.$delimiter.$content;
 		$this->assertEquals( $expected, $part->render() );
 
@@ -214,5 +226,9 @@ class Message_Part_AttachmentTest extends TestCase
 		$headers	= join( $delimiter, $headers );
 		$expected	= $headers.$delimiter.$delimiter.$content;
 		$this->assertEquals( $expected, $part->render() );
+	}
+
+	protected function wrapContent( $content ){
+		return rtrim( chunk_split( $content, $this->lineLength, $this->delimiter ), $this->delimiter );
 	}
 }

@@ -54,8 +54,8 @@ $message->addRecipient("spy@example.com", NULL, 'bcc' );
 
 $message->setSubject("This is just a test");
 $message->addText("Test Message...");
-$message->addHtml('<h2><img src="CID:logo"/><br>Test Message</h2>');
-$message->addHtmlImage("logo", "logo.png");
+$message->addHTML('<h2><img src="CID:logo"/><br>Test Message</h2>');
+$message->addInlineImage("logo", "logo.png");
 $message->addFile("readme.md");
 
 $transport	= new SMTP("example.com", 587);

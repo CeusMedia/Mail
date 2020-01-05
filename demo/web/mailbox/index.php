@@ -32,8 +32,16 @@ class DemoMailboxApp{
 				return $this->dispatch();
 				break;
 			case 'viewHtmlContent':
+			$message	= $this->mailbox->getMailAsMessage( (int) $mailId );
 				$message	= $this->mailbox->getMailAsMessage( (int) $mailId );
 				$content	= $message->getHtml()->getContent();
+				foreach( $message->getInlineImages() as $image ){
+					$content	= preg_replace(
+						'/'.preg_quote( 'cid:'.substr( $image->getId(), 1, -1 ), '/' ).'/i',
+						'data:image/jpg;base64,'.base64_encode( $image->getContent() ),
+						$content
+					);
+				}
 				print( $content );
 				exit;
 			default:

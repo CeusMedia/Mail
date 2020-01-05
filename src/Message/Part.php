@@ -53,28 +53,23 @@ abstract class Part
 	const TYPE_HTML				= 4;
 	const TYPE_INLINE_IMAGE		= 5;
 
-	static $typeMap				= array(
-		'TEXT'				=> 'Text',
-		'MAIL'				=> 'Mail',
-		'ATTACHMENT'		=> 'Attachment',
-		'HTML'				=> 'HTML',
-		'INLINE_IMAGE'		=> 'InlineImage',
-	);
-
-	/**	@var	string		$charset		Character set */
+	/**	@var	string			$charset		Character set */
 	protected $charset;
 
-	/**	@var	string		$content		Content */
+	/**	@var	string			$content		Content */
 	protected $content;
 
-	/**	@var	string		$encoding		Encoding */
+	/**	@var	string			$encoding		Encoding */
 	protected $encoding;
 
-	/**	@var	string		$format			Format */
+	/**	@var	string			$format			Format */
 	protected $format;
 
-	/**	@var	string		$mimeType		MIME type */
+	/**	@var	string			$mimeType		MIME type */
 	protected $mimeType;
+
+	/**	@var	integer			$type			Detected type of part */
+	protected $type				= 0;
 
 	/**
 	 *	Convert content to UTF-8.
@@ -111,53 +106,10 @@ abstract class Part
 	}
 
 	/**
-	 *	Applies encoding to UTF-8 content.
+	 *	Get set character set.
 	 *	@access		public
-	 *	@static
-	 *	@param		string		$content		Content to be encode
-	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
-	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 *	@return		string		Set character set
 	 */
-	static public function encodeContent( $content, $encoding, $split = TRUE ): string
-	{
-		$delimiter	= Message::$delimiter;
-		$lineLength	= Message::$lineLength;
-		switch( strtolower( $encoding ) ){
-			case '7bit':
-			case '8bit':
-				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
-				if( $split && strlen( $content ) > $lineLength )
-					$content	= static::wrapContent( $content, $lineLength, $delimiter );
-				break;
-			case 'base64':
-			case 'binary':
-				$content	= base64_encode( $content );
-				if( $split && strlen( $content ) > $lineLength )
-					$content	= static::wrapContent( $content, $lineLength, $delimiter );
-				break;
-			case 'quoted-printable':
-				if( function_exists( 'imap_8bit' ) )
-					$content	= imap_8bit( $content );
-				else
-					$content	= quoted_printable_encode( $content );
-				break;
-			case '':
-				break;
-			default:
-				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
-		}
-		return $content;
-	}
-
-	static function wrapContent( $content, $length = NULL, $delimiter = NULL ): string
-	{
-		$delimiter	= $delimiter ? $delimiter : Message::$delimiter;
-		$lineLength	= $length ? $length : Message::$lineLength;
-		$content	= chunk_split( $content, $lineLength, $delimiter );
-		return rtrim( $content, $delimiter );
-	}
-
 	public function getCharset(): string
 	{
 		return $this->charset;
@@ -168,74 +120,123 @@ abstract class Part
 		return $this->content;
 	}
 
+	/**
+	 *	Get set encoding.
+	 *	@access		public
+	 *	@return		string		Set encoding (7bit,8bit,base64,quoted-printable,binary)
+	 */
 	public function getEncoding(): string
 	{
 		return $this->encoding;
 	}
 
+	/**
+	 *	Get set format.
+	 *	@access		public
+	 *	@return		string		Set format (fixed,flowed)
+	 */
 	public function getFormat(): string
 	{
 		return $this->format;
 	}
 
+	/**
+	 *	Get set MIME type.
+	 *	@access		public
+	 *	@return		string		Set MIME type
+	 */
 	public function getMimeType(): string
 	{
 		return $this->mimeType;
 	}
 
-	protected function getMimeTypeFromFile( $fileName ): string
+	/**
+	 *	Returns type of part as identifier defined by constants.
+	 *	On the first run, detection will be used to set found type.
+	 *	All following calls will return detected value.
+	 *	@access		public
+	 *	@param		boolean			$forceDetection		Flag: get type by detection, default: no
+	 *	@return		integer			Type of part as identifier defined by constants
+	 */
+	public function getType( $forceDetection = FALSE ): int
 	{
-		if( !file_exists( $fileName ) )
-			throw new \InvalidArgumentException( 'File "'.$fileName.'" is not existing' );
-		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
-		$type	= finfo_file( $finfo, $fileName );
-		finfo_close( $finfo );
-		return $type;
+		if( !$this->type || $forceDetection ){
+			if( $this instanceof MessagePartInlineImage )
+				$this->type	= static::TYPE_INLINE_IMAGE;
+			if( $this instanceof MessagePartMail )
+				$this->type	= static::TYPE_MAIL;
+			if( $this instanceof MessagePartAttachment )
+				$this->type	= static::TYPE_ATTACHMENT;
+			if( $this instanceof MessagePartHTML )
+				$this->type	= static::TYPE_HTML;
+			if( $this instanceof MessagePartText )
+				$this->type	= static::TYPE_TEXT;
+		}
+		return $this->type;
 	}
 
-	public function getType(): int
-	{
-		if( $this instanceof MessagePartText )
-			return static::TYPE_TEXT;
-		if( $this instanceof MessagePartMail )
-			return static::TYPE_MAIL;
-		if( $this instanceof MessagePartAttachment )
-			return static::TYPE_ATTACHMENT;
-		if( $this instanceof MessagePartHTML )
-			return static::TYPE_HTML;
-		if( $this instanceof MessagePartInlineImage )
-			return static::TYPE_INLINE_IMAGE;
-		return static::TYPE_UNKNOWN;
-	}
-
+	/**
+	 *	Indicates whether this part is an attachment.
+	 *	@access		public
+	 *	@return		boolean
+	 */
 	public function isAttachment(): bool
 	{
-		return $this->getType() === static::TYPE_ATTACHMENT;
+		return $this->isOfType( static::TYPE_ATTACHMENT );
 	}
 
+	/**
+	 *	Indicates whether this part is HTML.
+	 *	@access		public
+	 *	@return		boolean
+	 */
 	public function isHTML(): bool
 	{
-		return $this->getType() === static::TYPE_HTML;
+		return $this->isOfType( static::TYPE_HTML );
 	}
 
+	/**
+	 *	Indicates whether this part is an inline image.
+	 *	@access		public
+	 *	@return		boolean
+	 */
 	public function isInlineImage(): bool
 	{
-		return $this->getType() === static::TYPE_INLINE_IMAGE;
+		return $this->isOfType( static::TYPE_INLINE_IMAGE );
 	}
 
+	/**
+	 *	Indicates whether this part is a mail.
+	 *	@access		public
+	 *	@return		boolean
+	 */
 	public function isMail(): bool
 	{
-		return $this->getType() === static::TYPE_MAIL;
+		return $this->isOfType( static::TYPE_MAIL );
 	}
 
-	public function isOfType( $type ): bool
+	/**
+	 *	Indicates whether the type of this part matches an identifier defined by constants.
+	 *	Identifier is integer value of part constants TYPE_*.
+	 *	Constants: TYPE_TEXT, TYPE_HTML, TYPE_ATTACHMENT, TYPE_MAIL, TYPE_INLINE_IMAGE
+	 *	@access		public
+	 *	@param		integer		$type			Type identifier defined by constants to check for
+	 *	@return		boolean
+	 *	@example	isOfType(Part::TYPE_HTML)
+	 */
+	public function isOfType( int $type ): bool
 	{
 		return $this->getType() === $type;
 	}
 
+	/**
+	 *	Indicates whether this part is a text.
+	 *	@access		public
+	 *	@return		boolean
+	 */
 	public function isText(): bool
 	{
-		return $this->getType() === static::TYPE_TEXT;
+		return $this->isOfType( static::TYPE_TEXT );
 	}
 
 	abstract public function render( $headers = NULL ): string;
@@ -306,5 +307,65 @@ abstract class Part
 	{
 		$this->mimeType	= $mimeType;
 		return $this;
+	}
+
+	//  --  PROTECTED  -- //
+
+	/**
+	 *	Applies encoding to UTF-8 content.
+	 *	@access		protected
+	 *	@static
+	 *	@param		string		$content		Content to be encode
+	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@return		string
+	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 */
+	protected static function encodeContent( $content, $encoding, $split = TRUE ): string
+	{
+		$delimiter	= Message::$delimiter;
+		$lineLength	= Message::$lineLength;
+		switch( strtolower( $encoding ) ){
+			case '7bit':
+			case '8bit':
+				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				if( $split && strlen( $content ) > $lineLength )
+					$content	= static::wrapContent( $content, $lineLength, $delimiter );
+				break;
+			case 'base64':
+			case 'binary':
+				$content	= base64_encode( $content );
+				if( $split && strlen( $content ) > $lineLength )
+					$content	= static::wrapContent( $content, $lineLength, $delimiter );
+				break;
+			case 'quoted-printable':
+				if( function_exists( 'imap_8bit' ) )
+					$content	= imap_8bit( $content );
+				else
+					$content	= quoted_printable_encode( $content );
+				break;
+			case '':
+				break;
+			default:
+				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
+		}
+		return $content;
+	}
+
+	protected function getMimeTypeFromFile( $fileName ): string
+	{
+		if( !file_exists( $fileName ) )
+			throw new \InvalidArgumentException( 'File "'.$fileName.'" is not existing' );
+		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
+		$type	= finfo_file( $finfo, $fileName );
+		finfo_close( $finfo );
+		return $type;
+	}
+
+	protected static function wrapContent( $content, $length = NULL, $delimiter = NULL ): string
+	{
+		$delimiter	= $delimiter ? $delimiter : Message::$delimiter;
+		$lineLength	= $length ? $length : Message::$lineLength;
+		$content	= chunk_split( $content, $lineLength, $delimiter );
+		return rtrim( $content, $delimiter );
 	}
 }

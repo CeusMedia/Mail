@@ -6,12 +6,13 @@ use CeusMedia\Mail\Message\Renderer;
 use CeusMedia\Mail\Transport\SMTP;
 
 $configSmtp	= (object) $config->getAll( 'SMTP_' );
+$configSend	= (object) $config->getAll( 'sending_' );
 
 $message	= new Message();
 $message->setSubject( '[Prefix] Subject' );
 $message->setSender( $configSend->senderAddress );
-$message->addText( 'Test: '.time() );
-//$message->addHtml( '<b>Test:</b> <em>'.time().'</em>' );
+//$message->addText( 'Test: '.time() );
+$message->addHTML( '<b>Test:</b> <em>'.time().'</em>' );
 $message->addRecipient( $configSend->receiverAddress, $configSend->receiverName );
 
 $raw	= Renderer::render( $message );

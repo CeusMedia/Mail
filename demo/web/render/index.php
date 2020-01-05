@@ -27,7 +27,7 @@ $message	= new Message();
 $message->setSubject( $configSend->subject );
 $message->setSender( $configSend->senderAddress, $configSend->senderName );
 $message->addRecipient( $configSend->receiverAddress, $configSend->receiverName );
-$message->addHtml( $html->build() );
+$message->addHTML( $html->build() );
 $message->addInlineImage( 'image1', '1x1-3094d7bf.png' );
 //$message->addText( "TEXT" );
 //$message->addFile( '1x1-3094d7bf.png' );

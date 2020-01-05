@@ -79,7 +79,7 @@ class Message
 	/**	@var		string					$mailer			Mailer agent */
 	protected $userAgent;
 
-	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.1';
+	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.2';
 
 	/**
 	 *	Constructor.
@@ -120,15 +120,13 @@ class Message
 	 *	@param		string			$filePath		Path of file to add
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file
 	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
-	 *	@param		string|NULL		$fileName		Optional: Name of file
+	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Message object for chaining
 	 */
 	public function addAttachment( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
 		$part	= new MessagePartAttachment();
-		$part->setFile( $filePath, $mimeType, $encoding );
-		if( $fileName )
-			$part->setFileName( $fileName );
+		$part->setFile( $filePath, $mimeType, $encoding, $fileName );
 		return $this->addPart( $part );
 	}
 
@@ -165,7 +163,7 @@ class Message
 	 *	@param		string			$encoding		Optional: Encoding to apply (default: base64)
 	 *	@return		self			Message object for chaining
 	 */
-	public function addHtml( string $content, string $charset = 'UTF-8', string $encoding = 'base64' ): self
+	public function addHTML( string $content, string $charset = 'UTF-8', string $encoding = 'base64' ): self
 	{
 		return $this->addPart( new MessagePartHTML( $content, $charset, $encoding ) );
 	}
@@ -177,11 +175,13 @@ class Message
 	 *	@param		string			$filePath		File Path of image to embed
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file
 	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
+	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Message object for chaining
 	 */
-	public function addInlineImage( string $id, string $filePath, string $mimeType = NULL, string $encoding = NULL ): self
+	public function addInlineImage( string $id, string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
-		$part	= new MessagePartInlineImage( $id, $filePath, $mimeType, $encoding );
+		$part	= new MessagePartInlineImage( $id );
+		$part->setFile( $filePath, $mimeType, $encoding, $fileName );
 		return $this->addPart( $part );
 	}
 
@@ -201,7 +201,7 @@ class Message
 
 	/**
 	 *	General way to add another mail part.
-	 *	More specific: addText, addHtml, addHtmlImage, addAttachment.
+	 *	More specific: addText, addHTML, addAttachment, addInlineImage, addMail.
 	 *	@access		public
 	 *	@param		MessagePart		$part		Part of mail
 	 *	@return		self			Message object for chaining
@@ -274,23 +274,16 @@ class Message
 	}
 
 	/**
-	 *	Returns list set attachment parts.
+	 *	Returns list of set attachment parts.
 	 *	@access		public
-	 *	@param		boolean			$withInlineImages		Flag: list inline images, also
 	 *	@return		array
 	 */
-	public function getAttachments( bool $withInlineImages = TRUE ): array
+	public function getAttachments(): array
 	{
 		$list	= array();
-		foreach( $this->parts as $part ){
-			if( $part instanceof MessagePartAttachment )
+		foreach( $this->parts as $part )
+			if( $part->isAttachment() )
 				$list[]	= $part;
-			if( $part instanceof MessagePartInlineImage )
-				if( $withInlineImages )
-					$list[]	= $part;
-			if( $part instanceof MessagePartMail )
-				$list[]	= $part;
-		}
 		return $list;
 	}
 
@@ -305,15 +298,15 @@ class Message
 	}
 
 	/**
-	 *	Returns set or empty HTML part.
+	 *	Returns set HTML part.
 	 *	@access		public
 	 *	@return		MessagePartHTML
-	 *	@throws		\RangeException		if no text part is available
+	 *	@throws		\RangeException		if no HTML part is available
 	 */
-	public function getHtml(): MessagePartHTML
+	public function getHTML(): MessagePartHTML
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartHTML )
+			if( $part->isHTML() )
 				return $part;
 		throw new \RangeException( 'No HTML part assigned' );
 	}
@@ -327,7 +320,7 @@ class Message
 	{
 		$list	= array();
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartInlineImage )
+			if( $part->isInlineImage() )
 				$list[]	= $part;
 		return $list;
 	}
@@ -344,7 +337,7 @@ class Message
 	}
 
 	/**
-	 *	Returns list attached mails.
+	 *	Returns list of attached mails.
 	 *	@access		public
 	 *	@return		array
 	 */
@@ -352,7 +345,7 @@ class Message
 	{
 		$list	= array();
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartMail )
+			if( $part->isMail() )
 				$list[]	= $part;
 		return $list;
 	}
@@ -360,21 +353,23 @@ class Message
 	/**
 	 *	Returns list of set body parts.
 	 *	@access		public
-	 *	@param		boolean			$withAttachments	Flag: return attachment parts also
+	 *	@param		boolean		$withAttachments	Flag: return attachment parts also
+	 *	@param		boolean		$withInlineImages	Flag: include inline images, default: yes
+	 *	@param		boolean		$withMails			Flag: include attached mails, default: yes
 	 *	@return		array
 	 */
-	public function getParts( bool $withAttachments = TRUE ): array
+	public function getParts( bool $withAttachments = TRUE, bool $withInlineImages = TRUE, bool $withMails = TRUE ): array
 	{
-		if( $withAttachments )
+		if( $withAttachments && $withInlineImages && $withMails  )
 			return $this->parts;
 		$list	= array();
 		foreach( $this->parts as $part ){
-			if( $part instanceof MessagePartAttachment )
-				if( !$withAttachments)
-					continue;
-			if( $part instanceof MessagePartInlineImage )
-				if( !$withAttachments)
-					continue;
+			if( !$withAttachments && $part->isAttachment() )
+				continue;
+			else if( !$withInlineImages && $part->isInlineImage() )
+				continue;
+			else if( !$withMails && $part->isMail() )
+				continue;
 			$list[]	= $part;
 		}
 		return $list;
@@ -425,7 +420,7 @@ class Message
 	}
 
 	/**
-	 *	Returns set or empty text part.
+	 *	Returns set text part.
 	 *	@access		public
 	 *	@return		MessagePartText
 	 *	@throws		\RangeException		if no text part is available
@@ -433,7 +428,7 @@ class Message
 	public function getText(): MessagePartText
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartText )
+			if( $part->isText() )
 				return $part;
 		throw new \RangeException( 'No text part assigned' );
 	}
@@ -456,7 +451,7 @@ class Message
 	public function hasAttachments(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartAttachment )
+			if( $part->isAttachment() )
 				return TRUE;
 		return FALSE;
 	}
@@ -469,7 +464,7 @@ class Message
 	public function hasHTML(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartHTML )
+			if( $part->isHTML() )
 				return TRUE;
 		return FALSE;
 	}
@@ -482,7 +477,7 @@ class Message
 	public function hasInlineImages(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartInlineImage )
+			if( $part->isInlineImage() )
 				return TRUE;
 		return FALSE;
 	}
@@ -495,7 +490,7 @@ class Message
 	public function hasMails(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartMail )
+			if( $part->isMail() )
 				return TRUE;
 		return FALSE;
 	}
@@ -508,7 +503,7 @@ class Message
 	public function hasText(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartText )
+			if( $part->isText() )
 				return TRUE;
 		return FALSE;
 	}

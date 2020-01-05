@@ -53,10 +53,10 @@ class Attachment extends MessagePart
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@return		void
 	 */
 	public function __construct()
 	{
+		$this->type		= static::TYPE_ATTACHMENT;
 		$this->setFormat( 'fixed' );
 		$this->setEncoding( 'base64' );
 		$this->setMimeType( 'application/octet-stream' );
@@ -153,17 +153,18 @@ class Attachment extends MessagePart
 	 *	@param		string		$filePath		Path of file to attach
 	 *	@param		string		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string		$encoding		Optional: Encoding of file
-	 *	@param		string		$fileName		Optional: Name of file
+	 *	@param		string		$fileName		Optional: Name of file in part
 	 *	@return		object  	Self instance for chaining
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
 	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ): self
 	{
-		if( !file_exists( $filePath ) )
+		$file	= new \FS_File( $filePath );
+ 		if( !$file->exists() )
 			throw new \InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
-		$this->content	= file_get_contents( $filePath );
-		$this->setFileName( $fileName ? $fileName : $filePath );
+ 		$this->content	= $file->getContent();
+		$this->setFileName( $fileName ? $fileName : basename( $filePath ) );
 		$this->setFileSize( filesize( $filePath ) );
 		$this->setFileATime( fileatime( $filePath ) );
 		$this->setFileCTime( filectime( $filePath ) );

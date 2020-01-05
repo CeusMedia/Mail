@@ -14,6 +14,7 @@ use \CeusMedia\Mail\Message\Part\Attachment;
 use \CeusMedia\Mail\Message\Part\HTML;
 use \CeusMedia\Mail\Message\Part\InlineImage;
 use \CeusMedia\Mail\Message\Part\Text;
+use \CeusMedia\Mail\Message\Part\Mail;
 
 /**
  *	Unit test for mail message.
@@ -25,42 +26,123 @@ use \CeusMedia\Mail\Message\Part\Text;
 class MessageTest extends PHPUnit_Framework_TestCase
 {
 	/**
+	 *	@covers		::addAttachment
+	 *	@covers		::getAttachments
+	 *	@covers		::hasAttachments
+	 *	@covers		::addPart
+	 *	@covers		::getParts
+	 */
+	public function testAddGetAndHasAttachments(){
+		$subject1	= new Attachment();
+		$subject1->setFile( __FILE__ );
+		$subject2	= new Attachment();
+		$subject2->setFile( __FILE__ );
+
+		$message	= Message::getInstance();
+		$this->assertFalse( $message->hasAttachments() );
+
+		$actual	= $message->addPart( $subject1 );
+		$this->assertEquals( $message, $actual );
+		$this->assertTrue( $message->hasAttachments() );
+
+		$actual	= $message->addAttachment( __FILE__ );
+		$this->assertEquals( $message, $actual );
+
+		$actual	= array( $subject1, $subject2 );
+		$this->assertEquals( $actual, $message->getAttachments() );
+		$this->assertEquals( $actual, $message->getParts() );
+		$this->assertEquals( array(), $message->getParts( FALSE ) );
+	}
+
+	/**
 	 *	@covers		::addText
+	 *	@covers		::getText
+	 *	@covers		::hasText
+	 *	@covers		::getParts
 	 */
-	public function testAddText(){
-		$text		= "TestText123";
-		$part		= new Text($text);
+	public function testAddGetAndHasText(){
+		$text		= "TestText123 ÄÖÜäöüß";
+		$part		= new Text( $text );
 		$message	= Message::getInstance();
-		$message->addText($text);
+		$this->assertFalse( $message->hasText() );
 
-		$parts	= $message->getParts();
-		$this->assertEquals( $part, $parts[0] );
+		$actual	= $message->addText( $text );
+		$this->assertEquals( $message, $actual );
+		$this->assertTrue( $message->hasText() );
+
+		$this->assertEquals( $part, $message->getText() );
+		$this->assertEquals( $text, $message->getText()->getContent() );
+		$this->assertEquals( $part, $message->getParts()[0] );
 	}
 
 	/**
-	 *	@covers		::addHtml
+	 *	@covers		::addHTML
+	 *	@covers		::getHTML
+	 *	@covers		::hasHTML
+	 *	@covers		::getParts
 	 */
-	public function testAddHtml(){
-		$html		= "<b>TestText123</b>";
-		$part		= new HTML($html);
+	public function testAddGetAndHasHTML(){
+		$text		= "<div><b>TestText123</b> <em>ÄÖÜäöüß</em></div>";
+		$part		= new HTML( $text );
 		$message	= Message::getInstance();
-		$message->addHtml($html);
+		$this->assertFalse( $message->hasHTML() );
 
-		$parts	= $message->getParts();
-		$this->assertEquals( $part, $parts[0] );
+		$actual	= $message->addHTML( $text );
+		$this->assertEquals( $message, $actual );
+		$this->assertTrue( $message->hasHTML() );
+
+		$this->assertEquals( $part, $message->getHTML() );
+		$this->assertEquals( $text, $message->getHTML()->getContent() );
+		$this->assertEquals( $part, $message->getParts()[0] );
 	}
 
 	/**
-	 *	@covers		::addInlineImage
+	*	@covers		::addInlineImage
+	*	@covers		::getInlineImages
+	*	@covers		::hasInlineImages
+	*	@covers		::getParts
 	 */
-	public function testAddInlineImage(){
-		$fileName	= __DIR__."/../demo/outbox.png";
-		$part		= new InlineImage('id', $fileName);
-		$message	= Message::getInstance();
-		$message->addInlineImage('id', $fileName);
+	public function testAddGetAndHasInlineImages(){
+		$filePath	= __DIR__."/../demo/outbox.png";
+		$part		= new InlineImage('id');
+		$part->setFile($filePath);
 
-		$parts	= $message->getParts( TRUE );
-		$this->assertEquals( $part, $parts[0] );
+		$message	= Message::getInstance();
+		$this->assertFalse( $message->hasInlineImages() );
+
+		$actual		= $message->addInlineImage( 'id', $filePath );
+		$this->assertEquals( $message, $actual );
+		$this->assertTrue( $message->hasInlineImages() );
+
+		$this->assertEquals( $part, $message->getInlineImages()[0] );
+		$this->assertEquals( $part, $message->getParts()[0] );
+		$this->assertEquals( array(), $message->getParts( TRUE, FALSE ) );
+	}
+
+	/**
+	 *	@covers		::addMail
+	 *	@covers		::getMails
+	 *	@covers		::hasMails
+	 *	@covers		::addPart
+	 *	@covers		::getParts
+	 */
+	public function testAddGetAndHasMails(){
+		$subject1	= new Mail( 'Mail Content 1' );
+		$subject2	= new Mail( 'Mail Content 2' );
+
+		$message	= Message::getInstance();
+		$this->assertFalse( $message->hasMails() );
+
+		$actual	= $message->addPart( $subject1 );
+		$this->assertEquals( $message, $actual );
+		$this->assertTrue( $message->hasMails() );
+
+		$actual	= $message->addMail( 'Mail Content 2' );
+		$this->assertEquals( $message, $actual );
+
+		$actual	= array( $subject1, $subject2 );
+		$this->assertEquals( $actual, $message->getMails() );
+		$this->assertEquals( array(), $message->getParts( TRUE, TRUE, FALSE ) );
 	}
 
 	/**
@@ -170,23 +252,20 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 *	@covers		::addAttachment
-	 *	@covers		::getAttachments
+	 *	@covers		::getHTML
 	 */
-	public function testAddAndGetAttachments(){
-//		$this->expectException( 'PHPUnit_Framework_Error' );
-		$attachment1	= new Attachment();
-		$attachment1->setFile( __FILE__ );
-		$attachment2	= new Attachment();
-		$attachment2->setFile( __FILE__ );
-
+	public function testGetHTMLException(){
+		$this->expectException( 'RangeException' );
 		$message	= Message::getInstance();
-		$actual	= $message->addPart( $attachment1 );
-		$this->assertEquals( $message, $actual );
-		$actual	= $message->addAttachment( __FILE__ );
-		$this->assertEquals( $message, $actual );
+		$message->getHTML();
+	}
 
-		$actual	= array( $attachment1, $attachment2 );
-		$this->assertEquals( $actual, $message->getAttachments() );
+	/**
+	 *	@covers		::getText
+	 */
+	public function testGetTextException(){
+		$this->expectException( 'RangeException' );
+		$message	= Message::getInstance();
+		$message->getText();
 	}
 }
