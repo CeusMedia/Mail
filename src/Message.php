@@ -313,7 +313,7 @@ class Message
 	public function getHtml(): MessagePartHTML
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartHTML )
+			if( $part->isHTML() )
 				return $part;
 		throw new \RangeException( 'No HTML part assigned' );
 	}
@@ -327,7 +327,7 @@ class Message
 	{
 		$list	= array();
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartInlineImage )
+			if( $part->isInlineImage() )
 				$list[]	= $part;
 		return $list;
 	}
@@ -352,7 +352,7 @@ class Message
 	{
 		$list	= array();
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartMail )
+			if( $part->isMail() )
 				$list[]	= $part;
 		return $list;
 	}
@@ -433,7 +433,7 @@ class Message
 	public function getText(): MessagePartText
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartText )
+			if( $part->isText() )
 				return $part;
 		throw new \RangeException( 'No text part assigned' );
 	}
@@ -456,7 +456,7 @@ class Message
 	public function hasAttachments(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartAttachment )
+			if( $part->isAttachment() )
 				return TRUE;
 		return FALSE;
 	}
@@ -469,7 +469,7 @@ class Message
 	public function hasHTML(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartHTML )
+			if( $part->isHTML() )
 				return TRUE;
 		return FALSE;
 	}
@@ -482,7 +482,7 @@ class Message
 	public function hasInlineImages(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartInlineImage )
+			if( $part->isInlineImage() )
 				return TRUE;
 		return FALSE;
 	}
@@ -495,7 +495,7 @@ class Message
 	public function hasMails(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartMail )
+			if( $part->isMail() )
 				return TRUE;
 		return FALSE;
 	}
@@ -508,7 +508,7 @@ class Message
 	public function hasText(): bool
 	{
 		foreach( $this->parts as $part )
-			if( $part instanceof MessagePartText )
+			if( $part->isText() )
 				return TRUE;
 		return FALSE;
 	}

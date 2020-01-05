@@ -57,6 +57,7 @@ class Attachment extends MessagePart
 	 */
 	public function __construct()
 	{
+		$this->type		= static::TYPE_ATTACHMENT;
 		$this->setFormat( 'fixed' );
 		$this->setEncoding( 'base64' );
 		$this->setMimeType( 'application/octet-stream' );

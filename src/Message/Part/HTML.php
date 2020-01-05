@@ -44,6 +44,7 @@ class HTML extends MessagePartText
 	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' )
 	{
 		parent::__construct( $content, $charset, $encoding );
+		$this->type		= static::TYPE_HTML;
 		$this->setMimeType( 'text/html' );
 	}
 }

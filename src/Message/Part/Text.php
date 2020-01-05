@@ -45,6 +45,7 @@ class Text extends MessagePart
 {
 	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' )
 	{
+		$this->type		= static::TYPE_TEXT;
 		$this->setContent( $content );
 		$this->setMimeType( 'text/plain' );
 		$this->setCharset( $charset );

@@ -45,6 +45,7 @@ class Mail extends MessagePart
 {
 	public function __construct( $content, $charset = 'UTF-8', $encoding = 'quoted-printable' )
 	{
+		$this->type		= static::TYPE_MAIL;
 		$this->setContent( $content );
 		$this->setMimeType( 'text/plain' );
 		$this->setCharset( $charset );

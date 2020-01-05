@@ -72,6 +72,7 @@ class InlineImage extends MessagePart
 		$this->setEncoding( 'base64' );
 //		$this->setMimeType( 'application/octet-stream' );
 		$this->content	= file_get_contents( $fileName );
+		$this->type		= static::TYPE_INLINE_IMAGE;
 		$this->setId( $id );
 		$this->setFileName( $fileName );
 		$this->setFileSize( filesize( $fileName ) );
