@@ -79,7 +79,7 @@ class Message
 	/**	@var		string					$mailer			Mailer agent */
 	protected $userAgent;
 
-	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.1';
+	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.2';
 
 	/**
 	 *	Constructor.
@@ -126,9 +126,7 @@ class Message
 	public function addAttachment( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
 		$part	= new MessagePartAttachment();
-		$part->setFile( $filePath, $mimeType, $encoding );
-		if( $fileName )
-			$part->setFileName( $fileName );
+		$part->setFile( $filePath, $mimeType, $encoding, $fileName );
 		return $this->addPart( $part );
 	}
 
@@ -165,7 +163,7 @@ class Message
 	 *	@param		string			$encoding		Optional: Encoding to apply (default: base64)
 	 *	@return		self			Message object for chaining
 	 */
-	public function addHtml( string $content, string $charset = 'UTF-8', string $encoding = 'base64' ): self
+	public function addHTML( string $content, string $charset = 'UTF-8', string $encoding = 'base64' ): self
 	{
 		return $this->addPart( new MessagePartHTML( $content, $charset, $encoding ) );
 	}

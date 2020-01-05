@@ -161,10 +161,11 @@ class Attachment extends MessagePart
 	 */
 	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ): self
 	{
-		if( !file_exists( $filePath ) )
+		$file	= new \FS_File( $filePath );
+ 		if( !$file->exists() )
 			throw new \InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
-		$this->content	= file_get_contents( $filePath );
-		$this->setFileName( $fileName ? $fileName : $filePath );
+ 		$this->content	= $file->getContent();
+		$this->setFileName( $fileName ? $fileName : basename( $filePath ) );
 		$this->setFileSize( filesize( $filePath ) );
 		$this->setFileATime( fileatime( $filePath ) );
 		$this->setFileCTime( filectime( $filePath ) );

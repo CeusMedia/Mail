@@ -174,11 +174,11 @@ class Mailbox
 
 	public function search( array $conditions )
 	{
-		$this->checkConnection( TRUE, $strict );
+		$this->checkConnection( TRUE, TRUE );
 		return MailboxSearch::getInstance()
 			->setConnection( $this->connection )
 			->applyConditions( $conditions )
-			->getAllMessages();
+			->getAll();
 	}
 
 	public function performSearch( MailboxSearch $search ): array

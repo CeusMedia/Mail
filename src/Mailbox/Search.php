@@ -26,7 +26,6 @@
  */
 namespace CeusMedia\Mail\Mailbox;
 
-use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Mail;
 
 /**
@@ -95,7 +94,7 @@ class Search{
 		$mailIds	= imap_sort(
 			$this->connection,
 			$this->orderSort,
-			$this->orderReverse,
+			(int) $this->orderReverse,
 			SE_UID,
 			$criteria,
 			'UTF-8'
@@ -179,7 +178,7 @@ class Search{
 
 	public function setSender( string $sender ): self
 	{
-		$this->from		= trim( $sender );
+		$this->sender	= trim( $sender );
 		return $this;
 	}
 }
