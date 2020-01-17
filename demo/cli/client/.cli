@@ -1,0 +1,11 @@
+[IMAP]
+host				=mail.itflow.de
+port				=993
+username			=kriss@ceusmedia.de
+password			=dialog
+
+[SMTP]
+host				=mail.itflow.de
+port				=587
+username			=kriss@ceusmedia.de
+password			=dialog
