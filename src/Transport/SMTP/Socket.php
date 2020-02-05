@@ -118,7 +118,9 @@ class Socket
 	{
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
-		stream_socket_enable_crypto( $this->connection, $enable, $crypto );
+		$result	= stream_socket_enable_crypto( $this->connection, $enable, $crypto );
+		if( $result === FALSE )
+			throw new \RuntimeException( 'Crypto negotiation failed' );
 		return $this;
 	}
 
