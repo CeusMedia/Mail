@@ -110,11 +110,11 @@ class Socket
 	 *	Sets cryptography mode.
 	 *	@access		public
 	 *	@param		boolean			$enable		Power switch
-	 *	@param		integer|NULL	$crypto		Cryptography mode, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
+	 *	@param		integer			$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 *	@throws		\RuntimeException			if connection is not open
 	 *	@return		self
 	 */
-	public function enableCrypto( bool $enable, int $crypto = NULL ): self
+	public function enableCrypto( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_ANY_CLIENT ): self
 	{
 		if( !$this->connection )
 			throw new \RuntimeException( 'Not connected' );
