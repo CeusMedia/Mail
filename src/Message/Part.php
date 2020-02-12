@@ -161,16 +161,16 @@ abstract class Part
 	public function getType( $forceDetection = FALSE ): int
 	{
 		if( !$this->type || $forceDetection ){
+			if( $this instanceof MessagePartText )
+				$this->type	= static::TYPE_TEXT;
+			if( $this instanceof MessagePartHTML )
+				$this->type	= static::TYPE_HTML;
+			if( $this instanceof MessagePartAttachment )
+				$this->type	= static::TYPE_ATTACHMENT;
 			if( $this instanceof MessagePartInlineImage )
 				$this->type	= static::TYPE_INLINE_IMAGE;
 			if( $this instanceof MessagePartMail )
 				$this->type	= static::TYPE_MAIL;
-			if( $this instanceof MessagePartAttachment )
-				$this->type	= static::TYPE_ATTACHMENT;
-			if( $this instanceof MessagePartHTML )
-				$this->type	= static::TYPE_HTML;
-			if( $this instanceof MessagePartText )
-				$this->type	= static::TYPE_TEXT;
 		}
 		return $this->type;
 	}
