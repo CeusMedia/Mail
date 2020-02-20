@@ -58,6 +58,9 @@ class SMTP
 
 	protected $socket;
 
+	/**	@var		integer		$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php */
+	protected $cryptoMode		= STREAM_CRYPTO_METHOD_ANY_CLIENT;
+
 	/**
 	 *	Constructor.
 	 *	Receives connection parameters (host, port, username, passord) if given.
@@ -136,7 +139,7 @@ class SMTP
 			if( $this->isSecure ){
 				$this->sendChunk( "STARTTLS" );
 				$this->checkResponse( array( 220 ) );
-				$this->socket->enableCrypto( TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
+				$this->socket->enableCrypto( TRUE, $this->cryptoMode );
 			}
 			if( $this->username && $this->password ){
 				$this->sendChunk( "AUTH LOGIN" );
@@ -181,6 +184,18 @@ class SMTP
 	{
 		$this->setUsername( $username );
 		$this->setPassword( $password );
+		return $this;
+	}
+
+	/**
+	 *	Sets crypto mode.
+	 *	@access		public
+	 *	@param		integer		$mode		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
+	 *	@return		object  	Self instance for chaining.
+	 */
+	public function setCryptoMode( $mode ): self
+	{
+		$this->cryptoMode	= $mode;
 		return $this;
 	}
 

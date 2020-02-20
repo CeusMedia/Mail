@@ -198,7 +198,7 @@ class Parser
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
 		$contentType	= $this->parseAttributedHeaderValue( $contentType );
 		$mimeType		= $contentType->value;
-		$charset		= $contentType->attributes->get( 'charset' );
+		$charset		= $contentType->attributes->get( 'charset', 'UTF-8' );
 		$format			= $contentType->attributes->get( 'format' );
 		$encoding		= NULL;
 		if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
@@ -220,10 +220,13 @@ class Parser
 			$disposition	= $this->parseAttributedHeaderValue( $disposition );
 			$filename		= $disposition->attributes->get( 'filename' );
 			$value			= strtoupper( $disposition->value );
-			if( in_array( $value, array( "INLINE", "ATTACHMENT" ) ) ){
+			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
+			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ) ) && $filename;
+
+			if( $isAttachment || $isInlineImage ){
 				$part	= new MessagePartAttachment();
-				if( $value === "INLINE" && $headers->hasField( 'Content-Id' ) ){
-					$id	= $headers->getField( 'Content-Id' )->getValue();
+				if( $isInlineImage ){
+					$id		= $headers->getField( 'Content-Id' )->getValue();
 					$part	= new MessagePartInlineImage( $id );
 				}
 				$part->setMimeType( $mimeType );

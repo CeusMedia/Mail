@@ -8,7 +8,7 @@ use UI_HTML_Tag as Tag;
 
 new UI_DevOutput;
 
-$fileName		= "mail.txt";
+$fileName		= "mail1.txt";
 
 if( !file_exists( $fileName ) )
 	die( "Add a mail.txt or configure another file name in script!" );
@@ -22,11 +22,11 @@ if( getEnv( 'HTTP_HOST' ) ){
 	$page->addBody( Tag::create( 'div', array(
 		Tag::create( 'div', array(
 			Tag::create( 'h3', 'Original' ),
-			Tag::create( 'pre', $mail ),
+			Tag::create( 'pre', htmlentities( $mail, ENT_QUOTES, 'UTF-8' ) ),
 		), array( 'class' => 'span6' ) ),
 		Tag::create( 'div', array(
 			Tag::create( 'h3', 'Parsed and rendered' ),
-			Tag::create( 'pre', $output ),
+			Tag::create( 'pre', htmlentities( $output, ENT_QUOTES, 'UTF-8' ) ),
 		), array( 'class' => 'span6' ) ),
 	), array( 'class' => 'row-fluid' ) ) );
 	print( $page->build() );

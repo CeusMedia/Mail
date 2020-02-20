@@ -108,14 +108,19 @@ abstract class Part
 	/**
 	 *	Get set character set.
 	 *	@access		public
-	 *	@return		string		Set character set
+	 *	@return		string|NULL		Set character set
 	 */
-	public function getCharset(): string
+	public function getCharset(): ?string
 	{
 		return $this->charset;
 	}
 
-	public function getContent(): string
+	/**
+	 *	Get set part content.
+	 *	@access		public
+	 *	@return		string|NULL		Set part content
+	 */
+	public function getContent(): ?string
 	{
 		return $this->content;
 	}
@@ -123,9 +128,9 @@ abstract class Part
 	/**
 	 *	Get set encoding.
 	 *	@access		public
-	 *	@return		string		Set encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@return		string|NULL		Set encoding (7bit,8bit,base64,quoted-printable,binary)
 	 */
-	public function getEncoding(): string
+	public function getEncoding(): ?string
 	{
 		return $this->encoding;
 	}
@@ -133,9 +138,9 @@ abstract class Part
 	/**
 	 *	Get set format.
 	 *	@access		public
-	 *	@return		string		Set format (fixed,flowed)
+	 *	@return		string|NULL		Set format (fixed,flowed)
 	 */
-	public function getFormat(): string
+	public function getFormat(): ?string
 	{
 		return $this->format;
 	}
@@ -143,9 +148,9 @@ abstract class Part
 	/**
 	 *	Get set MIME type.
 	 *	@access		public
-	 *	@return		string		Set MIME type
+	 *	@return		string|NULL		Set MIME type
 	 */
-	public function getMimeType(): string
+	public function getMimeType(): ?string
 	{
 		return $this->mimeType;
 	}
@@ -163,13 +168,13 @@ abstract class Part
 		if( !$this->type || $forceDetection ){
 			if( $this instanceof MessagePartInlineImage )
 				$this->type	= static::TYPE_INLINE_IMAGE;
-			if( $this instanceof MessagePartMail )
+			else if( $this instanceof MessagePartMail )
 				$this->type	= static::TYPE_MAIL;
-			if( $this instanceof MessagePartAttachment )
+			else if( $this instanceof MessagePartAttachment )
 				$this->type	= static::TYPE_ATTACHMENT;
-			if( $this instanceof MessagePartHTML )
+			else if( $this instanceof MessagePartHTML )
 				$this->type	= static::TYPE_HTML;
-			if( $this instanceof MessagePartText )
+			else if( $this instanceof MessagePartText )
 				$this->type	= static::TYPE_TEXT;
 		}
 		return $this->type;
@@ -327,7 +332,11 @@ abstract class Part
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
-				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				$content2	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				if( $content2 === FALSE )
+					$content2	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				if( $content2 !== FALSE )
+					$content	= $content2;
 				if( $split && strlen( $content ) > $lineLength )
 					$content	= static::wrapContent( $content, $lineLength, $delimiter );
 				break;
