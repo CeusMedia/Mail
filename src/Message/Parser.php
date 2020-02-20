@@ -220,8 +220,8 @@ class Parser
 			$disposition	= $this->parseAttributedHeaderValue( $disposition );
 			$filename		= $disposition->attributes->get( 'filename' );
 			$value			= strtoupper( $disposition->value );
-			$isInlineImage	= $value === "INLINE" && $headers->hasField( 'Content-Id' );
-			$isAttachment	= $value === "ATTACHMENT" && $filename;
+			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
+			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ) ) && $filename;
 
 			if( $isAttachment || $isInlineImage ){
 				$part	= new MessagePartAttachment();
