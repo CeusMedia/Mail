@@ -76,9 +76,10 @@ class Message
 	/**	@var		string					$subject		Mail subject */
 	protected $subject;
 
-	/**	@var		string					$mailer			Mailer agent */
+	/**	@var		string					$userAgent		Mailer agent aka user agent */
 	protected $userAgent;
 
+	/**	@var		string					$defaultUserAgent	Default user agent */
 	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.2';
 
 	/**
