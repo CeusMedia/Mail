@@ -203,7 +203,7 @@ class Parser
 		$encoding		= NULL;
 		if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
 			$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
-			$content	= MessagePart::decodeContent( $content, $encoding );
+			$content	= MessagePart::decodeContent( $content, $encoding, $charset );
 		}
 		if( $mimeType === 'message/rfc822' ){
 			$part	= new MessagePartMail( $content, $charset );
