@@ -1,0 +1,33 @@
+Return-Path: <kriss@ceusmedia.de>
+X-Original-To: test@gruppenpost.de
+Delivered-To: test@gruppenpost.de
+Received: from [192.168.178.20] (p54861FC5.dip0.t-ipconnect.de [84.134.31.197])
+	by viratron.itflow.de (Postfix) with ESMTPSA id 2EFFC1612B7
+	for <test@gruppenpost.de>; Sat, 22 Feb 2020 00:59:00 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ceusmedia.de;
+	s=default; t=1582329540;
+	bh=UauHrWfE+evGnw53e3jX6IjO7w0h9UMaLRD1gVrJ59c=; h=To:From:Subject;
+	b=OTak/9aPy6CngdoJNbfKf3yDwyTiDuUpKPNY5/Wxa0WcNXZymLOnvSx0ZfjfVJu9S
+	 wXDgKg5J/f4YGV1jBp366MNyMFvqDP+VeWuwHUFm9qW9sLsY4t+MLbNzzJFChCCkIL
+	 ofrGxARbSd5gXEgSIhWAWWAmg2jnJm9jGGHsQzdg=
+Authentication-Results: omnitron-vm1;
+	dmarc=pass (p=QUARANTINE sp=NONE) smtp.from=ceusmedia.de header.from=ceusmedia.de;
+	dkim=pass header.d=ceusmedia.de;
+        spf=pass (sender IP is 84.134.31.197) smtp.mailfrom=kriss@ceusmedia.de smtp.helo=[192.168.178.20]
+Received-SPF: pass (omnitron-vm1: connection is authenticated)
+To: test@gruppenpost.de
+From: kriss <kriss@ceusmedia.de>
+Subject: Test 2020 #3 Umlauts
+Message-ID: <6ae9cc83-7670-7533-be6f-d2b3182aada5@ceusmedia.de>
+Date: Sat, 22 Feb 2020 00:58:59 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Content-Language: en-GB
+X-PPP-Message-ID: <20200221235900.25322.3555@account.ceusmedia.de>
+X-PPP-Vhost: ceusmedia.de
+
+Test ÄÖÜ
+

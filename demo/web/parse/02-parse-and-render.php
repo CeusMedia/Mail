@@ -8,7 +8,11 @@ use UI_HTML_Tag as Tag;
 
 new UI_DevOutput;
 
-$fileName		= "mail1.txt";
+$fileName	= "../../mails/01-simple-7bit";
+//$fileName	= "../../mails/02-simple-umlauts";
+//$fileName	= "../../mails/03-simple-printable";
+//$fileName	= "../../mails/04-simple-base64";
+//$fileName	= "../../mails/05-simple-attachment";
 
 if( !file_exists( $fileName ) )
 	die( "Add a mail.txt or configure another file name in script!" );

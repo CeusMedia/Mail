@@ -77,15 +77,17 @@ abstract class Part
 	 *	@static
 	 *	@param		string		$content		Content to be decoded
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@param		string		$charset		Target character set, default: UTF-8
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	public static function decodeContent( $content, $encoding ): string
+	public static function decodeContent( $content, $encoding, $charset = 'UTF-8' ): string
 	{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
+				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				break;
 			case '8bit':
-				$content	= mb_convert_encoding( $content, strtolower( $encoding ), 'UTF-8' );
 				break;
 			case 'base64':
 			case 'binary':

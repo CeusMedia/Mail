@@ -60,7 +60,7 @@ try {
 	$message->setSubject($subject);													//  set mail subject
 	$message->addText($bodyText);													//  set mail content as plain text part
 	$message->addHTML($bodyHtml);													//  set mail content as HTML part
-	$message->addInlineImage('logo', '../../test.png');								//  add inline image
+	$message->addInlineImage('logo', '../../files/test.png');						//  add inline image
 	$message->addFile("../../../README.MD");
 	$message->setReadNotificationRecipient($sender);
 

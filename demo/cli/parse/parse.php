@@ -4,11 +4,16 @@ require_once dirname( __DIR__ ).'/_bootstrap.php';
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Parser;
 
-$mailFile		= "mail.txt";
+$fileName	= "../../mails/01-simple-7bit";
+//$fileName	= "../../mails/02-simple-umlauts";
+//$fileName	= "../../mails/03-simple-printable";
+//$fileName	= "../../mails/04-simple-base64";
+//$fileName	= "../../mails/05-simple-attachment";
+
 $showParts		= TRUE;
 $showHeaders	= TRUE;
 
-$content	= \FS_File_Reader::load( __DIR__."/".$mailFile );
+$content	= \FS_File_Reader::load( $fileName );
 $message	= Parser::getInstance()->parse( $content );
 
 if( $showParts ){
