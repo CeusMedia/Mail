@@ -220,7 +220,7 @@ class Socket
 			throw new \RuntimeException( 'No host set' );
 		if( !$this->port )
 			throw new \RuntimeException( 'No port set' );
-		$this->connection	= fsockopen(
+		$this->connection	= @fsockopen(
 			$this->host,
 			$this->port,
 			$this->errorNumber,
