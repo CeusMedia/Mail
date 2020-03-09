@@ -5,30 +5,21 @@
   ],
   "repositories": [
     {
-      "type": "package",
-      "package": {
-        "name": "ceus-media/phan-viewer",
-        "version": "dev-master",
-        "type": "package",
-        "source": {
-          "url": "git@ceusmedia.gitlab.com:ceus-media/phan-viewer.git",
-          "type": "git",
-          "reference": "master"
-        }
-      }
+      "type": "git",
+      "url": "git@ceusmedia.gitlab.com:ceus-media/phan-viewer.git"
     }
   ],
   "authors": [
     {
       "name": "Christian Würker",
-      "email": "christian.wuerker@ceusmedia.de",
+      "email": "cwuerker@ceusmedia.de",
       "homepage": "https://ceusmedia.de/",
       "role": "Developer"
     }
   ],
   "support": {
     "email": "office@ceusmedia.de",
-    "jabber": "ceus-media@jabber.org"
+    "jabber": "cwuerker@ceusmedia.de"
   },
   "minimum-stability": "dev",
   "require": {
@@ -38,7 +29,7 @@
   },
   "require-dev": {
     "php": "^7.1",
-    "phpunit/phpunit": "^7",
+    "phpunit/phpunit": "*",
     "squizlabs/php_codesniffer": "*",
     "phan/phan": "dev-master",
     "ceus-media/doc-creator": "dev-master",
