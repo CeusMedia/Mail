@@ -28,21 +28,26 @@ class MailClient
 		}
 		$this->config	= new ConfigReader( $this->configFileName );
 
-		$this->password	= $this->config->getProperty( 'IMAP', 'password' );
-		if( !$this->password )
-			$this->password	= Question::getInstance( 'Passwort' )->setBreak( FALSE )->ask();
+		if( $this->config->hasProperty( 'IMAP', 'password' ) )
+			$this->passwordImap	= $this->config->getProperty( 'IMAP', 'password' );
+		if( !$this->passwordImap )
+			$this->passwordImap	= Question::getInstance( 'Passwort' )->setBreak( FALSE )->ask();
+
+		$this->passwordSmtp	= $this->passwordImap;
+		if( $this->config->hasProperty( 'SMTP', 'password' ) )
+			$this->passwordSmtp	= $this->config->getProperty( 'SMTP', 'password' );
 
 		$this->mailbox	= Mailbox::getInstance(
 			$this->config->getProperty( 'IMAP', 'host' ),
 			$this->config->getProperty( 'IMAP', 'username' ),
-			$this->password,
+			$this->passwordImap,
 			$this->config->getProperty( 'IMAP', 'port' ) === 993
 		);
 		$this->transport	= Transport::getInstance(
 			$this->config->getProperty( 'SMTP', 'host' ),
 			$this->config->getProperty( 'SMTP', 'port' ),
 			$this->config->getProperty( 'SMTP', 'username' ),
-			$this->password
+			$this->passwordSmtp
 		);
 		$this->showMainMenu();
 	}
