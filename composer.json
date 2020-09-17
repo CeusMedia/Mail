@@ -18,13 +18,13 @@
     }
   ],
   "support": {
-    "email": "office@ceusmedia.de",
+    "email": "christian.wuerker@ceusmedia.de",
     "jabber": "cwuerker@ceusmedia.de"
   },
   "minimum-stability": "dev",
   "require": {
     "php": "^7.1",
-    "ceus-media/common": "^0.8",
+    "ceus-media/common": "^0.8 | dev-master",
     "ceus-media/cache": "*",
     "ezyang/htmlpurifier": "dev-master"
   },
