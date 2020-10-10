@@ -64,7 +64,7 @@ class Encoding
 	 */
 	static public function decodeIfNeeded( string $string ): string
 	{
-		$pattern	= "/^=\?(\S+)\?(\S)\?(.+)\?=$/s";
+		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
 		if( !preg_match( $pattern, $string ) )
 			return $string;
 		$matches	= array();
@@ -72,22 +72,27 @@ class Encoding
 		$lines		= preg_split( "@\r?\n\s*@", $string );
 		foreach( $lines as $string ){
 			$parts	= array();
-			preg_match( $pattern, $string, $parts );
-			list( $charset, $encoding, $content ) = array_slice( $parts, 1 );
-			switch( strtolower( $encoding ) ){
-				case 'b':
-					$list[]	= base64_decode( $content );
-					break;
-				case 'q':
-					$content	= str_replace( "_", " ", $content );
-					if( function_exists( 'imap_qprint' ) )
-						$list[]	= imap_qprint( $content );
-					else
-						$list[]	= quoted_printable_decode( $content );
-					break;
-				default:
-					throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+			while( preg_match( $pattern, $string, $parts ) ){
+				list( $before, $charset, $encoding, $content, $after ) = array_slice( $parts, 1 );
+				switch( strtolower( $encoding ) ){
+					case 'b':
+						$content	= base64_decode( $content );
+						break;
+					case 'q':
+						$content	= str_replace( "_", " ", $content );
+						if( function_exists( 'imap_qprint' ) )
+							$content	= imap_qprint( $content );
+						else
+							$content	= quoted_printable_decode( $content );
+						break;
+					default:
+						throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+				}
+				if( strtoupper( $encoding ) !== 'UTF-8' )
+					$content	= iconv( $charset, 'UTF-8', $content );
+				$string		= preg_replace( $pattern, "\\1".$content."\\5", $string );
 			}
+			$list[]	= $string;
 		}
 		return join( $list );
 	}
