@@ -9,9 +9,11 @@ $fileName	= "../../mails/01-simple-7bit";
 //$fileName	= "../../mails/03-simple-printable";
 //$fileName	= "../../mails/04-simple-base64";
 //$fileName	= "../../mails/05-simple-attachment";
+$fileName	= "../../mails/06-complex-folding";
 
-$showParts		= TRUE;
-$showHeaders	= TRUE;
+$showParts			= !TRUE;
+$showHeaders		= !TRUE;
+$showDeliveryChain	= TRUE;
 
 $content	= \FS_File_Reader::load( $fileName );
 $message	= Parser::getInstance()->parse( $content );
@@ -46,7 +48,14 @@ if( $showParts ){
 if( $showHeaders ){
 	remark( 'Headers:' );
 	foreach( $message->getHeaders()->getFields() as $headerField ){
+		if( $headerField->getName( FALSE ) !== 'Subject' )
+			continue;
 		remark( '- '.$headerField->toString() );
+	}
+}
+if( $showDeliveryChain ){
+	foreach( $message->getDeliveryChain() as $address ){
+		remark( '- '.$address );
 	}
 }
 
