@@ -27,20 +27,27 @@ class MailClient
 			$this->createConfig();
 		}
 		$this->config	= new ConfigReader( $this->configFileName );
-		$this->password	= Question::getInstance( 'Passwort' )
-//			->
-			->setBreak( FALSE )->ask();
+
+		if( $this->config->hasProperty( 'IMAP', 'password' ) )
+			$this->passwordImap	= $this->config->getProperty( 'IMAP', 'password' );
+		if( !$this->passwordImap )
+			$this->passwordImap	= Question::getInstance( 'Passwort' )->setBreak( FALSE )->ask();
+
+		$this->passwordSmtp	= $this->passwordImap;
+		if( $this->config->hasProperty( 'SMTP', 'password' ) )
+			$this->passwordSmtp	= $this->config->getProperty( 'SMTP', 'password' );
+
 		$this->mailbox	= Mailbox::getInstance(
 			$this->config->getProperty( 'IMAP', 'host' ),
 			$this->config->getProperty( 'IMAP', 'username' ),
-			$this->password,
+			$this->passwordImap,
 			$this->config->getProperty( 'IMAP', 'port' ) === 993
 		);
 		$this->transport	= Transport::getInstance(
 			$this->config->getProperty( 'SMTP', 'host' ),
 			$this->config->getProperty( 'SMTP', 'port' ),
 			$this->config->getProperty( 'SMTP', 'username' ),
-			$this->password
+			$this->passwordSmtp
 		);
 		$this->showMainMenu();
 	}
@@ -87,7 +94,7 @@ class MailClient
 			}
 		}
 		print( "\r".join( PHP_EOL, $lines ) );
-		$action	= $this->askForAction( array( 'exit', 'next', 'prev', 'read', 'delete' ) );
+		$action	= $this->askForAction( array( 'exit', 'next', 'prev', 'read', 'delete', 'create' ) );
 		switch( $action ){
 			case 'next':
 				$this->listOffset = $this->listOffset + $this->listLimit;
@@ -102,6 +109,9 @@ class MailClient
 				break;
 			case 'delete':
 				$this->deleteMail( $this->askMailId() );
+				break;
+			case 'create':
+				$this->createMail();
 				break;
 		}
 	}
@@ -179,20 +189,32 @@ class MailClient
 		$subject	= Question::getInstance( 'Betreff' )
 			->setDefault( 'Test '.date( 'r' ) )
 			->setBreak( FALSE )->ask();
-		$tempFile = tempnam( sys_get_temp_dir(), 'Mail' );
-		while( !file_exists( $tempFile ) ){
-			system( 'nano '.$tempFile );
+
+		print( 'Enter mail body and hit CTRL-D to end input:'.PHP_EOL.PHP_EOL );
+		$text	= stream_get_contents( fopen( 'php://stdin', 'r' ) );
+
+		$question	= new CLI_Question( 'Mail versenden?', CLI_Question::TYPE_BOOLEAN, 'y' );
+		$decision	= $question->setBreak( FALSE )->ask();
+		if( $decision === 'y' ){
+			$message	= Message::create()
+				->setSender( $this->config->getProperty( 'IMAP', 'username' ) )
+				->addRecipient( $receiver )
+				->setSubject( $subject )
+				->addText( $text );
+			$this->transport->send( $message );
+			$this->output->newLine( $this->color->asSuccess( 'Mail sent.' ) );
+			$this->output->newLine();
 		}
-		$text	= FS_File_Reader::load( $tempFile );
-		@unlink( $tempFile );
-		$message	= Message::create()
-			->setSender( $this->config->getProperty( 'IMAP', 'username' ) )
-			->addRecipient( $receiver )
-			->setSubject( $subject )
-			->addText( $text );
-		$this->transport->send( $message );
-		$this->output->newLine( $this->color->asSuccess( 'Mail sent.' ) );
-		$this->output->newLine();
+
+		$action	= $this->askForAction( array( 'list', 'create' ) );
+		switch( $action ){
+			case 'list':
+				$this->indexMails();
+				break;
+			case 'create':
+				$this->createMail();
+				break;
+		}
 	}
 
 	protected function createConfig()
@@ -278,4 +300,3 @@ class MailClient
 		$file->write( $this->configFileName );
 	}
 }
-

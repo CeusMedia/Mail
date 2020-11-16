@@ -1,0 +1,85 @@
+#mail-ui-layout{
+    width: 100vw;
+    height: 100vh;
+    }
+#mail-ui-layout-list{
+    display: inline-block;
+    box-sizing: border-box;
+    width: 30%;
+    height: 100vh;
+    border-right: 1px solid rgba(127, 127, 127, 0.5);
+/*    background-color: rgba(127, 127, 127, 0.2);*/
+    background-color: #F7F7F7;
+    }
+#mail-ui-layout-preview{
+    box-sizing: border-box;
+    display: inline-block;
+    width: 70%;
+    height: 100%;
+    box-shadow: -10px 0 10px -5px rgba(0, 0, 0, 0.2);
+    }
+#mail-ui-layout-preview-iframe{
+    }
+
+
+    
+#mail-ui-layout-list table{
+    table-layout: fixed;
+    width: 100%;
+    }
+#mail-ui-layout-list table .mail-list-item-cell-icon{
+    width: 50px;
+    }
+#mail-ui-layout-list table .mail-list-item-cell-icon i{
+    color: #CCC;
+    }
+#mail-ui-layout-list table .mail-list-item-cell-subject{
+    font-size: 1.3em;
+    }
+#mail-ui-layout-list table .mail-list-item-cell-subject div{
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    }
+#mail-ui-layout-list table .mail-list-item-cell-sender{
+    font-size: 0.9em;
+    }
+#mail-ui-layout-list table .mail-list-item-cell-buttons{
+    width: 55px;
+    }
+    
+
+/*  Broken Flex Layout 
+#mail-ui-layout-list .mail-list-item {
+    display: flex;
+    }
+#mail-ui-layout-list .mail-list-item-icon {
+    width: 55px;
+    padding: 4px 8px;
+    background-color: green;
+    }
+#mail-ui-layout-list .mail-list-item-icon i {
+    }
+#mail-ui-layout-list .mail-list-item-main {
+    }
+#mail-ui-layout-list .mail-list-item-sender {
+    font-size: 0.9em;
+    }
+#mail-ui-layout-list .mail-list-item-subject {
+    }
+#mail-ui-layout-list .mail-list-item-subject div {
+    font-size: 1.4em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    }
+#mail-ui-layout-list .mail-list-item-buttons {
+    display: none;
+    }
+
+#mail-ui-layout-list .mail-list-item:hover .mail-list-item-buttons{
+    display: block;
+    width: 50px;
+    }
+*/

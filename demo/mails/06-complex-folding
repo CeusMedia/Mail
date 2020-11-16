@@ -1,0 +1,121 @@
+Return-Path: <SRS1=WzZv=deutsche-heilpraktikerschule.de==r6jY=3W=bounce.mailstream.senderscore.net=fbl@ceusmedia.de>
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on omnitron-vm1
+X-Spam-Level: *
+X-Spam-Status: No, score=1.4 required=7.0 tests=BAYES_00,BODY_URI_ONLY,
+	FORGED_SPF_HELO,HEADER_FROM_DIFFERENT_DOMAINS,KHOP_HELO_FCRDNS,
+	SPF_FAIL,SPF_HELO_PASS,SUBJ_OBFU_PUNCT_FEW,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.2
+X-Original-To: christian.wuerker@ceusmedia.de
+Delivered-To: christian.wuerker@ceusmedia.de
+Received: by viratron.itflow.de (Postfix, from userid 30)
+	id 8BD32162AF6; Sun,  2 Feb 2020 02:52:50 +0100 (CET)
+X-Original-To: office@ceusmedia.de
+Delivered-To: office@ceusmedia.de
+Received: by viratron.itflow.de (Postfix, from userid 30)
+ id 07B6C162CB9; Sun,  2 Feb 2020 02:52:50 +0100 (CET)
+X-Original-To: admin@ceusmedia.de
+Delivered-To: admin@ceusmedia.de
+Received: from deutsche-heilpraktikerschule.de
+ (mail.deutsche-heilpraktikerschule.de [148.251.46.113])
+ by viratron.itflow.de (Postfix) with ESMTPS id D8BD0162AD5
+ for <admin@ceusmedia.de>; Sun,  2 Feb 2020 02:52:48 +0100 (CET)
+Authentication-Results: omnitron-vm1;
+	dkim=pass header.d=deutsche-heilpraktikerschule.de;
+	dkim=fail header.d=senderscore.net;
+ dkim=pass header.d=deutsche-heilpraktikerschule.de;
+ dkim=fail header.d=senderscore.net;
+ dmarc=none (p=NONE sp=NONE) smtp.from=bounce.mailstream.senderscore.net
+ header.from=libertyglobal.senderscore.net; 
+ dkim=pass header.d=deutsche-heilpraktikerschule.de;
+ dkim=fail header.d=senderscore.net;
+ spf=pass (sender IP is 148.251.46.113)
+ smtp.mailfrom=srs0=r6jy=3w=bounce.mailstream.senderscore.net=fbl@deutsche-heilpraktikerschule.de
+ smtp.helo=deutsche-heilpraktikerschule.de
+Received-SPF: pass (omnitron-vm1: domain of deutsche-heilpraktikerschule.de
+ designates 148.251.46.113 as permitted sender) client-ip=148.251.46.113;
+ envelope-from=srs0=r6jy=3w=bounce.mailstream.senderscore.net=fbl@deutsche-heilpraktikerschule.de;
+ helo=deutsche-heilpraktikerschule.de; 
+Received: by mail.deutsche-heilpraktikerschule.de (Postfix, from userid 30)
+ id 0FCBC6D428FD; Sun,  2 Feb 2020 02:47:05 +0100 (CET)
+Authentication-Results: mail.deutsche-heilpraktikerschule.de;
+ dkim=pass (1024-bit key;
+ unprotected) header.d=deutsche-heilpraktikerschule.de
+ header.i=@deutsche-heilpraktikerschule.de header.b="QIwEkxYy"; 
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=senderscore.net header.i=@senderscore.net
+ header.b="a8O3mXKG"; dkim-atps=neutral
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=deutsche-heilpraktikerschule.de; s=default; t=1580608025;
+ bh=WQ0c0+dr7NBku4z0ygCjCx97C7oM253bvUsDNAbd3Zc=; l=1399;
+ h=Received:Received:Received:To:Subject:From;
+ b=QIwEkxYyQO/nyXn1FLHPMhlb4e7aAZ6WxsUlWLhXEEws2Rbnqt+kvLIyEE2p8xU7c
+ 47pb1UTx7HJaL402ywSSBTdxeYlneA5v65XBGMN6bKjIHlosXDzlJ0qK2r4Lac/VuZ
+ JM3L2xUUUATh1oZMAwH6jLx5H5GxIiRHB4UhPk2w=
+X-Original-To: postmaster@deutsche-heilpraktikerschule.de
+Delivered-To: admin@deutsche-heilpraktikerschule.de
+Received: from mrc.us-east-1b.returnpath.net (mrc.us-east-1b.returnpath.net
+ [107.21.130.253])
+ by mail.deutsche-heilpraktikerschule.de (Postfix) with ESMTPS id 1FD336D4266B
+ for <postmaster@deutsche-heilpraktikerschule.de>;
+ Sun,  2 Feb 2020 02:47:04 +0100 (CET)
+Authentication-Results: deutsche-heilpraktikerschule.de;
+ dmarc=none (p=NONE sp=NONE) smtp.from=bounce.mailstream.senderscore.net
+ header.from=libertyglobal.senderscore.net; 
+ dkim=pass header.d=senderscore.net;
+ spf=pass (sender IP is 107.21.130.253)
+ smtp.mailfrom=fbl@bounce.mailstream.senderscore.net
+ smtp.helo=mrc.us-east-1b.returnpath.net
+Received-SPF: pass (deutsche-heilpraktikerschule.de: domain of
+ bounce.mailstream.senderscore.net designates 107.21.130.253 as permitted
+ sender) client-ip=107.21.130.253;
+ envelope-from=fbl@bounce.mailstream.senderscore.net;
+ helo=mrc.us-east-1b.returnpath.net; 
+Received: (Haraka outbound); Sun, 02 Feb 2020 01:47:03 +0000
+Received: from localhost ([10.252.23.249])
+ by mrc.us-east-1b.returnpath.net (Haraka/2.8.21) with ESMTP id
+ 5F744E00-037B-4CE3-A614-EA899408AA8B.1
+ envelope-from <fbl@bounce.mailstream.senderscore.net>;
+ Sun, 02 Feb 2020 01:47:03 +0000
+Message-Id: <01E01S8TKJWZB17R4RV1HDPMDZ.fbl@bounce.mailstream.senderscore.net>
+To: postmaster@deutsche-heilpraktikerschule.de
+Subject: =?UTF-8?q?Report_Domain:_deutsche-heilpraktikerschule.de=0A____Submitter:?=
+ =?UTF-8?q?_libertyglobal.com=0A____Report-ID:_<LIBERTYGLOBAL-20200201>?=
+From: DMARC Reports <dmarc-reporting@libertyglobal.senderscore.net>
+Date: Sun, 02 Feb 2020 01:47:03 +0000
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary=b7e6119c414691e645c265ec411b55f98a5d26544f932eae29bc8ddef306
+DKIM-Signature: v=1; a=rsa-sha256;
+ bh=WQ0c0+dr7NBku4z0ygCjCx97C7oM253bvUsDNAbd3Zc=; c=relaxed/simple;
+ d=senderscore.net; h=from:to:subject; s=081107;
+ b=a8O3mXKGThG4fmVLEASUiqwexN7iqysDoJ7zeMw7GHjMsRSUiPLa/bILfQBPVBZSZVgb9bw22DwPwLFrqSg8izekqWzj/BU8IWnJgoppqAXJ1crSgyCkndPIXzsXbz6IStukAcgqgdgritZvMDb5Fuby4LTgUXv2/q844VBAOGs=
+X-PPP-Message-ID: <20200202015250.2176.39811@account.ceusmedia.de>
+X-PPP-Vhost: ceusmedia.de
+
+--b7e6119c414691e645c265ec411b55f98a5d26544f932eae29bc8ddef306
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+
+This is a DMARC aggregate report for Liberty Global.
+
+
+--b7e6119c414691e645c265ec411b55f98a5d26544f932eae29bc8ddef306
+Content-Disposition: attachment;
+ filename="libertyglobal.com!deutsche-heilpraktikerschule.de!1580571328!1580571328.xml.gz"
+Content-Id: <libertyglobal.com!deutsche-heilpraktikerschule.de!1580571328!1580571328.xml.gz>
+Content-Transfer-Encoding: base64
+Content-Type: application/gzip
+
+H4sIAAAAAAAA/5xUTWvcMBC951eYva9lbwl1YaK0gTYUFgolPfRktNLYFitrVElOmn9fHPkrH9DS
+02revJl583Z24fp3b7J79EGTvdqVebHL0EpS2rZXux93X/bV7ppfQIOoTkKe+UWWwUTnZV4Am4Mx
+4dGRj3WPUSgRxYhlGZBvayt65Ed9Qh8fs1tDJ2GALYnEw15ow1UvvNynTtq2H00qap9q8oBWoQ+S
+POYWI7BUlBpM47Xix683n7/f/bw9frv5dNwfikNRHIoS2MpIFUpErL2w7aQhy+CErba8vKyKy/fl
+u0MFLCFzHq16lh3j1Iw977ZM29oBjoyWj7UbTkaHDhch1AttucIhBtnhvkNtnBfnqM/jut1gMFcI
+bOKlIqHOuucBWHpMYHAN98CePhPk+K9BeGGjtgjMTWh4DocZdzLysiiAjY8ENcQLYA2ltd5aATxK
+8vM2nh4WvwINXmKtHa+qvPxQ5WVV5ofyEtiambmSBht5CSw9ZngaiPfCDCLOniXfdHAUdBwv0NK4
+xxbZ8EaDnAgB2OrVZEPDG6HN6ECzjGRvzwS2rAZaoY260ejDUtahUOjrxlP/9+9yS16v6x4NOUyo
+xYdgMEb0kVrKJfXjvW0Zk6pXWkAMsas9hsHEVd6L1f/n6JJnaFBG8huBh5aALfhKTRIm66dgMXmr
+Bzb2r9recuC1HEkOeT8aAiwF/yhg/Y2wl4aN5HTSwNZ/vz8BAAD//22pV1MwBQAA
+
+--b7e6119c414691e645c265ec411b55f98a5d26544f932eae29bc8ddef306--
+

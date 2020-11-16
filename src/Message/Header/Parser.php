@@ -42,6 +42,19 @@ use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
  */
 class Parser
 {
+	const STRATEGY_AUTO			= 0;
+	const STRATEGY_FIRST		= 1;
+	const STRATEGY_SECOND		= 2;
+
+	const STRATEGIES			= [
+		self::STRATEGY_AUTO,
+		self::STRATEGY_FIRST,
+		self::STRATEGY_SECOND,
+	];
+
+	protected $defaultStategy	= self::STRATEGY_SECOND;
+	protected $strategy			= self::STRATEGY_AUTO;
+
 	/**
 	 *	Static constructor.
 	 *	@access			public
@@ -68,8 +81,24 @@ class Parser
 
 	public function parse( string $content ): MessageHeaderSection
 	{
+		$strategy	= $this->strategy;
+		if( $this->strategy === self::STRATEGY_AUTO )
+			$strategy	= $this->defaultStategy;
+
+		switch( $strategy ){
+			case self::STRATEGY_FIRST:
+				return self::parseByFirstStrategy( $content );
+			case self::STRATEGY_SECOND:
+				return self::parseBySecondStrategy( $content );
+			default:
+				throw new \RuntimeException( 'Unsupported strategy' );
+		}
+	}
+
+	public static function parseByFirstStrategy( string $content ): MessageHeaderSection
+	{
 		$section	= new MessageHeaderSection();
-		$content	= preg_replace( "/\r?\n[\t ]/", "", $content );				//  unfold field values
+		$content	= preg_replace( "/\r?\n[\t ]+/", "", $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
 		foreach( $lines as $line ){
 			$parts	= explode( ":", $line, 2 );
@@ -81,5 +110,48 @@ class Parser
 			}
 		}
 		return $section;
+	}
+
+	public static function parseBySecondStrategy( string $content ): MessageHeaderSection
+	{
+		$section	= new MessageHeaderSection();
+		$rawPairs	= self::splitIntoListOfUnfoldedDecodedDataObjects( $content );
+		foreach( $rawPairs as $rawPair )
+			$section->addFieldPair( $rawPair->key, $rawPair->value );
+		return $section;
+	}
+
+	public static function splitIntoListOfUnfoldedDecodedDataObjects( string $content ): array
+	{
+		$key		= NULL;
+		$value		= NULL;
+		$list		= array();
+		$lines		= preg_split( "/\r?\n/", $content );
+		foreach( $lines as $line ){
+			$value	= ltrim( $line );
+			if( preg_match( '/^\S/', $line[0] ) > 0 ){
+				$parts	= explode( ":", $line, 2 );
+				if( !is_null( $key ) && count( $buffer ) > 0 ){
+					$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
+					$buffer	= array();
+				}
+				$key	= $parts[0];
+				$value	= ltrim( $parts[1] );
+			}
+			$value		= MessageHeaderEncoding::decodeIfNeeded( $value );
+			$value		= preg_replace( '/[\r\n\t]*/', '', $value );
+			$buffer[]	= trim( $value );
+		}
+		if( !is_null( $key ) && count( $buffer ) > 0 )
+			$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
+		return $list;
+	}
+
+	public function setStrategy( int $strategy ): self
+	{
+		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
+			throw new \RangeException( 'Invalid strategy' );
+		$this->strategy	= $strategy;
+		return $this;
 	}
 }

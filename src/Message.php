@@ -288,6 +288,14 @@ class Message
 		return $list;
 	}
 
+	public function getDeliveryChain(): array
+	{
+		foreach( $this->headers->getFieldsByName( 'X-Original-To' ) as $field ){
+			$list[]	= new Address( $field->getValue() );
+		}
+		return array_reverse( $list );
+	}
+
 	/**
 	 *	Returns set headers.
 	 *	@access		public
