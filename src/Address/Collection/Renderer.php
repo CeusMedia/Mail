@@ -52,7 +52,7 @@ class Renderer
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -73,7 +73,7 @@ class Renderer
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	public function render( AddressCollection $collection ): string

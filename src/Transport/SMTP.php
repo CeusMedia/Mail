@@ -104,7 +104,7 @@ class SMTP
 	 */
 	public static function getInstance( $host, $port = 25, $username = NULL, $password = NULL )
 	{
-		return new static( $host, $port, $username, $password );
+		return new self( $host, $port, $username, $password );
 	}
 
 	/**
@@ -121,7 +121,7 @@ class SMTP
 	public function send( Message $message )
 	{
 		if( !$this->socket )
-			$this->socket	= new SmtpSocket( $this->host, (int) $this->port );
+			$this->socket	= new SmtpSocket( $this->host, $this->port );
 		$delim		= Message::$delimiter;
 		if( !$message->getSender() )
 			throw new \RuntimeException( 'No mail sender set' );
@@ -240,7 +240,7 @@ class SMTP
 			throw new \RuntimeException( 'Connection to SMTP server already established' );
 		$this->port		= (int) $port;
 		if( $detectSecure )
-			$this->setSecure( in_array( $port, array( 465, 587 ) ) );
+			$this->setSecure( in_array( $port, array( 465, 587 ), TRUE ) );
 		return $this;
 	}
 
@@ -287,7 +287,7 @@ class SMTP
 		$response	= $this->socket->readResponse( 1024 );
 		if( $this->verbose )
 			print ' < '.join( PHP_EOL."   ", $response->raw );
-		if( $acceptedCodes && !in_array( $response->code, $acceptedCodes ) )
+		if( $acceptedCodes && !in_array( (int) $response->code, $acceptedCodes, TRUE ) )
 			throw new \RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
 		return $response;
 	}

@@ -51,7 +51,7 @@ class Parser
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -62,7 +62,7 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -84,20 +84,20 @@ class Parser
 						break;
 					case 'p':
 						$values	= array( 'none', 'quarantine', 'reject' );
-						if( in_array( $pair[1], $values ) )
+						if( in_array( $pair[1], $values, TRUE ) )
 							$record->policy				= $pair[1];
 						break;
 					case 'sp':
 						$values	= array( 'none', 'quarantine', 'reject' );
-						if( in_array( $pair[1], $values ) )
+						if( in_array( $pair[1], $values, TRUE ) )
 							$record->policySubdomains	= $pair[1];
 						break;
 					case 'adkim':
-						if( in_array( $pair[1], array( 'r', 's' ) ) )
+						if( in_array( $pair[1], array( 'r', 's' ), TRUE ) )
 							$record->alignmentDkim		= $pair[1];
 						break;
 					case 'aspf':
-						if( in_array( $pair[1], array( 'r', 's' ) ) )
+						if( in_array( $pair[1], array( 'r', 's' ), TRUE ) )
 							$record->alignmentSpf		= $pair[1];
 						break;
 					case 'pct':
@@ -121,7 +121,7 @@ class Parser
 						$record->interval				= abs( intval( $pair[1] ) );
 						break;
 					case 'fo':
-						if( in_array( $pair[1], array( '0', '1', 'd', 's' ) ) )
+						if( in_array( $pair[1], array( '0', '1', 'd', 's' ), TRUE ) )
 							$record->failureOption		= $pair[1];
 						break;
 				}

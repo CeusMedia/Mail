@@ -65,7 +65,7 @@ class Parser
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -76,7 +76,7 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	public function parse( string $content ): MessageHeaderSection
@@ -126,6 +126,7 @@ class Parser
 		$key		= NULL;
 		$value		= NULL;
 		$list		= array();
+		$buffer		= array();
 		$lines		= preg_split( "/\r?\n/", $content );
 		foreach( $lines as $line ){
 			$value	= ltrim( $line );

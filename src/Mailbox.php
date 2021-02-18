@@ -53,7 +53,7 @@ class Mailbox
 
 	public function __construct( string $host, string $username = NULL, string $password = NULL, bool $secure = TRUE, bool $validateCertificates = TRUE )
 	{
-		$this->checkExtensionInstalled( TRUE );
+		self::checkExtensionInstalled( TRUE );
 		$this->setHost( $host );
 		if( $username && $password )
 			$this->setAuth( $username, $password );
@@ -82,7 +82,7 @@ class Mailbox
 		return FALSE;
 	}
 
-	static public function checkExtensionInstalled( bool $strict = TRUE ): bool
+	public static function checkExtensionInstalled( bool $strict = TRUE ): bool
 	{
 		if( extension_loaded( 'imap' ) )
 			return TRUE;
@@ -154,7 +154,7 @@ class Mailbox
 		if( !$header )
 			throw new \RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
-		return (object) MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
+		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
 	public function getMailHeaders( int $mailId, bool $strict = TRUE ): MessageHeaderSection
@@ -222,7 +222,7 @@ class Mailbox
 	public function setMailFlag( string $mailId, string $flag ): self
 	{
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
-		if( !in_array( strtolower( $flag ), $flags ) )
+		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
 		imap_setflag_full( $this->connection, $mailId, $flag, ST_UID );
@@ -256,7 +256,7 @@ class Mailbox
 			IMAP_WRITETIMEOUT,
 			IMAP_CLOSETIMEOUT
 		);
-		if( !in_array( $type, $timeoutTypes ) )
+		if( !in_array( $type, $timeoutTypes, TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid timeout type' );
 		imap_timeout( $timeoutTypes[$type], $seconds );
 		return $this;
@@ -271,7 +271,7 @@ class Mailbox
 	public function unsetMailFlag( string $mailId, string $flag ): self
 	{
 		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
-		if( !in_array( strtolower( $flag ), $flags ) )
+		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
 			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
 		imap_clearflag_full( $this->connection, $mailId, $flag, ST_UID );

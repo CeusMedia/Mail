@@ -92,7 +92,7 @@ class Address
 	 */
 	public static function create( string $string = NULL ): self
 	{
-		return new static( $string );
+		return new self( $string );
 	}
 
 	/**
@@ -125,9 +125,12 @@ class Address
 	 */
 	public function getDomain( bool $strict = TRUE ): string
 	{
-		if( !$this->domain && $strict )
-			throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
-		return (string) $this->domain;
+		if( NULL === $this->domain || strlen( trim( $this->domain ) ) === 0 ){
+			if( $strict )
+				throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
+			return '';
+		}
+		return $this->domain;
 	}
 
 	/**
@@ -138,7 +141,7 @@ class Address
 	 */
 	public static function getInstance( string $string = NULL ): self
 	{
-		return new static( $string );
+		return new self( $string );
 	}
 
 	/**
@@ -150,19 +153,29 @@ class Address
 	 */
 	public function getLocalPart( bool $strict = TRUE ): string
 	{
-		if( !$this->localPart && $strict )
-			throw new \RuntimeException( 'No valid address set, yet (local part missing)' );
-		return (string) $this->localPart;
+		if( NULL === $this->localPart || strlen( trim( $this->localPart ) ) === 0 ){
+			if( $strict )
+				throw new \RuntimeException( 'No valid address set, yet (local part missing)' );
+			return '';
+		}
+		return $this->localPart;
 	}
 
 	/**
 	 *	Returns name of mail participant.
 	 *	@access		public
-	 *	@return		string		Name of mail participant
+	 *	@param		boolean			$strict		Flag: throw exception if no name set
+	 *	@return		string			Name of mail participant
+	 *	@throws		\RuntimeException			if no name has been set, yet
 	 */
-	public function getName(): string
+	public function getName( bool $strict = TRUE ): string
 	{
-		return (string) $this->name;
+		if( NULL === $this->name || strlen( trim( $this->name ) ) === 0 ){
+			if( $strict )
+				throw new \RuntimeException( 'No name set' );
+			return '';
+		}
+		return $this->name;
 	}
 
 	/**

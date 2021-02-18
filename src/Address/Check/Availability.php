@@ -45,7 +45,10 @@ class Availability
 {
 	/**	@var	\CeusMedia\Mail\Address	$sender		... */
 	protected $sender;
+
 	protected $verbose;
+
+	/** @var	object		lastResponse */
 	protected $lastResponse;
 
 	/** @var		\CeusMedia\Cache\AdapterInterface */
@@ -63,7 +66,7 @@ class Availability
 
 	public function __construct( $sender, bool $verbose = NULL )
 	{
-		$this->setVerbose( (bool) $verbose );
+		$this->setVerbose( $verbose );
 		if( is_string( $sender ) )
 			$sender		= new Address( $sender );
 		$this->sender	= $sender;
@@ -83,20 +86,11 @@ class Availability
 	 *	@param		string|NULL			$key			Response data key (error|code|message)
 	 *	@throws		\RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
+	 *	@deprecated	use getLastResponse instead
 	 */
 	public function getLastError( ?string $key = NULL )
 	{
-		if( $this->lastResponse ){
-			if( $key === NULL )
-				return (object) array(
-					'error'		=> $this->lastResponse->error,
-					'code'		=> $this->lastResponse->code,
-					'message'	=> $this->lastResponse->message
-				);
-			if( isset( $this->lastResponse->$key ) )
-				return $this->lastResponse->$key;
-			throw new \RangeException( 'Unknown key: '.$key );
-		}
+		return $this->getLastResponse( $key );
 	}
 
 	/**
@@ -108,50 +102,13 @@ class Availability
 	 */
 	public function getLastResponse( ?string $key = NULL )
 	{
-		if( $this->lastResponse ){
-			if( $key === NULL )
-				return $this->lastResponse;
-			if( isset( $this->lastResponse->$key ) )
-				return $this->lastResponse->$key;
+		$properties = get_object_vars( $this->lastResponse );
+		if( NULL !== $key ){
+			if( array_key_exists( $key, $properties ) )
+				return $properties[$key];
 			throw new \RangeException( 'Unknown key: '.$key );
 		}
-	}
-
-	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE )
-	{
-		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
-	}
-
-	protected function readResponse( $connection, $acceptedCodes = array() )
-	{
-		$lastLine	= FALSE;
-		$code		= NULL;
-		$buffer		= array();
-		do{
-			$this->lastResponse->response	= fgets( $connection, 1024 );
-			$this->lastResponse->error		= self::ERROR_NONE;
-			$this->lastResponse->code		= 0;
-			$this->lastResponse->message	= NULL;
-			if( $this->verbose )
-				print ' < '.$this->lastResponse->response;
-			$matches	= array();
-			preg_match( '/^([0-9]{3})( |-)(.+)$/', $this->lastResponse->response, $matches );
-			if( !$matches )
-				throw new \RuntimeException( 'SMTP response not understood' );
-			$code		= (int) $matches[1];
-			$buffer[]	= trim( $matches[3] );
-			if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
-				throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], $code );
-			if( $matches[2] === " " )
-				$lastLine	= TRUE;
-			$this->lastResponse->code		= (int) $matches[1];
-			$this->lastResponse->message	= trim( $matches[3] );
-		}
-		while( $this->lastResponse->response && !$lastLine );
-		return (object) array(
-			'code'		=> $code,
-			'message'	=> join( "\n", $buffer ),
-		);
+		return (object) $properties;
 	}
 
 	public function test( $receiver, string $host = NULL, int $port = 587, bool $force = FALSE )
@@ -237,14 +194,6 @@ class Availability
 		}
 	}
 
-	protected function sendChunk( $connection, string $message )
-	{
-		if( $this->verbose )
-			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
-		$this->lastResponse->request	= $message;
-		fputs( $connection, $message.Message::$delimiter );
-	}
-
 	public function setCache( \CeusMedia\Cache\AdapterInterface $cache ): self
 	{
 		$this->cache	= $cache;
@@ -260,5 +209,52 @@ class Availability
 	{
 		$this->verbose	= $verbose;
 		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE )
+	{
+		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
+	}
+
+	protected function readResponse( $connection, $acceptedCodes = array() )
+	{
+		$lastLine	= FALSE;
+		$code		= NULL;
+		$buffer		= array();
+		do{
+			$this->lastResponse->response	= fgets( $connection, 1024 );
+			$this->lastResponse->error		= self::ERROR_NONE;
+			$this->lastResponse->code		= 0;
+			$this->lastResponse->message	= NULL;
+			if( $this->verbose )
+				print ' < '.$this->lastResponse->response;
+			$matches	= array();
+			preg_match( '/^([0-9]{3})( |-)(.+)$/', $this->lastResponse->response, $matches );
+			if( !$matches )
+				throw new \RuntimeException( 'SMTP response not understood' );
+			$code		= (int) $matches[1];
+			$buffer[]	= trim( $matches[3] );
+			if( $acceptedCodes && !in_array( $code, $acceptedCodes, TRUE ) )
+				throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], $code );
+			if( $matches[2] === " " )
+				$lastLine	= TRUE;
+			$this->lastResponse->code		= (int) $matches[1];
+			$this->lastResponse->message	= trim( $matches[3] );
+		}
+		while( $this->lastResponse->response && !$lastLine );
+		return (object) array(
+			'code'		=> $code,
+			'message'	=> join( "\n", $buffer ),
+		);
+	}
+
+	protected function sendChunk( $connection, string $message )
+	{
+		if( $this->verbose )
+			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
+		$this->lastResponse->request	= $message;
+		fputs( $connection, $message.Message::$delimiter );
 	}
 }

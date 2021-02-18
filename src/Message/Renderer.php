@@ -46,7 +46,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  */
 class Renderer
 {
-	static public $encodingSubject	= 'quoted-printable';
+	public static $encodingSubject	= 'quoted-printable';
 
 	/**
 	 *	Static constructor.
@@ -69,26 +69,26 @@ class Renderer
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
 	 *	@see		https://stackoverflow.com/questions/40389103/create-html-mail-with-inline-image-and-pdf-attachment/40420648#40420648
 	 */
-	static public function render( Message $message ): string
+	public static function render( Message $message ): string
 	{
-		if( !count( $message->getParts( TRUE ) ) )
-			throw new \RuntimeException( "No content part set" );
-		if( !strlen( trim( $message->getSubject() ) ) )
-			throw new \RuntimeException( "No subject set" );
+		if( 0 === count( $message->getParts( TRUE ) ) )
+			throw new \RuntimeException( 'No content part set' );
+		if( 0 === strlen( trim( $message->getSubject() ) ) )
+			throw new \RuntimeException( 'No subject set' );
 
 		$headers	= $message->getHeaders();
 		if( !$headers->hasField( 'Message-ID' ) ){
-			$server	= empty( $_SERVER['SERVER_NAME'] ) ? 'localhost' : $_SERVER['SERVER_NAME'];
-			$headers->setFieldPair( 'Message-ID', "<".sha1( microtime() )."@".$server.">" );
+			$server	= $_SERVER['SERVER_NAME'] ?? 'localhost';
+			$headers->setFieldPair( 'Message-ID', '<'.sha1( microtime() ).'@'.$server.'>' );
 		}
 		if( !$headers->hasField( 'Date' ) )
-			$headers->setFieldPair( 'Date', date( "D, d M Y H:i:s O", time() ) );
+			$headers->setFieldPair( 'Date', date( 'D, d M Y H:i:s O', time() ) );
 		$encodedSubject	= Encoding::encodeIfNeeded( $message->getSubject(), self::$encodingSubject );
 		$headers->setFieldPair( 'Subject', $encodedSubject );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
@@ -105,7 +105,7 @@ class Renderer
 				'html'	=> NULL,
 				'text'	=> NULL,
 			),
-			'files'		=> array(),
+		'files'		=> array(),
 			'images'	=> array(),
 		);
 		foreach( $message->getParts( TRUE ) as $part ){
@@ -122,30 +122,30 @@ class Renderer
 		}
 
 		$delim			= Message::$delimiter;
-		$mimeBoundary	= "------".md5( (string) microtime( TRUE ) );			//  mixed multipart boundary
-		$mimeBoundary1	= "------".md5( (string) ( microtime( TRUE ) + 1 ) );	//  related multipart boundary
-		$mimeBoundary2	= "------".md5( (string) ( microtime( TRUE ) + 2 ) );	//  alternative multipart boundary
+		$mimeBoundary	= '------'.md5( (string) microtime( TRUE ) );			//  mixed multipart boundary
+		$mimeBoundary1	= '------'.md5( (string) ( microtime( TRUE ) + 1 ) );	//  related multipart boundary
+		$mimeBoundary2	= '------'.md5( (string) ( microtime( TRUE ) + 2 ) );	//  alternative multipart boundary
 		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
 		$contents	= array(
-			"This is a multi-part message in MIME format.",
+			'This is a multi-part message in MIME format.',
 		);
 		if( count( $message->getParts( FALSE ) ) > 1 ){							//  alternative content parts
-			$contents[]	= "--".$mimeBoundary;
+			$contents[]	= '--'.$mimeBoundary;
 			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
-			$contents[]	= "";
+			$contents[]	= '';
 			foreach( $message->getParts( FALSE ) as $part )
-				$contents[]	= "--".$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
-			$contents[]	= "--".$mimeBoundary1."--".$delim;
+				$contents[]	= '--'.$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
+			$contents[]	= '--'.$mimeBoundary1.'--'.$delim;
 		}
 		else{
 			foreach( $message->getParts( FALSE ) as $part )
-				$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+				$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
 		}
 		foreach( $parts->images as $part )
-			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+			$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
 		foreach( $parts->files as $part )
-			$contents[]	= "--".$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
-		$contents[]	= "--".$mimeBoundary."--".$delim;
+			$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		$contents[]	= '--'.$mimeBoundary.'--'.$delim;
 		return $headers->toString( TRUE ).$delim.$delim.join( $delim, $contents );
 	}
 }

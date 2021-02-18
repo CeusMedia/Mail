@@ -69,7 +69,7 @@ class Mail
 	 */
 	public static function getInstance( $mailId ): self
 	{
-		return new static( $mailId );
+		return new self( $mailId );
 	}
 
 	/**

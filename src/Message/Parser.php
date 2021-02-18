@@ -70,7 +70,7 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	public function parse( $content ): Message
@@ -221,7 +221,7 @@ class Parser
 			$filename		= $disposition->attributes->get( 'filename' );
 			$value			= strtoupper( $disposition->value );
 			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
-			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ) ) && $filename;
+			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ), TRUE ) && $filename;
 
 			if( $isAttachment || $isInlineImage ){
 				$part	= new MessagePartAttachment();

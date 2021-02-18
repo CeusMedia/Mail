@@ -91,7 +91,9 @@ abstract class Part
 				break;
 			case 'base64':
 			case 'binary':
-				$content	= base64_decode( $content );
+				$content	= base64_decode( $content, TRUE );
+				if( FALSE === $content )
+					throw new \RuntimeException( 'Encoded content contains invalid characters' );
 				break;
 			case 'quoted-printable':
 				if( function_exists( 'imap_qprint' ) )
@@ -165,9 +167,9 @@ abstract class Part
 	 *	@param		boolean			$forceDetection		Flag: get type by detection, default: no
 	 *	@return		integer			Type of part as identifier defined by constants
 	 */
-	public function getType( $forceDetection = FALSE ): int
+	public function getType( bool $forceDetection = FALSE ): int
 	{
-		if( !$this->type || $forceDetection ){
+		if( self::TYPE_UNKNOWN === $this->type || $forceDetection ){
 			if( $this instanceof MessagePartInlineImage )
 				$this->type	= static::TYPE_INLINE_IMAGE;
 			else if( $this instanceof MessagePartMail )
@@ -282,7 +284,7 @@ abstract class Part
 	public function setEncoding( $encoding ): self
 	{
 		$encodings	= array( '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' );
-		if( !in_array( $encoding, $encodings ) )
+		if( !in_array( $encoding, $encodings, TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid encoding: '.$encoding );
 		$this->encoding	= $encoding;
 		return $this;
@@ -298,7 +300,7 @@ abstract class Part
 	public function setFormat( $format ): self
 	{
 		$formats	= array( 'fixed', 'flowed' );
-		if( !in_array( $format, $formats ) )
+		if( !in_array( $format, $formats, TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid format' );
 		$this->format	= $format;
 		return $this;

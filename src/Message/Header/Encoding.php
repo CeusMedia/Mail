@@ -57,12 +57,13 @@ class Encoding
 {
 	/**
 	 *	Encodes a mail header value string if needed.
+	 *	@static
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function decodeIfNeeded( string $string ): string
+	public static function decodeIfNeeded( string $string ): string
 	{
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
 		if( !preg_match( $pattern, $string ) )
@@ -70,13 +71,15 @@ class Encoding
 		$matches	= array();
 		$list		= array();
 		$lines		= preg_split( "@\r?\n\s*@", $string );
-		foreach( $lines as $string ){
+		foreach( $lines as $line ){
 			$parts	= array();
-			while( preg_match( $pattern, $string, $parts ) ){
+			while( preg_match( $pattern, $line, $parts ) ){
 				list( $before, $charset, $encoding, $content, $after ) = array_slice( $parts, 1 );
 				switch( strtolower( $encoding ) ){
 					case 'b':
-						$content	= base64_decode( $content );
+						$content	= base64_decode( $content, TRUE );
+						if( FALSE === $content )
+							throw new \RuntimeException( 'Encoded content contains invalid characters' );
 						break;
 					case 'q':
 						$content	= str_replace( "_", " ", $content );
@@ -90,22 +93,23 @@ class Encoding
 				}
 				if( strtoupper( $encoding ) !== 'UTF-8' )
 					$content	= iconv( $charset, 'UTF-8', $content );
-				$string		= preg_replace( $pattern, "\\1".$content."\\5", $string );
+				$line		= preg_replace( $pattern, "\\1".$content."\\5", $line );
 			}
-			$list[]	= $string;
+			$list[]	= $line;
 		}
 		return join( $list );
 	}
 
 	/**
 	 *	Encodes a mail header value string if needed.
+	 *	@static
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
+	public static function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
 	{
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;

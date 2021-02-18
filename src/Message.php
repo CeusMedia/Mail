@@ -112,7 +112,7 @@ class Message
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -227,7 +227,7 @@ class Message
 			$participant	= new Address( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
-		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
+		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ), TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid recipient type' );
 
 		if( $name )
@@ -243,7 +243,7 @@ class Message
 			foreach( $fields as $field )
 				if( $field->getValue() == $recipient )
 					return $this;
-			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $recipient );
+			$this->addHeaderPair( ucfirst( strtolower( $type ) ), $recipient );
 		}
 		return $this;
 	}
@@ -290,6 +290,7 @@ class Message
 
 	public function getDeliveryChain(): array
 	{
+		$list	= array();
 		foreach( $this->headers->getFieldsByName( 'X-Original-To' ) as $field ){
 			$list[]	= new Address( $field->getValue() );
 		}
@@ -342,7 +343,7 @@ class Message
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -402,7 +403,7 @@ class Message
 	 */
 	public function getRecipientsByType( string $type = 'TO' ): AddressCollection
 	{
-		if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
+		if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ), TRUE ) )
 			throw new \DomainException( 'Type must be of to, cc or bcc' );
 		return $this->recipients[strtolower( $type )];
 	}

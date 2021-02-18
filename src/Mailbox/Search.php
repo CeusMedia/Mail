@@ -110,15 +110,15 @@ class Search{
 	 */
 	public static function getInstance(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	public function getCriteria(): array
 	{
 		$criteria	= array();
-		if( strlen( $this->subject ) )
+		if( 0 < strlen( $this->subject ) )
 			$criteria['SUBJECT']	= $this->subject;
-		if( strlen( $this->sender ) )
+		if( 0 < strlen( $this->sender ) )
 			$criteria['FROM']		= $this->sender;
 		return $criteria;
 	}
@@ -126,9 +126,9 @@ class Search{
 	public function renderCriteria(): string
 	{
 		$criteria	= array();
-		if( strlen( $this->subject ) )
+		if( 0 < strlen( $this->subject ) )
 			$criteria[]	= 'SUBJECT "'.$this->subject.'"';
-		if( strlen( $this->sender ) )
+		if( 0 < strlen( $this->sender ) )
 			$criteria[]	= 'FROM "'.$this->sender.'"';
 		return join( ' ', $criteria );
 	}

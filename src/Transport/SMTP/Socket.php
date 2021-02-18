@@ -63,7 +63,7 @@ class Socket
 	 */
 	public function __construct( string $host = NULL, int $port = NULL, $timeout = NULL )
 	{
-		if( !is_null( $host ) && strlen( trim( $host ) ) )
+		if( !is_null( $host ) && strlen( trim( $host ) ) > 0 )
 			$this->setHost( $host );
 		if( is_integer( $port ) )
 			$this->setPort( abs( $port ) );
@@ -99,7 +99,7 @@ class Socket
 	 */
 	public function close(): self
 	{
-		if( $this->connection ){
+		if( NULL !== $this->connection ){
 			fclose( $this->connection );
 			$this->connection	= NULL;
 		}
@@ -116,10 +116,10 @@ class Socket
 	 */
 	public function enableCrypto( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_ANY_CLIENT ): self
 	{
-		if( !$this->connection )
+		if( NULL === $this->connection )
 			throw new \RuntimeException( 'Not connected' );
 		$result	= stream_socket_enable_crypto( $this->connection, $enable, $crypto );
-		if( $result === FALSE )
+		if( FALSE === $result )
 			throw new \RuntimeException( 'Crypto negotiation failed' );
 		return $this;
 	}
@@ -210,7 +210,7 @@ class Socket
 	 */
 	public function open( bool $forceReopen = FALSE ): self
 	{
-		if( $this->connection ){
+		if( NULL !== $this->connection ){
 			if( $forceReopen )
 				$this->close();
 			else
@@ -242,7 +242,7 @@ class Socket
 	 */
 	public function readResponse( int $length )
 	{
-		if( !$this->connection )
+		if( NULL === $this->connection )
 			throw new \RuntimeException( 'Not connected' );
 
 		$lastLine	= '';
@@ -313,7 +313,7 @@ class Socket
 	 */
 	public function sendChunk( string $content ): int
 	{
-		if( !$this->connection )
+		if( NULL === $this->connection )
 			throw new \RuntimeException( 'Not connected' );
 		return fwrite( $this->connection, $content );
 	}

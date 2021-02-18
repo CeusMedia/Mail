@@ -66,7 +66,7 @@ class Parser
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -77,7 +77,7 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -124,7 +124,7 @@ class Parser
 			$address	= new Address();
 			$address->setLocalPart( $item->mailbox );
 			$address->setDomain( $item->host );
-			if( !empty( $item->personal ) )
+			if( isset( $item->personal ) && strlen( trim( $item->personal ) ) > 0 )
 				$address->setName( $item->personal );
 			$collection->add( $address );
 		}
@@ -215,7 +215,7 @@ class Parser
 	{
 		$reflextion	= new \Alg_Object_Constant( get_class( $this ) );
 		$constants	= $reflextion->getAll( 'METHOD' );
-		if( !in_array( $method, $constants ) )
+		if( !in_array( $method, $constants, TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid method' );
 		$this->method	= $method;
 		return $this;

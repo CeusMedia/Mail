@@ -12,7 +12,7 @@ class Client
 
 	public static function getInstance()
 	{
-		return new static();
+		return new self();
 	}
 
 	public function createAddress(): Address

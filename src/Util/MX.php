@@ -62,7 +62,7 @@ class MX
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -73,7 +73,7 @@ class MX
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	public function fromAddress( $address, bool $useCache = TRUE, bool $strict = TRUE ): array
@@ -117,7 +117,7 @@ if( !function_exists( 'getmxrr' ) )
 			$mxhosts	= array();
 		}
 		$pattern	= "/^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$/";
-		if( !empty( $hostname ) ){
+		if( strlen( trim( $hostname ) ) > 0 ){
 			$output	= "";
 			@exec( "nslookup.exe -type=MX $hostname.", $output );
 			$imx	= -1;

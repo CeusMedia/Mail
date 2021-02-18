@@ -50,19 +50,6 @@ class Local
 	}
 
 	/**
-	 *	Checks a Header Value for possible Mail Injection and throws Exception.
-	 *	@access		protected
-	 *	@param		string		$value		Header Value
-	 *	@return		void
-	 *	@throws		\InvalidArgumentException
-	 */
-	protected function checkForInjection( $value )
-	{
-		if( preg_match( '/(\r|\n)/', $value ) )
-			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
-	}
-
-	/**
 	 *	Sends Mail.
 	 *	@access		public
 	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
@@ -77,7 +64,7 @@ class Local
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipientsByType( 'to' );
 		$subject	= $message->getSubject();
-		$body		= Renderer::getInstance()->render( $message );
+		$body		= Renderer::render( $message );
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
 		$this->checkForInjection( $subject );
@@ -145,7 +132,22 @@ class Local
 	 */
 	public static function sendMail( Message $message, $parameters = array() )
 	{
-		$transport	= new static();
+		$transport	= new self();
 		$transport->send( $message, $parameters );
+	}
+
+	//  --  PROTECTED  --  //
+
+	/**
+	 *	Checks a Header Value for possible Mail Injection and throws Exception.
+	 *	@access		protected
+	 *	@param		string		$value		Header Value
+	 *	@return		void
+	 *	@throws		\InvalidArgumentException
+	 */
+	protected function checkForInjection( $value )
+	{
+		if( preg_match( '/(\r|\n)/', $value ) )
+			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }
