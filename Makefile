@@ -50,3 +50,11 @@ dev-configure:
 	@read -p 'Receiver Auth Mode (eg. LOGIN, CRAM-MD5, empty to auto): ' input && sed -i "s@{{phpunit.receiver.auth.mode}}@$$input@" Mail.ini
 	@read -p 'Receiver Auth Username: ' input && sed -i "s*{{phpunit.receiver.auth.username}}*$$input*" Mail.ini
 	@read -p 'Receiver Auth Password: ' input && sed -i "s {{phpunit.receiver.auth.password}} $$input " Mail.ini
+
+dev-phpstan: composer-install-dev
+	@vendor/bin/phpstan analyse --configuration phpstan.neon --xdebug || true
+
+dev-phpstan-save-baseline: composer-install-dev
+	@vendor/bin/phpstan analyse --configuration phpstan.neon --generate-baseline phpstan-baseline.neon || true
+
+

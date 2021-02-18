@@ -23,14 +23,16 @@
   },
   "minimum-stability": "dev",
   "require": {
-    "php": ">=7.1",
+    "php": ">=7.3",
     "ceus-media/common": "^0.8 | dev-master",
     "ceus-media/cache": "*",
     "ezyang/htmlpurifier": "dev-master"
   },
   "require-dev": {
-    "php": "^7.1",
+    "php": ">=7.3",
     "phpunit/phpunit": "*",
+    "phpstan/phpstan": "0.12.x-dev",
+    "phpstan/phpstan-strict-rules": "0.12.x-dev",
     "squizlabs/php_codesniffer": "*",
     "phan/phan": "dev-master",
     "ceus-media/doc-creator": "dev-master",
