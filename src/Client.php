@@ -1,19 +1,20 @@
 <?php
+declare(strict_types=1);
+
 namespace CeusMedia\Mail;
 
 use CeusMedia\Mail\Message;
-use CeusMedia\Mail\Transport\SMTP;
+use CeusMedia\Mail\Transport\SMTP as SmtpTransport;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
+use RuntimeException;
 
 class Client
 {
+	/**	@var	Mailbox			$mailbox */
 	protected $mailbox;
-	protected $transport;
 
-	public static function getInstance()
-	{
-		return new self();
-	}
+	/**	@var	SmtpTransport	$transport */
+	protected $transport;
 
 	public function createAddress(): Address
 	{
@@ -25,12 +26,16 @@ class Client
 		return Message::getInstance();
 	}
 
-	public function createSearch( $conditions = array() ): MailboxSearch
+	public function createSearch( array $conditions = array() ): MailboxSearch
 	{
 		return MailboxSearch::getInstance()->applyConditions( $conditions );
 	}
 
 	/**
+	 *	@param			array			$conditions
+	 *	@param			integer|NULL	$limit
+	 *	@param			integer|NULL	$offset
+	 *	@return			array
 	 *	@deprecated		use search with mailbox search instance instead
 	 *	@todo			to be removed
 	 */
@@ -46,35 +51,40 @@ class Client
 		return $mailbox->performSearch( $search );
 	}
 
+	public static function getInstance(): self
+	{
+		return new self();
+	}
+
 	public function getMailbox(): Mailbox
 	{
-		if( !$this->mailbox )
-			throw new \RuntimeException( 'No mailbox set' );
+		if( NULL === $this->mailbox )
+			throw new RuntimeException( 'No mailbox set' );
 		return $this->mailbox;
 	}
 
-	public function getTransport(): SMTP
+	public function getTransport(): SmtpTransport
 	{
-		if( !$this->transport )
-			throw new \RuntimeException( 'No transport set' );
+		if( NULL === $this->transport )
+			throw new RuntimeException( 'No transport set' );
 		return $this->transport;
 	}
 
-	public function sendMessage( Message $message )
+	public function sendMessage( Message $message ): self
 	{
-		if( !$this->transport )
-			throw new \RuntimeException( 'No transport set' );
+		if( NULL === $this->transport )
+			throw new RuntimeException( 'No transport set' );
 		$this->transport->send( $message );
 		return $this;
 	}
 
-	public function setMailbox( Mailbox $mailbox )
+	public function setMailbox( Mailbox $mailbox ): self
 	{
 		$this->mailbox		= $mailbox;
 		return $this;
 	}
 
-	public function setTransport( Transport\SMTP $transport )
+	public function setTransport( SmtpTransport $transport ): self
 	{
 		$this->transport	= $transport;
 		return $this;

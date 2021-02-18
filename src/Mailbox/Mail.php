@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	...
  *
@@ -46,9 +48,16 @@ use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  */
 class Mail
 {
+	/**	@var	resource	$connection */
 	protected $connection;
+
+	/**	@var	integer		$mailId */
 	protected $mailId;
+
+	/**	@var	string		$header */
 	protected $header;
+
+	/**	@var	string		$body */
 	protected $body;
 
 	/**
@@ -65,9 +74,10 @@ class Mail
 	 *	Static constructor.
 	 *	@access		public
 	 *	@static
+	 *	@param		integer		$mailId
 	 *	@return		self
 	 */
-	public static function getInstance( $mailId ): self
+	public static function getInstance( int $mailId ): self
 	{
 		return new self( $mailId );
 	}
@@ -94,9 +104,15 @@ class Mail
 		return MessageHeaderParser::getInstance()->parse( $this->header );
 	}
 
-	public function getMessage( $withBodyParts = FALSE ): Message
+	/**
+	 *	...
+	 *	@public
+	 *	@param		boolean		$withBodyParts
+	 *	@return		Message
+	 */
+	public function getMessage( bool $withBodyParts = FALSE ): Message
 	{
-		if( !$this->connection )
+		if( NULL !== $this->connection )
 			throw new \RuntimeException( 'No connection set' );
 		$header	= $this->getRawHeader();
 		$body	= '';
@@ -113,12 +129,13 @@ class Mail
 	 */
 	public function getRawHeader( $force = FALSE ): string
 	{
-		if( !$this->connection )
+		if( NULL !== $this->connection )
 			throw new \RuntimeException( 'No connection set' );
-		if( !$this->header || $force ){
-			$this->header	= imap_fetchheader( $this->connection, $this->mailId, FT_UID );
-			if( !$this->header )
+		if( 0 === strlen( $this->header ) || $force ){
+			$header	= imap_fetchheader( $this->connection, $this->mailId, FT_UID );
+			if( FALSE === $header )
 				throw new \RuntimeException( 'Invalid mail ID' );
+			$this->header	= $header;
 		}
 		return $this->header;
 	}
@@ -126,6 +143,7 @@ class Mail
 	/**
 	 *	Set mailbox connection.
 	 *	@access		public
+	 *	@param		resource		$connection
 	 *	@return		self
 	 */
 	public function setConnection( $connection ): self

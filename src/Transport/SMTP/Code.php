@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	...
  *
@@ -40,7 +42,8 @@ namespace CeusMedia\Mail\Transport\SMTP;
  */
 class Code
 {
-	static protected $codes	= array(
+	/**	@var	array		$codes */
+	protected static $codes	= array(
 		101		=> array(
 			'label'		=> 'Cannot open connection',
 			'message'	=> 'The server is unable to connect.',
@@ -248,7 +251,7 @@ class Code
 		)
 	);
 
-	static public function explain( int $code )
+	public static function explain( int $code ): object
 	{
 		$explained	= FALSE;
 		$label		= 'Unknown STMP status code: '.$code;
@@ -270,7 +273,7 @@ class Code
 		);
 	}
 
-	static public function getText( int $code ): string
+	public static function getText( int $code ): string
 	{
 		return self::explain( $code )->label;
 	}

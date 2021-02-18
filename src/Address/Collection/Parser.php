@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Parser for list of addresses collected as string.
  *
@@ -54,6 +56,7 @@ class Parser
 	const STATE_SCANNING_FOR_ADDRESS	= 3;
 	const STATE_READING_ADDRESS			= 4;
 
+	/** @var int $method */
 	protected $method					= 0;
 
 	/**
@@ -133,11 +136,11 @@ class Parser
 
 	public function parseUsingOwn( string $string, string $delimiter = ',' ): AddressCollection
 	{
-		if( !strlen( $delimiter ) )
+		if( 0 === strlen( $delimiter ) )
 			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
 		$list		= array();
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
-		if( !strlen( trim( $string ) ) )
+		if( 0 === strlen( trim( $string ) ) )
 			return new AddressCollection();
 		$status		= static::STATE_SCANNING_FOR_NAME;
 		$part1		= "";
@@ -193,7 +196,7 @@ class Parser
 			}
 			$buffer	.= $letter;
 		}
-		if( $buffer && $status )
+		if( 0 < strlen( $buffer ) && 0 < $status )
 			$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
 
 		$collection	= new AddressCollection();

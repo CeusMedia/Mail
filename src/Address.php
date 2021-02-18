@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Data object for mail participants, having an address and optionally a name.
  *
@@ -69,7 +71,7 @@ class Address
 	 */
 	public function __construct( string $string = NULL )
 	{
-		if( $string ){
+		if( NULL !== $string ){
 			$this->set( $string );
 		}
 	}
@@ -202,13 +204,13 @@ class Address
 	 */
 	public function set( string $string ): self
 	{
-		if( !strlen( trim( $string ) ) )
+		if( 0 === strlen( trim( $string ) ) )
 			throw new \InvalidArgumentException( 'No address given' );
 
 		$address	= AddressParser::getInstance()->parse( $string );
 		$this->setDomain( $address->getDomain() );
 		$this->setLocalPart( $address->getLocalPart() );
-		$this->setName( $address->getName() );
+		$this->setName( $address->getName( FALSE ) );
 		return $this;
 	}
 

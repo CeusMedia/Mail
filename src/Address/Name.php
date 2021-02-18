@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Address name parser.
  *
@@ -41,10 +43,12 @@ class Name
 	static public function splitNameParts( array $list ): array
 	{
 		foreach( $list as $nr => $entry ){
-			if( preg_match( "/ +/", $entry['fullname'] ) ){
+			if( 1 === preg_match( "/ +/", $entry['fullname'] ) ){
 				$parts	= preg_split( "/ +/", $entry['fullname'] );
-				$list[$nr]['surname']	= array_pop( $parts );
-				$list[$nr]['firstname']	= join( ' ', $parts );
+				if( FALSE !== $parts ){
+					$list[$nr]['surname']	= array_pop( $parts );
+					$list[$nr]['firstname']	= join( ' ', $parts );
+				}
 			}
 		}
 		return $list;
@@ -53,9 +57,10 @@ class Name
 	static public function swapCommaSeparatedNameParts( array $list ): array
 	{
 		foreach( $list as $nr => $entry ){
-			if( preg_match( "/, +/", $entry['fullname'] ) ){
+			if( 1 === preg_match( "/, +/", $entry['fullname'] ) ){
 				$parts	= preg_split( "/, +/", $entry['fullname'], 2 );
-				$list[$nr]['fullname']	= $parts[1].' '.$parts[0];
+				if( FALSE !== $parts )
+					$list[$nr]['fullname']	= join( ' ', array_reverse( $parts ) );
 			}
 		}
 		return $list;

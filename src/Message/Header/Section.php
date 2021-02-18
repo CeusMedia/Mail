@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Container for mail message header fields.
  *
@@ -28,6 +30,7 @@ namespace CeusMedia\Mail\Message\Header;
 
 use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use RangeException;
 
 /**
  *	Container for mail message header fields.
@@ -42,6 +45,7 @@ use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
  */
 class Section
 {
+	/**	@var	array		$fields */
 	protected $fields			= array();
 
 	/**
@@ -84,18 +88,18 @@ class Section
 	 *	@access		public
 	 *	@param		string		$name		Header field name
 	 *	@return		Field
-	 *	@throws		\RangeException			if request header field name is not existing
+	 *	@throws		RangeException			if request header field name is not existing
 	 */
 	public function getField( string $name ): Field
 	{
 		if( !$this->hasField( $name ) )
-			throw new \RangeException( 'Header "'.$name.'" is not available' );
+			throw new RangeException( 'Header "'.$name.'" is not available' );
 		$values	= $this->getFieldsByName( $name );
 		return array_shift( $values );
 	}
 
 	/**
-	 *	Returns a kist of all set header field objects.
+	 *	Returns a list of all set header field objects.
 	 *	@access		public
 	 *	@return		array
 	 */
@@ -103,7 +107,7 @@ class Section
 	{
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
-			if( count( $fields ) )
+			if( 0 < count( $fields ) )
 				foreach( $fields as $field )
 					$list[]	= $field;
 		return $list;
@@ -146,7 +150,7 @@ class Section
 	public function removeFieldByName( string $name ): int
 	{
 		$count	= count( $this->getFieldsByName( $name ) );
-		if( $count )
+		if( 0 < $count )
 			unset( $this->fields[strtolower( $name )] );
 		return $count;
 	}
@@ -204,10 +208,10 @@ class Section
 	/**
 	 *	Returns all header fields as list.
 	 *	@access		public
-	 *	@param		boolean|NULL	$keepCase		Flag: keep original field key (default: no)
+	 *	@param		boolean			$keepCase		Flag: keep original field key (default: no)
 	 *	@return		array
 	 */
-	public function toArray( ?bool $keepCase = FALSE ): array
+	public function toArray( bool $keepCase = FALSE ): array
 	{
 		$list	= array();
 		foreach( $this->fields as $name => $fields )
@@ -219,13 +223,13 @@ class Section
 	/**
 	 *	Returns all set header fields as string.
 	 *	@access		public
-	 *	@param		boolean|NULL	$keepCase		Flag: keep original field key (default: no)
+	 *	@param		boolean			$keepCase		Flag: keep original field key (default: no)
 	 *	@return		string
 	 */
-	public function toString( ?bool $keepCase = FALSE ): string
+	public function toString( bool $keepCase = FALSE ): string
 	{
 		$list	= $this->toArray( $keepCase );
-		if( $list )
+		if( 0 < count( $list ) )
 			return implode( Message::$delimiter, $list );
 		return "";
 	}

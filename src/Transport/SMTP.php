@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
  *
@@ -45,30 +47,36 @@ use InvalidArgumentException;
  */
 class SMTP
 {
-	/**	@var		string		$host		SMTP server host name */
+	/**	@var	string			$host		SMTP server host name */
 	protected $host;
 
-	/**	@var		integer		$port		SMTP server port */
+	/**	@var	integer			$port		SMTP server port */
 	protected $port				= 25;
 
-	/**	@var		string		$username	SMTP auth username */
+	/**	@var	string			$username	SMTP auth username */
 	protected $username			= '';
 
-	/**	@var		string		$password	SMTP auth password */
+	/**	@var	string			$password	SMTP auth password */
 	protected $password			= '';
 
+	/**	@var	boolean			$isSecure */
 	protected $isSecure			= FALSE;
 
+	/**	@var	boolean			$verbose */
 	protected $verbose			= FALSE;
 
+	/**	@var	SmtpSocket		$socket */
 	protected $socket;
 
-	/**	@var		integer		$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php */
+	/**
+	 * 	@var	integer			$cryptoMode		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT
+	 *	@see	https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
+	 */
 	protected $cryptoMode		= STREAM_CRYPTO_METHOD_ANY_CLIENT;
 
 	/**
 	 *	Constructor.
-	 *	Receives connection parameters (host, port, username, passord) if given.
+	 *	Receives connection parameters (host, port, username, password) if given.
 	 *
 	 *	@access		public
 	 *	@param		string		$host		SMTP server host name
@@ -100,7 +108,7 @@ class SMTP
 
 	/**
 	 *	Get instance of SMTP transport.
-	 *	Receives connection parameters (host, port, username, passord) if given.
+	 *	Receives connection parameters (host, port, username, password) if given.
 	 *	@static
 	 *	@access		public
 	 *	@param		string		$host		SMTP server host name
@@ -129,7 +137,6 @@ class SMTP
 	{
 		if( NULL === $this->socket )
 			$this->socket	= new SmtpSocket( $this->host, $this->port );
-		$delim		= Message::$delimiter;
 		if( NULL === $message->getSender() )
 			throw new RuntimeException( 'No mail sender set' );
 		if( 0 === count( $message->getRecipientsByType( 'to' ) ) )
@@ -187,7 +194,7 @@ class SMTP
 	 *	@access		public
 	 *	@param		string		$username	SMTP username
 	 *	@param		string		$password	SMTP password
-	 *	@return		object  	Self instance for chaining.
+	 *	@return		self  		Self instance for chaining.
 	 */
 	public function setAuth( string $username, string $password ): self
 	{
@@ -199,8 +206,9 @@ class SMTP
 	/**
 	 *	Sets crypto mode.
 	 *	@access		public
-	 *	@param		integer		$mode		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
-	 *	@return		object  	Self instance for chaining.
+	 *	@param		integer		$mode		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT
+	 *	@return		self		Self instance for chaining.
+	 *	@see		https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 */
 	public function setCryptoMode( int $mode ): self
 	{
@@ -212,13 +220,13 @@ class SMTP
 	 *	Sets SMTP host.
 	 *	@access		public
 	 *	@param		string		$host		SMTP server host
-	 *	@return		object  	Self instance for chaining.
+	 *	@return		self		Self instance for chaining.
 	 */
 	public function setHost( string $host ): self
 	{
-		if( $this->socket )
+		if( NULL !== $this->socket )
 			throw new RuntimeException( 'Connection to SMTP server already established' );
-		if( !strlen( trim( $host ) ) )
+		if( 0 === strlen( trim( $host ) ) )
 			throw new InvalidArgumentException( 'Missing SMTP host' );
 		$this->host		= $host;
 		return $this;
@@ -228,7 +236,7 @@ class SMTP
 	 *	Sets password for SMTP authentication.
 	 *	@access		public
 	 *	@param		string		$password	SMTP password
-	 *	@return		object  	Self instance for chaining.
+	 *	@return		self		Self instance for chaining.
 	 */
 	public function setPassword( string $password ): self
 	{
@@ -241,11 +249,11 @@ class SMTP
 	 *	@access		public
 	 *	@param		integer		$port			SMTP server port
 	 * 	@param		boolean		$detectSecure	Flag: set secure depending on port (default: yes)
-	 *	@return		object  	Self instance for chaining.
+	 *	@return		self		Self instance for chaining.
 	 */
 	public function setPort( int $port, bool $detectSecure = TRUE ): self
 	{
-		if( $this->socket )
+		if( NULL !== $this->socket )
 			throw new RuntimeException( 'Connection to SMTP server already established' );
 		$this->port		= $port;
 		if( $detectSecure )
@@ -255,7 +263,7 @@ class SMTP
 
 	public function setSecure( bool $secure ): self
 	{
-		$this->isSecure = (bool) $secure;
+		$this->isSecure = $secure;
 		return $this;
 	}
 
@@ -269,7 +277,7 @@ class SMTP
 	 *	Sets username for SMTP authentication.
 	 *	@access		public
 	 *	@param		string		$username	SMTP username
-	 *	@return		object  	Self instance for chaining.
+	 *	@return		self		Self instance for chaining.
 	 */
 	public function setUsername( string $username ): self
 	{
@@ -281,7 +289,7 @@ class SMTP
 	 *	Sets verbosity.
 	 *	@access		public
 	 *	@param		boolean		$verbose	Be verbose during transportation (default: FALSE)
-	 *	@return		object  	Self instance for chaining.
+	 *	@return		self		Self instance for chaining.
 	 */
 	public function setVerbose( bool $verbose ): self
 	{
@@ -301,7 +309,7 @@ class SMTP
 		return $response;
 	}
 
-	protected function sendChunk( string $message )
+	protected function sendChunk( string $message ): bool
 	{
 		if( $this->verbose )
 			print PHP_EOL . ' > '.$message . PHP_EOL;

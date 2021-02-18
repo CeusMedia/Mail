@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Collector container for mails.
  *
@@ -80,7 +82,7 @@ class Message
 	protected $userAgent;
 
 	/**	@var		string					$defaultUserAgent	Default user agent */
-	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.2';
+	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.3';
 
 	/**
 	 *	Constructor.
@@ -98,7 +100,7 @@ class Message
 
 	public function __wakeup()
 	{
-		if( !$this->userAgent )
+		if( 0 === strlen( trim( $this->userAgent ) ) )
 			$this->evaluateUserAgent();
 	}
 

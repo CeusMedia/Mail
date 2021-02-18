@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Renderer for list of addresses.
  *
@@ -40,6 +42,7 @@ use \CeusMedia\Mail\Address\Collection as AddressCollection;
  */
 class Renderer
 {
+	/** @var string $delimiter */
 	protected $delimiter		= ', ';
 
 	/**
@@ -94,7 +97,7 @@ class Renderer
 	 */
 	public function setDelimiter( string $delimiter ): self
 	{
-		if( !strlen( trim( $delimiter ) ) )
+		if( 0 === strlen( trim( $delimiter ) ) )
 			throw new \InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$this->delimiter	= $delimiter;
 		return $this;

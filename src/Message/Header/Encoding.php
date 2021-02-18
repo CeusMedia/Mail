@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Mail message header encoder and decoder.
  *

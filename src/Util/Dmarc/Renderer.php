@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Renderer for DMARC records.
  *
@@ -26,8 +28,7 @@
  */
 namespace CeusMedia\Mail\Util\Dmarc;
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Util\Dmarc\Record;
+use CeusMedia\Mail\Address;
 
 /**
  *	Renderer for DMARC records.
@@ -71,12 +72,12 @@ class Renderer
 			'v'		=> 'DMARC'.$record->version,
 			'p'		=> $record->policy,
 		);
-		if( $record->policySubdomains )
+		if( 0 < strlen( $record->policySubdomains ) )
 			$facts['sp']	= $record->policySubdomains;
 		$facts['adkim']	= $record->alignmentDkim;
 		$facts['aspf']	= $record->alignmentSpf;
 		$facts['pct']	= $record->percent;
-		if( $record->reportAggregate ){
+		if( 0 < count( $record->reportAggregate ) ){
 			$list	= array();
 			foreach( $record->reportAggregate as $uri ){
 				if( $uri instanceof Address )
@@ -85,7 +86,7 @@ class Renderer
 			}
 			$facts['rua']	= join( ', ', $list );
 		}
-		if( $record->reportForensic ){
+		if( 0 < count( $record->reportForensic ) ){
 			$list	= array();
 			foreach( $record->reportForensic as $uri ){
 				if( $uri instanceof Address )

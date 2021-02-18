@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Sends Mail using PHPs mail function and local SMTP server.
  *

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Handler for IMAP mailboxes.
  *
@@ -43,19 +45,46 @@ use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
  */
 class Mailbox
 {
+    /**
+     * @var resource|NULL $connection
+     */
 	protected $connection;
+
+    /**
+     * @var string $username
+     */
 	protected $username;
+
+    /**
+     * @var string $password
+     */
 	protected $password;
+
+    /**
+     * @var string $host
+     */
 	protected $host;
+
+    /**
+     * @var bool $secure
+     */
 	protected $secure					= TRUE;
+
+    /**
+     * @var bool $validateCertificates
+     */
 	protected $validateCertificates		= TRUE;
+
+    /**
+     * @var string $error
+     */
 	protected $error;
 
-	public function __construct( string $host, string $username = NULL, string $password = NULL, bool $secure = TRUE, bool $validateCertificates = TRUE )
+	public function __construct( string $host, string $username = '', string $password = '', bool $secure = TRUE, bool $validateCertificates = TRUE )
 	{
 		self::checkExtensionInstalled( TRUE );
 		$this->setHost( $host );
-		if( $username && $password )
+		if( 0 < strlen( trim( $username ) ) && 0 < strlen( trim( $password ) ) )
 			$this->setAuth( $username, $password );
 		$this->setSecure( $secure, $validateCertificates );
 	}
@@ -65,9 +94,15 @@ class Mailbox
 		$this->disconnect();
 	}
 
-	protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
+	/**
+	 *	...
+	 *	@param		bool		$connect
+	 *	@param		bool		$strict
+	 *	@return		bool
+	 */
+    protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
 	{
-		if( !$this->connection || !imap_ping( $this->connection ) ){
+		if( NULL === $this->connection || !imap_ping( $this->connection ) ){
 			if( !$connect ){
 				if( $strict )
 					throw new \RuntimeException( 'Not connected' );
@@ -75,7 +110,7 @@ class Mailbox
 			}
 			return $this->connect();
 		}
-		if( $this->connection && is_resource( $this->connection ) )
+		if( NULL !== $this->connection && is_resource( $this->connection ) )
 			return TRUE;
 		if( $strict )
 			throw new \RuntimeException( 'Not connected' );
@@ -120,14 +155,14 @@ class Mailbox
 		return FALSE;
 	}
 
-	public function disconnect()
+	public function disconnect(): bool
 	{
 		if( $this->checkConnection( FALSE, FALSE ) )
 			return imap_close( $this->connection, CL_EXPUNGE );
 		return TRUE;
 	}
 
-	public static function getInstance( string $host, string $username = NULL, string $password = NULL, bool $secure = TRUE, bool $validateCertificates = TRUE ): self
+	public static function getInstance( string $host, string $username = '', string $password = '', bool $secure = TRUE, bool $validateCertificates = TRUE ): self
 	{
 		return new self( $host, $username, $password, $secure, $validateCertificates );
 	}
@@ -141,7 +176,7 @@ class Mailbox
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
-		if( !$header )
+		if( FALSE === $header )
 			throw new \RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
 		return $header.PHP_EOL.PHP_EOL.$body;
@@ -151,7 +186,7 @@ class Mailbox
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
-		if( !$header )
+		if( FALSE === $header )
 			throw new \RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
 		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
@@ -161,7 +196,7 @@ class Mailbox
 	{
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
-		if( !$header )
+		if( FALSE === $header )
 			throw new \RuntimeException( 'Invalid mail ID' );
 		return MessageHeaderParser::getInstance()->parse( $header );
 	}
@@ -172,7 +207,7 @@ class Mailbox
 		return imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 	}
 
-	public function search( array $conditions )
+	public function search( array $conditions ): array
 	{
 		$this->checkConnection( TRUE, TRUE );
 		return MailboxSearch::getInstance()

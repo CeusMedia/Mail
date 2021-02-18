@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Validator for mail address syntax.
  *
@@ -44,8 +46,13 @@ class Syntax
 	const MODE_SIMPLE_REGEX		= 4;
 	const MODE_EXTENDED_REGEX	= 8;
 
+	/**	@var int $mode */
 	protected $mode				= 2;
+
+	/**	@var string $regexSimple */
 	protected $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
+
+	/**	@var string $regexExtended */
 	protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
 
 	/**

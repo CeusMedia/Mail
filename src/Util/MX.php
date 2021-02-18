@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Resolver for DNS MX records related to hostname or mail address.
  *
@@ -26,6 +28,7 @@
  */
 namespace CeusMedia\Mail\Util;
 
+use CeusMedia\Cache\AdapterInterface;
 use \CeusMedia\Mail\Address;
 
 /**
@@ -40,8 +43,10 @@ use \CeusMedia\Mail\Address;
  */
 class MX
 {
+	/**	@var	AdapterInterface	$cache */
 	protected $cache;
 
+	/** @var	bool				$useCache */
 	protected $useCache		= FALSE;
 
 	/**
@@ -76,11 +81,18 @@ class MX
 		return new self();
 	}
 
+	/**
+	 *	...
+	 *	@public
+	 *	@param		Address|string	$address
+	 *	@param		boolean			$useCache
+	 *	@param		boolean			$strict
+	 *	@return		array
+	 */
 	public function fromAddress( $address, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		$hostname	= $address->getDomain();
 		return $this->fromHostname( $address->getDomain(), $useCache, $strict );
 	}
 
@@ -88,7 +100,7 @@ class MX
 	{
 		$useCache	= $useCache && $this->useCache;
 		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
-			return $this->cache->get( 'mx:'.$hostname );
+			return json_decode( $this->cache->get( 'mx:'.$hostname ), TRUE );
 		$servers	= array();
 		getmxrr( $hostname, $mxRecords, $mxWeights );
 		if( !$mxRecords && $strict )
@@ -96,12 +108,17 @@ class MX
 		foreach( $mxRecords as $nr => $server )
 			$servers[$mxWeights[$nr]]	= $server;
 		ksort( $servers );
-		if( $useCache )
-			$this->cache->set( 'mx:'.$hostname, $servers );
+		if( $useCache && NULL !== $this->cache ){
+			try{
+				$this->cache->set( 'mx:'.$hostname, json_encode( $servers, JSON_THROW_ON_ERROR ) );
+			}
+			catch( \Throwable $e ){
+			}
+		}
 		return $servers;
 	}
 
-	public function setCache( $cache ): self
+	public function setCache( AdapterInterface $cache ): self
 	{
 		$this->useCache		= (bool) $cache;
 		$this->cache		= $cache;
@@ -112,24 +129,22 @@ class MX
 // support windows platforms
 if( !function_exists( 'getmxrr' ) )
 {
-	function getmxrr( $hostname, &$mxhosts, &$mxweight ){
-		if( !is_array( $mxhosts ) ){
-			$mxhosts	= array();
-		}
+	function getmxrr( string $hostname, array &$mxhosts, array &$mxweight ): bool
+	{
 		$pattern	= "/^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$/";
 		if( strlen( trim( $hostname ) ) > 0 ){
-			$output	= "";
+			$output	= [];
 			@exec( "nslookup.exe -type=MX $hostname.", $output );
 			$imx	= -1;
 			foreach( $output as $line ){
 				$imx++;
 				$parts	= "";
-				if( preg_match( $pattern, $line, $parts ) ){
+				if( 1 === preg_match( $pattern, $line, $parts ) ){
 					$mxweight[$imx]	= $parts[1];
 					$mxhosts[$imx]	= $parts[2];
 				}
 			}
-			return ($imx!=-1);
+			return ($imx != -1);
 		}
 		return FALSE;
 	}

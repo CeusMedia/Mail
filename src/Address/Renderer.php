@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Renderer for mail addresses.
  *
@@ -79,9 +81,9 @@ class Renderer
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
 		$name		= $address->getName();
-		if( !strlen( trim( $name ) ) )
+		if( 0 === strlen( trim( $name ) ) )
 			return $localPart.'@'.$domain;
-		if( !preg_match( '/^\w+$/', $name ) )
+		if( 1 !== preg_match( '/^\w+$/', $name ) )
 			$name	= '"'.$name.'"';
 		return $name.' <'.$localPart.'@'.$domain.'>';
 	}
