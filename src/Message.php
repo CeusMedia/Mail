@@ -63,7 +63,7 @@ class Message
 	/**	@var		MessageHeaderSection	$headers		Mail header section */
 	protected $headers;
 
-	/**	@var		Address					$sender			Sender mail address */
+	/**	@var		Address|null			$sender			Sender mail address */
 	protected $sender;
 
 	/**	@var		array					$recipients		List of recipients */
@@ -411,9 +411,9 @@ class Message
 	/**
 	 *	Returns assigned mail sender.
 	 *	@access		public
-	 *	@return		Address
+	 *	@return		Address|NULL
 	 */
-	public function getSender(): Address
+	public function getSender(): ?Address
 	{
 		return $this->sender;
 	}
@@ -422,9 +422,9 @@ class Message
 	 *	Returns set mail subject.
 	 *	@access		public
 	 *	@param		string|NULL		$encoding		Optional: Types: base64, quoted-printable. Default: none
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
-	public function getSubject( string $encoding = NULL ): string
+	public function getSubject( string $encoding = NULL ): ?string
 	{
 		return $this->subject;
 	}

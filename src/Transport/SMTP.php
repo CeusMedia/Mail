@@ -26,9 +26,11 @@
  */
 namespace CeusMedia\Mail\Transport;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Renderer as MessageRenderer;
-use \CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Renderer as MessageRenderer;
+use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
+use RuntimeException;
+use InvalidArgumentException;
 
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
@@ -45,12 +47,15 @@ class SMTP
 {
 	/**	@var		string		$host		SMTP server host name */
 	protected $host;
+
 	/**	@var		integer		$port		SMTP server port */
-	protected $port;
+	protected $port				= 25;
+
 	/**	@var		string		$username	SMTP auth username */
-	protected $username;
+	protected $username			= '';
+
 	/**	@var		string		$password	SMTP auth password */
-	protected $password;
+	protected $password			= '';
 
 	protected $isSecure			= FALSE;
 
@@ -72,7 +77,7 @@ class SMTP
 	 *	@param		string		$password	SMTP auth password
 	 *	@return		void
 	 */
-	public function __construct( $host, $port = 25, $username = NULL, $password = NULL )
+	public function __construct( string $host, int $port = 25, string $username = '', string $password = '' )
 	{
 		$this->setHost( $host );
 		$this->setPort( $port );
@@ -84,11 +89,13 @@ class SMTP
 	 *	Returns last connection error message, if connecting failed.
 	 *	Otherwise NULL.
 	 *	@access		public
-	 *	@return		null|string
+	 *	@return		string|NULL
 	 */
-	public function getConnectError()
+	public function getConnectError(): ?string
 	{
-		return $this->socket->getError();
+		if( NULL !== $this->socket )
+			return $this->socket->getError();
+		return NULL;
 	}
 
 	/**
@@ -102,7 +109,7 @@ class SMTP
 	 *	@param		string		$password	SMTP auth password
 	 *	@return		self
 	 */
-	public static function getInstance( $host, $port = 25, $username = NULL, $password = NULL )
+	public static function getInstance( string $host, int $port = 25, string $username = '', string $password = '' ): self
 	{
 		return new self( $host, $port, $username, $password );
 	}
@@ -111,63 +118,65 @@ class SMTP
 	 *	Sends mail using a socket connection to a remote SMTP server.
 	 *	@access		public
 	 *	@param		Message		$message		Mail message object
-	 *	@throws		\RuntimeException		if message has no mail sender
-	 *	@throws		\RuntimeException		if message has no mail receivers
-	 *	@throws		\RuntimeException		if message has no mail body parts
-	 *	@throws		\RuntimeException		if connection to SMTP server failed
-	 *	@throws		\RuntimeException		if sending mail failed
-	 *	@return		object  	Self instance for chaining.
+	 *	@throws		RuntimeException			if message has no mail sender
+	 *	@throws		RuntimeException			if message has no mail receivers
+	 *	@throws		RuntimeException			if message has no mail body parts
+	 *	@throws		RuntimeException			if connection to SMTP server failed
+	 *	@throws		RuntimeException			if sending mail failed
+	 *	@return		self					  	This instance for chaining.
 	 */
-	public function send( Message $message )
+	public function send( Message $message ): self
 	{
-		if( !$this->socket )
+		if( NULL === $this->socket )
 			$this->socket	= new SmtpSocket( $this->host, $this->port );
 		$delim		= Message::$delimiter;
-		if( !$message->getSender() )
-			throw new \RuntimeException( 'No mail sender set' );
-		if( !$message->getRecipientsByType( 'to' ) )
-			throw new \RuntimeException( 'No mail receiver(s) set' );
-		if( !$message->getParts() )
-			throw new \RuntimeException( 'No mail body parts set' );
-		$content	= MessageRenderer::getInstance()->render( $message );
+		if( NULL === $message->getSender() )
+			throw new RuntimeException( 'No mail sender set' );
+		if( 0 === count( $message->getRecipientsByType( 'to' ) ) )
+			throw new RuntimeException( 'No mail receiver(s) set' );
+		if( 0 === count( $message->getParts() ) )
+			throw new RuntimeException( 'No mail body parts set' );
+		$content	= MessageRenderer::render( $message );
 
 		$this->socket->open();
 		try{
-			$this->checkResponse( array( 220 ) );
-			$this->sendChunk( "EHLO ".$this->host );
-			$this->checkResponse( array( 250 ) );
+			$this->checkResponse( [ 220 ] );
+			$this->sendChunk( 'EHLO '.$this->host );
+			$this->checkResponse( [ 250 ] );
 			if( $this->isSecure ){
-				$this->sendChunk( "STARTTLS" );
-				$this->checkResponse( array( 220 ) );
+				$this->sendChunk( 'STARTTLS' );
+				$this->checkResponse( [ 220 ] );
 				$this->socket->enableCrypto( TRUE, $this->cryptoMode );
 			}
-			if( $this->username && $this->password ){
-				$this->sendChunk( "AUTH LOGIN" );
-				$this->checkResponse( array( 334 ) );
-				$this->sendChunk( base64_encode( $this->username ) );
-				$this->checkResponse( array( 334 ) );
-				$this->sendChunk( base64_encode( $this->password ) );
-				$this->checkResponse( array( 235 ) );
+			if( 0 < strlen( trim( $this->username ) ) ){
+				if( 0 < strlen( trim( $this->password ) ) ){
+					$this->sendChunk( 'AUTH LOGIN' );
+					$this->checkResponse( [ 334 ] );
+					$this->sendChunk( base64_encode( $this->username ) );
+					$this->checkResponse( [ 334 ] );
+					$this->sendChunk( base64_encode( $this->password ) );
+					$this->checkResponse( [ 235 ] );
+				}
 			}
 			$sender		= $message->getSender();
-			$this->sendChunk( "MAIL FROM: <".$sender->getAddress().">" );
-			$this->checkResponse( array( 250 ) );
+			$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
+			$this->checkResponse( [ 250 ] );
 			foreach( $message->getRecipientsByType( 'TO' ) as $receiver ){
-				$this->sendChunk( "RCPT TO: <".$receiver->getAddress().">" );
-				$this->checkResponse( array( 250 ) );
+				$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
+				$this->checkResponse( [ 250 ] );
 			}
-			$this->sendChunk( "DATA" );
-			$this->checkResponse( array( 354 ) );
+			$this->sendChunk( 'DATA' );
+			$this->checkResponse( [ 354 ] );
 			$this->sendChunk( $content );
 			$this->sendChunk( '.' );
-			$this->checkResponse( array( 250 ) );
-			$this->sendChunk( "QUIT" );
-			$this->checkResponse( array( 221 ) );
+			$this->checkResponse( [ 250 ] );
+			$this->sendChunk( 'QUIT' );
+			$this->checkResponse( [ 221 ] );
 			$this->socket->close();
 		}
-		catch( \Exception $e ){
+		catch( \Throwable $t ){
 			$this->socket->close();
-			throw new \RuntimeException( $e->getMessage(), $e->getCode(), $e->getPrevious() );
+			throw new RuntimeException( $t->getMessage(), $t->getCode(), $t->getPrevious() );
 		}
 		return $this;
 	}
@@ -180,7 +189,7 @@ class SMTP
 	 *	@param		string		$password	SMTP password
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setAuth( $username, $password ): self
+	public function setAuth( string $username, string $password ): self
 	{
 		$this->setUsername( $username );
 		$this->setPassword( $password );
@@ -193,7 +202,7 @@ class SMTP
 	 *	@param		integer		$mode		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setCryptoMode( $mode ): self
+	public function setCryptoMode( int $mode ): self
 	{
 		$this->cryptoMode	= $mode;
 		return $this;
@@ -205,12 +214,12 @@ class SMTP
 	 *	@param		string		$host		SMTP server host
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setHost( $host ): self
+	public function setHost( string $host ): self
 	{
 		if( $this->socket )
-			throw new \RuntimeException( 'Connection to SMTP server already established' );
+			throw new RuntimeException( 'Connection to SMTP server already established' );
 		if( !strlen( trim( $host ) ) )
-			throw new \InvalidArgumentException( 'Missing SMTP host' );
+			throw new InvalidArgumentException( 'Missing SMTP host' );
 		$this->host		= $host;
 		return $this;
 	}
@@ -221,7 +230,7 @@ class SMTP
 	 *	@param		string		$password	SMTP password
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setPassword( $password ): self
+	public function setPassword( string $password ): self
 	{
 		$this->password	= $password;
 		return $this;
@@ -234,17 +243,17 @@ class SMTP
 	 * 	@param		boolean		$detectSecure	Flag: set secure depending on port (default: yes)
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setPort( $port, $detectSecure = TRUE ): self
+	public function setPort( int $port, bool $detectSecure = TRUE ): self
 	{
 		if( $this->socket )
-			throw new \RuntimeException( 'Connection to SMTP server already established' );
-		$this->port		= (int) $port;
+			throw new RuntimeException( 'Connection to SMTP server already established' );
+		$this->port		= $port;
 		if( $detectSecure )
-			$this->setSecure( in_array( $port, array( 465, 587 ), TRUE ) );
+			$this->setSecure( in_array( $port, [ 465, 587 ], TRUE ) );
 		return $this;
 	}
 
-	public function setSecure( $secure ): self
+	public function setSecure( bool $secure ): self
 	{
 		$this->isSecure = (bool) $secure;
 		return $this;
@@ -262,7 +271,7 @@ class SMTP
 	 *	@param		string		$username	SMTP username
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setUsername( $username ): self
+	public function setUsername( string $username ): self
 	{
 		$this->username	= $username;
 		return $this;
@@ -274,25 +283,25 @@ class SMTP
 	 *	@param		boolean		$verbose	Be verbose during transportation (default: FALSE)
 	 *	@return		object  	Self instance for chaining.
 	 */
-	public function setVerbose( $verbose ): self
+	public function setVerbose( bool $verbose ): self
 	{
-		$this->verbose = (bool) $verbose;
+		$this->verbose = $verbose;
 		return $this;
 	}
 
 	//  --  PROTECTED  --  //
 
-	protected function checkResponse( $acceptedCodes = array() )
+	protected function checkResponse( array $acceptedCodes = [] )
 	{
 		$response	= $this->socket->readResponse( 1024 );
 		if( $this->verbose )
-			print ' < '.join( PHP_EOL."   ", $response->raw );
+			print ' < '.join( PHP_EOL.'   ', $response->raw );
 		if( $acceptedCodes && !in_array( (int) $response->code, $acceptedCodes, TRUE ) )
-			throw new \RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
+			throw new RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
 		return $response;
 	}
 
-	protected function sendChunk( $message )
+	protected function sendChunk( string $message )
 	{
 		if( $this->verbose )
 			print PHP_EOL . ' > '.$message . PHP_EOL;
