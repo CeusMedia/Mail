@@ -54,7 +54,7 @@ dev-configure:
 dev-phpstan: composer-install-dev
 	@vendor/bin/phpstan analyse --configuration phpstan.neon --xdebug || true
 
-dev-phpstan-save-baseline: composer-install-dev
+dev-phpstan-save-baseline: composer-install-dev composer-update-dev
 	@vendor/bin/phpstan analyse --configuration phpstan.neon --generate-baseline phpstan-baseline.neon || true
 
 

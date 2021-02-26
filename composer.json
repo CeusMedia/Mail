@@ -26,7 +26,9 @@
     "php": ">=7.3",
     "ceus-media/common": "^0.8 | dev-master",
     "ceus-media/cache": "*",
-    "ezyang/htmlpurifier": "dev-master"
+    "ezyang/htmlpurifier": "dev-master",
+    "ext-imap": "*",
+    "ext-json": "*"
   },
   "require-dev": {
     "php": ">=7.3",
