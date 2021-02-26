@@ -232,15 +232,16 @@ class Message
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ), TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid recipient type' );
 
-		if( $name )
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$participant->setName( $name );
 		$this->recipients[strtolower( $type )]->add( $participant );
+
 		$recipient	= '<'.$participant->getAddress().'>';
-		if( is_string( $name ) && strlen( trim( $name ) ) ){
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$recipient	= MessageHeaderEncoding::encodeIfNeeded( $name ).' '.$recipient;
-		}
 		$recipient	= $participant->get();
-		if( strtoupper( $type ) !== "BCC" ){
+
+		if( 'BBC' !== strtoupper( $type ) ){
 			$fields	= $this->headers->getFieldsByName( $type );
 			foreach( $fields as $field )
 				if( $field->getValue() == $recipient )
@@ -256,7 +257,7 @@ class Message
 			$participant	= new Address( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
-		if( $name )
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$participant->setName( $name );
 		$this->addHeaderPair( 'Reply-To', $participant->get() );
 		return $this;
@@ -524,7 +525,7 @@ class Message
 	{
 		if( is_string( $participant ) )
 			$participant	= new Address( $participant );
-		if( $name )
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$participant->setName( $name );
 		$this->headers->addFieldPair( 'Disposition-Notification-To', $participant->get() );
 		return $this;
@@ -544,7 +545,7 @@ class Message
 			$participant	= new Address( $participant );
 		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
-		if( $name )
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$participant->setName( $name );
 		$this->sender	= $participant;
 		$this->headers->removeFieldByName( 'From' );

@@ -101,8 +101,11 @@ class SMTP
 	 */
 	public function getConnectError(): ?string
 	{
-		if( NULL !== $this->socket )
-			return $this->socket->getError();
+		if( NULL !== $this->socket ){
+			$socketError	= $this->socket->getError()['message'];
+			if( 0 !== strlen( trim( $socketError ) ) )
+				return $socketError;
+		}
 		return NULL;
 	}
 
@@ -304,7 +307,7 @@ class SMTP
 		$response	= $this->socket->readResponse( 1024 );
 		if( $this->verbose )
 			print ' < '.join( PHP_EOL.'   ', $response->raw );
-		if( $acceptedCodes && !in_array( (int) $response->code, $acceptedCodes, TRUE ) )
+		if( 0 < count( $acceptedCodes ) && !in_array( (int) $response->code, $acceptedCodes, TRUE ) )
 			throw new RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
 		return $response;
 	}

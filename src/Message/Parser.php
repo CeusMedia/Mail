@@ -168,7 +168,7 @@ class Parser
 		$parts	= preg_split( '/\s*;\s*/', $string );
 		$value	= array_shift( $parts );
 		$list	= array();
-		if( $parts ){
+		if( 0 !== count( $parts ) ){
 			foreach( $parts as $part ){
 				if( preg_match( '/=/', $part ) ){
 					$p = preg_split( '/\s?=\s?/', $part, 2 );
@@ -210,9 +210,9 @@ class Parser
 		if( $mimeType === 'message/rfc822' ){
 			$part	= new MessagePartMail( $content, $charset );
 			$part->setMimeType( $mimeType );
-			if( $encoding )
+			if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 				$part->setEncoding( $encoding );
-			if( $format )
+			if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 				$part->setFormat( $format );
 			return $part;
 		}
@@ -232,10 +232,10 @@ class Parser
 					$part	= new MessagePartInlineImage( $id );
 				}
 				$part->setMimeType( $mimeType );
-				if( $encoding )
+				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 					$part->setEncoding( $encoding );
 				$part->setContent( $content );
-				if( $format )
+				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 					$part->setFormat( $format );
 				if( !$filename && $contentType->attributes->has( 'name' ) )
 					$filename	= $contentType->attributes->get( 'name' );
@@ -248,12 +248,15 @@ class Parser
 					'creation-date'		=> 'setFileCTime',
 					'modification-date'	=> 'setFileMTime',
 				);
+				$methodFactory	= new \Alg_Object_MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->attributes->get( $key );
-					if( preg_match( '/-date$/', $key ) )
-						$value	= strtotime( $value );
-					if( $value )
-						\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
+					if( preg_match( '/-date$/', $key ) ){
+						if( NULL !== $value && 0 !== strlen( trim( $value ) ) ){
+							$arguments	= array( strtotime( $value ) );
+							$methodFactory->callMethod( $method, $arguments );
+						}
+					}
 				}
 				return $part;
 			}
@@ -262,18 +265,18 @@ class Parser
 			case 'text/html':
 				$part	= new MessagePartHTML( $content, $charset );
 				$part->setMimeType( $mimeType );
-				if( $encoding )
+				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 					$part->setEncoding( $encoding );
-				if( $format )
+				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 					$part->setFormat( $format );
 				return $part;
 			case 'text/plain':
 			default:
 				$part	= new MessagePartText( $content, $charset );
 				$part->setMimeType( $mimeType );
-				if( $encoding )
+				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 					$part->setEncoding( $encoding );
-				if( $format )
+				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 					$part->setFormat( $format );
 				return $part;
 		}

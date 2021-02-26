@@ -30,6 +30,7 @@ namespace CeusMedia\Mail\Message;
 
 use \CeusMedia\Mail\Message;
 use \CeusMedia\Mail\Message\Header\Encoding;
+use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
@@ -96,10 +97,10 @@ class Renderer
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
 
-		if( count( $message->getParts( TRUE ) ) === 1 ){						//  no multipart message
+		if( 1 === count( $message->getParts( TRUE ) ) ){						//  no multipart message
 			$parts	= $message->getParts( TRUE );								//  get parts
 			$part	= array_pop( $parts );										//  get solo part
-			return $part->render( $headers );									//  render part and apply part headers as message headers
+			return $part->render( MessagePart::SECTION_ALL, $headers );			//  render part and apply part headers as message headers
 		}
 
 		$parts	= (object) array(
@@ -118,9 +119,9 @@ class Renderer
 			else if( $part instanceof MessagePartInlineImage )
 				$parts->images[]	= $part;
 			else if( $part instanceof MessagePartAttachment )
-				$parts->files[]	= $part;
+				$parts->files[]		= $part;
 			else if( $part instanceof MessagePartMail )
-				$parts->files[]	= $part;
+				$parts->files[]		= $part;
 		}
 
 		$delim			= Message::$delimiter;
@@ -131,16 +132,17 @@ class Renderer
 		$contents	= array(
 			'This is a multi-part message in MIME format.',
 		);
-		if( count( $message->getParts( FALSE ) ) > 1 ){							//  alternative content parts
+		$bodyParts	= $message->getParts( FALSE, FALSE );
+		if( count( $bodyParts ) > 1 ){							//  alternative content parts
 			$contents[]	= '--'.$mimeBoundary;
 			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
 			$contents[]	= '';
-			foreach( $message->getParts( FALSE ) as $part )
+			foreach( $bodyParts as $part )
 				$contents[]	= '--'.$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
 			$contents[]	= '--'.$mimeBoundary1.'--'.$delim;
 		}
 		else{
-			foreach( $message->getParts( FALSE ) as $part )
+			foreach( $bodyParts as $part )
 				$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
 		}
 		foreach( $parts->images as $part )

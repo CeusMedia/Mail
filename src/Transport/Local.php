@@ -72,9 +72,9 @@ class Local
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new \InvalidArgumentException( 'No mail sender defined' );
-		if( !$receivers )
+		if( 0 === count( $receivers ) )
 			throw new \InvalidArgumentException( 'No mail receiver defined' );
-		if( !$subject )
+		if( NULL === $subject || 0 === strlen( trim( $subject ) ) )
 			throw new \InvalidArgumentException( 'No mail subject defined' );
 		$subject	= "=?UTF-8?B?".base64_encode( $subject )."?=";
 
@@ -85,7 +85,7 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-		if( $message->getUserAgent() )
+		if( NULL !== $message->getUserAgent() && 0 < strlen( trim( $message->getUserAgent() ) ) )
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 

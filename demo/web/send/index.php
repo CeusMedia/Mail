@@ -1,6 +1,8 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
+$sending	= (object) $config->getAll( 'sending_' );
+
 $request	= new Net_HTTP_Request_Receiver;
 
 $result	= '- no mail triggered -';
@@ -24,11 +26,11 @@ $body	= '
 		<div class="span3">
 			<form action="./" method="post">
 				<label>Sender Name</label>
-				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $config['senderName'], ENT_QUOTES, 'UTF-8' ).'"/>
+				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $sending->senderName, ENT_QUOTES, 'UTF-8' ).'"/>
 				<label>Sender Address</label>
-				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $config['senderAddress'], ENT_QUOTES, 'UTF-8' ).'"/>
+				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $sending->senderAddress, ENT_QUOTES, 'UTF-8' ).'"/>
 				<label>Receiver Name</label>
-				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $config['receiverName'], ENT_QUOTES, 'UTF-8' ).'"/>
+				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $sending->receiverName, ENT_QUOTES, 'UTF-8' ).'"/>
 				<label for="input_receiverAddress">Receiver Address</label>
 				<input type="text" name="receiverAddress" class="span12" value="'.htmlentities( $request->get( 'receiverAddress' ), ENT_QUOTES, 'UTF-8' ).'"/>
 				<button type="submit" name="send" class="btn btn-primary btn-large">send Mail</button>
@@ -48,7 +50,7 @@ $mail = new \CeusMedia\Mail\Message();
 $mail->setSender("john@example.com", "John Doe");
 $mail->addRecipient("mike@example.com", "Mike Foo");
 $mail->setSubject("This is just a test");
-$mail->addPart(new \CeusMedia\Mail\Part\Text("Test Message..."));
+$mail->addPart(new \CeusMedia\Mail\Message\Part\Text("Test Message..."));
 
 //  setup SMTP transport and send mail
 $transport = new \CeusMedia\Mail\Transport\SMTP("example.com", 587);
@@ -67,7 +69,7 @@ $transport->send($mail);
 		->setSender("john@example.com", "John Doe")
 		->addRecipient("mike@example.com", "Mike Foo")
 		->setSubject("This is just a test")
-		->addPart(new \CeusMedia\Mail\Part\Text("Test Message..."));
+		->addPart(new \CeusMedia\Mail\Message\Part\Text("Test Message..."));
 	);
 			</pre>
 		</div>
@@ -85,7 +87,7 @@ print $page->build();
 function sendMail( $config ) {
 	$configSend	= (object) $config->getAll( 'sending_' );
 	$configSmtp	= (object) $config->getAll( 'SMTP_' );
-	$body		= new \CeusMedia\Mail\Part\HTML( sprintf( $configSend->body, time() ) );
+	$body		= new \CeusMedia\Mail\Message\Part\HTML( sprintf( $configSend->body, time() ) );
 	$mail       = new \CeusMedia\Mail\Message();
 	$mail->setSender( $configSend->senderAddress, $configSend->senderName );
 	$mail->addRecipient( $configSend->receiverAddress, $configSend->receiverName );

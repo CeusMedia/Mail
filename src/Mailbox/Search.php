@@ -144,9 +144,9 @@ class Search
 	public function renderCriteria(): string
 	{
 		$criteria	= array();
-		if( 0 < strlen( $this->subject ) )
+		if( NULL !== $this->subject && 0 !== strlen( trim( $this->subject ) ) )
 			$criteria[]	= 'SUBJECT "'.$this->subject.'"';
-		if( 0 < strlen( $this->sender ) )
+		if( NULL !== $this->sender && 0 !== strlen( trim( $this->sender ) ) )
 			$criteria[]	= 'FROM "'.$this->sender.'"';
 		return join( ' ', $criteria );
 	}

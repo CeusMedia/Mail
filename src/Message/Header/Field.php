@@ -107,7 +107,7 @@ class Field
 	 */
 	public function setName( string $name ): self
 	{
-		if( !trim( $name ) )
+		if( 0 === strlen( trim( $name ) ) )
 			throw new \InvalidArgumentException( 'Field name cannot be empty' );
 		$this->name	= preg_replace( "/( |-)+/", "-", trim( $name ) );
 		return $this;

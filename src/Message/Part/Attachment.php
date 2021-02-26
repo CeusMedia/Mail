@@ -117,35 +117,48 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
-	 *	@param		boolean		$headers		Flag: render part with headers
+	 *	@param		integer						$sections				Section(s) to render, default: all
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
 	 *	@return		string
 	 */
-	public function render( $headers = NULL ): string
+	public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string
 	{
-		if( !$headers )
-			$headers	= new MessageHeaderSection();
-
-		$disposition	= array(
-			'attachment',
-			'filename="'.$this->fileName.'"'
-		);
-		if( $this->fileSize !== NULL )
-			$disposition[]	= 'size='.$this->fileSize;
-		if( $this->fileATime !== NULL )
-			$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
-		if( $this->fileCTime !== NULL )
-			$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
-		if( $this->fileMTime !== NULL )
-			$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
-
+		$doAll		= self::SECTION_ALL === ( $sections & self::SECTION_ALL );
+		$doHeader	= self::SECTION_HEADER === ( $sections & self::SECTION_HEADER );
+		$doContent	= self::SECTION_CONTENT === ( $sections & self::SECTION_CONTENT );
 		$delim		= Message::$delimiter;
-		$headers->setFieldPair( 'Content-Disposition', join( ';'.$delim.' ', $disposition ) );
-		$headers->setFieldPair( 'Content-Type', $this->mimeType );
-		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-		$headers->setFieldPair( 'Content-Description', $this->fileName );
+		$list		= [];
 
-		$content	= static::encodeContent( $this->content, $this->encoding );
-		return $headers->toString( TRUE ).$delim.$delim.$content;
+		$section	= $additionalHeaders ?? new MessageHeaderSection();
+
+		if( $doContent || $doAll ){
+			$content	= static::encodeContent( $this->content, $this->encoding );
+			$list[]		= $content;
+//			$section->setFieldPair( 'Content-Length', (string) $content );
+		}
+
+		if( $doHeader || $doAll ){
+			$disposition	= array(
+				'attachment',
+				'filename="'.$this->fileName.'"'
+			);
+			if( NULL !== $this->fileSize )
+				$disposition[]	= 'size="'.$this->fileSize.'"';
+			if( NULL !== $this->fileATime )
+				$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
+			if( NULL !== $this->fileCTime )
+				$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
+			if( NULL !== $this->fileMTime )
+				$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
+
+			$section->setFieldPair( 'Content-Disposition', join( ';'.$delim.' ', $disposition ) );
+			$section->setFieldPair( 'Content-Type', $this->mimeType );
+			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+			$section->setFieldPair( 'Content-Description', $this->fileName );
+			$list[]		= $section->toString( TRUE );
+		}
+
+		return join( $delim.$delim, array_reverse( $list ) );
 	}
 
 	/**
@@ -156,7 +169,7 @@ class Attachment extends MessagePart
 	 *	@param		string		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string		$encoding		Optional: Encoding of file
 	 *	@param		string		$fileName		Optional: Name of file in part
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self	  	Self instance for chaining
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
@@ -165,14 +178,19 @@ class Attachment extends MessagePart
 		$file	= new \FS_File( $filePath );
  		if( !$file->exists() )
 			throw new \InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
+
+		if( NULL === $mimeType || 0 == strlen( trim( $mimeType ) ) )
+			$mimeType	= $this->getMimeTypeFromFile( $filePath );
+		if( NULL === $fileName || 0 == strlen( trim( $fileName ) ) )
+			$fileName	= basename( $filePath );
  		$this->content	= $file->getContent();
-		$this->setFileName( $fileName ? $fileName : basename( $filePath ) );
+		$this->setFileName( $fileName );
 		$this->setFileSize( filesize( $filePath ) );
 		$this->setFileATime( fileatime( $filePath ) );
 		$this->setFileCTime( filectime( $filePath ) );
 		$this->setFileMTime( filemtime( $filePath ) );
-		$this->setMimeType( $mimeType ? $mimeType : $this->getMimeTypeFromFile( $filePath ) );
-		if( $encoding )
+		$this->setMimeType( $mimeType );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 			$this->setEncoding( $encoding );
 		return $this;
 	}
@@ -217,7 +235,7 @@ class Attachment extends MessagePart
 	 *	Sets creation time by UNIX timestamp.
 	 *	@access		public
 	 *	@param		integer   	$timestamp		Timestamp of creation.
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self	 	Self instance for chaining
 	 */
 	public function setFileCTime( $timestamp ): self
 	{
@@ -229,7 +247,7 @@ class Attachment extends MessagePart
 	 *	Sets modification time by UNIX timestamp.
 	 *	@access		public
 	 *	@param		integer   	$timestamp		Timestamp of last modification.
-	 *	@return		object  	Self instance for chaining
+	 *	@return		self	  	Self instance for chaining
 	 */
 	public function setFileMTime( $timestamp ): self
 	{

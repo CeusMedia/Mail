@@ -58,28 +58,43 @@ class Mail extends MessagePart
 		$this->setContent( $content );
 		$this->setMimeType( 'text/plain' );
 		$this->setCharset( $charset );
-		$this->setFormat( 'fixed' );
 		$this->setEncoding( $encoding );
+		$this->setFormat( 'fixed' );
 	}
 
 	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
-	 *	@param		boolean		$headers		Flag: render part with headers
+	 *	@param		integer						$sections				Section(s) to render, default: all
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
 	 *	@return		string
 	 */
-	public function render( $headers = NULL ): string
+	public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string
 	{
-		$delim	= Message::$delimiter;
-		if( !$headers )
-			$headers	= new MessageHeaderSection();
-		$headers->setFieldPair( 'Content-Type', join( '; ', array(
-			$this->mimeType,
-			'charset="'.strtolower( trim( $this->charset ) ).'"',
-			'format='.$this->format
-		) ) );
-		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-		$content	= static::encodeContent( $this->content, $this->encoding );
-		return $headers->toString( TRUE ).$delim.$delim.$content;
+		$doAll		= self::SECTION_ALL === ( $sections & self::SECTION_ALL );
+		$doHeader	= self::SECTION_HEADER === ( $sections & self::SECTION_HEADER );
+		$doContent	= self::SECTION_CONTENT === ( $sections & self::SECTION_CONTENT );
+		$delim		= Message::$delimiter;
+		$list		= [];
+
+		$section	= $additionalHeaders ?? new MessageHeaderSection();
+
+		if( $doContent || $doAll ){
+			$content	= static::encodeContent( $this->content, $this->encoding );
+			$list[]		= $content;
+//			$section->setFieldPair( 'Content-Length', (string) $content );
+		}
+
+		if( $doHeader || $doAll ){
+			$section->setFieldPair( 'Content-Type', join( '; ', array(
+				$this->mimeType,
+				'charset="'.strtolower( trim( $this->charset ) ).'"',
+				'format='.$this->format
+			) ) );
+			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+			$list[]		= $section->toString( TRUE );
+		}
+
+		return join( $delim.$delim, array_reverse( $list ) );
 	}
 }

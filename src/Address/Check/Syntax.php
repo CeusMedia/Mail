@@ -77,10 +77,10 @@ class Syntax
 	public function check( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result		= 0;
-		$wildcard	= $this->mode & self::MODE_ALL;
+		$wildcard	= self::MODE_ALL === ( $this->mode & self::MODE_ALL );
 		$constants	= \Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
 		foreach( $constants as $key => $value ){
-			if( $this->mode & $value || $wildcard ){
+			if( ( $value === ( $this->mode & $value ) ) || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
 					if( filter_var( $address, FILTER_VALIDATE_EMAIL ) )
 						$result	&= $value;

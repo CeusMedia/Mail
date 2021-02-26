@@ -141,7 +141,7 @@ class Mailbox
 		}
 		if( !$this->validateCertificates )
 			$flags[]	= 'novalidate-cert';
-		$flags	= $flags ? '/'.join( '/', $flags ) : '';
+		$flags	= 0 !== count( $flags ) ? '/'.join( '/', $flags ) : '';
 
 		$uri		= '{'.$this->host.':'.$port.$flags.'}INBOX';
 		$resource	= imap_open( $uri, $this->username, $this->password, $options );

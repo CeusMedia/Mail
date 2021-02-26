@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Message;
 
 use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
@@ -54,6 +55,27 @@ abstract class Part
 	const TYPE_ATTACHMENT		= 3;
 	const TYPE_HTML				= 4;
 	const TYPE_INLINE_IMAGE		= 5;
+
+	const TYPES					= [
+		self::TYPE_UNKNOWN,
+		self::TYPE_TEXT,
+		self::TYPE_MAIL,
+		self::TYPE_ATTACHMENT,
+		self::TYPE_HTML,
+		self::TYPE_INLINE_IMAGE,
+	];
+
+	const SECTION_NONE			= 0;
+	const SECTION_ALL			= 1;
+	const SECTION_HEADER		= 2;
+	const SECTION_CONTENT		= 4;
+
+	const SECTIONS				= [
+		self::SECTION_NONE,
+		self::SECTION_ALL,
+		self::SECTION_HEADER,
+		self::SECTION_CONTENT,
+	];
 
 	/**	@var	string			$charset		Character set */
 	protected $charset;
@@ -83,11 +105,13 @@ abstract class Part
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	public static function decodeContent( $content, $encoding, $charset = 'UTF-8' ): string
+	public static function decodeContent( string $content, string $encoding, string $charset = 'UTF-8' ): string
 	{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
-				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				$content	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				if( FALSE === $content )
+					throw new \RuntimeException( 'Decoding 7bit content failed' );
 				break;
 			case '8bit':
 				break;
@@ -102,6 +126,8 @@ abstract class Part
 					$content	= imap_qprint( $content );
 				else
 					$content	= quoted_printable_decode( $content );
+				if( FALSE === $content )
+					throw new \RuntimeException( 'Decoding quoted-printable content failed' );
 				break;
 			case '':
 				break;
@@ -250,7 +276,15 @@ abstract class Part
 		return $this->isOfType( static::TYPE_TEXT );
 	}
 
-	abstract public function render( $headers = NULL ): string;
+	/**
+	 *	Return string represenation of this mail path, so with headers and content.
+	 *	Every part implements this abstract method.
+	 *	@abstract
+	 *	@param		integer						$sections				Section(s) to render, default: all
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
+	 *	@return		string
+	 */
+	abstract public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string;
 
 	/**
 	 *	Set character set.
@@ -338,10 +372,10 @@ abstract class Part
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
-				$content2	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
-				if( $content2 === FALSE )
+				$content2	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				if( FALSE === $content2 )
 					$content2	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
-				if( $content2 !== FALSE )
+				if( FALSE !== $content2 )
 					$content	= $content2;
 				if( $split && strlen( $content ) > $lineLength )
 					$content	= static::wrapContent( $content, $lineLength, $delimiter );

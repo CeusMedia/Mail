@@ -75,12 +75,13 @@ class Renderer
 	 *	@return		string		Rendered mail address
 	 *	@throws		\RuntimeException			If domain is empty
 	 *	@throws		\RuntimeException			If local part is empty
+	 *	@todo		addslashes on name?
 	 */
 	public function render( Address $address ): string
 	{
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
-		$name		= $address->getName();
+		$name		= $address->getName( FALSE );
 		if( 0 === strlen( trim( $name ) ) )
 			return $localPart.'@'.$domain;
 		if( 1 !== preg_match( '/^\w+$/', $name ) )
