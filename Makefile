@@ -33,6 +33,7 @@ dev-test: composer-install-dev
 
 dev-test-syntax:
 	@find src -type f -print0 | xargs -0 -n1 xargs php -l
+	@find test -type f -print0 | xargs -0 -n1 xargs php -l
 
 dev-configure:
 	@cp Mail.ini.dist Mail.ini
