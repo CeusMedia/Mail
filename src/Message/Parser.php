@@ -75,6 +75,12 @@ class Parser
 		return new self();
 	}
 
+	/**
+	 *	Parse raw mail content and return message object.
+	 *	@access		public
+	 *	@param		string		$content		Content to parse
+	 *	@return		Message
+	 */
 	public function parse( $content ): Message
 	{
 		$message	= new Message();
@@ -99,18 +105,27 @@ class Parser
 					break;
 			}
 		}
-		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		if( preg_match( "/multipart/", $contentType ) ){						//  is multipart message
-			$this->parseMultipartBody( $message, $content );					//  parse multipart containers
+		if( $headers->hasField( 'Content-Type' ) ){
+			$contentType	= $headers->getField( 'Content-Type' )->getValue();
+			if( preg_match( "/multipart/", $contentType ) ){						//  is multipart message
+				$this->parseMultipartBody( $message, $content );				//  parse multipart containers
+				return $message;
+			}
 		}
-		else{
-			$message->addPart( $this->parseAtomicBodyPart( $content ) );		//  directly parse mail content as part
-		}
+
+		$message->addPart( $this->parseAtomicBodyPart( $content ) );			//  directly parse mail content as part
 		return $message;
 	}
 
 	/*  --  PROTECTED  --  */
-	protected function getCharsetFromContentType( $contentType )
+
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@param		string		$contentType		...
+	 *	@return		string|NULL
+	 */
+	protected function getCharsetFromContentType( string $contentType ): ?string
 	{
 		$parts	= explode( ";", $contentType );
 		foreach( $parts as $part ){
@@ -121,18 +136,35 @@ class Parser
 		return NULL;
 	}
 
-	protected function getMimeFromContentType( $contentType )
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@param		string		$contentType		...
+	 *	@return		string
+	 */
+	protected function getMimeFromContentType( string $contentType ): string
 	{
 		$parts	= explode( ";", $contentType );
 		return trim( $parts[0] );
 	}
 
-	protected function parseMultipartBody( $message, $content )
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@param		Message		$message		...
+	 *	@param		string		$content		...
+	 *	@return		void
+	 */
+	protected function parseMultipartBody( Message $message, string $content )
 	{
 		$delim		= Message::$delimiter;
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$body		= $parts[1];
+
+		if( !$headers->hasField( 'Content-Type' ) )
+			throw new \RuntimeException( 'Multipart has no content type header' );
+
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
 		$contentType	= $this->parseAttributedHeaderValue( $contentType );
 		$mimeBoundary	= $contentType->attributes->get( 'boundary' );
@@ -156,13 +188,17 @@ class Parser
 					$lines[]	= $line;
 			}
 		}
-		else{
-			$part	= $this->parseAtomicBodyPart( $content );
-			$message->addPart( $part );
-		}
+		$part	= $this->parseAtomicBodyPart( $content );
+		$message->addPart( $part );
 	}
 
-	protected function parseAttributedHeaderValue( $string )
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@param		string		$string			...
+	 *	@return		object
+	 */
+	protected function parseAttributedHeaderValue( $string ): object
 	{
 		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
 		$parts	= preg_split( '/\s*;\s*/', $string );
@@ -191,14 +227,24 @@ class Parser
 		);
 	}
 
-	protected function parseAtomicBodyPart( $content )
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@param		string		$content			...
+	 *	@return		MessagePart
+	 */
+	protected function parseAtomicBodyPart( string $content ): MessagePart
 	{
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$content	= $parts[1];
 
-		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		$contentType	= $this->parseAttributedHeaderValue( $contentType );
+		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
+
+		$contentTypeValue	= 'text/plain';
+		if( $headers->hasField( 'Content-Type' ) )
+			$contentTypeValue	= $headers->getField( 'Content-Type' )->getValue();
+
+		$contentType	= $this->parseAttributedHeaderValue( $contentTypeValue );
 		$mimeType		= $contentType->value;
 		$charset		= $contentType->attributes->get( 'charset', 'UTF-8' );
 		$format			= $contentType->attributes->get( 'format' );

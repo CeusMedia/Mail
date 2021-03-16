@@ -45,11 +45,22 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  */
 class Attachment extends MessagePart
 {
+	/**	@var	string|NULL		$content */
 	protected $content;
+
+	/**	@var	string|NULL		$fileName */
 	protected $fileName;
+
+	/**	@var	int|NULL		$fileATime */
 	protected $fileATime		= NULL;
+
+	/**	@var	int|NULL		$fileCTime */
 	protected $fileCTime		= NULL;
+
+	/**	@var	int|NULL		$fileMTime */
 	protected $fileMTime		= NULL;
+
+	/**	@var	int|NULL		$fileSize */
 	protected $fileSize			= NULL;
 
 	/**
@@ -69,7 +80,7 @@ class Attachment extends MessagePart
 	 *	@access		public
 	 *	@return		string|NULL
 	 */
-	public function getFileName()
+	public function getFileName(): ?string
 	{
 		return $this->fileName;
 	}
@@ -77,9 +88,9 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns file size in bytes.
 	 *	@access		public
-	 *	@return		string|NULL
+	 *	@return		int|NULL
 	 */
-	public function getFileSize()
+	public function getFileSize(): ?int
 	{
 		return $this->fileSize;
 	}
@@ -87,9 +98,9 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string|NULL
+	 *	@return		int|NULL
 	 */
-	public function getFileATime()
+	public function getFileATime(): ?int
 	{
 		return $this->fileATime;
 	}
@@ -97,9 +108,9 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns file creation time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string|NULL
+	 *	@return		int|NULL
 	 */
-	public function getFileCTime()
+	public function getFileCTime(): ?int
 	{
 		return $this->fileCTime;
 	}
@@ -107,9 +118,9 @@ class Attachment extends MessagePart
 	/**
 	 *	Returns last modification time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		string|NULL
+	 *	@return		int|NULL
 	 */
-	public function getFileMTime()
+	public function getFileMTime(): ?int
 	{
 		return $this->fileMTime;
 	}
@@ -143,7 +154,7 @@ class Attachment extends MessagePart
 				'filename="'.$this->fileName.'"'
 			);
 			if( NULL !== $this->fileSize )
-				$disposition[]	= 'size="'.$this->fileSize.'"';
+				$disposition[]	= 'size='.$this->fileSize;
 			if( NULL !== $this->fileATime )
 				$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
 			if( NULL !== $this->fileCTime )
@@ -198,8 +209,8 @@ class Attachment extends MessagePart
 	/**
 	 *	Sets file name.
 	 *	@access		public
-	 *	@param		string   	$fileName	File name.
-	 *	@return		self  		Self instance for chaining
+	 *	@param		string		$fileName	File name.
+	 *	@return		self		Self instance for chaining
 	 */
 	public function setFileName( $fileName ): self
 	{
@@ -210,10 +221,10 @@ class Attachment extends MessagePart
 	/**
 	 *	Sets file size in bytes.
 	 *	@access		public
-	 *	@param		integer   	$fileSize		File size in bytes.
-	 *	@return		self  		Self instance for chaining
+	 *	@param		integer|NULL	$fileSize		File size in bytes.
+	 *	@return		self			Self instance for chaining
 	 */
-	public function setFileSize( $fileSize ): self
+	public function setFileSize( ?int $fileSize ): self
 	{
 		$this->fileSize		= $fileSize;
 		return $this;
@@ -222,10 +233,10 @@ class Attachment extends MessagePart
 	/**
 	 *	Sets access time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		integer   	$timestamp		Timestamp of latest access.
-	 *	@return		self	  	Self instance for chaining
+	 *	@param		integer|NULL	$timestamp		Timestamp of latest access.
+	 *	@return		self			Self instance for chaining
 	 */
-	public function setFileATime( $timestamp ): self
+	public function setFileATime( ?int $timestamp ): self
 	{
 		$this->fileATime	= $timestamp;
 		return $this;
@@ -234,10 +245,10 @@ class Attachment extends MessagePart
 	/**
 	 *	Sets creation time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		integer   	$timestamp		Timestamp of creation.
-	 *	@return		self	 	Self instance for chaining
+	 *	@param		integer|NULL	$timestamp		Timestamp of creation.
+	 *	@return		self			Self instance for chaining
 	 */
-	public function setFileCTime( $timestamp ): self
+	public function setFileCTime( ?int $timestamp ): self
 	{
 		$this->fileCTime	= $timestamp;
 		return $this;
@@ -246,10 +257,10 @@ class Attachment extends MessagePart
 	/**
 	 *	Sets modification time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		integer   	$timestamp		Timestamp of last modification.
-	 *	@return		self	  	Self instance for chaining
+	 *	@param		integer|NULL	$timestamp		Timestamp of last modification.
+	 *	@return		self			Self instance for chaining
 	 */
-	public function setFileMTime( $timestamp ): self
+	public function setFileMTime( ?int $timestamp ): self
 	{
 		$this->fileMTime	= $timestamp;
 		return $this;

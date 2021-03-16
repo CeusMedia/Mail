@@ -85,7 +85,7 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-		if( NULL !== $message->getUserAgent() && 0 < strlen( trim( $message->getUserAgent() ) ) )
+		if( 0 !== strlen( trim( $message->getUserAgent() ) ) )
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
@@ -109,7 +109,7 @@ class Local
 				}
 				$list[]	= array(
 					'status'		=> 'ok',
-					'message'		=> 'mail sent to '.$receiver->participant->getAddress(),
+					'message'		=> 'mail sent to '.$receiver->getAddress(),
 				);
 			}
 			catch( \Exception $e ){
@@ -149,7 +149,7 @@ class Local
 	 */
 	protected function checkForInjection( $value )
 	{
-		if( preg_match( '/(\r|\n)/', $value ) )
+		if( 0 < preg_match( '/(\r|\n)/', $value ) )
 			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }

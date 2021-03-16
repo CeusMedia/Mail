@@ -105,7 +105,7 @@ class Search
 	public function getAllMailIds(): array
 	{
 		if( NULL === $this->connection )
-			throw new RuntimeException( 'No connection set' );
+			throw new RuntimeException( 'No connection set_1' );
 		$criteria	= $this->renderCriteria();
 		$mailIds	= imap_sort(
 			$this->connection,

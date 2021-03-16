@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- *	Data object for mail participants, having an address and optionally a name.
+ *	Data object for mail addresses, having a local part bound to a domain and optionally a name.
  *
  *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
  *
@@ -33,7 +33,7 @@ use \CeusMedia\Mail\Address\Renderer as AddressRenderer;
 use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
 /**
- *	Data object for mail participants, having an address and optionally a name.
+ *	Data object for mail addresses, having a local part bound to a domain and optionally a name.
  *
  *	Contains:
  *	- Address
@@ -54,13 +54,13 @@ use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
  */
 class Address
 {
-	/**	@var	string		$domain			Domain of mail participant */
+	/**	@var	string		$domain			Domain of mail address */
 	protected $domain;
 
-	/**	@var	string		$localPart		Local part of mail participant */
+	/**	@var	string		$localPart		Local part of mail address */
 	protected $localPart;
 
-	/**	@var	string		$name			Name of mail participant */
+	/**	@var	string		$name			Name of mail address */
 	protected $name;
 
 	/**
@@ -77,7 +77,7 @@ class Address
 	}
 
 	/**
-	 *	Returns full address of mail participant with brackets and username (if available).
+	 *	Returns full address of mail address with brackets and username (if available).
 	 *	Alias for get.
 	 *	@access		public
 	 *	@return		string		Full mail address with brackets and username (if available)
@@ -98,7 +98,7 @@ class Address
 	}
 
 	/**
-	 *	Returns full address of mail participant with brackets and username (if available).
+	 *	Returns full address of mail address with brackets and username (if available).
 	 *	@access		public
 	 *	@return		string		Full mail address with brackets and username (if available)
 	 */
@@ -119,10 +119,10 @@ class Address
 	}
 
 	/**
-	 *	Returns domain of mail participant.
+	 *	Returns domain of mail address.
 	 *	@access		public
 	 *	@param		boolean			$strict		Flag: throw exception if no domain set
-	 *	@return		string			Domain of mail participant
+	 *	@return		string			Domain of mail address
 	 *	@throws		\RuntimeException			if no address has been set, yet
 	 */
 	public function getDomain( bool $strict = TRUE ): string
@@ -147,10 +147,10 @@ class Address
 	}
 
 	/**
-	 *	Returns local part of mail participant.
+	 *	Returns local part of mail address.
 	 *	@access		public
 	 *	@param		boolean			$strict		Flag: throw exception if no local part set
-	 *	@return		string			Local part of mail participant
+	 *	@return		string			Local part of mail address
 	 *	@throws		\RuntimeException			if no address has been set, yet
 	 */
 	public function getLocalPart( bool $strict = TRUE ): string
@@ -164,10 +164,10 @@ class Address
 	}
 
 	/**
-	 *	Returns name of mail participant.
+	 *	Returns name of mail address.
 	 *	@access		public
 	 *	@param		boolean			$strict		Flag: throw exception if no name set
-	 *	@return		string			Name of mail participant
+	 *	@return		string			Name of mail address
 	 *	@throws		\RuntimeException			if no name has been set, yet
 	 */
 	public function getName( bool $strict = TRUE ): string
@@ -215,9 +215,9 @@ class Address
 	}
 
 	/**
-	 *	Sets domain of mail participant.
+	 *	Sets domain of mail address.
 	 *	@access		public
-	 *	@param		string		$domain			Domain of mail participant.
+	 *	@param		string		$domain			Domain of mail address.
 	 *	@return		self		Own instance for chainability
 	 */
 	public function setDomain( string $domain ): self
@@ -227,9 +227,9 @@ class Address
 	}
 
 	/**
-	 *	Sets local part of of mail participant.
+	 *	Sets local part of of mail address.
 	 *	@access		public
-	 *	@param		string		$localPart		Local part of of mail participant
+	 *	@param		string		$localPart		Local part of of mail address
 	 *	@return		self		Own instance for chainability
 	 */
 	public function setLocalPart( string $localPart ): self
@@ -239,9 +239,9 @@ class Address
 	}
 
 	/**
-	 *	Sets name of mail participant.
+	 *	Sets name of mail address.
 	 *	@access		public
-	 *	@param		string		$name			Name of mail participant
+	 *	@param		string		$name			Name of mail address
 	 *	@return		self		Own instance for chainability
 	 */
 	public function setName( string $name ): self

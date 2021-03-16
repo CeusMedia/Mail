@@ -33,7 +33,6 @@ use \CeusMedia\Mail\Address\Collection as AddressCollection;
 use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
-
 use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
@@ -216,32 +215,32 @@ class Message
 	}
 
 	/**
-	 *	Add a receiver as string to participant object.
+	 *	Add a receiver as string to address object.
 	 *	@access		public
-	 *	@param		string			$participant		Address or object of participant to add as receiver
-	 *	@param		string|NULL		$name				Name of the participant if address is given as string
-	 *	@param		string			$type				Type of receiver (TO, CC, BCC), case insensitive, default: TO
+	 *	@param		Address|string	$address		Address string or object to add as receiver
+	 *	@param		string|NULL		$name			Additional name of the address
+	 *	@param		string			$type			Type of receiver (TO, CC, BCC), case insensitive, default: TO
 	 *	@return		self			Message object for chaining
 	 */
-	public function addRecipient( $participant, string $name = NULL, string $type = "TO" ): self
+	public function addRecipient( $address, string $name = NULL, string $type = "TO" ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ), TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid recipient type' );
 
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
-			$participant->setName( $name );
-		$this->recipients[strtolower( $type )]->add( $participant );
+			$address->setName( $name );
+		$this->recipients[strtolower( $type )]->add( $address );
 
-		$recipient	= '<'.$participant->getAddress().'>';
+		$recipient	= '<'.$address->getAddress().'>';
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$recipient	= MessageHeaderEncoding::encodeIfNeeded( $name ).' '.$recipient;
-		$recipient	= $participant->get();
+		$recipient	= $address->get();
 
-		if( 'BBC' !== strtoupper( $type ) ){
+		if( 'BCC' !== strtoupper( $type ) ){
 			$fields	= $this->headers->getFieldsByName( $type );
 			foreach( $fields as $field )
 				if( $field->getValue() == $recipient )
@@ -251,15 +250,22 @@ class Message
 		return $this;
 	}
 
-	public function addReplyTo( $participant, string $name = NULL ): self
+	/**
+	 *	Adds Reply-To header to message.
+	 *	@access		public
+	 *	@param		Address|string	$address		Address to reply to
+	 *	@param		string			$name			Additional name of address
+	 *	@return		self
+	 */
+	public function addReplyTo( $address, string $name = NULL ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
-			$participant->setName( $name );
-		$this->addHeaderPair( 'Reply-To', $participant->get() );
+			$address->setName( $name );
+		$this->addHeaderPair( 'Reply-To', $address->get() );
 		return $this;
 	}
 
@@ -521,35 +527,41 @@ class Message
 		return FALSE;
 	}
 
-	public function setReadNotificationRecipient( $participant, string $name = NULL ): self
+	/**
+	 *	...
+	 *	@access		public
+	 *	@param		Address|string	$address		Address to send notification to
+	 *	@param		string			$name			Additional name of address
+	 */
+	public function setReadNotificationRecipient( $address, string $name = NULL ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
+		if( is_string( $address ) )
+			$address	= new Address( $address );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
-			$participant->setName( $name );
-		$this->headers->addFieldPair( 'Disposition-Notification-To', $participant->get() );
+			$address->setName( $name );
+		$this->headers->addFieldPair( 'Disposition-Notification-To', $address->get() );
 		return $this;
 	}
 
 	/**
 	 *	Sets sender address and name.
 	 *	@access		public
-	 *	@param		string|object	$participant	Mail sender address or participant object
+	 *	@param		Address|string	$address		Address object or string
 	 *	@param		string|NULL		$name			Optional: Mail sender name
 	 *	@return		self			Message object for chaining
-	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Address
+	 *	@throws		\InvalidArgumentException		if given address is neither string nor instance of \CeusMedia\Mail\Address
 	 */
-	public function setSender( $participant, string $name = NULL ): self
+	public function setSender( $address, string $name = NULL ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
-			$participant->setName( $name );
-		$this->sender	= $participant;
+			$address->setName( $name );
+		$this->sender	= $address;
 		$this->headers->removeFieldByName( 'From' );
-		$this->addHeaderPair( "From", $participant->get() );
+		$this->addHeaderPair( "From", $address->get() );
 		return $this;
 	}
 
@@ -579,16 +591,23 @@ class Message
 
 	//  --  PROTECTED  --  //
 
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@return		void
+	 */
 	protected function evaluateUserAgent()
 	{
 		$this->userAgent	= static::$defaultUserAgent;
 		$filePath			= dirname( __DIR__ ).'/Mail.ini';
 		if( file_exists( $filePath ) ){
 			$config		= parse_ini_file( $filePath, TRUE );
-			$identifier	= $config['library']['identifier'] ?? NULL;
-			$version	= $config['library']['version'] ?? NULL;
-			if( $identifier && $version )
-				$this->setUserAgent( $identifier.'/'.$version );
+			if( FALSE !== $config ){
+				$identifier	= $config['library']['identifier'] ?? NULL;
+				$version	= $config['library']['version'] ?? NULL;
+				if( $identifier && $version )
+					$this->setUserAgent( $identifier.'/'.$version );
+			}
 		}
 	}
 }

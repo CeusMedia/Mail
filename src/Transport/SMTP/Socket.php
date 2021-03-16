@@ -44,8 +44,10 @@ use RuntimeException;
  */
 class Socket
 {
+	/**	@var	string|NULL		$host */
 	protected $host;
 
+	/**	@var	int|NULL		$port */
 	protected $port;
 
 	/**	@var	integer			$errorNumber */
@@ -223,9 +225,9 @@ class Socket
 			else
 				return $this;
 		}
-		if( !$this->host )
+		if( NULL === $this->host || 0 === strlen( trim( $this->host ) ) )
 			throw new RuntimeException( 'No host set' );
-		if( !$this->port )
+		if( NULL === $this->port || 0 === $this->port )
 			throw new RuntimeException( 'No port set' );
 		$socket	= fsockopen(
 			$this->host,
@@ -253,22 +255,24 @@ class Socket
 		if( NULL === $this->connection )
 			throw new RuntimeException( 'Not connected' );
 
-		$lastLine	= '';
+		$lastLine	= FALSE;
 		$code		= NULL;
 		$buffer		= [];
 		$raw		= [];
 		do{
 			$response	= fgets( $this->connection, $length );
-			$raw[]		= rtrim( $response, "\r\n" );
-			$matches	= array();
-			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
-			if( !$matches )
-				throw new RuntimeException( 'SMTP response not understood: '.$lastLine );
-			$code		= (int) $matches[1];
-			$buffer[]	= $matches[3];
-			$lastLine	= $matches[2] === " ";
+			if( FALSE !== $response ){
+				$raw[]		= rtrim( $response, "\r\n" );
+				$matches	= array();
+				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
+				if( !$matches )
+					throw new RuntimeException( 'SMTP response not understood: '.trim( $response ) );
+				$code		= (int) $matches[1];
+				$buffer[]	= $matches[3];
+				$lastLine	= $matches[2] === ' ';
+			}
 		}
-		while( $response && !$lastLine );
+		while( FALSE !== $response && !$lastLine );
 		return (object) array(
 			'code'		=> $code,
 			'message'	=> join( "\n", $buffer ),

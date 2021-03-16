@@ -45,12 +45,25 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  */
 class InlineImage extends MessagePart
 {
+	/**	@var	string|NULL		$content */
 	protected $content;
+
+	/**	@var	string|NULL		$fileName */
 	protected $fileName;
+
+	/**	@var	int|NULL		$fileATime */
 	protected $fileATime		= NULL;
+
+	/**	@var	int|NULL		$fileCTime */
 	protected $fileCTime		= NULL;
+
+	/**	@var	int|NULL		$fileMTime */
 	protected $fileMTime		= NULL;
+
+	/**	@var	int|NULL		$fileSize */
 	protected $fileSize			= NULL;
+
+	/**	@var	string			$id */
 	protected $id;
 
 	/**
@@ -68,9 +81,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns set File Name.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
-	public function getFileName()
+	public function getFileName(): ?string
 	{
 		return $this->fileName;
 	}
@@ -78,9 +91,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns file size in bytes.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileSize()
+	public function getFileSize(): ?int
 	{
 		return $this->fileSize;
 	}
@@ -88,9 +101,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileATime()
+	public function getFileATime(): ?int
 	{
 		return $this->fileATime;
 	}
@@ -98,9 +111,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns file creation time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileCTime()
+	public function getFileCTime(): ?int
 	{
 		return $this->fileCTime;
 	}
@@ -108,9 +121,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns last modification time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileMTime()
+	public function getFileMTime(): ?int
 	{
 		return $this->fileMTime;
 	}
@@ -120,7 +133,7 @@ class InlineImage extends MessagePart
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getId()
+	public function getId(): string
 	{
 		return $this->id;
 	}
@@ -184,26 +197,30 @@ class InlineImage extends MessagePart
 	 *	@todo  		scan file for malware
 	 */
 	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
- 	{
+	{
 		$file	= new \FS_File( $filePath );
- 		if( !$file->exists() )
- 			throw new \InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
+		if( !$file->exists() )
+			throw new \InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
 
 		if( NULL === $mimeType || 0 === strlen( trim( $mimeType ) ) )
 			$mimeType	= $this->getMimeTypeFromFile( $filePath );
 		if( NULL === $fileName || 0 === strlen( trim( $fileName ) ) )
 			$fileName	= basename( $filePath );
  		$this->content	= $file->getContent();
+		$fileSize	= filesize( $filePath );
+		$fileATime	= fileatime( $filePath );
+		$fileCTime	= filectime( $filePath );
+		$fileMTime	= filemtime( $filePath );
 		$this->setFileName( $fileName );
- 		$this->setFileSize( filesize( $filePath ) );
- 		$this->setFileATime( fileatime( $filePath ) );
- 		$this->setFileCTime( filectime( $filePath ) );
- 		$this->setFileMTime( filemtime( $filePath ) );
- 		$this->setMimeType( $mimeType );
- 		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
- 			$this->setEncoding( $encoding );
- 		return $this;
- 	}
+		$this->setFileSize( FALSE !== $fileSize ? $fileSize : NULL );
+		$this->setFileATime( FALSE !== $fileATime ? $fileATime : NULL );
+		$this->setFileCTime( FALSE !== $fileCTime ? $fileCTime : NULL );
+		$this->setFileMTime( FALSE !== $fileMTime ? $fileMTime : NULL );
+		$this->setMimeType( $mimeType );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+			$this->setEncoding( $encoding );
+		return $this;
+	}
 
 	/**
 	 *	Sets file name.

@@ -30,6 +30,7 @@ namespace CeusMedia\Mail\Transport;
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
+use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
 use RuntimeException;
 use InvalidArgumentException;
@@ -302,14 +303,14 @@ class SMTP
 
 	//  --  PROTECTED  --  //
 
-	protected function checkResponse( array $acceptedCodes = [] )
+	protected function checkResponse( array $acceptedCodes = [] ): SmtpResponse
 	{
 		$response	= $this->socket->readResponse( 1024 );
 		if( $this->verbose )
 			print ' < '.join( PHP_EOL.'   ', $response->raw );
 		if( 0 < count( $acceptedCodes ) && !in_array( (int) $response->code, $acceptedCodes, TRUE ) )
 			throw new RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
-		return $response;
+		return new SmtpResponse( $response->code, $response->message );
 	}
 
 	protected function sendChunk( string $message ): bool

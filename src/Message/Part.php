@@ -109,25 +109,28 @@ abstract class Part
 	{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
-				$content	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
-				if( FALSE === $content )
+				$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				if( FALSE === $result )
 					throw new \RuntimeException( 'Decoding 7bit content failed' );
+				$content	= $result;
 				break;
 			case '8bit':
 				break;
 			case 'base64':
 			case 'binary':
-				$content	= base64_decode( $content, TRUE );
-				if( FALSE === $content )
+				$result	= base64_decode( $content, TRUE );
+				if( FALSE === $result )
 					throw new \RuntimeException( 'Encoded content contains invalid characters' );
+				$content	= $result;
 				break;
 			case 'quoted-printable':
 				if( function_exists( 'imap_qprint' ) )
-					$content	= imap_qprint( $content );
+					$result	= imap_qprint( $content );
 				else
-					$content	= quoted_printable_decode( $content );
-				if( FALSE === $content )
+					$result	= quoted_printable_decode( $content );
+				if( FALSE === $result )
 					throw new \RuntimeException( 'Decoding quoted-printable content failed' );
+				$content	= $result;
 				break;
 			case '':
 				break;
@@ -315,7 +318,7 @@ abstract class Part
 	 *	@access		public
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@return		self
-	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 *	@throws		\InvalidArgumentException	if encodfgets(ing is invalid
 	 */
 	public function setEncoding( $encoding ): self
 	{
@@ -362,21 +365,22 @@ abstract class Part
 	 *	@static
 	 *	@param		string		$content		Content to be encode
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@param		boolean		$split			Flag: ... (default: yes)
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	protected static function encodeContent( $content, $encoding, $split = TRUE ): string
+	protected static function encodeContent( string $content, string $encoding, bool $split = TRUE ): string
 	{
 		$delimiter	= Message::$delimiter;
 		$lineLength	= Message::$lineLength;
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
-				$content2	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
-				if( FALSE === $content2 )
-					$content2	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
-				if( FALSE !== $content2 )
-					$content	= $content2;
+				$result	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				if( FALSE === $result )
+					$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				if( FALSE !== $result )
+					$content	= $result;
 				if( $split && strlen( $content ) > $lineLength )
 					$content	= static::wrapContent( $content, $lineLength, $delimiter );
 				break;
@@ -388,9 +392,12 @@ abstract class Part
 				break;
 			case 'quoted-printable':
 				if( function_exists( 'imap_8bit' ) )
-					$content	= imap_8bit( $content );
+					$result	= imap_8bit( $content );
 				else
-					$content	= quoted_printable_encode( $content );
+					$result	= quoted_printable_encode( $content );
+				if( FALSE === $result )
+					throw new \RuntimeException( 'Decoding quoted-printable content failed' );
+				$content	= $result;
 				break;
 			case '':
 				break;
@@ -400,20 +407,37 @@ abstract class Part
 		return $content;
 	}
 
-	protected function getMimeTypeFromFile( $fileName ): string
+	/**
+	 *	Get MIME type of a file by its file path.
+	 *	@access		protected
+	 *	@param		string		$filePath		Path of file to get MIME type of
+	 *	@return		string|NULL
+	 */
+	protected function getMimeTypeFromFile( string $filePath ): ?string
 	{
-		if( !file_exists( $fileName ) )
-			throw new \InvalidArgumentException( 'File "'.$fileName.'" is not existing' );
+		if( !file_exists( $filePath ) )
+			throw new \InvalidArgumentException( 'File "'.$filePath.'" is not existing' );
 		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
-		$type	= finfo_file( $finfo, $fileName );
+		if( FALSE === $finfo )
+			throw new \RuntimeException( 'fileinfo is not available' );
+		$type	= finfo_file( $finfo, $filePath );
 		finfo_close( $finfo );
-		return $type;
+		return FALSE !== $type ? $type : NULL;
 	}
 
-	protected static function wrapContent( $content, $length = NULL, $delimiter = NULL ): string
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@static
+	 *	@param		string			$content		Content to wrap
+	 *	@param		integer|NULL	$length			...
+	 *	@param		string|NULL		$delimiter		Content to wrap
+	 *	@return		string
+	 */
+	protected static function wrapContent( string $content, ?int $length = NULL, ?string $delimiter = NULL ): string
 	{
-		$delimiter	= $delimiter ? $delimiter : Message::$delimiter;
-		$lineLength	= $length ? $length : Message::$lineLength;
+		$delimiter	= $delimiter ?? Message::$delimiter;
+		$lineLength	= $length ?? Message::$lineLength;
 		$content	= chunk_split( $content, $lineLength, $delimiter );
 		return rtrim( $content, $delimiter );
 	}

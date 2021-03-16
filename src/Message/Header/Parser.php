@@ -54,7 +54,10 @@ class Parser
 		self::STRATEGY_SECOND,
 	];
 
+	/**	@var	int				$defaultStategy */
 	protected $defaultStategy	= self::STRATEGY_SECOND;
+
+	/**	@var	int				$strategy */
 	protected $strategy			= self::STRATEGY_AUTO;
 
 	/**
@@ -132,7 +135,7 @@ class Parser
 		$lines		= preg_split( "/\r?\n/", $content );
 		foreach( $lines as $line ){
 			$value	= ltrim( $line );
-			if( preg_match( '/^\S/', $line[0] ) > 0 ){
+			if( preg_match( '/^\S/', $line ) > 0 ){
 				$parts	= explode( ":", $line, 2 );
 				if( !is_null( $key ) && count( $buffer ) > 0 ){
 					$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];

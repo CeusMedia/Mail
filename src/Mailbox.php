@@ -32,6 +32,17 @@ use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
+use imap_body;
+use imap_clearflag_full;
+use imap_close;
+use imap_delete;
+use imap_fetchheader;
+use imap_last_error;
+use imap_mail_move;
+use imap_open;
+use imap_ping;
+use imap_sort;
+use imap_timeout;
 
 /**
  *	Handler for IMAP mailboxes.
@@ -45,39 +56,49 @@ use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
  */
 class Mailbox
 {
-    /**
-     * @var resource|NULL $connection
-     */
+	/**
+	 * @var resource|NULL $connection
+	 */
 	protected $connection;
 
-    /**
-     * @var string $username
-     */
+	/**
+	 * @var string $username
+	 */
 	protected $username;
 
-    /**
-     * @var string $password
-     */
+	/**
+	 * @var string $password
+	 */
 	protected $password;
 
-    /**
-     * @var string $host
-     */
+	/**
+	 * @var string $host
+	 */
 	protected $host;
 
-    /**
-     * @var bool $secure
-     */
+	/**
+	 * @var int $port
+	 */
+	protected $port						= 143;
+
+	/**
+	 * @var string|NULL $reference
+	 */
+	protected $reference;
+
+	/**
+	 * @var bool $secure
+	 */
 	protected $secure					= TRUE;
 
-    /**
-     * @var bool $validateCertificates
-     */
+	/**
+	 * @var bool $validateCertificates
+	 */
 	protected $validateCertificates		= TRUE;
 
-    /**
-     * @var string $error
-     */
+	/**
+	 * @var string $error
+	 */
 	protected $error;
 
 	public function __construct( string $host, string $username = '', string $password = '', bool $secure = TRUE, bool $validateCertificates = TRUE )
@@ -100,7 +121,7 @@ class Mailbox
 	 *	@param		bool		$strict
 	 *	@return		bool
 	 */
-    protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
+	protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
 	{
 		if( NULL === $this->connection || !imap_ping( $this->connection ) ){
 			if( !$connect ){
@@ -128,24 +149,11 @@ class Mailbox
 
 	public function connect( bool $strict = TRUE ): bool
 	{
-		$port		= 143;
-		$flags		= array();
-		$options	= 0;
-		if( $this->secure ){
-			$port		= 993;
-			$flags[]	= 'ssl';
-			if( $this->validateCertificates ){
-				$flags[]	= 'validate-cert';
-				$options	|= OP_SECURE;
-			}
-		}
-		if( !$this->validateCertificates )
-			$flags[]	= 'novalidate-cert';
-		$flags	= 0 !== count( $flags ) ? '/'.join( '/', $flags ) : '';
-
-		$uri		= '{'.$this->host.':'.$port.$flags.'}INBOX';
+		$reference	= $this->renderConnectionReference( TRUE );
+		$options	= $this->secure && $this->validateCertificates ? OP_SECURE : 0;
+		$uri		= $reference.'INBOX';
 		$resource	= imap_open( $uri, $this->username, $this->password, $options );
-		if( $resource ){
+		if( FALSE !== $resource ){
 			$this->connection	= $resource;
 			return TRUE;
 		}
@@ -157,8 +165,11 @@ class Mailbox
 
 	public function disconnect(): bool
 	{
-		if( $this->checkConnection( FALSE, FALSE ) )
-			return imap_close( $this->connection, CL_EXPUNGE );
+		if( $this->checkConnection( FALSE, FALSE ) ){
+			$result	= imap_close( $this->connection, CL_EXPUNGE );
+			$this->connection	= NULL;
+			return $result;
+		}
 		return TRUE;
 	}
 
@@ -170,6 +181,21 @@ class Mailbox
 	public function getError(): ?string
 	{
 		return $this->error;
+	}
+
+	public function getFolders( bool $recursive = NULL, bool $fullReference = FALSE ): array
+	{
+		$pattern	= $recursive ? '*' : '%';
+		$reference	= $this->renderConnectionReference( TRUE );
+		$folders		= imap_list( $this->connection, $reference, $pattern );
+		if( FALSE === $folders )
+			throw new \RuntimeException( imap_last_error() );
+		if( !$fullReference ){
+			$regExp	= '/^'.preg_quote( $reference, '/' ).'/';
+			foreach( $folders as $nr => $folder )
+				$folders[$nr]	= preg_replace( $regExp, '', $folder );
+		}
+		return $folders;
 	}
 
 	public function getMail( int $mailId, bool $strict = TRUE ): string
@@ -207,13 +233,18 @@ class Mailbox
 		return imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 	}
 
-	public function search( array $conditions ): array
+	public function moveMail( int $mailId, string $folder, bool $expunge = FALSE ): bool
 	{
-		$this->checkConnection( TRUE, TRUE );
-		return MailboxSearch::getInstance()
-			->setConnection( $this->connection )
-			->applyConditions( $conditions )
-			->getAll();
+		return $this->moveMails( [$mailId], $folder, $expunge );
+	}
+
+	public function moveMails( array $mailIds, string $folder, bool $expunge = FALSE ): bool
+	{
+		$this->checkConnection( TRUE );
+		$result	= imap_mail_move( $this->connection, join( ',', $mailIds ), $folder, CP_UID );
+		if( $expunge )
+			imap_expunge( $this->connection );
+		return $result;
 	}
 
 	public function performSearch( MailboxSearch $search ): array
@@ -221,6 +252,24 @@ class Mailbox
 		$this->checkConnection( TRUE, TRUE );
 		$search->setConnection( $this->connection );
 		return $search->getAll();
+	}
+
+	public function removeMail( int $mailId, bool $expunge = FALSE ): bool
+	{
+		$this->checkConnection( TRUE );
+		$result	= imap_delete( $this->connection, $mailId, FT_UID );
+		if( $expunge )
+			imap_expunge( $this->connection );
+		return $result;
+	}
+
+	public function search( array $conditions ): array
+	{
+		$this->checkConnection( TRUE, TRUE );
+		return MailboxSearch::getInstance()
+			->setConnection( $this->connection )
+			->applyConditions( $conditions )
+			->getAll();
 	}
 
 	/**
@@ -313,12 +362,25 @@ class Mailbox
 		return $this;
 	}
 
-	public function removeMail( int $mailId, bool $expunge = FALSE ): bool
+	protected function renderConnectionReference( bool $withPortAndFlags = TRUE ): string
 	{
-		$this->checkConnection( TRUE );
-		$result	= imap_delete( $this->connection, $mailId, FT_UID );
-		if( $expunge )
-			imap_expunge( $this->connection );
-		return $result;
+		if( !$withPortAndFlags )
+			return '{'.$this->host.'}';
+		if( NULL === $this->reference ){
+			$port		= 143;
+			$flags		= array();
+			if( $this->secure ){
+				$port		= 993;
+				$flags[]	= 'ssl';
+				if( $this->validateCertificates ){
+					$flags[]	= 'validate-cert';
+				}
+			}
+			if( !$this->validateCertificates )
+				$flags[]	= 'novalidate-cert';
+			$flags	= 0 !== count( $flags ) ? '/'.join( '/', $flags ) : '';
+			$this->reference	= '{'.$this->host.':'.$port.$flags.'}';
+		}
+		return $this->reference;
 	}
 }

@@ -251,6 +251,13 @@ class Code
 		)
 	);
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		integer		$code		HTTP code
+	 *	@return		object
+	 */
 	public static function explain( int $code ): object
 	{
 		$explained	= FALSE;
@@ -264,7 +271,7 @@ class Code
 			$message	= self::$codes[$code]['message'];
 			$comment	= self::$codes[$code]['comment'];
 		}
-  		return (object) array(
+		return (object) array(
 			'explained'	=> $explained,
 			'code'		=> $code,
 			'label'		=> $label,
@@ -273,8 +280,18 @@ class Code
 		);
 	}
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		integer		$code		HTTP code to get label for
+	 *	@return		string
+	 *	@throws		\RangeException			if given code is unknown
+	 */
 	public static function getText( int $code ): string
 	{
-		return self::explain( $code )->label;
+		if( !array_key_exists( $code, self::$codes ) )
+			throw new \RangeException( 'Unknown STMP status code: '.$code );
+		return self::$codes[$code]['label'];
 	}
 }

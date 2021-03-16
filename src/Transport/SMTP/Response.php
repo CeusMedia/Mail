@@ -30,8 +30,12 @@ class Response
 	/** @var	string		$response */
 	public $response		= '';
 
-	public function __construct()
+	public function __construct( ?int $code = NULL, ?string $message = NULL )
 	{
+		if( NULL !== $code )
+			$this->code = $code;
+		if( NULL !== $message )
+			$this->message = $message;
 	}
 
 	public function getCode(): int

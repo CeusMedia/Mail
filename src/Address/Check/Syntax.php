@@ -82,15 +82,15 @@ class Syntax
 		foreach( $constants as $key => $value ){
 			if( ( $value === ( $this->mode & $value ) ) || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
-					if( filter_var( $address, FILTER_VALIDATE_EMAIL ) )
+					if( FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL ) )
 						$result	&= $value;
 				}
 				else if( $value === self::MODE_SIMPLE_REGEX || $wildcard ){
-					if( preg_match( $this->regexSimple, $address ) )
+					if( 0 !== preg_match( $this->regexSimple, $address ) )
 						$result	&= $value;
 				}
 				else if( $value === self::MODE_EXTENDED_REGEX || $wildcard ){
-					if( preg_match( $this->regexExtended, $address ) )
+					if( 0 !== preg_match( $this->regexExtended, $address ) )
 						$result	&= $value;
 				}
 			}
@@ -141,11 +141,11 @@ class Syntax
 	public function isValidByMode( string $address, int $mode ): bool
 	{
 		if( $mode === self::MODE_FILTER )
-			return filter_var( $address, FILTER_VALIDATE_EMAIL );
+			return FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL );
 		if( $mode === self::MODE_SIMPLE_REGEX )
-			return preg_match( $this->regexSimple, $address );
+			return 0 !== preg_match( $this->regexSimple, $address );
 		if( $mode === self::MODE_EXTENDED_REGEX )
-			return preg_match( $this->regexExtended, $address );
+			return 0 !== preg_match( $this->regexExtended, $address );
 		throw new \InvalidArgumentException( 'Invalid mode given' );
 	}
 

@@ -135,50 +135,50 @@ class Availability
 				$host		= array_shift( $servers );
 			}
 			catch( \Exception $e ){
-				$this->lastResponse->error		= SmtpResponse::ERROR_MX_RESOLUTION_FAILED;
-				$this->lastResponse->message	= $e->getMessage();
+				$this->lastResponse->setError( SmtpResponse::ERROR_MX_RESOLUTION_FAILED );
+				$this->lastResponse->setMessage( $e->getMessage() );
 				return FALSE;
 			}
 		}
 
 		$conn	= @fsockopen( $host, $port, $errno, $errstr, 5 );
 		if( FALSE === $conn ){
-			$this->lastResponse->error		= SmtpResponse::ERROR_SOCKET_FAILED;
-			$this->lastResponse->message	= 'Connection to server '.$host.':'.$port.' failed';
+			$this->lastResponse->setError( SmtpResponse::ERROR_SOCKET_FAILED );
+			$this->lastResponse->setMessage( 'Connection to server '.$host.':'.$port.' failed' );
 			return FALSE;
 		}
 		try{
 			$this->readResponse( $conn );
-			if( $this->lastResponse->getCode() !== 220 ){
-				$this->lastResponse->error	= SmtpResponse::ERROR_CONNECTION_FAILED;
+			if( 220 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_CONNECTION_FAILED );
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "EHLO ".$this->sender->getDomain() );
 			$this->readResponse( $conn );
 			if( !in_array( $this->lastResponse->getCode(), [ 220, 250 ], TRUE ) ){
-				$this->lastResponse->error	= SmtpResponse::ERROR_HELO_FAILED;
+				$this->lastResponse->setError( SmtpResponse::ERROR_HELO_FAILED );
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "STARTTLS" );
 			$this->readResponse( $conn );
-			if( $this->lastResponse->code !== 220 ){
-				$this->lastResponse->error	= SmtpResponse::ERROR_CRYPTO_FAILED;
+			if( 220 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_CRYPTO_FAILED );
 				return FALSE;
 			}
 			stream_socket_enable_crypto( $conn, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
 
-//			while( $this->lastResponse->code === 220 )									//  for telekom.de
+//			while( $this->lastResponse->getCode() === 220 )									//  for telekom.de
 //				$this->readResponse( $conn );
 			$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
 			$this->readResponse( $conn );
-			if( $this->lastResponse->getCode() !== 250 ){
-				$this->lastResponse->error	= SmtpResponse::ERROR_SENDER_NOT_ACCEPTED;
+			if( 250 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_SENDER_NOT_ACCEPTED );
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
 			$this->readResponse( $conn );
-			if( $this->lastResponse->code !== 250 ){
-				$this->lastResponse->error	= SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED;
+			if( 250 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED );
 				$this->cache->set( 'user:'.$receiver->getAddress(), FALSE );
 				return FALSE;
 			}
@@ -189,8 +189,8 @@ class Availability
 		}
 		catch( \Exception $e ){
 			fclose( $conn );
-			$this->lastResponse->error		= SmtpResponse::ERROR_SOCKET_EXCEPTION;
-			$this->lastResponse->message	= $e->getMessage();
+			$this->lastResponse->setError( SmtpResponse::ERROR_SOCKET_EXCEPTION );
+			$this->lastResponse->setMessage( $e->getMessage() );
 			return FALSE;
 		}
 	}

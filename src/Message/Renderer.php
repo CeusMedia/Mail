@@ -49,6 +49,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  */
 class Renderer
 {
+	/**	@var	string		$encodingSubject */
 	public static $encodingSubject	= 'quoted-printable';
 
 	/**

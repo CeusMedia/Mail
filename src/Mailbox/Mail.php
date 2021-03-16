@@ -112,7 +112,7 @@ class Mail
 	 */
 	public function getMessage( bool $withBodyParts = FALSE ): Message
 	{
-		if( NULL !== $this->connection )
+		if( NULL === $this->connection )
 			throw new \RuntimeException( 'No connection set' );
 		$header	= $this->getRawHeader();
 		$body	= '';
@@ -129,9 +129,9 @@ class Mail
 	 */
 	public function getRawHeader( $force = FALSE ): string
 	{
-		if( NULL !== $this->connection )
-			throw new \RuntimeException( 'No connection set' );
-		if( 0 === strlen( $this->header ) || $force ){
+		if( NULL === $this->connection )
+			throw new \RuntimeException( 'No connection set_3' );
+		if( NULL === $this->header || 0 === strlen( $this->header ) || $force ){
 			$header	= imap_fetchheader( $this->connection, $this->mailId, FT_UID );
 			if( FALSE === $header )
 				throw new \RuntimeException( 'Invalid mail ID' );
