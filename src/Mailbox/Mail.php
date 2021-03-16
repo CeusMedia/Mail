@@ -130,7 +130,7 @@ class Mail
 	public function getRawHeader( $force = FALSE ): string
 	{
 		if( NULL === $this->connection )
-			throw new \RuntimeException( 'No connection set_3' );
+			throw new \RuntimeException( 'No connection set' );
 		if( NULL === $this->header || 0 === strlen( $this->header ) || $force ){
 			$header	= imap_fetchheader( $this->connection, $this->mailId, FT_UID );
 			if( FALSE === $header )

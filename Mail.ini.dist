@@ -1,6 +1,6 @@
 [library]
 identifier						= "CeusMedia::Mail"
-version							= "2.3.4"
+version							= "2.3.5"
 
 [phpunit.tests]
 Address.Check.Availability		= yes
