@@ -4,16 +4,28 @@ require_once dirname( __DIR__ ).'/_bootstrap.php';
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Parser;
 
-$fileName	= "../../mails/01-simple-7bit";
-//$fileName	= "../../mails/02-simple-umlauts";
-//$fileName	= "../../mails/03-simple-printable";
-//$fileName	= "../../mails/04-simple-base64";
-//$fileName	= "../../mails/05-simple-attachment";
-$fileName	= "../../mails/06-complex-folding";
+//  --  CONFIGuRE  ---------------------------------------------------------------------  //
 
-$showParts			= !TRUE;
-$showHeaders		= !TRUE;
+$files		= [
+	'../../mails/01-simple-7bit',
+	'../../mails/02-simple-umlauts',
+	'../../mails/03-simple-printable',
+	'../../mails/04-simple-base64',
+	'../../mails/05-simple-attachment',
+	'../../mails/06-complex-folding',
+];
+
+$showParts			= TRUE;
+$showHeaders		= TRUE;
 $showDeliveryChain	= TRUE;
+
+//  --  NO CHANGES NEEDED BELOW  -------------------------------------------------------  //
+
+$fileNr		= $argv[1] ?? 0;
+$fileName	= $files[$fileNr] ?? $files[0];
+
+remark( 'File: '.array_reduce( preg_split( '@/@', $fileName ), function( $carry, $item ){return $item;} ) );
+remark();
 
 $content	= \FS_File_Reader::load( $fileName );
 $message	= Parser::getInstance()->parse( $content );
@@ -52,11 +64,15 @@ if( $showHeaders ){
 			continue;
 		remark( '- '.$headerField->toString() );
 	}
+	remark();
 }
+
 if( $showDeliveryChain ){
+	remark( 'Delivery Chain:' );
 	foreach( $message->getDeliveryChain() as $address ){
 		remark( '- '.$address );
 	}
+	remark();
 }
 
-print( PHP_EOL );
+//print( PHP_EOL );
