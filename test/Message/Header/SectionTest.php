@@ -5,10 +5,12 @@
  *	@package			CeusMedia_Mail_Message_Header
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
+
+namespace CeusMedia\Mail\Test\Message\Header;
 
 use CeusMedia\Mail\Message\Header\Field;
 use CeusMedia\Mail\Message\Header\Section;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail recipient address validation.
@@ -17,12 +19,13 @@ use CeusMedia\Mail\Message\Header\Section;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Header\Section
  */
-class Message_Header_SectionTest extends TestCase
+class SectionTest extends TestCase
 {
 	/**
 	 *	@covers		::addField
 	 */
-	public function testAddField(){
+	public function testAddField()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addField( $field );
@@ -34,7 +37,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::addFieldPair
 	 */
-	public function testAddFieldPair(){
+	public function testAddFieldPair()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addFieldPair( "key", "value" );
@@ -46,7 +50,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::addFields
 	 */
-	public function testAddFields(){
+	public function testAddFields()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addFields( array( $field, $field ) );
@@ -56,7 +61,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::getField
 	 */
-	public function testGetField(){
+	public function testGetField()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addField( $field );
@@ -67,7 +73,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::getField
 	 */
-	public function testGetFieldException(){
+	public function testGetFieldException()
+	{
 		$section	= new Section();
 		$this->expectException( 'RangeException' );
 		$this->assertEquals( NULL, $section->getField( "invalid" ) );
@@ -76,7 +83,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::getFields
 	 */
-	public function testGetFields(){
+	public function testGetFields()
+	{
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "value" );
 		$section	= new Section();
@@ -88,7 +96,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::getFieldsByName
 	 */
-	public function testGetFieldsByName(){
+	public function testGetFieldsByName()
+	{
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "value" );
 		$field3		= new Field( "ABC", "DEF" );
@@ -102,7 +111,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::hasField
 	 */
-	public function testHasField(){
+	public function testHasField()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$this->assertEquals( FALSE, $section->hasField( "key" ) );
@@ -116,7 +126,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::removeFieldByName
 	 */
-	public function testRemoveFieldByName(){
+	public function testRemoveFieldByName()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 
@@ -132,7 +143,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::setField
 	 */
-	public function testSetField(){
+	public function testSetField()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->setField( $field );
@@ -146,7 +158,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::setFieldPair
 	 */
-	public function testSetFieldPair(){
+	public function testSetFieldPair()
+	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->setFieldPair( "key", "value" );
@@ -160,7 +173,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::setFields
 	 */
-	public function testSetFields(){
+	public function testSetFields()
+	{
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "vALUE" );
 		$section	= new Section();
@@ -176,7 +190,8 @@ class Message_Header_SectionTest extends TestCase
 	/**
 	 *	@covers		::toString
 	 */
-	public function testToString(){
+	public function testToString()
+	{
 		$delimiter	= \CeusMedia\Mail\Message::$delimiter;
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "vALUE" );

@@ -5,16 +5,18 @@
  *	@package			CeusMedia_Mail
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once __DIR__.'/bootstrap.php';
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Collection as AddressCollection;
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Part\Attachment;
-use \CeusMedia\Mail\Message\Part\HTML;
-use \CeusMedia\Mail\Message\Part\InlineImage;
-use \CeusMedia\Mail\Message\Part\Text;
-use \CeusMedia\Mail\Message\Part\Mail;
+namespace CeusMedia\Mail\Test;
+
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Part\Attachment;
+use CeusMedia\Mail\Message\Part\HTML;
+use CeusMedia\Mail\Message\Part\InlineImage;
+use CeusMedia\Mail\Message\Part\Text;
+use CeusMedia\Mail\Message\Part\Mail;
+use PHPUnit_Framework_TestCase as PhpUnitTestCase;
 
 /**
  *	Unit test for mail message.
@@ -23,7 +25,7 @@ use \CeusMedia\Mail\Message\Part\Mail;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message
  */
-class MessageTest extends PHPUnit_Framework_TestCase
+class MessageTest extends PhpUnitTestCase
 {
 	/**
 	 *	@covers		::addAttachment
@@ -32,7 +34,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::addPart
 	 *	@covers		::getParts
 	 */
-	public function testAddGetAndHasAttachments(){
+	public function testAddGetAndHasAttachments()
+	{
 		$subject1	= new Attachment();
 		$subject1->setFile( __FILE__ );
 		$subject2	= new Attachment();
@@ -60,7 +63,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::hasText
 	 *	@covers		::getParts
 	 */
-	public function testAddGetAndHasText(){
+	public function testAddGetAndHasText()
+	{
 		$text		= "TestText123 ÄÖÜäöüß";
 		$part		= new Text( $text );
 		$message	= Message::getInstance();
@@ -81,7 +85,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::hasHTML
 	 *	@covers		::getParts
 	 */
-	public function testAddGetAndHasHTML(){
+	public function testAddGetAndHasHTML()
+	{
 		$text		= "<div><b>TestText123</b> <em>ÄÖÜäöüß</em></div>";
 		$part		= new HTML( $text );
 		$message	= Message::getInstance();
@@ -102,8 +107,9 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	*	@covers		::hasInlineImages
 	*	@covers		::getParts
 	 */
-	public function testAddGetAndHasInlineImages(){
-		$filePath	= __DIR__."/../demo/outbox.png";
+	public function testAddGetAndHasInlineImages()
+	{
+		$filePath	= __DIR__."/../demo/files/outbox.png";
 		$part		= new InlineImage('id');
 		$part->setFile($filePath);
 
@@ -126,7 +132,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::addPart
 	 *	@covers		::getParts
 	 */
-	public function testAddGetAndHasMails(){
+	public function testAddGetAndHasMails()
+	{
 		$subject1	= new Mail( 'Mail Content 1' );
 		$subject2	= new Mail( 'Mail Content 2' );
 
@@ -149,7 +156,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::getSender
 	 *	@covers		::setSender
 	 */
-	public function testGetAndSetSender(){
+	public function testGetAndSetSender()
+	{
 		$message	= Message::getInstance();
 		$actual		= $message->setSender( "test@example.com" );
 		$this->assertEquals( $message, $actual );
@@ -179,7 +187,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::getSubject
 	 *	@covers		::setSubject
 	 */
-	public function testGetAndSetSubject(){
+	public function testGetAndSetSubject()
+	{
 		$subject	= "Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject";
 		$message	= Message::getInstance();
 		$actual		= $message->setSubject( $subject );
@@ -191,7 +200,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::getUserAgent
 	 *	@covers		::setUserAgent
 	 */
-	public function testGetAndSetUserAgent(){
+	public function testGetAndSetUserAgent()
+	{
 		$agent		= "Test User Agent";
 		$message	= Message::getInstance();
 		$actual	= $message->setUserAgent( $agent );
@@ -204,7 +214,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	 *	@covers		::addRecipient
 	 *	@covers		::getRecipients
 	 */
-	public function testAddAndGetRecipients(){
+	public function testAddAndGetRecipients()
+	{
 		$message	= Message::getInstance();
 
 		$receiverTo		= new Address( "receiver_to@example.com" );
@@ -245,7 +256,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	/**
 	 *	@covers		::setSender
 	 */
-	public function testSetSenderException(){
+	public function testSetSenderException()
+	{
 		$this->expectException( 'InvalidArgumentException' );
 		$message	= Message::getInstance();
 		$message->setSender( (object) array( 'invalid' ) );
@@ -254,7 +266,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	/**
 	 *	@covers		::getHTML
 	 */
-	public function testGetHTMLException(){
+	public function testGetHTMLException()
+	{
 		$this->expectException( 'RangeException' );
 		$message	= Message::getInstance();
 		$message->getHTML();
@@ -263,7 +276,8 @@ class MessageTest extends PHPUnit_Framework_TestCase
 	/**
 	 *	@covers		::getText
 	 */
-	public function testGetTextException(){
+	public function testGetTextException()
+	{
 		$this->expectException( 'RangeException' );
 		$message	= Message::getInstance();
 		$message->getText();

@@ -5,10 +5,12 @@
  *	@package			CeusMedia_Mail_Address_Check
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Check\Availability;
+namespace CeusMedia\Mail\Test\Address\Check;
+
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Check\Availability;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address availability check.
@@ -17,8 +19,8 @@ use \CeusMedia\Mail\Address\Check\Availability;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Check\Availability
  */
-class Address_Check_AvailabilityTest extends TestCase{
-
+class AvailabilityTest extends TestCase
+{
 	/**
 	 *	@covers		::test
 	 *	@covers		::getLastError
@@ -27,7 +29,8 @@ class Address_Check_AvailabilityTest extends TestCase{
 	 *	@covers		::sendChunk
 	 *	@covers		::getMailServers
 	 */
-	public function testTest(){
+	public function testTest()
+	{
 		$configSender	= $this->requireSenderConfig();
 		$configReceiver	= $this->requireReceiverConfig();
 

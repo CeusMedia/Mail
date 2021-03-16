@@ -5,11 +5,13 @@
  *	@package			CeusMedia_Mail
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Util\Dmarc\Record;
-use \CeusMedia\Mail\Util\Dmarc\Parser;
+namespace CeusMedia\Mail\Test\Util\Dmarc;
+
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Util\Dmarc\Record;
+use CeusMedia\Mail\Util\Dmarc\Parser;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address.
@@ -23,7 +25,8 @@ class ParserTest extends TestCase
 	/**
 	 *	@covers		::create
 	 */
-	public function testCreate(){
+	public function testCreate()
+	{
 		$instance	= Parser::getInstance();
 		$this->assertTrue( is_object( $instance ) );
 		$this->assertTrue( $instance instanceof Parser );
@@ -33,7 +36,8 @@ class ParserTest extends TestCase
 	/**
 	 *	@covers		::parse
 	 */
-	public function testParse(){
+	public function testParse()
+	{
 		$record	= new Record();
 		$record->reportAggregate	= array( new Address( 'postmaster1@ceusmedia.de' ) );
 		$record->reportForensic		= array( new Address( 'postmaster2@ceusmedia.de' ) );

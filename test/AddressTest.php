@@ -5,9 +5,11 @@
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-require_once __DIR__.'/bootstrap.php';
 
-use \CeusMedia\Mail\Address;
+namespace CeusMedia\Mail\Test;
+
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address.
@@ -21,17 +23,18 @@ class AddressTest extends TestCase
 	/**
 	 *	@covers		::__construct
 	 */
-	public function testConstruct(){
+	public function testConstruct()
+	{
 
 		$participant	= new Address();
 		$this->assertEquals( NULL, $participant->getDomain( FALSE ) );
 		$this->assertEquals( NULL, $participant->getLocalPart( FALSE ) );
-		$this->assertEquals( NULL, $participant->getName() );
+		$this->assertEquals( NULL, $participant->getName( FALSE ) );
 
 		$participant	= new Address( 'Hans.Mustermann@muster-server.tld' );
 		$this->assertEquals( 'muster-server.tld', $participant->getDomain() );
 		$this->assertEquals( 'Hans.Mustermann', $participant->getLocalPart() );
-		$this->assertEquals( NULL, $participant->getName() );
+		$this->assertEquals( NULL, $participant->getName( FALSE ) );
 
 		$participant	= new Address( 'Hans Mustermann <Hans.Mustermann@muster-server.tld>' );
 		$this->assertEquals( 'muster-server.tld', $participant->getDomain() );
@@ -43,7 +46,8 @@ class AddressTest extends TestCase
 	*	@covers		::get
 	 *	@covers		::__construct
 	 */
-	public function testGet(){
+	public function testGet()
+	{
 		$participant	= new Address( 'Hans Mustermann <hans.mustermann@muster-server.tld>');
 		$this->assertEquals( '"Hans Mustermann" <hans.mustermann@muster-server.tld>', $participant->get() );
 
@@ -61,7 +65,8 @@ class AddressTest extends TestCase
 	 *	@covers		::getDomain
 	 *	@covers		::setDomain
 	 */
-	public function testGetDomain(){
+	public function testGetDomain()
+	{
 		$participant	= new Address();
 		$participant->setDomain( 'muster-server.tld' );
 		$this->assertEquals( 'muster-server.tld', $participant->getDomain() );
@@ -73,7 +78,8 @@ class AddressTest extends TestCase
 	/**
 	 *	@covers		::getDomain
 	 */
-	public function testGetDomain_Exception(){
+	public function testGetDomain_Exception()
+	{
 		$this->expectException( 'RuntimeException' );
 		$participant	= new Address();
 		$participant->getDomain();
@@ -83,7 +89,8 @@ class AddressTest extends TestCase
 	*	@covers		::getLocalPart
 	*	@covers		::setLocalPart
 	 */
-	public function testGetLocalPart(){
+	public function testGetLocalPart()
+	{
 		$participant	= new Address();
 		$participant->setLocalPart( 'Hans.Mustermann' );
 		$this->assertEquals( 'Hans.Mustermann', $participant->getLocalPart() );
@@ -95,7 +102,8 @@ class AddressTest extends TestCase
 	/**
 	 *	@covers		::getLocalPart
 	 */
-	public function testGetLocalPart_Exception(){
+	public function testGetLocalPart_Exception()
+	{
 		$this->expectException( 'RuntimeException' );
 		$participant	= new Address();
 		$participant->getLocalPart();
@@ -105,7 +113,8 @@ class AddressTest extends TestCase
 	*	@covers		::getName
 	*	@covers		::setName
 	 */
-	public function testGetName(){
+	public function testGetName()
+	{
 		$participant	= new Address();
 		$participant->setName( 'Hans Mustermann' );
 		$this->assertEquals( 'Hans Mustermann', $participant->getName() );
@@ -118,12 +127,13 @@ class AddressTest extends TestCase
 	*	@covers		::getAddress
 	*	@covers		::set
 	 */
-	public function testGetAddress(){
+	public function testGetAddress()
+	{
 		$participant	= new Address();
 		$participant->set( 'Hans.Mustermann@muster-server.tld' );
 		$this->assertEquals( 'muster-server.tld', $participant->getDomain() );
 		$this->assertEquals( 'Hans.Mustermann', $participant->getLocalPart() );
-		$this->assertEquals( NULL, $participant->getName() );
+		$this->assertEquals( NULL, $participant->getName( FALSE ) );
 		$this->assertEquals( 'Hans.Mustermann@muster-server.tld', $participant->getAddress() );
 	}
 
@@ -131,7 +141,8 @@ class AddressTest extends TestCase
 	*	@covers		::set
 	*	@covers		::get
 	 */
-	public function testSet(){
+	public function testSet()
+	{
 		$participant	= new Address();
 		$participant->set( 'Hans Mustermann <Hans.Mustermann@muster-server.tld>' );
 		$this->assertEquals( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>', $participant->get() );

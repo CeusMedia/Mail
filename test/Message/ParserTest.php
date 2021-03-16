@@ -5,9 +5,11 @@
  *	@package			CeusMedia_Mail_Message
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( __DIR__ ).'/bootstrap.php';
+
+namespace CeusMedia\Mail\Test\Message;
 
 use CeusMedia\Mail\Message\Parser;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail message parser.
@@ -16,12 +18,13 @@ use CeusMedia\Mail\Message\Parser;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Parser
  */
-class Message_ParserTest extends TestCase
+class ParserTest extends TestCase
 {
 	/**
 	 *	@covers		::parse
 	 */
-	public function testParse(){
+	public function testParse()
+	{
 		$this->markTestIncomplete( 'No test defined for Message\\Parser' );
 
 		$parser	= Parser::getInstance();
