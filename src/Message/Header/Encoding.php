@@ -55,14 +55,46 @@ use \CeusMedia\Mail\Message;
  */
 class Encoding
 {
+	const STRATEGY_IMPL				= 1;
+	const STRATEGY_ICONV			= 2;
+	const STRATEGY_ICONV_STRICT		= 3;
+	const STRATEGY_ICONV_TOLERANT	= 4;
+
+	const STRATEGIES		= [
+		self::STRATEGY_IMPL,
+		self::STRATEGY_ICONV,
+		self::STRATEGY_ICONV_STRICT,
+		self::STRATEGY_ICONV_TOLERANT,
+	];
+
+	public static $strategy	= self::STRATEGY_ICONV_TOLERANT;
+
 	/**
 	 *	Encodes a mail header value string if needed.
 	 *	@access		public
+	 *	@static
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function decodeIfNeeded( string $string ): string
+	public static function decodeIfNeeded( string $string ): string
+	{
+		switch( self::$strategy ){
+			case self::STRATEGY_ICONV:
+				return iconv_mime_decode( $string, 0, 'UTF-8' );
+			case self::STRATEGY_ICONV_STRICT:
+				return iconv_mime_decode( $string, 1, 'UTF-8' );
+			case self::STRATEGY_ICONV_TOLERANT:
+				return iconv_mime_decode( $string, 2, 'UTF-8' );
+			case self::STRATEGY_IMPL:
+				return self::decode( $string );
+			default:
+				throw new DomainException( 'Invalid strategy' );
+		}
+	}
+
+
+	protected static function decode( string $string ): string
 	{
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
 		if( !preg_match( $pattern, $string ) )
@@ -88,9 +120,9 @@ class Encoding
 					default:
 						throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 				}
-				if( strtoupper( $encoding ) !== 'UTF-8' )
+				if( strtoupper( $charset ) !== 'UTF-8' )
 					$content	= iconv( $charset, 'UTF-8', $content );
-				$string		= preg_replace( $pattern, "\\1".$content."\\5", $string );
+				$string		= preg_replace( $pattern, $before.$content.$after, $string );
 			}
 			$list[]	= $string;
 		}
