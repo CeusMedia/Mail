@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Message\Header;
 
 use \CeusMedia\Mail\Message;
+use \DomainException;
 
 /**
  *	Mail message header encoder and decoder.
@@ -69,6 +70,7 @@ class Encoding
 		self::STRATEGY_ICONV_TOLERANT,
 	];
 
+	/** @var		integer		$strategy		Decode strategy to use */
 	public static $strategy	= self::STRATEGY_ICONV_TOLERANT;
 
 	/**

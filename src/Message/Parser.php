@@ -95,8 +95,8 @@ class Parser
 			}
 		}
 		if( $headers->hasField( 'Content-Type' ) ){
-			$contentType	= $headers->getField( 'Content-Type' )->getValue();
-			if( preg_match( "/multipart/", $contentType ) ){						//  is multipart message
+			$mimeType	= $headers->getField( 'Content-Type' )->getValue();
+			if( preg_match( "/multipart/", $mimeType ) ){						//  is multipart message
 				$this->parseMultipartBody( $message, $content );				//  parse multipart containers
 				return $message;
 			}
@@ -107,7 +107,15 @@ class Parser
 	}
 
 	/*  --  PROTECTED  --  */
-	protected function parseMultipartBody( $message, $content )
+
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@param		Message		$message		...
+	 *	@param		string		$content		...
+	 *	@return		void
+	 */
+	protected function parseMultipartBody( Message $message, string $content )
 	{
 		$delim		= Message::$delimiter;
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
@@ -120,7 +128,7 @@ class Parser
 		$contentType	= $headers->getField( 'Content-Type' );
 		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
 		$mimeBoundary	= $contentType->getAttribute( 'boundary' );
-		if( $mimeBoundary ){
+		if( NULL !== $mimeBoundary ){
 			$lines	= array();
 			$status	= 0;
 			foreach( preg_split( "/\r?\n/", $body ) as $nr => $line ){
@@ -144,6 +152,12 @@ class Parser
 		$message->addPart( $part );
 	}
 
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@param		string		$content			...
+	 *	@return		MessagePart
+	 */
 	protected function parseAtomicBodyPart( string $content ): MessagePart
 	{
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
@@ -176,7 +190,7 @@ class Parser
 			$filename		= $disposition->getAttribute( 'filename' );
 			$value			= strtoupper( $disposition->getValue() );
 			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
-			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ), TRUE ) && $filename;
+			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ), TRUE ) && NULL !== $filename;
 
 			if( $isAttachment || $isInlineImage ){
 				$part	= new MessagePartAttachment();
@@ -190,9 +204,9 @@ class Parser
 				$part->setContent( $content );
 				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 					$part->setFormat( $format );
-				if( !$filename && $contentType->getAttribute( 'name' ) !== NULL )
+				if( NULL === $filename && NULL !== $contentType->getAttribute( 'name' ) )
 					$filename	= $contentType->getAttribute( 'name' );
-				if( $filename )
+				if( NULL !== $filename )
 					$part->setFilename( $filename );
 
 				$dispositionAttributesToCopy	= array(
@@ -204,12 +218,10 @@ class Parser
 				$methodFactory	= new \Alg_Object_MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->getAttribute( $key );
-					if( preg_match( '/-date$/', $key ) ){
-						if( NULL !== $value && 0 !== strlen( trim( $value ) ) ){
-							$arguments	= array( strtotime( $value ) );
-							\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
-						}
-					}
+					if( preg_match( '/-date$/', $key ) )
+						$value	= strtotime( $value );
+					if( $value )
+						\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
 				}
 				return $part;
 			}
