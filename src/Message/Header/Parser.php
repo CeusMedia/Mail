@@ -2,7 +2,7 @@
 /**
  *	Parser for mail headers.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,21 +20,18 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Header;
-
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
-use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
 /**
  *	Parser for mail headers.
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -92,7 +89,7 @@ class Parser
 		return $self;
 	}
 
-	public function parse( string $content ): MessageHeaderSection
+	public function parse( string $content ): Section
 	{
 		$strategy	= $this->strategy;
 		if( $this->strategy === self::STRATEGY_AUTO )
@@ -116,7 +113,73 @@ class Parser
 		}
 	}
 
-	public static function parseByFirstStrategy( string $content ): MessageHeaderSection
+	/**
+	 *	Splits up header field value with attributes, like: text/csv; filename="test.csv"
+	 *	Applies RFC 2231 to support attribute encoding, (language) and containments (=attribute value folding).
+	 *	Returns instance of attributed header field.
+	 *	@access		public
+	 *	@static
+	 *	@param		Field	$field		Instance of header field
+	 *	@return 	AttributedField
+	 */
+	public static function parseAttributedField( Field $field ): AttributedField
+	{
+		$object	= self::parseAttributedHeaderValue( $field->getValue() );
+		$field	= new AttributedField( $field->getName(), $object->value );
+		$field->setAttributes( $object->attributes->getAll() );
+		return $field;
+	}
+
+	/**
+	 *	Splits up header values with attributes, like: text/csv; filename="test.csv"
+	 *	Applies RFC 2231 to support attribute encoding, (language) and containments (=attribute value folding).
+	 *	Return a map object with pure header value and attributes dictionary.
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$headerValue		Complete header field value, may be multiline
+	 *	@return 	object		Map object with pure header value and attributes dictionary
+	 */
+	public static function parseAttributedHeaderValue( string $string )
+	{
+		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
+		$parts	= preg_split( '/\s*;\s*/', $string );
+		$value	= array_shift( $parts );
+		$list	= array();
+		if( $parts ){
+			foreach( $parts as $part ){
+				if( preg_match( '/=/', $part ) ){
+					$p = preg_split( '/\s?=\s?/', $part, 2 );
+					if( trim( $p[1][0] ) === '"' )
+						$p[1]	= substr( trim( $p[1] ), 1, -1 );
+					if( preg_match( '/\*\d+\*?$/', $p[0] ) ){
+						$label	= preg_replace( '/^(.+)\*\d+\*?$/', '\\1', $p[0] );
+						if( !isset( $list[$label] ) )
+							$list[$label]	= '';
+						$list[$label]	.= $p[1];
+					}
+					else
+						$list[$p[0]]	= $p[1];
+				}
+			}
+		}
+																									//
+		//  Apply RFC 2231 (https://datatracker.ietf.org/doc/html/rfc2231)
+		$rfc2231	= "/^(?<charset>[A-Z0-9\-]+)(\'(?<language>[A-Z\-]{0,5})\')(?<content>.*)$/i";	//  eG. utf-8'en'Some%20content
+		array_walk( $list, function( &$value, $key ) use ($rfc2231){								//  apply RFC expr to list
+			if( $r = preg_match( $rfc2231, $value, $matches ) ){									//  encoding prefix found
+				$m	= (object) $matches;															//  shortcut matches
+				if( strtoupper( $m->charset ) !== 'UTF-8' )											//  encoding differs from UTF-8
+                    $m->content    = iconv( $m->charset, 'UTF-8', $m->content );					//  recode content to UTF-8
+				$value = urldecode( $m->content );													//  remove prefix and decode content
+			}
+		} );
+
+		return (object) array(
+			'value'			=> $value,
+			'attributes'	=> new \ADT_List_Dictionary( $list ),
+		);
+	}
+
 	/**
 	 *	...
 	 *	@access		public
@@ -172,24 +235,24 @@ class Parser
 
 	public static function parseByFirstStrategy( string $content ): Section
 	{
-		$section	= new MessageHeaderSection();
-		$content	= preg_replace( "/\r?\n[\t ]+/", "", $content );				//  unfold field values
+		$section	= new Section();
+		$content	= preg_replace( "/\r?\n[\t ]+/", '', $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
 		foreach( $lines as $line ){
 			$parts	= explode( ":", $line, 2 );
 			if( count( $parts ) > 1 ){
 				$value	= trim( $parts[1] );
 				if( substr( $value, 0, 2 ) == "=?" )
-					$value	= MessageHeaderEncoding::decodeIfNeeded( $value );
+					$value	= Encoding::decodeIfNeeded( $value );
 				$section->addFieldPair( $parts[0], $value );
 			}
 		}
 		return $section;
 	}
 
-	public static function parseBySecondStrategy( string $content ): MessageHeaderSection
+	public static function parseBySecondStrategy( string $content ): Section
 	{
-		$section	= new MessageHeaderSection();
+		$section	= new Section();
 		$rawPairs	= self::splitIntoListOfUnfoldedDecodedDataObjects( $content );
 		foreach( $rawPairs as $rawPair )
 			$section->addFieldPair( $rawPair->key, $rawPair->value );
@@ -221,9 +284,9 @@ class Parser
 				$key	= $parts[0];
 				$value	= ltrim( $parts[1] );
 			}
-			$value		= MessageHeaderEncoding::decodeIfNeeded( $value );
 			$value		= preg_replace( '/[\r\n\t]*/', '', $value );
 			$buffer[]	= trim( $value );
+			$value		= Encoding::decodeIfNeeded( $value );
 		}
 		if( !is_null( $key ) && count( $buffer ) > 0 )
 			$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
