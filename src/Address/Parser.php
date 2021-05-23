@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Parser for mail addresses.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -34,7 +36,7 @@ use \CeusMedia\Mail\Address;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
@@ -58,7 +60,7 @@ class Parser
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -69,7 +71,7 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -83,22 +85,22 @@ class Parser
 	public function parse( string $string ): Address
 	{
 		$string		= stripslashes( trim( $string ) );
-		$string		= preg_replace( "/\r\n /", " ", $string );							//  unfold @see http://tools.ietf.org/html/rfc822#section-3.1
-		$regex1		= self::$patterns['name <local-part@domain>'];						//  get pattern of full address
-		$regex2		= self::$patterns['<local-part@domain>'];							//  get pattern of short address
-		$regex3		= self::$patterns['local-part@domain'];								//  get pattern of short address
+		$string		= preg_replace( "/\r\n /", " ", $string );					//  unfold @see http://tools.ietf.org/html/rfc822#section-3.1
+		$regex1		= self::$patterns['name <local-part@domain>'];									//  get pattern of full address
+		$regex2		= self::$patterns['<local-part@domain>'];										//  get pattern of short address
+		$regex3		= self::$patterns['local-part@domain'];											//  get pattern of short address
 		$name		= '';
-		if( preg_match( $regex1, $string ) ){											//  found full address: with name or in brackets
+		if( 1 === preg_match( $regex1, $string ) ){													//  found full address: with name or in brackets
 			$localPart	= preg_replace( $regex1, "\\4", $string );						//  extract local part
 			$domain		= preg_replace( $regex1, "\\5", $string );						//  extract domain part
 			$name		= trim( preg_replace( $regex1, "\\1", $string ) );				//  extract user name
-			$name		= preg_replace( "/^\"(.+)\"$/", "\\1", $name );					//  strip quotes from user name
+			$name		= preg_replace( "/^\"(.+)\"$/", "\\1", $name );			//  strip quotes from user name
 		}
-		else if( preg_match( $regex2, $string ) ){										//  otherwise found short address: neither name nor brackets
+		else if( 1 === preg_match( $regex2, $string ) ){											//  otherwise found short address: neither name nor brackets
 			$localPart	= preg_replace( $regex2, "\\2", $string );						//  extract local part
 			$domain		= preg_replace( $regex2, "\\3", $string );						//  extract domain part
 		}
-		else if( preg_match( $regex3, $string ) ){										//  otherwise found short address: neither name nor brackets
+		else if( 1 === preg_match( $regex3, $string ) ){											//  otherwise found short address: neither name nor brackets
 			$localPart	= preg_replace( $regex3, "\\2", $string );						//  extract local part
 			$domain		= preg_replace( $regex3, "\\3", $string );						//  extract domain part
 		}

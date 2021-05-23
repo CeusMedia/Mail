@@ -26,3 +26,4 @@ foreach( $constants as $cKey => $cValue ){
 		remark( ' - '.$dKey.' ('.$dValue.') => '.$value );
 	}
 }
+remark();

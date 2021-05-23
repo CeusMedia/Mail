@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Model for DMARC records.
  *
- *	Copyright (c) 2017-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2017-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Util_Dmarc
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2020 Christian Würker
+ *	@copyright		2017-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -32,13 +34,13 @@ namespace CeusMedia\Mail\Util\Dmarc;
  *	@category		Library
  *	@package		CeusMedia_Mail_Util_Dmarc
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2020 Christian Würker
+ *	@copyright		2017-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Record
 {
-	const POLICY_UNKNOWN		= NULL;
+	const POLICY_UNKNOWN		= '';
 	const POLICY_NONE			= 'none';
 	const POLICY_QUARANTINE		= 'quarantine';
 	const POLICY_REJECT			= 'reject';
@@ -51,14 +53,33 @@ class Record
 	const REPORT_IF_DKIM_FAILED	= 'd';
 	const REPORT_IF_SPF_FAILED	= 's';
 
+	/**	@var	string			$version */
 	public $version				= '1';
-	public $policy				= SELF::POLICY_NONE;
-	public $policySubdomains	= SELF::POLICY_UNKNOWN;
+
+	/**	@var	string			$policy */
+	public $policy				= self::POLICY_NONE;
+
+	/**	@var	string			$policySubdomains */
+	public $policySubdomains	= self::POLICY_UNKNOWN;
+
+	/**	@var	integer			$interval */
 	public $interval			= 86400;
+
+	/**	@var	array			$reportAggregate */
 	public $reportAggregate		= array();
+
+	/**	@var	array			$reportForensic */
 	public $reportForensic		= array();
-	public $alignmentDkim		= SELF::ALIGNMENT_RELAXED;
-	public $alignmentSpf		= SELF::ALIGNMENT_RELAXED;
+
+	/**	@var	string			$alignmentDkim */
+	public $alignmentDkim		= self::ALIGNMENT_RELAXED;
+
+	/**	@var	string			$alignmentSpf */
+	public $alignmentSpf		= self::ALIGNMENT_RELAXED;
+
+	/**	@var	integer			$percent */
 	public $percent				= 100;
-	public $failureOption		= SELF::REPORT_IF_ALL_FAILED;
+
+	/**	@var	string			$failureOption */
+	public $failureOption		= self::REPORT_IF_ALL_FAILED;
 }

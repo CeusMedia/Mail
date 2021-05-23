@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	...
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -32,7 +34,7 @@ namespace CeusMedia\Mail\Transport\SMTP;
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			https://www.knownhost.com/wiki/email/troubleshooting/error-numbers
@@ -40,7 +42,8 @@ namespace CeusMedia\Mail\Transport\SMTP;
  */
 class Code
 {
-	static protected $codes	= array(
+	/**	@var	array		$codes */
+	protected static $codes	= array(
 		101		=> array(
 			'label'		=> 'Cannot open connection',
 			'message'	=> 'The server is unable to connect.',
@@ -248,7 +251,14 @@ class Code
 		)
 	);
 
-	static public function explain( int $code )
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		integer		$code		HTTP code
+	 *	@return		object
+	 */
+	public static function explain( int $code ): object
 	{
 		$explained	= FALSE;
 		$label		= 'Unknown STMP status code: '.$code;
@@ -261,7 +271,7 @@ class Code
 			$message	= self::$codes[$code]['message'];
 			$comment	= self::$codes[$code]['comment'];
 		}
-  		return (object) array(
+		return (object) array(
 			'explained'	=> $explained,
 			'code'		=> $code,
 			'label'		=> $label,
@@ -270,8 +280,18 @@ class Code
 		);
 	}
 
-	static public function getText( int $code ): string
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		integer		$code		HTTP code to get label for
+	 *	@return		string
+	 *	@throws		\RangeException			if given code is unknown
+	 */
+	public static function getText( int $code ): string
 	{
-		return self::explain( $code )->label;
+		if( !array_key_exists( $code, self::$codes ) )
+			throw new \RangeException( 'Unknown STMP status code: '.$code );
+		return self::$codes[$code]['label'];
 	}
 }

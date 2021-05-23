@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Parser for mail headers.
  *
@@ -71,7 +73,7 @@ class Parser
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -272,10 +274,11 @@ class Parser
 		$key		= NULL;
 		$value		= NULL;
 		$list		= array();
+		$buffer		= array();
 		$lines		= preg_split( "/\r?\n/", $content );
 		foreach( $lines as $line ){
 			$value	= ltrim( $line );
-			if( preg_match( '/^\S/', $line[0] ) > 0 ){
+			if( preg_match( '/^\S/', $line ) > 0 ){
 				$parts	= explode( ":", $line, 2 );
 				if( !is_null( $key ) && count( $buffer ) > 0 ){
 					$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];

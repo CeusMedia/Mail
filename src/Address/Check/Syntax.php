@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Validator for mail address syntax.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -32,7 +34,7 @@ namespace CeusMedia\Mail\Address\Check;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -44,8 +46,13 @@ class Syntax
 	const MODE_SIMPLE_REGEX		= 4;
 	const MODE_EXTENDED_REGEX	= 8;
 
+	/**	@var int $mode */
 	protected $mode				= 2;
+
+	/**	@var string $regexSimple */
 	protected $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
+
+	/**	@var string $regexExtended */
 	protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
 
 	/**
@@ -70,20 +77,20 @@ class Syntax
 	public function check( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result		= 0;
-		$wildcard	= $this->mode & self::MODE_ALL;
+		$wildcard	= self::MODE_ALL === ( $this->mode & self::MODE_ALL );
 		$constants	= \Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
 		foreach( $constants as $key => $value ){
-			if( $this->mode & $value || $wildcard ){
+			if( ( $value === ( $this->mode & $value ) ) || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
-					if( filter_var( $address, FILTER_VALIDATE_EMAIL ) )
+					if( FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL ) )
 						$result	&= $value;
 				}
 				else if( $value === self::MODE_SIMPLE_REGEX || $wildcard ){
-					if( preg_match( $this->regexSimple, $address ) )
+					if( 0 !== preg_match( $this->regexSimple, $address ) )
 						$result	&= $value;
 				}
 				else if( $value === self::MODE_EXTENDED_REGEX || $wildcard ){
-					if( preg_match( $this->regexExtended, $address ) )
+					if( 0 !== preg_match( $this->regexExtended, $address ) )
 						$result	&= $value;
 				}
 			}
@@ -134,11 +141,11 @@ class Syntax
 	public function isValidByMode( string $address, int $mode ): bool
 	{
 		if( $mode === self::MODE_FILTER )
-			return filter_var( $address, FILTER_VALIDATE_EMAIL );
+			return FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL );
 		if( $mode === self::MODE_SIMPLE_REGEX )
-			return preg_match( $this->regexSimple, $address );
+			return 0 !== preg_match( $this->regexSimple, $address );
 		if( $mode === self::MODE_EXTENDED_REGEX )
-			return preg_match( $this->regexExtended, $address );
+			return 0 !== preg_match( $this->regexExtended, $address );
 		throw new \InvalidArgumentException( 'Invalid mode given' );
 	}
 

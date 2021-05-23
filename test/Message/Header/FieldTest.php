@@ -5,9 +5,11 @@
  *	@package			CeusMedia_Mail_Message_Header
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
+
+namespace CeusMedia\Mail\Test\Message\Header;
 
 use CeusMedia\Mail\Message\Header\Field;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail recipient address validation.
@@ -16,7 +18,7 @@ use CeusMedia\Mail\Message\Header\Field;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Header\Field
  */
-class Message_Header_FieldTest extends TestCase
+class FieldTest extends TestCase
 {
 	/**
 	 *	@covers		::__construct
@@ -116,4 +118,3 @@ class Message_Header_FieldTest extends TestCase
 		$this->assertEquals( $expected, $actual );
 	}
 }
-?>

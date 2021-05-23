@@ -5,12 +5,15 @@
  *	@package			CeusMedia_Mail
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( __DIR__ ).'/bootstrap.php';
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Mailbox;
-use \CeusMedia\Mail\Transport\SMTP;
+namespace CeusMedia\Mail\Test\Transport;
+
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Transport\SMTP;
+use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address.
@@ -19,7 +22,7 @@ use \CeusMedia\Mail\Transport\SMTP;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Transport\SMTP
  */
-class Transport_SMTPTest extends TestCase
+class SMTPTest extends TestCase
 {
 	protected $receiveLoopSleep			= 1;
 	protected $receiveLoopTimeout		= 120;
@@ -27,7 +30,8 @@ class Transport_SMTPTest extends TestCase
 	/**
 	 *	@covers		::send
 	 */
-	public function testSend_Mocked(){
+	public function testSend_Mocked()
+	{
 		$message	= Message::getInstance()
 			->addRecipient( 'receiver@muster-server.tld' )
 			->setSender( 'sender@muster-server.tld' )
@@ -64,7 +68,8 @@ class Transport_SMTPTest extends TestCase
 	 *	@covers		::setUsername
 	 *	@covers		::setPassword
 	 */
-	public function testSend(){
+	public function testSend()
+	{
 		$configSender		= $this->requireSenderConfig();
 		$configReceiver		= $this->requireReceiverConfig();
 
@@ -128,7 +133,8 @@ class Transport_SMTPTest extends TestCase
 		$this->assertTrue( $isMailReceived );
 	}
 
-	public function _testSend_Virus(){
+	public function _testSend_Virus()
+	{
 		$configSender		= $this->getSenderConfig();
 		$configReceiver		= $this->getReceiverConfig();
 
@@ -200,8 +206,8 @@ class Transport_SMTPTest extends TestCase
 	}
 }
 
-class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
-
+class SmtpSocketMock extends SmtpSocket
+{
 	protected $lastChunk;
 	protected $nextResponses	= array();
 	protected $status			= 0;
@@ -209,13 +215,13 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 
 	public function __construct(){}
 
-	public function close(): \CeusMedia\Mail\Transport\SMTP\Socket
+	public function close(): SmtpSocket
 	{
 		$this->connection	= NULL;
 		return $this;
 	}
 
-	public function enableCrypto( bool $enable, ?int $crypto = NULL ): \CeusMedia\Mail\Transport\SMTP\Socket
+	public function enableCrypto( bool $enable, ?int $crypto = NULL ): SmtpSocket
 	{
 		return $this;
 	}
@@ -247,7 +253,7 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 		return $this->log;
 	}
 
-	public function open( bool $forceReopen = FALSE ): \CeusMedia\Mail\Transport\SMTP\Socket
+	public function open( bool $forceReopen = FALSE ): SmtpSocket
 	{
 		$this->connection	= NULL;
 		return $this;
@@ -266,11 +272,11 @@ class SmtpSocketMock extends \CeusMedia\Mail\Transport\SMTP\Socket{
 		);
 	}
 
-	public function sendChunk( string $message ): int
+	public function sendChunk( string $content ): bool
 	{
-		$this->lastChunk	= $message;
-//		print( PHP_EOL.' > '.$message );
-		$this->log[]	= trim( ' > '. $message );
-		return strlen( $message );
+		$this->lastChunk	= $content;
+//		print( PHP_EOL.' > '.$content );
+		$this->log[]	= trim( ' > '. $content );
+		return 0 < strlen( $content );
 	}
 }

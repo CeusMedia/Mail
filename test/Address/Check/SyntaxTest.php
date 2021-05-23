@@ -5,9 +5,11 @@
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 
-use \CeusMedia\Mail\Address\Check\Syntax;
+namespace CeusMedia\Mail\Test\Address\Check;
+
+use CeusMedia\Mail\Address\Check\Syntax;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address syntax validation.
@@ -16,9 +18,10 @@ use \CeusMedia\Mail\Address\Check\Syntax;
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Check\Syntax
  */
-class Address_Check_SyntaxTest extends TestCase{
-
-	public function testEvaluate(){
+class SyntaxTest extends TestCase
+{
+	public function testEvaluate()
+	{
 		$checker	= new Syntax();
 		$expected	= Syntax::MODE_FILTER | Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX;
 		$actual		= $checker->evaluate( "foo.bar@example.com" );
@@ -36,7 +39,8 @@ class Address_Check_SyntaxTest extends TestCase{
 	/**
 	 *	@covers		::check
 	 */
-/*	public function testCheckValidSimple(){
+/*	public function testCheckValidSimple()
+	{
 		$checker	= new Syntax();
 		$expected	= Syntax::MODE_FILTER;
 		$actual		= $checker->check( "foo.bar@example.com" );
@@ -46,7 +50,8 @@ class Address_Check_SyntaxTest extends TestCase{
 	/**
 	 *	@covers		::check
 	 */
-/*	public function testCheckValidExtended(){
+/*	public function testCheckValidExtended()
+	{
 		$expected	= 2;
 		$actual		= Syntax::check( "foo+bar!@example.com" );
 		$this->assertEquals( $expected, $actual );
@@ -55,7 +60,8 @@ class Address_Check_SyntaxTest extends TestCase{
 	/**
 	 *	@covers		::check
 	 */
-/*	public function testCheckInvalid(){
+/*	public function testCheckInvalid()
+	{
 		$expected	= 0;
 
 		$actual		= Syntax::check( "foo.bar.@example.com", FALSE );
@@ -74,7 +80,8 @@ class Address_Check_SyntaxTest extends TestCase{
 	/**
 	 *	@covers		::check
 	 */
-/*	public function testCheckException(){
+/*	public function testCheckException()
+	{
 		$this->expectException( "InvalidArgumentException" );
 		Syntax::check( "foo.bar.@example.com" );
 	}*/
@@ -82,7 +89,8 @@ class Address_Check_SyntaxTest extends TestCase{
 	/**
 	 *	@covers		::check
 	 */
-/*	public function testIsValidValidSimple(){
+/*	public function testIsValidValidSimple()
+	{
 		$expected	= 1;
 		$actual		= Syntax::check( "foo.bar@example.com" );
 		$this->assertEquals( $expected, $actual );
@@ -91,7 +99,8 @@ class Address_Check_SyntaxTest extends TestCase{
 	/**
 	 *	@covers		::check
 	 */
-/*	public function testIsValidValidExtended(){
+/*	public function testIsValidValidExtended()
+	{
 		$expected	= 2;
 		$actual		= Syntax::check( "foo+bar!@example.com" );
 		$this->assertEquals( $expected, $actual );
@@ -100,7 +109,8 @@ class Address_Check_SyntaxTest extends TestCase{
 	/**
 	 *	@covers		::isValid
 	 */
-/*	public function testIsValidInvalid(){
+/*	public function testIsValidInvalid()
+	{
 		$expected	= FALSE;
 
 		$actual		= Syntax::isValid( "foo.bar.@example.com" );

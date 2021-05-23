@@ -30,7 +30,7 @@ $mailbox		= connectMailbox( $configMailbox );
 $search		= new Search();
 $search->setLimit( $limit );
 $search->setOffset( $offset );
-//$search->setSubject( 'This is just a test' );
+$search->setSubject( 'This is just a test' );
 $search->setSender( $configSended->senderAddress );
 
 $clock		= new Alg_Time_Clock();

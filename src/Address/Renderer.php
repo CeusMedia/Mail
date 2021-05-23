@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Renderer for mail addresses.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -34,7 +36,7 @@ use \CeusMedia\Mail\Address;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
@@ -51,7 +53,7 @@ class Renderer
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -62,7 +64,7 @@ class Renderer
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -73,15 +75,16 @@ class Renderer
 	 *	@return		string		Rendered mail address
 	 *	@throws		\RuntimeException			If domain is empty
 	 *	@throws		\RuntimeException			If local part is empty
+	 *	@todo		addslashes on name?
 	 */
 	public function render( Address $address ): string
 	{
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
-		$name		= $address->getName();
-		if( !strlen( trim( $name ) ) )
+		$name		= $address->getName( FALSE );
+		if( 0 === strlen( trim( $name ) ) )
 			return $localPart.'@'.$domain;
-		if( !preg_match( '/^\w+$/', $name ) )
+		if( 1 !== preg_match( '/^\w+$/', $name ) )
 			$name	= '"'.$name.'"';
 		return $name.' <'.$localPart.'@'.$domain.'>';
 	}

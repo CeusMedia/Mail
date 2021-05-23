@@ -1,6 +1,15 @@
 <?php
-class TestCase extends PHPUnit\Framework\TestCase{
+namespace CeusMedia\Mail\Test;
 
+use ADT_List_Dictionary as Dictionary;
+use PHPUnit\Framework\TestCase as PhpUnitTestCase;
+use CeusMedia\Mail\Address;
+use Exception;
+use RuntimeException;
+use UI_DevOutput;
+
+class TestCase extends PhpUnitTestCase
+{
 	protected $pathLibrary;
 	protected $pathTests;
 	protected $configFile;
@@ -17,15 +26,53 @@ class TestCase extends PHPUnit\Framework\TestCase{
 		'security.antivirus',
 	);
 
-	public function __construct(){
-		parent::__construct();
+	public function __construct( $name )
+	{
+		parent::__construct( $name );
 		new UI_DevOutput();
 		$this->pathLibrary		= dirname( __DIR__ ).'/';
 		$this->pathTests		= __DIR__.'/';
 		$this->configFile		= $this->pathLibrary.'Mail.ini';
 	}
 
-	protected function getReceiverConfig(){
+	//  --  PROTECTED  --  //
+
+	protected function requireReceiverConfig(): Dictionary
+	{
+		try{
+			return $this->getReceiverConfig();
+		}
+		catch( Exception $e ){
+			$this->markTestSkipped( 'Runtime incomplete: '.$e->getMessage() );
+		}
+	}
+
+	protected function requireSenderConfig(): Dictionary
+	{
+		try{
+			return $this->getSenderConfig();
+		}
+		catch( Exception $e ){
+			$this->markTestSkipped( 'Runtime incomplete: '.$e->getMessage() );
+		}
+	}
+
+	protected function getAddressIP( $address ): string
+	{
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		return gethostbyname( $address->getDomain() );
+	}
+
+	protected function getCurrentIP(): string
+	{
+		return file_get_contents( 'https://ipecho.net/plain' );
+	}
+
+	//  --  PRIVATE  --  //
+
+	private function getReceiverConfig(): Dictionary
+	{
 		$config	= array();
 		foreach( $this->configDefaultKeys as $key )
 			$config[$key]	= NULL;
@@ -39,10 +86,11 @@ class TestCase extends PHPUnit\Framework\TestCase{
 				$config[$key]	= $value;
 		if( !$config['server.host'] )
 			throw new RuntimeException( 'Config file "Mail.ini" is not having settings in section "phpunit.receiver"' );
-		return new ADT_List_Dictionary( $config );
+		return new Dictionary( $config );
 	}
 
-	protected function getSenderConfig(){
+	private function getSenderConfig(): Dictionary
+	{
 		$config	= array();
 		foreach( $this->configDefaultKeys as $key )
 			$config[$key]	= NULL;
@@ -56,34 +104,6 @@ class TestCase extends PHPUnit\Framework\TestCase{
 				$config[$key]	= $value;
 		if( !$config['server.host'] )
 			throw new RuntimeException( 'Config file "Mail.ini" is not having settings in section "phpunit.sender"' );
-		return new ADT_List_Dictionary( $config );
-	}
-
-	protected function requireReceiverConfig(){
-		try{
-			return $this->getReceiverConfig();
-		}
-		catch( Exception $e ){
-			$this->markTestSkipped( 'Runtime incomplete: '.$e->getMessage() );
-		}
-	}
-
-	protected function requireSenderConfig(){
-		try{
-			return $this->getSenderConfig();
-		}
-		catch( Exception $e ){
-			$this->markTestSkipped( 'Runtime incomplete: '.$e->getMessage() );
-		}
-	}
-
-	protected function getAddressIP( $address ){
-		if( is_string( $address ) )
-			$address	= new \CeusMedia\Mail\Address( $address );
-		return gethostbyname( $address->getDomain() );
-	}
-
-	protected function getCurrentIP(){
-		return file_get_contents( 'https://ipecho.net/plain' );
+		return new Dictionary( $config );
 	}
 }

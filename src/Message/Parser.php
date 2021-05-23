@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Mail message parser.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -44,7 +46,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			finish: parse mail headers too
@@ -59,9 +61,15 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
+	/**
+	 *	Parse raw mail content and return message object.
+	 *	@access		public
+	 *	@param		string		$content		Content to parse
+	 *	@return		Message
+	 */
 	public function parse( $content ): Message
 	{
 		$message	= new Message();
@@ -86,14 +94,15 @@ class Parser
 					break;
 			}
 		}
-		$contentType	= $headers->getField( 'Content-Type' )->getValue();
+		if( $headers->hasField( 'Content-Type' ) ){
+			$contentType	= $headers->getField( 'Content-Type' )->getValue();
+			if( preg_match( "/multipart/", $contentType ) ){						//  is multipart message
+				$this->parseMultipartBody( $message, $content );				//  parse multipart containers
+				return $message;
+			}
+		}
 
-		if( preg_match( '/multipart/', $contentType ) ){						//  is multipart message
-			$this->parseMultipartBody( $message, $content );					//  parse multipart containers
-		}
-		else{
-			$message->addPart( $this->parseAtomicBodyPart( $content ) );		//  directly parse mail content as part
-		}
+		$message->addPart( $this->parseAtomicBodyPart( $content ) );			//  directly parse mail content as part
 		return $message;
 	}
 
@@ -104,6 +113,9 @@ class Parser
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$body		= $parts[1];
+
+		if( !$headers->hasField( 'Content-Type' ) )
+			throw new \RuntimeException( 'Multipart has no content type header' );
 
 		$contentType	= $headers->getField( 'Content-Type' );
 		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
@@ -128,17 +140,15 @@ class Parser
 					$lines[]	= $line;
 			}
 		}
-		else{
-			$part	= $this->parseAtomicBodyPart( $content );
-			$message->addPart( $part );
-		}
+		$part	= $this->parseAtomicBodyPart( $content );
+		$message->addPart( $part );
 	}
 
-	protected function parseAtomicBodyPart( $content )
+	protected function parseAtomicBodyPart( string $content ): MessagePart
 	{
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$content	= $parts[1];
+		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 
 		$contentType	= $headers->getField( 'Content-Type' );
 		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
@@ -153,9 +163,9 @@ class Parser
 		if( $mimeType === 'message/rfc822' ){
 			$part	= new MessagePartMail( $content, $charset );
 			$part->setMimeType( $mimeType );
-			if( $encoding )
+			if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 				$part->setEncoding( $encoding );
-			if( $format )
+			if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 				$part->setFormat( $format );
 			return $part;
 		}
@@ -166,7 +176,7 @@ class Parser
 			$filename		= $disposition->getAttribute( 'filename' );
 			$value			= strtoupper( $disposition->getValue() );
 			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
-			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ) ) && $filename;
+			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ), TRUE ) && $filename;
 
 			if( $isAttachment || $isInlineImage ){
 				$part	= new MessagePartAttachment();
@@ -175,10 +185,10 @@ class Parser
 					$part	= new MessagePartInlineImage( $id );
 				}
 				$part->setMimeType( $mimeType );
-				if( $encoding )
+				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 					$part->setEncoding( $encoding );
 				$part->setContent( $content );
-				if( $format )
+				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 					$part->setFormat( $format );
 				if( !$filename && $contentType->getAttribute( 'name' ) !== NULL )
 					$filename	= $contentType->getAttribute( 'name' );
@@ -191,12 +201,15 @@ class Parser
 					'creation-date'		=> 'setFileCTime',
 					'modification-date'	=> 'setFileMTime',
 				);
+				$methodFactory	= new \Alg_Object_MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->getAttribute( $key );
-					if( preg_match( '/-date$/', $key ) )
-						$value	= strtotime( $value );
-					if( $value )
-						\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
+					if( preg_match( '/-date$/', $key ) ){
+						if( NULL !== $value && 0 !== strlen( trim( $value ) ) ){
+							$arguments	= array( strtotime( $value ) );
+							\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
+						}
+					}
 				}
 				return $part;
 			}
@@ -205,18 +218,18 @@ class Parser
 			case 'text/html':
 				$part	= new MessagePartHTML( $content, $charset );
 				$part->setMimeType( $mimeType );
-				if( $encoding )
+				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 					$part->setEncoding( $encoding );
-				if( $format )
+				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 					$part->setFormat( $format );
 				return $part;
 			case 'text/plain':
 			default:
 				$part	= new MessagePartText( $content, $charset );
 				$part->setMimeType( $mimeType );
-				if( $encoding )
+				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 					$part->setEncoding( $encoding );
-				if( $format )
+				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
 					$part->setFormat( $format );
 				return $part;
 		}

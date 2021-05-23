@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Inline Image Mail Part.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -36,19 +38,32 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
 class InlineImage extends MessagePart
 {
+	/**	@var	string|NULL		$content */
 	protected $content;
+
+	/**	@var	string|NULL		$fileName */
 	protected $fileName;
+
+	/**	@var	int|NULL		$fileATime */
 	protected $fileATime		= NULL;
+
+	/**	@var	int|NULL		$fileCTime */
 	protected $fileCTime		= NULL;
+
+	/**	@var	int|NULL		$fileMTime */
 	protected $fileMTime		= NULL;
+
+	/**	@var	int|NULL		$fileSize */
 	protected $fileSize			= NULL;
+
+	/**	@var	string			$id */
 	protected $id;
 
 	/**
@@ -59,15 +74,16 @@ class InlineImage extends MessagePart
 	public function __construct( $id )
 	{
 		$this->type		= static::TYPE_INLINE_IMAGE;
+		$this->setEncoding( 'base64' );
 		$this->setId( $id );
 	}
 
 	/**
 	 *	Returns set File Name.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
-	public function getFileName()
+	public function getFileName(): ?string
 	{
 		return $this->fileName;
 	}
@@ -75,9 +91,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns file size in bytes.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileSize()
+	public function getFileSize(): ?int
 	{
 		return $this->fileSize;
 	}
@@ -85,9 +101,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileATime()
+	public function getFileATime(): ?int
 	{
 		return $this->fileATime;
 	}
@@ -95,9 +111,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns file creation time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileCTime()
+	public function getFileCTime(): ?int
 	{
 		return $this->fileCTime;
 	}
@@ -105,9 +121,9 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns last modification time as UNIX timestamp.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		integer|NULL
 	 */
-	public function getFileMTime()
+	public function getFileMTime(): ?int
 	{
 		return $this->fileMTime;
 	}
@@ -117,7 +133,7 @@ class InlineImage extends MessagePart
 	 *	@access		public
 	 *	@return		string
 	 */
-	public function getId()
+	public function getId(): string
 	{
 		return $this->id;
 	}
@@ -125,34 +141,47 @@ class InlineImage extends MessagePart
 	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
-	 *	@param		boolean		$headers		Flag: render part with headers
+	 *	@param		integer						$sections				Section(s) to render, default: all
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
 	 *	@return		string
 	 */
-	public function render( $headers = NULL ): string
+	public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string
 	{
-		if( !$headers )
-			$headers	= new MessageHeaderSection();
-		$headers->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
-		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-		$headers->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
-
-		$disposition	= array(
-			'INLINE',
-			'filename="'.$this->fileName.'"'
-		);
-		if( $this->fileSize !== NULL )
-			$disposition[]	= 'size='.$this->fileSize;
-		if( $this->fileATime !== NULL )
-			$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
-		if( $this->fileCTime !== NULL )
-			$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
-		if( $this->fileMTime !== NULL )
-			$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
-		$headers->setFieldPair( 'Content-Disposition', join( '; ', $disposition ) );
-
-		$content	= static::encodeContent( $this->content, $this->encoding );
+		$doAll		= self::SECTION_ALL === ( $sections & self::SECTION_ALL );
+		$doHeader	= self::SECTION_HEADER === ( $sections & self::SECTION_HEADER );
+		$doContent	= self::SECTION_CONTENT === ( $sections & self::SECTION_CONTENT );
 		$delim		= Message::$delimiter;
-		return $headers->toString().$delim.$delim.$content;
+		$list		= [];
+
+		$section	= $additionalHeaders ?? new MessageHeaderSection();
+
+		if( $doContent || $doAll ){
+			$content	= static::encodeContent( $this->content, $this->encoding );
+			$list[]		= $content;
+//			$section->setFieldPair( 'Content-Length', (string) $content );
+		}
+
+		if( $doHeader || $doAll ){
+			$section->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
+			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+			$section->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
+			$disposition	= array(
+				'INLINE',
+				'filename="'.$this->fileName.'"'
+			);
+			if( NULL !== $this->fileSize )
+				$disposition[]	= 'size="'.$this->fileSize.'"';
+			if( NULL !== $this->fileATime )
+				$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
+			if( NULL !== $this->fileCTime )
+				$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
+			if( NULL !== $this->fileMTime )
+				$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
+			$section->setFieldPair( 'Content-Disposition', join( '; ', $disposition ) );
+			$list[]		= $section->toString( TRUE );
+		}
+
+		return join( $delim.$delim, array_reverse( $list ) );
 	}
 
 	/**
@@ -163,26 +192,35 @@ class InlineImage extends MessagePart
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string|NULL		$encoding		Optional: Encoding of file
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
-	 *	@return		object		  	Self instance for chaining
+	 *	@return		self		  	Self instance for chaining
 	 *	@throws		\InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
 	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
- 	{
+	{
 		$file	= new \FS_File( $filePath );
- 		if( !$file->exists() )
- 			throw new \InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
+		if( !$file->exists() )
+			throw new \InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
+
+		if( NULL === $mimeType || 0 === strlen( trim( $mimeType ) ) )
+			$mimeType	= $this->getMimeTypeFromFile( $filePath );
+		if( NULL === $fileName || 0 === strlen( trim( $fileName ) ) )
+			$fileName	= basename( $filePath );
  		$this->content	= $file->getContent();
-		$this->setFileName( $fileName ? $fileName : basename( $filePath ) );
- 		$this->setFileSize( filesize( $filePath ) );
- 		$this->setFileATime( fileatime( $filePath ) );
- 		$this->setFileCTime( filectime( $filePath ) );
- 		$this->setFileMTime( filemtime( $filePath ) );
- 		$this->setMimeType( $mimeType ? $mimeType : $this->getMimeTypeFromFile( $filePath ) );
- 		if( $encoding )
- 			$this->setEncoding( $encoding );
- 		return $this;
- 	}
+		$fileSize	= filesize( $filePath );
+		$fileATime	= fileatime( $filePath );
+		$fileCTime	= filectime( $filePath );
+		$fileMTime	= filemtime( $filePath );
+		$this->setFileName( $fileName );
+		$this->setFileSize( FALSE !== $fileSize ? $fileSize : NULL );
+		$this->setFileATime( FALSE !== $fileATime ? $fileATime : NULL );
+		$this->setFileCTime( FALSE !== $fileCTime ? $fileCTime : NULL );
+		$this->setFileMTime( FALSE !== $fileMTime ? $fileMTime : NULL );
+		$this->setMimeType( $mimeType );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+			$this->setEncoding( $encoding );
+		return $this;
+	}
 
 	/**
 	 *	Sets file name.

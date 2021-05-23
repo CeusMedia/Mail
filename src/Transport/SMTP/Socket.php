@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	...
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,11 +22,13 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Transport\SMTP;
+
+use RuntimeException;
 
 /**
  *	...
@@ -32,7 +36,7 @@ namespace CeusMedia\Mail\Transport\SMTP;
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			https://www.knownhost.com/wiki/email/troubleshooting/error-numbers
@@ -40,17 +44,22 @@ namespace CeusMedia\Mail\Transport\SMTP;
  */
 class Socket
 {
+	/**	@var	string|NULL		$host */
 	protected $host;
 
+	/**	@var	int|NULL		$port */
 	protected $port;
 
+	/**	@var	integer			$errorNumber */
 	protected $errorNumber		= 0;
 
+	/**	@var	string			$errorMessage */
 	protected $errorMessage		= '';
 
 	/** @var	resource|NULL	$connection */
 	protected $connection;
 
+	/**	@var	integer			$timeout */
 	protected $timeout			= 5;
 
 	/**
@@ -63,7 +72,7 @@ class Socket
 	 */
 	public function __construct( string $host = NULL, int $port = NULL, $timeout = NULL )
 	{
-		if( !is_null( $host ) && strlen( trim( $host ) ) )
+		if( !is_null( $host ) && strlen( trim( $host ) ) > 0 )
 			$this->setHost( $host );
 		if( is_integer( $port ) )
 			$this->setPort( abs( $port ) );
@@ -99,7 +108,7 @@ class Socket
 	 */
 	public function close(): self
 	{
-		if( $this->connection ){
+		if( NULL !== $this->connection ){
 			fclose( $this->connection );
 			$this->connection	= NULL;
 		}
@@ -111,16 +120,16 @@ class Socket
 	 *	@access		public
 	 *	@param		boolean			$enable		Power switch
 	 *	@param		integer			$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
-	 *	@throws		\RuntimeException			if connection is not open
+	 *	@throws		RuntimeException			if connection is not open
 	 *	@return		self
 	 */
 	public function enableCrypto( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_ANY_CLIENT ): self
 	{
-		if( !$this->connection )
-			throw new \RuntimeException( 'Not connected' );
+		if( NULL === $this->connection )
+			throw new RuntimeException( 'Not connected' );
 		$result	= stream_socket_enable_crypto( $this->connection, $enable, $crypto );
-		if( $result === FALSE )
-			throw new \RuntimeException( 'Crypto negotiation failed' );
+		if( FALSE === $result )
+			throw new RuntimeException( 'Crypto negotiation failed' );
 		return $this;
 	}
 
@@ -158,9 +167,9 @@ class Socket
 	/**
 	 *	Returns set host.
 	 *	@access		public
-	 *	@return		null|string
+	 *	@return		string|NULL
 	 */
-	public function getHost()
+	public function getHost(): ?string
 	{
 		return $this->host;
 	}
@@ -174,7 +183,7 @@ class Socket
 	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
 	 *	@return		self
 	 */
-	public static function getInstance( string $host = NULL, int $port = NULL, int $timeout = NULL )
+	public static function getInstance( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
 	{
 		return new self( $host, $port, $timeout );
 	}
@@ -182,9 +191,9 @@ class Socket
 	/**
 	 *	Returns set port.
 	 *	@access		public
-	 *	@return		null|integer
+	 *	@return		integer|NULL
 	 */
-	public function getPort()
+	public function getPort(): ?int
 	{
 		return $this->port;
 	}
@@ -203,32 +212,33 @@ class Socket
 	 *	Open socket connection.
 	 *	@access		public
 	 *	@param		boolean			$forceReopen	Flag: close current and open new connection (default: no)
-	 *	@throws		\RuntimeException				if not host is set
-	 *	@throws		\RuntimeException				if not port is set
-	 *	@throws		\RuntimeException				if connection failed
+	 *	@throws		RuntimeException				if not host is set
+	 *	@throws		RuntimeException				if not port is set
+	 *	@throws		RuntimeException				if connection failed
 	 *	@return		self
 	 */
 	public function open( bool $forceReopen = FALSE ): self
 	{
-		if( $this->connection ){
+		if( NULL !== $this->connection ){
 			if( $forceReopen )
 				$this->close();
 			else
 				return $this;
 		}
-		if( !$this->host )
-			throw new \RuntimeException( 'No host set' );
-		if( !$this->port )
-			throw new \RuntimeException( 'No port set' );
-		$this->connection	= @fsockopen(
+		if( NULL === $this->host || 0 === strlen( trim( $this->host ) ) )
+			throw new RuntimeException( 'No host set' );
+		if( NULL === $this->port || 0 === $this->port )
+			throw new RuntimeException( 'No port set' );
+		$socket	= fsockopen(
 			$this->host,
 			$this->port,
 			$this->errorNumber,
 			$this->errorMessage,
 			$this->timeout
 		);
-		if( !$this->connection )
-			throw new \RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
+		if( FALSE === $socket )
+			throw new RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
+		$this->connection	= $socket;
 		return $this;
 	}
 
@@ -236,31 +246,33 @@ class Socket
 	 *	Returns parsed response from SMTP server.
 	 *	@access		public
 	 *	@param		integer			$length			Size of chunks
-	 *	@throws		\RuntimeException				if connection is not open
-	 *	@throws		\RuntimeException				if request failed
+	 *	@throws		RuntimeException				if connection is not open
+	 *	@throws		RuntimeException				if request failed
 	 *	@return		object
 	 */
 	public function readResponse( int $length )
 	{
-		if( !$this->connection )
-			throw new \RuntimeException( 'Not connected' );
+		if( NULL === $this->connection )
+			throw new RuntimeException( 'Not connected' );
 
-		$lastLine	= '';
+		$lastLine	= FALSE;
 		$code		= NULL;
-		$buffer		= array();
-		$raw		= array();
+		$buffer		= [];
+		$raw		= [];
 		do{
 			$response	= fgets( $this->connection, $length );
-			$raw[]		= rtrim( $response, "\r\n" );
-			$matches	= array();
-			preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
-			if( !$matches )
-				throw new \RuntimeException( 'SMTP response not understood: '.$lastLine );
-			$code		= (int) $matches[1];
-			$buffer[]	= $matches[3];
-			$lastLine	= $matches[2] === " ";
+			if( FALSE !== $response ){
+				$raw[]		= rtrim( $response, "\r\n" );
+				$matches	= array();
+				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
+				if( !$matches )
+					throw new RuntimeException( 'SMTP response not understood: '.trim( $response ) );
+				$code		= (int) $matches[1];
+				$buffer[]	= $matches[3];
+				$lastLine	= $matches[2] === ' ';
+			}
 		}
-		while( $response && !$lastLine );
+		while( FALSE !== $response && !$lastLine );
 		return (object) array(
 			'code'		=> $code,
 			'message'	=> join( "\n", $buffer ),
@@ -308,13 +320,13 @@ class Socket
 	 *	Sends command or data to SMTP server.
 	 *	@access		public
 	 *	@param		string		$content	Message to send to SMTP server
-	 *	@return		integer		Number of written bytes
-	 *	@throws		\RuntimeException		if connection is not open
+	 *	@return		boolean		Number of written bytes
+	 *	@throws		RuntimeException		if connection is not open
 	 */
-	public function sendChunk( string $content ): int
+	public function sendChunk( string $content ): bool
 	{
-		if( !$this->connection )
-			throw new \RuntimeException( 'Not connected' );
-		return fwrite( $this->connection, $content );
+		if( NULL === $this->connection )
+			throw new RuntimeException( 'Not connected' );
+		return FALSE !== fwrite( $this->connection, $content );
 	}
 }

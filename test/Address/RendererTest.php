@@ -5,10 +5,12 @@
  *	@package			CeusMedia_Mail_Address
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( __DIR__ ).'/bootstrap.php';
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Renderer;
+namespace CeusMedia\Mail\Test\Address;
+
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Renderer;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address renderer.
@@ -17,13 +19,14 @@ use \CeusMedia\Mail\Address\Renderer;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Renderer
  */
-class Address_RendererTest extends TestCase
+class RendererTest extends TestCase
 {
 
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender(){
+	public function testRender()
+	{
 		$renderer	= new Renderer();
 		$address	= Address::getInstance()
 			->setDomain( 'muster-server.tld' )
@@ -47,7 +50,8 @@ class Address_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRenderExceptionNoDomain(){
+	public function testRenderExceptionNoDomain()
+	{
 		$this->expectException( 'RuntimeException' );
 		$renderer	= new Renderer();
 		$address	= new Address();
@@ -57,7 +61,8 @@ class Address_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRenderExceptionNoLocalPart(){
+	public function testRenderExceptionNoLocalPart()
+	{
 		$this->expectException( 'RuntimeException' );
 		$renderer	= new Renderer();
 		$address	= new Address();

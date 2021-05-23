@@ -5,11 +5,13 @@
  *	@package			CeusMedia_Mail_Address_Collection
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Collection as AddressCollection;
-use \CeusMedia\Mail\Address\Collection\Parser;
+namespace CeusMedia\Mail\Test\Address\Collection;
+
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Address\Collection\Parser;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address collection parser.
@@ -18,14 +20,15 @@ use \CeusMedia\Mail\Address\Collection\Parser;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Collection\Parser
  */
-class Address_Collection_ParserTest extends TestCase
+class ParserTest extends TestCase
 {
 	/**
 	 *	@covers		::parse
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
 	 */
-	public function testParse(){
+	public function testParse()
+	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer <dev@ceusmedia.de>' ),
 			new Address( 'Tester <test@ceusmedia.de>' ),
@@ -43,7 +46,8 @@ class Address_Collection_ParserTest extends TestCase
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
 	 */
-	public function testParseNameless(){
+	public function testParseNameless()
+	{
 		$expected	= new AddressCollection( array(
 			new Address( 'dev@ceusmedia.de' ),
 		) );
@@ -65,7 +69,8 @@ class Address_Collection_ParserTest extends TestCase
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
 	 */
-	public function testParseWithName(){
+	public function testParseWithName()
+	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer <dev@ceusmedia.de>' ),
 		) );
@@ -81,7 +86,8 @@ class Address_Collection_ParserTest extends TestCase
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
 	 */
-	public function testParseWithNameHavingComma(){
+	public function testParseWithNameHavingComma()
+	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer, Tester <dev@ceusmedia.de>' ),
 		) );
@@ -94,7 +100,8 @@ class Address_Collection_ParserTest extends TestCase
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
 	 */
-	public function testParseWithNameHavingSymbols(){
+	public function testParseWithNameHavingSymbols()
+	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer (Dev-Crew) <dev.dev-crew@ceusmedia.de>' ),
 		) );
@@ -103,7 +110,8 @@ class Address_Collection_ParserTest extends TestCase
 	}
 
 	//  --  PROTECTED  --  //
-	protected function assertEqualsForAllMethods( $expected, $string ){
+	protected function assertEqualsForAllMethods( $expected, $string )
+	{
 		$parser	= Parser::getInstance();
 		$parser->setMethod( Parser::METHOD_OWN );
 		$this->assertEquals( $expected, $parser->parse( $string ) );

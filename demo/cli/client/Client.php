@@ -41,7 +41,7 @@ class MailClient
 			$this->config->getProperty( 'IMAP', 'host' ),
 			$this->config->getProperty( 'IMAP', 'username' ),
 			$this->passwordImap,
-			$this->config->getProperty( 'IMAP', 'port' ) === 993
+			$this->config->getProperty( 'IMAP', 'port' ) == 993
 		);
 		$this->transport	= Transport::getInstance(
 			$this->config->getProperty( 'SMTP', 'host' ),
@@ -90,7 +90,11 @@ class MailClient
 				) );
 			}
 			catch( Exception $e ){
-				$lines[]	= "Error: ".$e->getMessage().PHP_EOL;
+				$lines[]	= join( '  ', array(
+					str_pad( $mail->getId(), 6, ' ', STR_PAD_LEFT ),
+					str_pad( $sender, 40, ' ' ),
+					"Error: ".$e->getMessage(),
+				) );
 			}
 		}
 		print( "\r".join( PHP_EOL, $lines ) );

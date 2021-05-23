@@ -1,13 +1,16 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Transport\SMTP;
+
 $smtp		= (object) $config->getAll( 'SMTP_' );
 $sending	= (object) $config->getAll( 'sending_' );
 
 new UI_DevOutput;
 
 /*  PREPARATION  */
-$verbose		= !TRUE;
+$verbose		= TRUE;
 
 $sender			= "dev@ceusmedia.de";
 $receiverTo		= "dev@ceusmedia.de";
@@ -36,15 +39,15 @@ $bodyHtml		= '<html>
 /*  EXECUTION  */
 try {
 	//  prepare SMTP transport
-	$transport	= new \CeusMedia\Mail\Transport\SMTP($smtp->host, $smtp->port);		//  create SMTP transport
-	$transport->setUsername($smtp->username);										//  set SMTP auth username
-	$transport->setPassword($smtp->password);										//  set SMTP auth password
-	$transport->setVerbose($verbose);												//  toggle verbosity - you can remove this line
+	$transport	= new SMTP($smtp->host, $smtp->port);							//  create SMTP transport
+	$transport->setUsername($smtp->username);									//  set SMTP auth username
+	$transport->setPassword($smtp->password);									//  set SMTP auth password
+	$transport->setVerbose($verbose);											//  toggle verbosity - you can remove this line
 
 /*	//  check if receiver exists on server
-	$check		= new \CeusMedia\Mail\Address\Check\Availability($sender);						//  create checker for receiver
-	$check->setVerbose($verbose);													//  toggle verbosity - you can remove this line
-	if (!$check->test($receiverTo)) {												//  receiver is not existing
+	$check		= new \CeusMedia\Mail\Address\Check\Availability($sender);		//  create checker for receiver
+	$check->setVerbose($verbose);												//  toggle verbosity - you can remove this line
+	if (!$check->test($receiverTo)) {											//  receiver is not existing
 		$error	= $check->getLastError();
 		print_m( $error );
 //		print "Receiver <".$receiverTo."> is not existing.";
@@ -52,21 +55,24 @@ try {
 	}*/
 
 	//  create message
-	$message	= new \CeusMedia\Mail\Message();									//  create mail message object
-	$message->setSender($sender);													//  set sender
-	$message->addRecipient($receiverTo);											//  set TO receiver
-	$message->addRecipient($receiverCc, NULL, 'cc');								//  set CC receiver
-	$message->addRecipient($receiverBcc, NULL, 'bcc' );								//  set BCC receiver
-	$message->setSubject($subject);													//  set mail subject
-	$message->addText($bodyText);													//  set mail content as plain text part
-	$message->addHTML($bodyHtml);													//  set mail content as HTML part
-	$message->addInlineImage('logo', '../../files/test.png');						//  add inline image
-	$message->addAttachment('../../../README.MD');
+	$message	= new Message();												//  create mail message object
+	$message->setSender($sender);												//  set sender
+	$message->addRecipient($receiverTo);										//  set TO receiver
+	$message->addRecipient($receiverCc, NULL, 'cc');							//  set CC receiver
+	$message->addRecipient($receiverBcc, NULL, 'bcc' );							//  set BCC receiver
+	$message->setSubject($subject);												//  set mail subject
+	$message->addText($bodyText);												//  set mail content as plain text part
+	$message->addHTML($bodyHtml);												//  set mail content as HTML part
+	$message->addInlineImage('logo', __DIR__.'/../../files/test.png');			//  add inline image
+	$message->addAttachment(__DIR__."/../../../README.md", 'text/markdown' );
 	$message->setReadNotificationRecipient($sender);
 
 	//  send message
-	$transport->send($message);														//  send message via prepared transport
+	$transport->send($message);													//  send message via prepared transport
 }
 catch (Exception $e) {
 	print(PHP_EOL.'Exception: '.$e->getMessage());
+}
+if ($verbose) {
+	CLI::out();
 }

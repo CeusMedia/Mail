@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Collection of mail addresses.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -28,6 +30,8 @@ namespace CeusMedia\Mail\Address;
 
 use \CeusMedia\Mail\Address;
 use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
+use Countable;
+use Iterator;
 
 /**
  *	Collection of mail addresses.
@@ -35,18 +39,21 @@ use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Collection implements \Countable, \Iterator
+class Collection implements Countable, Iterator
 {
+	/** @var array $list */
 	protected $list		= array();
+
+	/** @var int $position */
 	protected $position	= 0;
 
-	public function __construct( ?array $addresses = array() )
+	public function __construct( ?array $addresses = NULL )
 	{
-		if( $addresses )
+		if( NULL !== $addresses )
 			foreach( $addresses as $address )
 				$this->add( $address );
 	}
@@ -125,7 +132,7 @@ class Collection implements \Countable, \Iterator
 		$this->position	= 0;
 	}
 
-	public function toArray( ?bool $renderValues = FALSE ): array
+	public function toArray( bool $renderValues = FALSE ): array
 	{
 		$list	= $this->list;
 		if( $renderValues ){

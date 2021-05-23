@@ -5,7 +5,11 @@
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
-require_once dirname( __DIR__ ).'/bootstrap.php';
+
+namespace CeusMedia\Mail\Test\Address;
+
+use CeusMedia\Mail\Test\TestCase;
+
 /**
  *	Unit test for mail address parser.
  *	@category			Test
@@ -13,12 +17,13 @@ require_once dirname( __DIR__ ).'/bootstrap.php';
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Parser
  */
-class Address_ParserTest extends TestCase
+class ParserTest extends TestCase
 {
 	/**
 	 *	@covers		::parse
 	 */
-	public function testParse(){
+	public function testParse()
+	{
 		$parser	= new \CeusMedia\Mail\Address\Parser();
 
 		$expected	= 'Hans.Mustermann@muster-server.tld';
@@ -42,7 +47,8 @@ class Address_ParserTest extends TestCase
 	/**
 	 *	@covers		::parse
 	 */
-	public function testParseException(){
+	public function testParseException()
+	{
 		$this->expectException( 'InvalidArgumentException' );
 		$parser	= new \CeusMedia\Mail\Address\Parser();
 		$parser->parse( 'invalid' );

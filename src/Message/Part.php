@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Abstract Mail Part.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,13 +22,14 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message;
 
 use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
@@ -39,7 +42,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -52,6 +55,27 @@ abstract class Part
 	const TYPE_ATTACHMENT		= 3;
 	const TYPE_HTML				= 4;
 	const TYPE_INLINE_IMAGE		= 5;
+
+	const TYPES					= [
+		self::TYPE_UNKNOWN,
+		self::TYPE_TEXT,
+		self::TYPE_MAIL,
+		self::TYPE_ATTACHMENT,
+		self::TYPE_HTML,
+		self::TYPE_INLINE_IMAGE,
+	];
+
+	const SECTION_NONE			= 0;
+	const SECTION_ALL			= 1;
+	const SECTION_HEADER		= 2;
+	const SECTION_CONTENT		= 4;
+
+	const SECTIONS				= [
+		self::SECTION_NONE,
+		self::SECTION_ALL,
+		self::SECTION_HEADER,
+		self::SECTION_CONTENT,
+	];
 
 	/**	@var	string			$charset		Character set */
 	protected $charset;
@@ -81,23 +105,32 @@ abstract class Part
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	public static function decodeContent( $content, $encoding, $charset = 'UTF-8' ): string
+	public static function decodeContent( string $content, string $encoding, string $charset = 'UTF-8' ): string
 	{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
-				$content	= mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				if( FALSE === $result )
+					throw new \RuntimeException( 'Decoding 7bit content failed' );
+				$content	= $result;
 				break;
 			case '8bit':
 				break;
 			case 'base64':
 			case 'binary':
-				$content	= base64_decode( $content );
+				$result	= base64_decode( $content, TRUE );
+				if( FALSE === $result )
+					throw new \RuntimeException( 'Encoded content contains invalid characters' );
+				$content	= $result;
 				break;
 			case 'quoted-printable':
 				if( function_exists( 'imap_qprint' ) )
-					$content	= imap_qprint( $content );
+					$result	= imap_qprint( $content );
 				else
-					$content	= quoted_printable_decode( $content );
+					$result	= quoted_printable_decode( $content );
+				if( FALSE === $result )
+					throw new \RuntimeException( 'Decoding quoted-printable content failed' );
+				$content	= $result;
 				break;
 			case '':
 				break;
@@ -165,9 +198,9 @@ abstract class Part
 	 *	@param		boolean			$forceDetection		Flag: get type by detection, default: no
 	 *	@return		integer			Type of part as identifier defined by constants
 	 */
-	public function getType( $forceDetection = FALSE ): int
+	public function getType( bool $forceDetection = FALSE ): int
 	{
-		if( !$this->type || $forceDetection ){
+		if( self::TYPE_UNKNOWN === $this->type || $forceDetection ){
 			if( $this instanceof MessagePartInlineImage )
 				$this->type	= static::TYPE_INLINE_IMAGE;
 			else if( $this instanceof MessagePartMail )
@@ -246,7 +279,15 @@ abstract class Part
 		return $this->isOfType( static::TYPE_TEXT );
 	}
 
-	abstract public function render( $headers = NULL ): string;
+	/**
+	 *	Return string represenation of this mail path, so with headers and content.
+	 *	Every part implements this abstract method.
+	 *	@abstract
+	 *	@param		integer						$sections				Section(s) to render, default: all
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
+	 *	@return		string
+	 */
+	abstract public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string;
 
 	/**
 	 *	Set character set.
@@ -277,12 +318,12 @@ abstract class Part
 	 *	@access		public
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@return		self
-	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 *	@throws		\InvalidArgumentException	if encodfgets(ing is invalid
 	 */
 	public function setEncoding( $encoding ): self
 	{
 		$encodings	= array( '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' );
-		if( !in_array( $encoding, $encodings ) )
+		if( !in_array( $encoding, $encodings, TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid encoding: '.$encoding );
 		$this->encoding	= $encoding;
 		return $this;
@@ -298,7 +339,7 @@ abstract class Part
 	public function setFormat( $format ): self
 	{
 		$formats	= array( 'fixed', 'flowed' );
-		if( !in_array( $format, $formats ) )
+		if( !in_array( $format, $formats, TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid format' );
 		$this->format	= $format;
 		return $this;
@@ -324,21 +365,22 @@ abstract class Part
 	 *	@static
 	 *	@param		string		$content		Content to be encode
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
+	 *	@param		boolean		$split			Flag: ... (default: yes)
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if encoding is invalid
 	 */
-	protected static function encodeContent( $content, $encoding, $split = TRUE ): string
+	protected static function encodeContent( string $content, string $encoding, bool $split = TRUE ): string
 	{
 		$delimiter	= Message::$delimiter;
 		$lineLength	= Message::$lineLength;
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
-				$content2	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
-				if( $content2 === FALSE )
-					$content2	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
-				if( $content2 !== FALSE )
-					$content	= $content2;
+				$result	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				if( FALSE === $result )
+					$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				if( FALSE !== $result )
+					$content	= $result;
 				if( $split && strlen( $content ) > $lineLength )
 					$content	= static::wrapContent( $content, $lineLength, $delimiter );
 				break;
@@ -350,9 +392,12 @@ abstract class Part
 				break;
 			case 'quoted-printable':
 				if( function_exists( 'imap_8bit' ) )
-					$content	= imap_8bit( $content );
+					$result	= imap_8bit( $content );
 				else
-					$content	= quoted_printable_encode( $content );
+					$result	= quoted_printable_encode( $content );
+				if( FALSE === $result )
+					throw new \RuntimeException( 'Decoding quoted-printable content failed' );
+				$content	= $result;
 				break;
 			case '':
 				break;
@@ -362,20 +407,37 @@ abstract class Part
 		return $content;
 	}
 
-	protected function getMimeTypeFromFile( $fileName ): string
+	/**
+	 *	Get MIME type of a file by its file path.
+	 *	@access		protected
+	 *	@param		string		$filePath		Path of file to get MIME type of
+	 *	@return		string|NULL
+	 */
+	protected function getMimeTypeFromFile( string $filePath ): ?string
 	{
-		if( !file_exists( $fileName ) )
-			throw new \InvalidArgumentException( 'File "'.$fileName.'" is not existing' );
+		if( !file_exists( $filePath ) )
+			throw new \InvalidArgumentException( 'File "'.$filePath.'" is not existing' );
 		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
-		$type	= finfo_file( $finfo, $fileName );
+		if( FALSE === $finfo )
+			throw new \RuntimeException( 'fileinfo is not available' );
+		$type	= finfo_file( $finfo, $filePath );
 		finfo_close( $finfo );
-		return $type;
+		return FALSE !== $type ? $type : NULL;
 	}
 
-	protected static function wrapContent( $content, $length = NULL, $delimiter = NULL ): string
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@static
+	 *	@param		string			$content		Content to wrap
+	 *	@param		integer|NULL	$length			...
+	 *	@param		string|NULL		$delimiter		Content to wrap
+	 *	@return		string
+	 */
+	protected static function wrapContent( string $content, ?int $length = NULL, ?string $delimiter = NULL ): string
 	{
-		$delimiter	= $delimiter ? $delimiter : Message::$delimiter;
-		$lineLength	= $length ? $length : Message::$lineLength;
+		$delimiter	= $delimiter ?? Message::$delimiter;
+		$lineLength	= $length ?? Message::$lineLength;
 		$content	= chunk_split( $content, $lineLength, $delimiter );
 		return rtrim( $content, $delimiter );
 	}

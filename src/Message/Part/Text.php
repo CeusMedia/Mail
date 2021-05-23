@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Mail Attachment Data Object.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -36,7 +38,7 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -63,21 +65,36 @@ class Text extends MessagePart
 	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
-	 *	@param		boolean		$headers		Flag: render part with headers
+	 *	@param		integer						$sections				Section(s) to render, default: all
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
 	 *	@return		string
 	 */
-	public function render( $headers = NULL ): string
+	public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string
 	{
-		if( !$headers )
-			$headers	= new MessageHeaderSection();
-		$delim	= Message::$delimiter;
-		$headers->setFieldPair( 'Content-Type', join( '; ', array(
-			$this->mimeType,
-			'charset="'.strtolower( trim( $this->charset ) ).'"',
-			'format='.$this->format
-		) ) );
-		$headers->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-		$content	= static::encodeContent( $this->content, $this->encoding );
-		return $headers->toString( TRUE ).$delim.$delim.$content;
+		$doAll		= self::SECTION_ALL === ( $sections & self::SECTION_ALL );
+		$doHeader	= self::SECTION_HEADER === ( $sections & self::SECTION_HEADER );
+		$doContent	= self::SECTION_CONTENT === ( $sections & self::SECTION_CONTENT );
+		$delim		= Message::$delimiter;
+		$list		= [];
+
+		$section	= $additionalHeaders ?? new MessageHeaderSection();
+
+		if( $doContent || $doAll ){
+			$content	= static::encodeContent( $this->content, $this->encoding );
+			$list[]		= $content;
+//			$section->setFieldPair( 'Content-Length', (string) $content );
+		}
+
+		if( $doHeader || $doAll ){
+			$section->setFieldPair( 'Content-Type', join( '; ', array(
+				$this->mimeType,
+				'charset="'.strtolower( trim( $this->charset ) ).'"',
+				'format='.$this->format
+			) ) );
+			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+			$list[]		= $section->toString( TRUE );
+		}
+
+		return join( $delim.$delim, array_reverse( $list ) );
 	}
 }

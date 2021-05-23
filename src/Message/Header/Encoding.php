@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Mail message header encoder and decoder.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -31,7 +33,7 @@ use \CeusMedia\Mail\Message;
 /**
  *	Mail message header encoder and decoder.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -49,7 +51,7 @@ use \CeusMedia\Mail\Message;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -71,6 +73,7 @@ class Encoding
 
 	/**
 	 *	Encodes a mail header value string if needed.
+	 *	@static
 	 *	@access		public
 	 *	@static
 	 *	@param		string		$string			A mail header value string, subject for example.
@@ -93,7 +96,6 @@ class Encoding
 		}
 	}
 
-
 	protected static function decode( string $string ): string
 	{
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
@@ -102,13 +104,15 @@ class Encoding
 		$matches	= array();
 		$list		= array();
 		$lines		= preg_split( "@\r?\n\s*@", $string );
-		foreach( $lines as $string ){
+		foreach( $lines as $line ){
 			$parts	= array();
-			while( preg_match( $pattern, $string, $parts ) ){
+			while( preg_match( $pattern, $line, $parts ) ){
 				list( $before, $charset, $encoding, $content, $after ) = array_slice( $parts, 1 );
 				switch( strtolower( $encoding ) ){
 					case 'b':
-						$content	= base64_decode( $content );
+						$content	= base64_decode( $content, TRUE );
+						if( FALSE === $content )
+							throw new \RuntimeException( 'Encoded content contains invalid characters' );
 						break;
 					case 'q':
 						$content	= str_replace( "_", " ", $content );
@@ -122,22 +126,23 @@ class Encoding
 				}
 				if( strtoupper( $charset ) !== 'UTF-8' )
 					$content	= iconv( $charset, 'UTF-8', $content );
-				$string		= preg_replace( $pattern, $before.$content.$after, $string );
+				$line		= preg_replace( $pattern, $before.$content.$after, $line );
 			}
-			$list[]	= $string;
+			$list[]	= $line;
 		}
 		return join( $list );
 	}
 
 	/**
 	 *	Encodes a mail header value string if needed.
+	 *	@static
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
 	 *	@throws		\InvalidArgumentException	if given encoding is not supported
 	 */
-	static public function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
+	public static function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
 	{
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;

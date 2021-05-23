@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Evaluate existence of mail receiver address.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,15 +22,18 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address\Check;
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Util\MX;
+use CeusMedia\Cache\AdapterInterface;
+use CeusMedia\Cache\Factory;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
+use CeusMedia\Mail\Util\MX;
 
 /**
  *	Evaluate existence of mail receiver address.
@@ -36,45 +41,38 @@ use \CeusMedia\Mail\Util\MX;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
  */
 class Availability
 {
-	/**	@var	\CeusMedia\Mail\Address	$sender		... */
+	/**	@var    Address			$sender		... */
 	protected $sender;
+
+	/**	@var    bool			$verbose		... */
 	protected $verbose;
+
+	/** @var	SmtpResponse	$lastResponse */
 	protected $lastResponse;
 
-	/** @var		\CeusMedia\Cache\AdapterInterface */
+	/** @var		AdapterInterface */
 	protected $cache;
 
-	const ERROR_NONE					= 0;
-	const ERROR_MX_RESOLUTION_FAILED	= 1;
-	const ERROR_SOCKET_FAILED			= 2;
-	const ERROR_SOCKET_EXCEPTION		= 3;
-	const ERROR_CONNECTION_FAILED		= 4;
-	const ERROR_HELO_FAILED				= 5;
-	const ERROR_CRYPTO_FAILED			= 6;
-	const ERROR_SENDER_NOT_ACCEPTED		= 7;
-	const ERROR_RECEIVER_NOT_ACCEPTED	= 8;
-
-	public function __construct( $sender, bool $verbose = NULL )
+	/**
+	 *	Availability constructor.
+	 *	@param		Address|string		$sender
+	 *	@param		bool				$verbose
+	 */
+	public function __construct( $sender, bool $verbose = FALSE )
 	{
-		$this->setVerbose( (bool) $verbose );
+		$this->setVerbose( $verbose );
 		if( is_string( $sender ) )
 			$sender		= new Address( $sender );
 		$this->sender	= $sender;
-		$this->lastResponse	= (object) array(
-			'code'		=> 0,
-			'error'		=> self::ERROR_NONE,
-			'message'	=> NULL,
-			'request'	=> NULL,
-			'response'	=> NULL,
-		);
-		$this->cache	= \CeusMedia\Cache\Factory::createStorage( 'Noop' );
+		$this->lastResponse	= new SmtpResponse();
+		$this->cache	= Factory::createStorage( 'Noop' );
 	}
 
 	/**
@@ -83,20 +81,11 @@ class Availability
 	 *	@param		string|NULL			$key			Response data key (error|code|message)
 	 *	@throws		\RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
+	 *	@deprecated	use getLastResponse instead
 	 */
 	public function getLastError( ?string $key = NULL )
 	{
-		if( $this->lastResponse ){
-			if( $key === NULL )
-				return (object) array(
-					'error'		=> $this->lastResponse->error,
-					'code'		=> $this->lastResponse->code,
-					'message'	=> $this->lastResponse->message
-				);
-			if( isset( $this->lastResponse->$key ) )
-				return $this->lastResponse->$key;
-			throw new \RangeException( 'Unknown key: '.$key );
-		}
+		return $this->getLastResponse( $key );
 	}
 
 	/**
@@ -108,53 +97,23 @@ class Availability
 	 */
 	public function getLastResponse( ?string $key = NULL )
 	{
-		if( $this->lastResponse ){
-			if( $key === NULL )
-				return $this->lastResponse;
-			if( isset( $this->lastResponse->$key ) )
-				return $this->lastResponse->$key;
+		$properties = get_object_vars( $this->lastResponse );
+		if( NULL !== $key ){
+			if( array_key_exists( $key, $properties ) )
+				return $properties[$key];
 			throw new \RangeException( 'Unknown key: '.$key );
 		}
+		return (object) $properties;
 	}
 
-	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE )
-	{
-		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
-	}
-
-	protected function readResponse( $connection, $acceptedCodes = array() )
-	{
-		$lastLine	= FALSE;
-		$code		= NULL;
-		$buffer		= array();
-		do{
-			$this->lastResponse->response	= fgets( $connection, 1024 );
-			$this->lastResponse->error		= self::ERROR_NONE;
-			$this->lastResponse->code		= 0;
-			$this->lastResponse->message	= NULL;
-			if( $this->verbose )
-				print ' < '.$this->lastResponse->response;
-			$matches	= array();
-			preg_match( '/^([0-9]{3})( |-)(.+)$/', $this->lastResponse->response, $matches );
-			if( !$matches )
-				throw new \RuntimeException( 'SMTP response not understood' );
-			$code		= (int) $matches[1];
-			$buffer[]	= trim( $matches[3] );
-			if( $acceptedCodes && !in_array( $code, $acceptedCodes ) )
-				throw new \RuntimeException( 'Unexcepted SMTP response ('.$matches[1].'): '.$matches[3], $code );
-			if( $matches[2] === " " )
-				$lastLine	= TRUE;
-			$this->lastResponse->code		= (int) $matches[1];
-			$this->lastResponse->message	= trim( $matches[3] );
-		}
-		while( $this->lastResponse->response && !$lastLine );
-		return (object) array(
-			'code'		=> $code,
-			'message'	=> join( "\n", $buffer ),
-		);
-	}
-
-	public function test( $receiver, string $host = NULL, int $port = 587, bool $force = FALSE )
+	/**
+	 * @param Address|string $receiver
+	 * @param string|null $host
+	 * @param int $port
+	 * @param bool $force
+	 * @return bool
+	 */
+	public function test( $receiver, string $host = NULL, int $port = 587, bool $force = FALSE ): bool
 	{
 		if( is_string( $receiver ) )
 			$receiver	= new Address( $receiver );
@@ -164,63 +123,62 @@ class Availability
 			}
 		}
 
-		$this->lastResponse->error		= self::ERROR_NONE;
-		$this->lastResponse->code		= 0;
-		$this->lastResponse->message	= NULL;
-		$this->lastResponse->response	= NULL;
-		$this->lastResponse->request	= NULL;
+		$this->lastResponse->setError( SmtpResponse::ERROR_NONE );
+		$this->lastResponse->setCode( 0 );
+		$this->lastResponse->setMessage();
+		$this->lastResponse->setResponse();
+		$this->lastResponse->setRequest();
 
-		if( !$host ){
+		if( NULL === $host || 0 === strlen( $host ) ){
 			try{
 				$servers	= $this->getMailServers( $receiver->getDomain(), !$force, TRUE );
 				$host		= array_shift( $servers );
 			}
 			catch( \Exception $e ){
-				$this->lastResponse->error		= self::ERROR_MX_RESOLUTION_FAILED;
-				$this->lastResponse->message	= $e->getMessage();
+				$this->lastResponse->setError( SmtpResponse::ERROR_MX_RESOLUTION_FAILED );
+				$this->lastResponse->setMessage( $e->getMessage() );
 				return FALSE;
 			}
 		}
 
-
 		$conn	= @fsockopen( $host, $port, $errno, $errstr, 5 );
-		if( !$conn ){
-			$this->lastResponse->error		= self::ERROR_SOCKET_FAILED;
-			$this->lastResponse->message	= 'Connection to server '.$host.':'.$port.' failed';
+		if( FALSE === $conn ){
+			$this->lastResponse->setError( SmtpResponse::ERROR_SOCKET_FAILED );
+			$this->lastResponse->setMessage( 'Connection to server '.$host.':'.$port.' failed' );
 			return FALSE;
 		}
 		try{
 			$this->readResponse( $conn );
-			if( $this->lastResponse->code !== 220 ){
-				$this->lastResponse->error	= self::ERROR_CONNECTION_FAILED;
+			if( 220 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_CONNECTION_FAILED );
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "EHLO ".$this->sender->getDomain() );
 			$this->readResponse( $conn );
-			if( !in_array( $this->lastResponse->code, array( 220, 250 ) ) ){
-				$this->lastResponse->error	= self::ERROR_HELO_FAILED;
+			if( !in_array( $this->lastResponse->getCode(), [ 220, 250 ], TRUE ) ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_HELO_FAILED );
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "STARTTLS" );
 			$this->readResponse( $conn );
-			if( $this->lastResponse->code !== 220 ){
-				$this->lastResponse->error	= self::ERROR_CRYPTO_FAILED;
+			if( 220 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_CRYPTO_FAILED );
 				return FALSE;
 			}
 			stream_socket_enable_crypto( $conn, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
 
-//			while( $this->lastResponse->code === 220 )									//  for telekom.de
+//			while( $this->lastResponse->getCode() === 220 )									//  for telekom.de
 //				$this->readResponse( $conn );
 			$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
 			$this->readResponse( $conn );
-			if( $this->lastResponse->code !== 250 ){
-				$this->lastResponse->error	= self::ERROR_SENDER_NOT_ACCEPTED;
+			if( 250 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_SENDER_NOT_ACCEPTED );
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
 			$this->readResponse( $conn );
-			if( $this->lastResponse->code !== 250 ){
-				$this->lastResponse->error	= self::ERROR_RECEIVER_NOT_ACCEPTED;
+			if( 250 !== $this->lastResponse->getCode() ){
+				$this->lastResponse->setError( SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED );
 				$this->cache->set( 'user:'.$receiver->getAddress(), FALSE );
 				return FALSE;
 			}
@@ -231,21 +189,13 @@ class Availability
 		}
 		catch( \Exception $e ){
 			fclose( $conn );
-			$this->lastResponse->error		= self::ERROR_SOCKET_EXCEPTION;
-			$this->lastResponse->message	= $e->getMessage();
+			$this->lastResponse->setError( SmtpResponse::ERROR_SOCKET_EXCEPTION );
+			$this->lastResponse->setMessage( $e->getMessage() );
 			return FALSE;
 		}
 	}
 
-	protected function sendChunk( $connection, string $message )
-	{
-		if( $this->verbose )
-			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
-		$this->lastResponse->request	= $message;
-		fputs( $connection, $message.Message::$delimiter );
-	}
-
-	public function setCache( \CeusMedia\Cache\AdapterInterface $cache ): self
+	public function setCache( AdapterInterface $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;
@@ -253,12 +203,73 @@ class Availability
 
 	/**
 	 *	@access		public
-	 *	@param		boolean|NULL		$verbose		Flag: enable or disable verbosity
+	 *	@param		boolean		$verbose		Flag: enable or disable verbosity
 	 *	@return		self
 	 */
-	public function setVerbose( ?bool $verbose = TRUE ): self
+	public function setVerbose( bool $verbose = TRUE ): self
 	{
 		$this->verbose	= $verbose;
 		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
+	{
+		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
+	}
+
+	/**
+	 * @param resource $connection
+	 * @param array $acceptedCodes
+	 * @return object
+	 */
+	protected function readResponse( $connection, array $acceptedCodes = array() ): object
+	{
+		$lastLine	= FALSE;
+		$code		= NULL;
+		$buffer		= array();
+		do{
+			$response	= fgets( $connection, 1024 );
+			if( FALSE !== $response ) {
+				$this->lastResponse->setResponse( $response );
+				$this->lastResponse->setError(SmtpResponse::ERROR_NONE);
+				$this->lastResponse->setCode(0);
+				$this->lastResponse->setMessage();
+				if( $this->verbose )
+					print ' < ' . $response;
+				$matches = array();
+				preg_match('/^([0-9]{3})( |-)(.+)$/', $response, $matches);
+				if( !$matches )
+					throw new \RuntimeException('SMTP response not understood');
+				$code = (int) $matches[1];
+				$buffer[] = trim( $matches[3] );
+				if( 0 < count($acceptedCodes) && !in_array($code, $acceptedCodes, TRUE ) )
+					throw new \RuntimeException('Unexcepted SMTP response (' . $matches[1] . '): ' . $matches[3], $code );
+				if( ' ' === $matches[2])
+					$lastLine = TRUE;
+				$this->lastResponse->setCode( (int) $matches[1] );
+				$this->lastResponse->setMessage( trim( $matches[3] ) );
+			}
+		}
+		while( FALSE !== $response && !$lastLine );
+		return (object) array(
+			'code'		=> $code,
+			'message'	=> join( "\n", $buffer ),
+		);
+	}
+
+	/**
+	 *	...
+	 *	@param		resource		$connection
+	 *	@param		string			$message
+	 *	@return		bool
+	 */
+	protected function sendChunk( $connection, string $message ): bool
+	{
+		if( $this->verbose )
+			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
+		$this->lastResponse->setRequest( $message );
+		return FALSE !== fputs( $connection, $message.Message::$delimiter );
 	}
 }

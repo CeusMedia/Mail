@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Parser for DMARC records.
  *
- *	Copyright (c) 2017-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2017-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Util_Dmarc
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2020 Christian Würker
+ *	@copyright		2017-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -35,7 +37,7 @@ use \CeusMedia\Mail\Util\Dmarc\Record;
  *	@category		Library
  *	@package		CeusMedia_Mail_Util_Dmarc
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2020 Christian Würker
+ *	@copyright		2017-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -51,7 +53,7 @@ class Parser
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -62,7 +64,7 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -84,20 +86,20 @@ class Parser
 						break;
 					case 'p':
 						$values	= array( 'none', 'quarantine', 'reject' );
-						if( in_array( $pair[1], $values ) )
+						if( in_array( $pair[1], $values, TRUE ) )
 							$record->policy				= $pair[1];
 						break;
 					case 'sp':
 						$values	= array( 'none', 'quarantine', 'reject' );
-						if( in_array( $pair[1], $values ) )
+						if( in_array( $pair[1], $values, TRUE ) )
 							$record->policySubdomains	= $pair[1];
 						break;
 					case 'adkim':
-						if( in_array( $pair[1], array( 'r', 's' ) ) )
+						if( in_array( $pair[1], array( 'r', 's' ), TRUE ) )
 							$record->alignmentDkim		= $pair[1];
 						break;
 					case 'aspf':
-						if( in_array( $pair[1], array( 'r', 's' ) ) )
+						if( in_array( $pair[1], array( 'r', 's' ), TRUE ) )
 							$record->alignmentSpf		= $pair[1];
 						break;
 					case 'pct':
@@ -121,7 +123,7 @@ class Parser
 						$record->interval				= abs( intval( $pair[1] ) );
 						break;
 					case 'fo':
-						if( in_array( $pair[1], array( '0', '1', 'd', 's' ) ) )
+						if( in_array( $pair[1], array( '0', '1', 'd', 's' ), TRUE ) )
 							$record->failureOption		= $pair[1];
 						break;
 				}

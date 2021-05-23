@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Collector container for mails.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -31,7 +33,6 @@ use \CeusMedia\Mail\Address\Collection as AddressCollection;
 use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
-
 use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
@@ -45,7 +46,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -63,7 +64,7 @@ class Message
 	/**	@var		MessageHeaderSection	$headers		Mail header section */
 	protected $headers;
 
-	/**	@var		Address					$sender			Sender mail address */
+	/**	@var		Address|null			$sender			Sender mail address */
 	protected $sender;
 
 	/**	@var		array					$recipients		List of recipients */
@@ -80,7 +81,7 @@ class Message
 	protected $userAgent;
 
 	/**	@var		string					$defaultUserAgent	Default user agent */
-	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.2';
+	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.3';
 
 	/**
 	 *	Constructor.
@@ -98,7 +99,7 @@ class Message
 
 	public function __wakeup()
 	{
-		if( !$this->userAgent )
+		if( 0 === strlen( trim( $this->userAgent ) ) )
 			$this->evaluateUserAgent();
 	}
 
@@ -112,7 +113,7 @@ class Message
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -214,49 +215,57 @@ class Message
 	}
 
 	/**
-	 *	Add a receiver as string to participant object.
+	 *	Add a receiver as string to address object.
 	 *	@access		public
-	 *	@param		string			$participant		Address or object of participant to add as receiver
-	 *	@param		string|NULL		$name				Name of the participant if address is given as string
-	 *	@param		string			$type				Type of receiver (TO, CC, BCC), case insensitive, default: TO
+	 *	@param		Address|string	$address		Address string or object to add as receiver
+	 *	@param		string|NULL		$name			Additional name of the address
+	 *	@param		string			$type			Type of receiver (TO, CC, BCC), case insensitive, default: TO
 	 *	@return		self			Message object for chaining
 	 */
-	public function addRecipient( $participant, string $name = NULL, string $type = "TO" ): self
+	public function addRecipient( $address, string $name = NULL, string $type = "TO" ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
-		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ) ) )
+		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ), TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid recipient type' );
 
-		if( $name )
-			$participant->setName( $name );
-		$this->recipients[strtolower( $type )]->add( $participant );
-		$recipient	= '<'.$participant->getAddress().'>';
-		if( is_string( $name ) && strlen( trim( $name ) ) ){
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+			$address->setName( $name );
+		$this->recipients[strtolower( $type )]->add( $address );
+
+		$recipient	= '<'.$address->getAddress().'>';
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$recipient	= MessageHeaderEncoding::encodeIfNeeded( $name ).' '.$recipient;
-		}
-		$recipient	= $participant->get();
-		if( strtoupper( $type ) !== "BCC" ){
+		$recipient	= $address->get();
+
+		if( 'BCC' !== strtoupper( $type ) ){
 			$fields	= $this->headers->getFieldsByName( $type );
 			foreach( $fields as $field )
 				if( $field->getValue() == $recipient )
 					return $this;
-			$this->addHeaderPair( ucFirst( strtolower( $type ) ), $recipient );
+			$this->addHeaderPair( ucfirst( strtolower( $type ) ), $recipient );
 		}
 		return $this;
 	}
 
-	public function addReplyTo( $participant, string $name = NULL ): self
+	/**
+	 *	Adds Reply-To header to message.
+	 *	@access		public
+	 *	@param		Address|string	$address		Address to reply to
+	 *	@param		string			$name			Additional name of address
+	 *	@return		self
+	 */
+	public function addReplyTo( $address, string $name = NULL ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
-		if( $name )
-			$participant->setName( $name );
-		$this->addHeaderPair( 'Reply-To', $participant->get() );
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+			$address->setName( $name );
+		$this->addHeaderPair( 'Reply-To', $address->get() );
 		return $this;
 	}
 
@@ -290,6 +299,7 @@ class Message
 
 	public function getDeliveryChain(): array
 	{
+		$list	= array();
 		foreach( $this->headers->getFieldsByName( 'X-Original-To' ) as $field ){
 			$list[]	= new Address( $field->getValue() );
 		}
@@ -342,7 +352,7 @@ class Message
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -402,7 +412,7 @@ class Message
 	 */
 	public function getRecipientsByType( string $type = 'TO' ): AddressCollection
 	{
-		if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ) ) )
+		if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ), TRUE ) )
 			throw new \DomainException( 'Type must be of to, cc or bcc' );
 		return $this->recipients[strtolower( $type )];
 	}
@@ -410,9 +420,9 @@ class Message
 	/**
 	 *	Returns assigned mail sender.
 	 *	@access		public
-	 *	@return		Address
+	 *	@return		Address|NULL
 	 */
-	public function getSender(): Address
+	public function getSender(): ?Address
 	{
 		return $this->sender;
 	}
@@ -421,9 +431,9 @@ class Message
 	 *	Returns set mail subject.
 	 *	@access		public
 	 *	@param		string|NULL		$encoding		Optional: Types: base64, quoted-printable. Default: none
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
-	public function getSubject( string $encoding = NULL ): string
+	public function getSubject( string $encoding = NULL ): ?string
 	{
 		return $this->subject;
 	}
@@ -517,35 +527,41 @@ class Message
 		return FALSE;
 	}
 
-	public function setReadNotificationRecipient( $participant, string $name = NULL ): self
+	/**
+	 *	...
+	 *	@access		public
+	 *	@param		Address|string	$address		Address to send notification to
+	 *	@param		string			$name			Additional name of address
+	 */
+	public function setReadNotificationRecipient( $address, string $name = NULL ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
-		if( $name )
-			$participant->setName( $name );
-		$this->headers->addFieldPair( 'Disposition-Notification-To', $participant->get() );
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+			$address->setName( $name );
+		$this->headers->addFieldPair( 'Disposition-Notification-To', $address->get() );
 		return $this;
 	}
 
 	/**
 	 *	Sets sender address and name.
 	 *	@access		public
-	 *	@param		string|object	$participant	Mail sender address or participant object
+	 *	@param		Address|string	$address		Address object or string
 	 *	@param		string|NULL		$name			Optional: Mail sender name
 	 *	@return		self			Message object for chaining
-	 *	@throws		\InvalidArgumentException		if given participant is neither string nor instance of \CeusMedia\Mail\Address
+	 *	@throws		\InvalidArgumentException		if given address is neither string nor instance of \CeusMedia\Mail\Address
 	 */
-	public function setSender( $participant, string $name = NULL ): self
+	public function setSender( $address, string $name = NULL ): self
 	{
-		if( is_string( $participant ) )
-			$participant	= new Address( $participant );
-		if( !is_a( $participant, "\CeusMedia\Mail\Address" ) )
+		if( is_string( $address ) )
+			$address	= new Address( $address );
+		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
 			throw new \InvalidArgumentException( 'Invalid value of first argument' );
-		if( $name )
-			$participant->setName( $name );
-		$this->sender	= $participant;
+		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+			$address->setName( $name );
+		$this->sender	= $address;
 		$this->headers->removeFieldByName( 'From' );
-		$this->addHeaderPair( "From", $participant->get() );
+		$this->addHeaderPair( "From", $address->get() );
 		return $this;
 	}
 
@@ -575,16 +591,23 @@ class Message
 
 	//  --  PROTECTED  --  //
 
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@return		void
+	 */
 	protected function evaluateUserAgent()
 	{
 		$this->userAgent	= static::$defaultUserAgent;
 		$filePath			= dirname( __DIR__ ).'/Mail.ini';
 		if( file_exists( $filePath ) ){
 			$config		= parse_ini_file( $filePath, TRUE );
-			$identifier	= $config['library']['identifier'] ?? NULL;
-			$version	= $config['library']['version'] ?? NULL;
-			if( $identifier && $version )
-				$this->setUserAgent( $identifier.'/'.$version );
+			if( FALSE !== $config ){
+				$identifier	= $config['library']['identifier'] ?? NULL;
+				$version	= $config['library']['version'] ?? NULL;
+				if( $identifier && $version )
+					$this->setUserAgent( $identifier.'/'.$version );
+			}
 		}
 	}
 }

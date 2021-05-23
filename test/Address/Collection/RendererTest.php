@@ -5,11 +5,13 @@
  *	@package			CeusMedia_Mail_Address_Collection
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Collection as AddressCollection;
-use \CeusMedia\Mail\Address\Collection\Renderer;
+namespace CeusMedia\Mail\Test\Address\Collection;
+
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Address\Collection\Renderer;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail address collection parser.
@@ -18,19 +20,21 @@ use \CeusMedia\Mail\Address\Collection\Renderer;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Collection\Renderer
  */
-class Address_Collection_RendererTest extends TestCase
+class RendererTest extends TestCase
 {
 	protected $renderer;
 
-	public function __construct(){
+	public function setup(): void
+	{
 		$this->renderer	= new Renderer();
-		parent::__construct();
+//		parent::__construct();
 	}
 
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender1(){
+	public function testRender1()
+	{
 		$collection		= new AddressCollection( array(
 			new Address( 'dev@ceusmedia.de' ),
 		) );
@@ -41,7 +45,8 @@ class Address_Collection_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender2(){
+	public function testRender2()
+	{
 		$collection		= new AddressCollection( array(
 			new Address( '<dev@ceusmedia.de>' ),
 		) );
@@ -53,7 +58,8 @@ class Address_Collection_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender3(){
+	public function testRender3()
+	{
 		$collection		= new AddressCollection( array(
 			new Address( 'Developer <dev@ceusmedia.de>' ),
 		) );
@@ -65,7 +71,8 @@ class Address_Collection_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender4(){
+	public function testRender4()
+	{
 		$collection		= new AddressCollection( array(
 			new Address( '"Developer" <dev@ceusmedia.de>' ),
 		) );
@@ -77,7 +84,8 @@ class Address_Collection_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender5(){
+	public function testRender5()
+	{
 		$collection		= new AddressCollection( array(
 			new Address( '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>' ),
 		) );
@@ -88,7 +96,8 @@ class Address_Collection_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender6(){
+	public function testRender6()
+	{
 		$collection		= new AddressCollection( array(
 			new Address( 'Developer <dev@ceusmedia.de>' ),
 			new Address( 'Alpha Tester <test@ceusmedia.de>' ),
@@ -100,7 +109,8 @@ class Address_Collection_RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender7(){
+	public function testRender7()
+	{
 		$collection		= new AddressCollection( array() );
 		$expected	= '';
 		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
@@ -109,7 +119,8 @@ class Address_Collection_RendererTest extends TestCase
 	/**
 	 *	@covers		::setDelimiter
 	 */
-	public function testSetDelimiterException(){
+	public function testSetDelimiterException()
+	{
 		$this->expectException( 'InvalidArgumentException' );
 		$this->renderer->setDelimiter( '' );
 	}

@@ -2,7 +2,10 @@
 
 Produce, send and read mails using PHP + IMAP & SMTP.
 
-[![Latest Stable Version](https://poser.pugx.org/phpunit/phpunit/v)](//packagist.org/packages/phpunit/phpunit) [![Total Downloads](https://poser.pugx.org/phpunit/phpunit/downloads)](//packagist.org/packages/phpunit/phpunit) [![Latest Unstable Version](https://poser.pugx.org/phpunit/phpunit/v/unstable)](//packagist.org/packages/phpunit/phpunit) [![License](https://poser.pugx.org/phpunit/phpunit/license)](//packagist.org/packages/phpunit/phpunit)
+[![Latest Stable Version](https://poser.pugx.org/ceus-media/mail/v)](//packagist.org/packages/ceus-media/mail)
+[![Total Downloads](https://poser.pugx.org/ceus-media/mail/downloads)](//packagist.org/packages/ceus-media/mail)
+[![License](https://poser.pugx.org/ceus-media/mail/license)](//packagist.org/packages/ceus-media/mail)
+<a href="https://phpstan.org/"><img src="https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat" alt="PHPStan Enabled"></a>
 
 ----
 
@@ -110,3 +113,16 @@ function handleMailException( $e ){
 - The auth username will be taken from sender address.
 - Thrown exceptions can be catched by a defined error handler.
 - If everything is set the mail can be sent.
+
+
+#### Good to know
+
+##### Using Google as SMTP#
+
+Google tried to protect its SMTP access by several measures.
+If you are [having problems](https://support.google.com/accounts/answer/6009563) sending mails using Google SMTP, tried [these steps](https://serverfault.com/a/745666):
+
+1. Open a browser an log into Google using a Google account.
+2. [Allow "less secure apps"](https://www.google.com/settings/security/lesssecureapps) to have access.
+3. [Allow app](https://accounts.google.com/DisplayUnlockCaptcha) to have access.
+4. Try again! 

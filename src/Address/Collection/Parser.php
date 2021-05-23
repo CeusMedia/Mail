@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Parser for list of addresses collected as string.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Parser
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -36,7 +38,7 @@ use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
  *	@category		Library
  *	@package		CeusMedia_Mail_Parser
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
@@ -54,6 +56,7 @@ class Parser
 	const STATE_SCANNING_FOR_ADDRESS	= 3;
 	const STATE_READING_ADDRESS			= 4;
 
+	/** @var int $method */
 	protected $method					= 0;
 
 	/**
@@ -66,7 +69,7 @@ class Parser
 	 */
 	public static function create(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	/**
@@ -77,7 +80,7 @@ class Parser
 	 */
 	public static function getInstance(): self
 	{
-		return new static;
+		return new self();
 	}
 
 	/**
@@ -124,7 +127,7 @@ class Parser
 			$address	= new Address();
 			$address->setLocalPart( $item->mailbox );
 			$address->setDomain( $item->host );
-			if( !empty( $item->personal ) )
+			if( isset( $item->personal ) && strlen( trim( $item->personal ) ) > 0 )
 				$address->setName( $item->personal );
 			$collection->add( $address );
 		}
@@ -133,11 +136,11 @@ class Parser
 
 	public function parseUsingOwn( string $string, string $delimiter = ',' ): AddressCollection
 	{
-		if( !strlen( $delimiter ) )
+		if( 0 === strlen( $delimiter ) )
 			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
 		$list		= array();
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
-		if( !strlen( trim( $string ) ) )
+		if( 0 === strlen( trim( $string ) ) )
 			return new AddressCollection();
 		$status		= static::STATE_SCANNING_FOR_NAME;
 		$part1		= "";
@@ -193,7 +196,7 @@ class Parser
 			}
 			$buffer	.= $letter;
 		}
-		if( $buffer && $status )
+		if( 0 < strlen( $buffer ) && 0 < $status )
 			$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
 
 		$collection	= new AddressCollection();
@@ -215,7 +218,7 @@ class Parser
 	{
 		$reflextion	= new \Alg_Object_Constant( get_class( $this ) );
 		$constants	= $reflextion->getAll( 'METHOD' );
-		if( !in_array( $method, $constants ) )
+		if( !in_array( $method, $constants, TRUE ) )
 			throw new \InvalidArgumentException( 'Invalid method' );
 		$this->method	= $method;
 		return $this;

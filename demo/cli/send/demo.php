@@ -6,8 +6,8 @@ $sending	= (object) $config->getAll( 'sending_' );
 
 //  --  PLEASE CONFIGURE!  --  //
 
-//$sending->receiverAddress	= "";
 $verbose			= TRUE;
+//$sending->receiverAddress	= "";
 
 // --  NO CHANGES NEEDED BELOW  --  //
 
@@ -25,6 +25,9 @@ try{
 	$transport->setPassword( $smtp->password );
 	$transport->setVerbose( $verbose );
 	$transport->send( $mail );
+
+	if( $verbose )
+		CLI::out();
 }
 catch( Exception $e ){
 	print( 'Error: '.$e->getMessage().PHP_EOL );

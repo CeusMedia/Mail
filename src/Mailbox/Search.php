@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Mailbox search object.
  *
@@ -27,6 +29,7 @@
 namespace CeusMedia\Mail\Mailbox;
 
 use CeusMedia\Mail\Mailbox\Mail;
+use RuntimeException;
 
 /**
  *	Mailbox search object.
@@ -39,17 +42,30 @@ use CeusMedia\Mail\Mailbox\Mail;
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			implement new structure of criteria and flags, see comments at the bottom
  */
-class Search{
-
+class Search
+{
+	/** @var resource $connection */
 	protected $connection;
+
+	/** @var integer $limit */
 	protected $limit			= 10;
+
+	/** @var integer $offset */
 	protected $offset			= 0;
+
+	/** @var integer $orderSort */
 	protected $orderSort		= SORTARRIVAL;
+
+	/** @var bool $orderReverse */
 	protected $orderReverse		= TRUE;
+
+	/** @var string $subject */
 	protected $subject;
+
+	/** @var string $sender */
 	protected $sender;
 
-	public function applyConditions( $conditions = array() )
+	public function applyConditions( array $conditions = array() ): self
 	{
 		foreach( $conditions as $key => $value ){
 			switch( strtoupper( $key ) ){
@@ -67,14 +83,14 @@ class Search{
 	/**
 	 *	Returns list of mail objects, holding a mail ID and a connection.
 	 *	@access		public
-	 *	@return		array		List of mail IDs
-	 *	@throws		\RuntimeException			if no connection is set
+	 *	@return		array				List of mail IDs
+	 *	@throws		RuntimeException	if no connection is set
 	 */
-	public function getAll(){
+	public function getAll(): array
+	{
 		$mails		= [];
 		foreach( $this->getAllMailIds() as $mailId ){
-			$mail	= Mail::getInstance( $mailId )
-				->setConnection( $this->connection );
+			$mail	= Mail::getInstance( $mailId )->setConnection( $this->connection );
 			$mails[$mailId]	= $mail;
 		}
 		return $mails;
@@ -84,12 +100,12 @@ class Search{
 	 *	Returns list of mail IDs for defined search criteria.
 	 *	@access		public
 	 *	@return		array				List of mail IDs
-	 *	@throws		\RuntimeException	if no connection is set
+	 *	@throws		RuntimeException	if no connection is set
 	 */
 	public function getAllMailIds(): array
 	{
-		if( !$this->connection )
-			throw new \RuntimeException( 'No connection set' );
+		if( NULL === $this->connection )
+			throw new RuntimeException( 'No connection set' );
 		$criteria	= $this->renderCriteria();
 		$mailIds	= imap_sort(
 			$this->connection,
@@ -99,7 +115,9 @@ class Search{
 			$criteria,
 			'UTF-8'
 		);
-		return array_slice( $mailIds, $this->offset, $this->limit );
+		if( FALSE !== $mailIds )
+			return array_slice( $mailIds, $this->offset, $this->limit );
+		return [];
 	}
 
 	/**
@@ -110,15 +128,15 @@ class Search{
 	 */
 	public static function getInstance(): self
 	{
-		return new static();
+		return new self();
 	}
 
 	public function getCriteria(): array
 	{
 		$criteria	= array();
-		if( strlen( $this->subject ) )
+		if( 0 < strlen( $this->subject ) )
 			$criteria['SUBJECT']	= $this->subject;
-		if( strlen( $this->sender ) )
+		if( 0 < strlen( $this->sender ) )
 			$criteria['FROM']		= $this->sender;
 		return $criteria;
 	}
@@ -126,33 +144,39 @@ class Search{
 	public function renderCriteria(): string
 	{
 		$criteria	= array();
-		if( strlen( $this->subject ) )
+		if( NULL !== $this->subject && 0 !== strlen( trim( $this->subject ) ) )
 			$criteria[]	= 'SUBJECT "'.$this->subject.'"';
-		if( strlen( $this->sender ) )
+		if( NULL !== $this->sender && 0 !== strlen( trim( $this->sender ) ) )
 			$criteria[]	= 'FROM "'.$this->sender.'"';
 		return join( ' ', $criteria );
 	}
 
+	/**
+	 *	...
+	 *	@access
+	 *	@param		resource	$connection
+	 *	@return		self
+	 */
 	public function setConnection( $connection ): self
 	{
 		$this->connection	= $connection;
 		return $this;
 	}
 
-	public function setOrder( $sort = SORTARRIVAL, $reverse = TRUE ): self
+	public function setOrder( int $sort = SORTARRIVAL, bool $reverse = TRUE ): self
 	{
 		$this->setOrderSort( $sort );
 		$this->setOrderReverse( $reverse );
 		return $this;
 	}
 
-	public function setOrderSort( $sort = SORTARRIVAL ): self
+	public function setOrderSort( int $sort = SORTARRIVAL ): self
 	{
 		$this->orderSort		= $sort;
 		return $this;
 	}
 
-	public function setOrderReverse( $reverse = TRUE ): self
+	public function setOrderReverse( bool $reverse = TRUE ): self
 	{
 		$this->orderReverse		= $reverse;
 		return $this;

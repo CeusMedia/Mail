@@ -8,6 +8,7 @@ use CeusMedia\Mail\Transport\SMTP;
 
 $mode	= 0;				//  send message
 $mode	= 1;				//  try to find/read sent message
+//$mode	= 2;				//  both -> round trip
 
 $configSmtp		= (object) $config->getAll( 'SMTP_' );
 $configTest		= (object) $config->getAll( 'sending_' );
@@ -26,17 +27,18 @@ $client	= Client::getInstance()
 		$configImap->password
 	));
 
-if( $mode === 0 ){
+if( $mode === 0 || $mode === 2 ){
 	$message	= $client->createMessage()
-		->setSender($configTest->senderAddress, $configTest->senderName)
-		->addRecipient($configTest->receiverAddress, $configTest->receiverName)
-		->setSubject("This is just a test")
-		->addText("Test Message: ".date('r'));
+		->setSender( $configTest->senderAddress, $configTest->senderName )
+		->addRecipient( $configTest->receiverAddress, $configTest->receiverName )
+		->setSubject( "This is just a test" )
+		->addText( "Test Message: ".date( 'r' ) );
 	$client->sendMessage($message);
 }
-else if( $mode === 1 ){
+else if( $mode === 1 || $mode === 2 ){
 	$search	= $client->createSearch()
-		->setSender($configTest->senderAddress)
+		->setSender( $configTest->senderAddress )
+		->setSubject( "This is just a test" )
 		->setLimit( 1 )
 		->setOffset( 0 );
 	$mails	= $client->search( $search );

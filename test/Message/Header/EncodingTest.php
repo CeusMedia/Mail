@@ -5,9 +5,12 @@
  *	@package			CeusMedia_Mail
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once __DIR__.'/bootstrap.php';
 
-use \CeusMedia\Mail\Message\Header\Encoding;
+namespace CeusMedia\Mail\Test\Message\Header;
+
+use CeusMedia\Mail\Message\Header\Encoding;
+use CeusMedia\Mail\Test\TestCase;
+use PHPUnit_Framework_TestCase as PhpUnitTestCase;
 
 /**
  *	Unit test for mail message.
@@ -16,12 +19,13 @@ use \CeusMedia\Mail\Message\Header\Encoding;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Header\Encoding
  */
-class Message_Header_EncodingTest extends PHPUnit_Framework_TestCase
+class EncodingTest extends PhpUnitTestCase
 {
 	/**
 	 *	@covers		::decodeIfNeeded
 	 */
-	public function testDecodeIfNeeded(){
+	public function testDecodeIfNeeded()
+	{
 		$expected	= '[Gruppenpost] Gruppe "Deli 124": Mike ist beigetreten und benötigt Freigabe';
 
 		$string		= '=?UTF-8?Q?[Gruppenpost]_Gruppe_"Deli_124":_Mike_ist_beigetreten_und_ben?=
@@ -38,7 +42,8 @@ class Message_Header_EncodingTest extends PHPUnit_Framework_TestCase
 	/**
 	 *	@covers		::encodeIfNeeded
 	 */
-	public function testEncodeIfNeeded(){
+	public function testEncodeIfNeeded()
+	{
 		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ" );
 		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $expected, $actual );
@@ -51,7 +56,8 @@ class Message_Header_EncodingTest extends PHPUnit_Framework_TestCase
 	/**
 	 *	@covers		::encodeIfNeeded
 	 */
-	public function testEncodeIfNeededException(){
+	public function testEncodeIfNeededException()
+	{
 		$this->expectException( 'InvalidArgumentException' );
 		Encoding::encodeIfNeeded( "ÄÖÜ", "_invalid_" );
 	}

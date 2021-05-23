@@ -5,9 +5,13 @@
  *	@package			CeusMedia_Mail_Message
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( __DIR__ ).'/bootstrap.php';
+
+namespace CeusMedia\Mail\Test\Message;
 
 use CeusMedia\Mail\Message\Part;
+use CeusMedia\Mail\Message\Header\Section as HeaderSection;
+use CeusMedia\Mail\Test\TestCase;
+
 
 /**
  *	Unit test for mail message_part.
@@ -16,13 +20,14 @@ use CeusMedia\Mail\Message\Part;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Part
  */
-class Message_PartTest extends TestCase
+class PartTest extends TestCase
 {
 	/**
 	 *	@covers		::getCharset
 	 *	@covers		::setCharset
 	 */
-	public function testCharset(){
+	public function testCharset()
+	{
 		$charset	= "whatYouWant";
 		$part		= new Message_Part();
 		$part->setCharset( $charset );
@@ -33,7 +38,8 @@ class Message_PartTest extends TestCase
 	 *	@covers		::getContent
 	 *	@covers		::setContent
 	 */
-	public function testContent(){
+	public function testContent()
+	{
 		$content	= "whatYouWant";
 		$part		= new Message_Part();
 		$part->setContent( $content );
@@ -54,10 +60,11 @@ class Message_PartTest extends TestCase
 		}
 	}
 
-	/**
+	/**Transport_
 	 *	@covers		::setEncoding
 	 */
-	public function testEncodingException(){
+	public function testEncodingException()
+	{
 		$this->expectException( 'InvalidArgumentException' );
 		$part		= new Message_Part();
 		$part->setEncoding( 'invalid' );
@@ -65,7 +72,7 @@ class Message_PartTest extends TestCase
 
 	/**
 	 *	@covers		::getFormat
-	 *	@covers		::setFormat
+	 *	@covers		::setFormatTransport_
 	 */
 	public function testFormat()
 	{
@@ -80,7 +87,8 @@ class Message_PartTest extends TestCase
 	/**
 	 *	@covers		::setFormat
 	 */
-	public function testFormatException(){
+	public function testFormatException()
+	{
 		$this->expectException( 'InvalidArgumentException' );
 		$part		= new Message_Part();
 		$part->setFormat( 'invalid' );
@@ -90,7 +98,8 @@ class Message_PartTest extends TestCase
 	 *	@covers		::getMimeType
 	 *	@covers		::setMimeType
 	 */
-	public function testMimeType(){
+	public function testMimeType()
+	{
 		$mimeType	= "whatYouWant";
 		$part		= new Message_Part();
 		$part->setMimeType( $mimeType );
@@ -99,7 +108,7 @@ class Message_PartTest extends TestCase
 }
 class Message_Part extends Part
 {
-	public function render( $headers = NULL ): string
+	public function render( int $sections = Part::SECTION_ALL, ?HeaderSection $additionalHeaders = NULL): string
 	{
 		return json_encode( $this );
 	}

@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 /**
  *	Sends Mail using PHPs mail function and local SMTP server.
  *
- *	Copyright (c) 2007-2020 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -34,7 +36,7 @@ use CeusMedia\Mail\Message\Renderer;
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2020 Christian Würker
+ *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -47,19 +49,6 @@ class Local
 	 */
 	public function __construct()
 	{
-	}
-
-	/**
-	 *	Checks a Header Value for possible Mail Injection and throws Exception.
-	 *	@access		protected
-	 *	@param		string		$value		Header Value
-	 *	@return		void
-	 *	@throws		\InvalidArgumentException
-	 */
-	protected function checkForInjection( $value )
-	{
-		if( preg_match( '/(\r|\n)/', $value ) )
-			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 
 	/**
@@ -77,15 +66,15 @@ class Local
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipientsByType( 'to' );
 		$subject	= $message->getSubject();
-		$body		= Renderer::getInstance()->render( $message );
+		$body		= Renderer::render( $message );
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new \InvalidArgumentException( 'No mail sender defined' );
-		if( !$receivers )
+		if( 0 === count( $receivers ) )
 			throw new \InvalidArgumentException( 'No mail receiver defined' );
-		if( !$subject )
+		if( NULL === $subject || 0 === strlen( trim( $subject ) ) )
 			throw new \InvalidArgumentException( 'No mail subject defined' );
 		$subject	= "=?UTF-8?B?".base64_encode( $subject )."?=";
 
@@ -96,7 +85,7 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-		if( $message->getUserAgent() )
+		if( 0 !== strlen( trim( $message->getUserAgent() ) ) )
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
@@ -120,7 +109,7 @@ class Local
 				}
 				$list[]	= array(
 					'status'		=> 'ok',
-					'message'		=> 'mail sent to '.$receiver->participant->getAddress(),
+					'message'		=> 'mail sent to '.$receiver->getAddress(),
 				);
 			}
 			catch( \Exception $e ){
@@ -145,7 +134,22 @@ class Local
 	 */
 	public static function sendMail( Message $message, $parameters = array() )
 	{
-		$transport	= new static();
+		$transport	= new self();
 		$transport->send( $message, $parameters );
+	}
+
+	//  --  PROTECTED  --  //
+
+	/**
+	 *	Checks a Header Value for possible Mail Injection and throws Exception.
+	 *	@access		protected
+	 *	@param		string		$value		Header Value
+	 *	@return		void
+	 *	@throws		\InvalidArgumentException
+	 */
+	protected function checkForInjection( $value )
+	{
+		if( 0 < preg_match( '/(\r|\n)/', $value ) )
+			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }

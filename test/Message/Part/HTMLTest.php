@@ -5,11 +5,13 @@
  *	@package			CeusMedia_Mail_Message_Part
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
-//require_once dirname( dirname( __DIR__ ) ).'/bootstrap.php';
+
+namespace CeusMedia\Mail\Test\Message\Part;
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part;
 use CeusMedia\Mail\Message\Part\HTML;
+use CeusMedia\Mail\Test\TestCase;
 
 /**
  *	Unit test for mail message part.
@@ -18,13 +20,13 @@ use CeusMedia\Mail\Message\Part\HTML;
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Part\HTML
  */
-class Message_Part_HTMLTest extends TestCase
+class HTMLTest extends TestCase
 {
 	protected $delimiter;
 	protected $lineLength;
 
-	public function __construct(){
-		parent::__construct();
+	public function setup(): void
+	{
 		$this->delimiter	= Message::$delimiter;
 		$this->lineLength	= Message::$lineLength;
 	}
@@ -32,7 +34,8 @@ class Message_Part_HTMLTest extends TestCase
 	/**
 	 *	@covers		::__construct
 	 */
-	public function testConstruct(){
+	public function testConstruct()
+	{
 		$content	= "<b>This is the content.</b>";
 		$part		= new HTML( $content );
 		$this->assertEquals( $content, $part->getContent() );
@@ -50,7 +53,8 @@ class Message_Part_HTMLTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRender(){
+	public function testRender()
+	{
 		$content	= "<b>This is the content with umlauts:</b> <em>äöü</em>.";
 
 		$part		= new HTML( $content, 'utf-8', 'quoted-printable' );
@@ -73,7 +77,8 @@ class Message_Part_HTMLTest extends TestCase
 		$this->assertEquals( $expected, $part->render() );
 	}
 
-	protected function wrapContent( $content ){
+	protected function wrapContent( string $content ): string
+	{
 		return rtrim( chunk_split( $content, $this->lineLength, $this->delimiter ), $this->delimiter );
 	}
 }
