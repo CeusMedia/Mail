@@ -42,17 +42,26 @@ use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
  */
 class Parser
 {
-	const STRATEGY_AUTO			= 0;
-	const STRATEGY_FIRST		= 1;
-	const STRATEGY_SECOND		= 2;
+	const STRATEGY_AUTO				= 0;
+	const STRATEGY_FIRST			= 1;						//  first implementation, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_SECOND			= 2;						//  second implementation, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_THIRD			= 3;						//  own implementation, supports DKIM key folding and RFC 2231
+	const STRATEGY_ICONV			= 4;						//  iconv, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_ICONV_STRICT		= 5;						//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_ICONV_TOLERANT	= 6;						//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
 
 	const STRATEGIES			= [
 		self::STRATEGY_AUTO,
 		self::STRATEGY_FIRST,
 		self::STRATEGY_SECOND,
+		self::STRATEGY_THIRD,
+		self::STRATEGY_ICONV,
+		self::STRATEGY_ICONV_STRICT,
+		self::STRATEGY_ICONV_TOLERANT,
 	];
 
-	protected $defaultStategy	= self::STRATEGY_SECOND;
+//	protected $defaultStategy	= self::STRATEGY_ICONV_TOLERANT;
+	protected $defaultStategy	= self::STRATEGY_THIRD;
 	protected $strategy			= self::STRATEGY_AUTO;
 
 	/**
@@ -72,11 +81,15 @@ class Parser
 	 *	Static constructor.
 	 *	@access		public
 	 *	@static
+	 *	@param		integer		$strategy		Optional: strategy to set, leaving auto mode
 	 *	@return		self
 	 */
-	public static function getInstance(): self
+	public static function getInstance( int $strategy = NULL ): self
 	{
-		return new static;
+		$self	= new static;
+		if( !is_null( $strategy ) )
+			$this->setStrategy( $strategy );
+		return $self;
 	}
 
 	public function parse( string $content ): MessageHeaderSection
@@ -90,12 +103,74 @@ class Parser
 				return self::parseByFirstStrategy( $content );
 			case self::STRATEGY_SECOND:
 				return self::parseBySecondStrategy( $content );
+			case self::STRATEGY_THIRD:
+				return self::parseByThirdStrategy( $content );
+			case self::STRATEGY_ICONV:
+				return self::parseByIconvStrategy( $content, 0 );
+			case self::STRATEGY_ICONV_STRICT:
+				return self::parseByIconvStrategy( $content, 1 );
+			case self::STRATEGY_ICONV_TOLERANT:
+				return self::parseByIconvStrategy( $content, 2 );
 			default:
 				throw new \RuntimeException( 'Unsupported strategy' );
 		}
 	}
 
 	public static function parseByFirstStrategy( string $content ): MessageHeaderSection
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$content		Header fields block to parse
+	 *	@param		integer		$mode			iconv mode (0-normal, 1-strict, 2-tolerant), default:
+	 *	@return		Section
+ 	 */
+	public static function parseByIconvStrategy( $content, $mode = 0 ): Section
+	{
+		$headers	= iconv_mime_decode_headers( $content, $mode, 'UTF-8' );
+		$section	= new Section();
+		foreach( $headers as $key => $values ){
+			if( !is_array( $values ) )
+				$values	= [$values];
+			foreach( $values as $value ){
+				$field	= new Field( $key, $value );
+				$section->addField( $field );
+			}
+		}
+		return $section;
+	}
+
+	public static function parseByThirdStrategy( string $content ): Section
+	{
+		$section	= new Section();
+		$lines		= preg_split( "/\r?\n/", $content );
+		$fws		= '';
+		foreach( $lines as $nr => $line ){
+			if( preg_match( '/^\S+:/', $line ) ){
+				list( $key, $value ) = explode( ':', $line, 2 );
+				$value	= Encoding::decodeIfNeeded( ltrim( $value ) );
+				$field	= new Field( $key, $value );
+				$section->addField( $field );
+				$buffer	= [$value];
+				$fws	= '';
+			}
+			else{																//  line is folded line
+				if( mb_strlen( $fws ) === 0 )									//  folding white space not detected yet
+					$fws	= preg_replace( '/^(\s+).+$/', '\\1', $line );		//  get only folding white space
+				$reducedLine	= substr( $line, strlen( $fws ) );				//  reduce line by folding white space
+				if( preg_match( '/^\s/', $reducedLine ) )						//  reduced line still contains leading white space
+					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
+				else{															//  reduced line is folding @ level 1
+					$line		= ' '.ltrim( $line );							//  reduce leading white space to one
+					$buffer[]	= Encoding::decodeIfNeeded( $line );		//  collect decoded line
+				}
+				$field->setValue( join( $buffer ) );							//  set unfolded field value
+			}
+		}
+		return $section;
+	}
+
+	public static function parseByFirstStrategy( string $content ): Section
 	{
 		$section	= new MessageHeaderSection();
 		$content	= preg_replace( "/\r?\n[\t ]+/", "", $content );				//  unfold field values
@@ -119,6 +194,14 @@ class Parser
 		foreach( $rawPairs as $rawPair )
 			$section->addFieldPair( $rawPair->key, $rawPair->value );
 		return $section;
+	}
+
+	public function setStrategy( int $strategy ): self
+	{
+		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
+			throw new \RangeException( 'Invalid strategy' );
+		$this->strategy	= $strategy;
+		return $this;
 	}
 
 	public static function splitIntoListOfUnfoldedDecodedDataObjects( string $content ): array
@@ -145,13 +228,5 @@ class Parser
 		if( !is_null( $key ) && count( $buffer ) > 0 )
 			$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
 		return $list;
-	}
-
-	public function setStrategy( int $strategy ): self
-	{
-		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
-			throw new \RangeException( 'Invalid strategy' );
-		$this->strategy	= $strategy;
-		return $this;
 	}
 }
