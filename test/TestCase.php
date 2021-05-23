@@ -26,7 +26,7 @@ class TestCase extends PhpUnitTestCase
 		'security.antivirus',
 	);
 
-	public function __construct( $name )
+	public function __construct( $name = NULL )
 	{
 		parent::__construct( $name );
 		new UI_DevOutput();

@@ -59,22 +59,12 @@ class Parser
 		self::STRATEGY_ICONV_TOLERANT,
 	];
 
+	/** @var		integer		$defaultStategy			Strategy to use in auto mode */
 //	protected $defaultStategy	= self::STRATEGY_ICONV_TOLERANT;
 	protected $defaultStategy	= self::STRATEGY_THIRD;
-	protected $strategy			= self::STRATEGY_AUTO;
 
-	/**
-	 *	Static constructor.
-	 *	@access			public
-	 *	@static
-	 *	@return			self
-	 *	@deprecated		use getInstance instead
-	 *	@todo			to be removed
-	 */
-	public static function create(): self
-	{
-		return new self();
-	}
+	/** @var		integer		$strategy				Strategy to use */
+	protected $strategy			= self::STRATEGY_AUTO;
 
 	/**
 	 *	Static constructor.
@@ -85,10 +75,10 @@ class Parser
 	 */
 	public static function getInstance( int $strategy = NULL ): self
 	{
-		$self	= new static;
+		$instance	= new self;
 		if( !is_null( $strategy ) )
-			$this->setStrategy( $strategy );
-		return $self;
+			$instance->setStrategy( $strategy );
+		return $instance;
 	}
 
 	public function parse( string $content ): Section
@@ -141,13 +131,13 @@ class Parser
 	 *	@param		string		$headerValue		Complete header field value, may be multiline
 	 *	@return 	object		Map object with pure header value and attributes dictionary
 	 */
-	public static function parseAttributedHeaderValue( string $string )
+	public static function parseAttributedHeaderValue( string $headerValue )
 	{
-		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
+		$string	= trim( preg_replace( "/\r?\n/", "", $headerValue ) );
 		$parts	= preg_split( '/\s*;\s*/', $string );
 		$value	= array_shift( $parts );
 		$list	= array();
-		if( $parts ){
+		if( 0 !== count( $parts ) ){
 			foreach( $parts as $part ){
 				if( preg_match( '/=/', $part ) ){
 					$p = preg_split( '/\s?=\s?/', $part, 2 );
@@ -164,14 +154,14 @@ class Parser
 				}
 			}
 		}
-																									//
+
 		//  Apply RFC 2231 (https://datatracker.ietf.org/doc/html/rfc2231)
 		$rfc2231	= "/^(?<charset>[A-Z0-9\-]+)(\'(?<language>[A-Z\-]{0,5})\')(?<content>.*)$/i";	//  eG. utf-8'en'Some%20content
-		array_walk( $list, function( &$value, $key ) use ($rfc2231){								//  apply RFC expr to list
+		array_walk( $list, function( &$value, $key ) use ($rfc2231): void{								//  apply RFC expr to list
 			if( $r = preg_match( $rfc2231, $value, $matches ) ){									//  encoding prefix found
 				$m	= (object) $matches;															//  shortcut matches
 				if( strtoupper( $m->charset ) !== 'UTF-8' )											//  encoding differs from UTF-8
-                    $m->content    = iconv( $m->charset, 'UTF-8', $m->content );					//  recode content to UTF-8
+					$m->content    = iconv( $m->charset, 'UTF-8', $m->content );					//  recode content to UTF-8
 				$value = urldecode( $m->content );													//  remove prefix and decode content
 			}
 		} );
@@ -210,6 +200,8 @@ class Parser
 		$section	= new Section();
 		$lines		= preg_split( "/\r?\n/", $content );
 		$fws		= '';
+		$buffer		= [];
+		$field		= NULL;
 		foreach( $lines as $nr => $line ){
 			if( preg_match( '/^\S+:/', $line ) ){
 				list( $key, $value ) = explode( ':', $line, 2 );
@@ -219,7 +211,7 @@ class Parser
 				$buffer	= [$value];
 				$fws	= '';
 			}
-			else{																//  line is folded line
+			else if( NULL !== $field ){											//  line is folded line
 				if( mb_strlen( $fws ) === 0 )									//  folding white space not detected yet
 					$fws	= preg_replace( '/^(\s+).+$/', '\\1', $line );		//  get only folding white space
 				$reducedLine	= substr( $line, strlen( $fws ) );				//  reduce line by folding white space
@@ -227,7 +219,7 @@ class Parser
 					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
 				else{															//  reduced line is folding @ level 1
 					$line		= ' '.ltrim( $line );							//  reduce leading white space to one
-					$buffer[]	= Encoding::decodeIfNeeded( $line );		//  collect decoded line
+					$buffer[]	= Encoding::decodeIfNeeded( $line );			//  collect decoded line
 				}
 				$field->setValue( join( $buffer ) );							//  set unfolded field value
 			}
