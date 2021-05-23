@@ -28,6 +28,8 @@ namespace CeusMedia\Mail\Message;
 
 use \CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
 use \CeusMedia\Mail\Message;
+use \CeusMedia\Mail\Message\Header\AttributedField as MessageHeaderAttributedField;
+use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use \CeusMedia\Mail\Message\Part as MessagePart;
 use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
@@ -49,19 +51,6 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  */
 class Parser
 {
-	/**
-	 *	Static constructor.
-	 *	@access			public
-	 *	@static
-	 *	@return			self
-	 *	@deprecated		use getInstance instead
-	 *	@todo			to be removed
-	 */
-	public static function create(): self
-	{
-		return new self();
-	}
-
 	/**
 	 *	Static constructor.
 	 *	@access		public
@@ -98,7 +87,8 @@ class Parser
 			}
 		}
 		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		if( preg_match( "/multipart/", $contentType ) ){						//  is multipart message
+
+		if( preg_match( '/multipart/', $contentType ) ){						//  is multipart message
 			$this->parseMultipartBody( $message, $content );					//  parse multipart containers
 		}
 		else{
@@ -108,32 +98,16 @@ class Parser
 	}
 
 	/*  --  PROTECTED  --  */
-	protected function getCharsetFromContentType( $contentType )
-	{
-		$parts	= explode( ";", $contentType );
-		foreach( $parts as $part ){
-			$pair	= explode( "=", trim( $part ) );
-			if( $pair[0] === "charset" )
-				return trim( $pair[1] );
-		}
-		return NULL;
-	}
-
-	protected function getMimeFromContentType( $contentType )
-	{
-		$parts	= explode( ";", $contentType );
-		return trim( $parts[0] );
-	}
-
 	protected function parseMultipartBody( $message, $content )
 	{
 		$delim		= Message::$delimiter;
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$body		= $parts[1];
-		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		$contentType	= $this->parseAttributedHeaderValue( $contentType );
-		$mimeBoundary	= $contentType->attributes->get( 'boundary' );
+
+		$contentType	= $headers->getField( 'Content-Type' );
+		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
+		$mimeBoundary	= $contentType->getAttribute( 'boundary' );
 		if( $mimeBoundary ){
 			$lines	= array();
 			$status	= 0;
@@ -160,46 +134,17 @@ class Parser
 		}
 	}
 
-	protected function parseAttributedHeaderValue( $string )
-	{
-		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
-		$parts	= preg_split( '/\s*;\s*/', $string );
-		$value	= array_shift( $parts );
-		$list	= array();
-		if( $parts ){
-			foreach( $parts as $part ){
-				if( preg_match( '/=/', $part ) ){
-					$p = preg_split( '/\s?=\s?/', $part, 2 );
-					if( trim( $p[1][0] ) === '"' )
-						$p[1]	= substr( trim( $p[1] ), 1, -1 );
-					if( preg_match( '/\*[0-9]$/', $p[0] ) ){
-						$label	= preg_replace( '/^(.+)\*[0-9]$/', '\\1', $p[0] );
-						if( !isset( $list[$label] ) )
-							$list[$label]	= '';
-						$list[$label]	.= $p[1];
-					}
-					else
-						$list[$p[0]]	= $p[1];
-				}
-			}
-		}
-		return (object) array(
-			'value'			=> $value,
-			'attributes'	=> new \ADT_List_Dictionary( $list ),
-		);
-	}
-
 	protected function parseAtomicBodyPart( $content )
 	{
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		$content	= $parts[1];
 
-		$contentType	= $headers->getField( 'Content-Type' )->getValue();
-		$contentType	= $this->parseAttributedHeaderValue( $contentType );
-		$mimeType		= $contentType->value;
-		$charset		= $contentType->attributes->get( 'charset', 'UTF-8' );
-		$format			= $contentType->attributes->get( 'format' );
+		$contentType	= $headers->getField( 'Content-Type' );
+		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
+		$mimeType		= $contentType->getValue();
+		$charset		= $contentType->getAttribute( 'charset', 'UTF-8' );
+		$format			= $contentType->getAttribute( 'format' );
 		$encoding		= NULL;
 		if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
 			$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
@@ -216,10 +161,10 @@ class Parser
 		}
 
 		if( $headers->hasField( 'Content-Disposition' ) ){
-			$disposition	= $headers->getField( 'Content-Disposition' )->getValue();
-			$disposition	= $this->parseAttributedHeaderValue( $disposition );
-			$filename		= $disposition->attributes->get( 'filename' );
-			$value			= strtoupper( $disposition->value );
+			$disposition	= $headers->getField( 'Content-Disposition' );
+			$disposition	= MessageHeaderParser::parseAttributedField( $disposition );
+			$filename		= $disposition->getAttribute( 'filename' );
+			$value			= strtoupper( $disposition->getValue() );
 			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
 			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ) ) && $filename;
 
@@ -235,8 +180,8 @@ class Parser
 				$part->setContent( $content );
 				if( $format )
 					$part->setFormat( $format );
-				if( !$filename && $contentType->attributes->has( 'name' ) )
-					$filename	= $contentType->attributes->get( 'name' );
+				if( !$filename && $contentType->getAttribute( 'name' ) !== NULL )
+					$filename	= $contentType->getAttribute( 'name' );
 				if( $filename )
 					$part->setFilename( $filename );
 
@@ -247,7 +192,7 @@ class Parser
 					'modification-date'	=> 'setFileMTime',
 				);
 				foreach( $dispositionAttributesToCopy as $key => $method ){
-					$value	= $disposition->attributes->get( $key );
+					$value	= $disposition->getAttribute( $key );
 					if( preg_match( '/-date$/', $key ) )
 						$value	= strtotime( $value );
 					if( $value )
