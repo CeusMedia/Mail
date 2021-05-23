@@ -28,9 +28,6 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
-use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
-
 /**
  *	Parser for mail headers.
  *	@category		Library
@@ -44,20 +41,26 @@ use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
  */
 class Parser
 {
-	const STRATEGY_AUTO			= 0;
-	const STRATEGY_FIRST		= 1;
-	const STRATEGY_SECOND		= 2;
+	const STRATEGY_AUTO				= 0;
+	const STRATEGY_FIRST			= 1;						//  first implementation, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_SECOND			= 2;						//  second implementation, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_THIRD			= 3;						//  own implementation, supports DKIM key folding and RFC 2231
+	const STRATEGY_ICONV			= 4;						//  iconv, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_ICONV_STRICT		= 5;						//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
+	const STRATEGY_ICONV_TOLERANT	= 6;						//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
 
 	const STRATEGIES			= [
 		self::STRATEGY_AUTO,
 		self::STRATEGY_FIRST,
 		self::STRATEGY_SECOND,
+		self::STRATEGY_THIRD,
+		self::STRATEGY_ICONV,
+		self::STRATEGY_ICONV_STRICT,
+		self::STRATEGY_ICONV_TOLERANT,
 	];
 
-	/**	@var	int				$defaultStategy */
-	protected $defaultStategy	= self::STRATEGY_SECOND;
-
-	/**	@var	int				$strategy */
+//	protected $defaultStategy	= self::STRATEGY_ICONV_TOLERANT;
+	protected $defaultStategy	= self::STRATEGY_THIRD;
 	protected $strategy			= self::STRATEGY_AUTO;
 
 	/**
@@ -77,14 +80,18 @@ class Parser
 	 *	Static constructor.
 	 *	@access		public
 	 *	@static
+	 *	@param		integer		$strategy		Optional: strategy to set, leaving auto mode
 	 *	@return		self
 	 */
-	public static function getInstance(): self
+	public static function getInstance( int $strategy = NULL ): self
 	{
-		return new self();
+		$self	= new static;
+		if( !is_null( $strategy ) )
+			$this->setStrategy( $strategy );
+		return $self;
 	}
 
-	public function parse( string $content ): MessageHeaderSection
+	public function parse( string $content ): Section
 	{
 		$strategy	= $this->strategy;
 		if( $this->strategy === self::STRATEGY_AUTO )
@@ -95,35 +102,171 @@ class Parser
 				return self::parseByFirstStrategy( $content );
 			case self::STRATEGY_SECOND:
 				return self::parseBySecondStrategy( $content );
+			case self::STRATEGY_THIRD:
+				return self::parseByThirdStrategy( $content );
+			case self::STRATEGY_ICONV:
+				return self::parseByIconvStrategy( $content, 0 );
+			case self::STRATEGY_ICONV_STRICT:
+				return self::parseByIconvStrategy( $content, 1 );
+			case self::STRATEGY_ICONV_TOLERANT:
+				return self::parseByIconvStrategy( $content, 2 );
 			default:
 				throw new \RuntimeException( 'Unsupported strategy' );
 		}
 	}
 
-	public static function parseByFirstStrategy( string $content ): MessageHeaderSection
+	/**
+	 *	Splits up header field value with attributes, like: text/csv; filename="test.csv"
+	 *	Applies RFC 2231 to support attribute encoding, (language) and containments (=attribute value folding).
+	 *	Returns instance of attributed header field.
+	 *	@access		public
+	 *	@static
+	 *	@param		Field	$field		Instance of header field
+	 *	@return 	AttributedField
+	 */
+	public static function parseAttributedField( Field $field ): AttributedField
 	{
-		$section	= new MessageHeaderSection();
-		$content	= preg_replace( "/\r?\n[\t ]+/", "", $content );				//  unfold field values
+		$object	= self::parseAttributedHeaderValue( $field->getValue() );
+		$field	= new AttributedField( $field->getName(), $object->value );
+		$field->setAttributes( $object->attributes->getAll() );
+		return $field;
+	}
+
+	/**
+	 *	Splits up header values with attributes, like: text/csv; filename="test.csv"
+	 *	Applies RFC 2231 to support attribute encoding, (language) and containments (=attribute value folding).
+	 *	Return a map object with pure header value and attributes dictionary.
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$headerValue		Complete header field value, may be multiline
+	 *	@return 	object		Map object with pure header value and attributes dictionary
+	 */
+	public static function parseAttributedHeaderValue( string $string )
+	{
+		$string	= trim( preg_replace( "/\r?\n/", "", $string ) );
+		$parts	= preg_split( '/\s*;\s*/', $string );
+		$value	= array_shift( $parts );
+		$list	= array();
+		if( $parts ){
+			foreach( $parts as $part ){
+				if( preg_match( '/=/', $part ) ){
+					$p = preg_split( '/\s?=\s?/', $part, 2 );
+					if( trim( $p[1][0] ) === '"' )
+						$p[1]	= substr( trim( $p[1] ), 1, -1 );
+					if( preg_match( '/\*\d+\*?$/', $p[0] ) ){
+						$label	= preg_replace( '/^(.+)\*\d+\*?$/', '\\1', $p[0] );
+						if( !isset( $list[$label] ) )
+							$list[$label]	= '';
+						$list[$label]	.= $p[1];
+					}
+					else
+						$list[$p[0]]	= $p[1];
+				}
+			}
+		}
+																									//
+		//  Apply RFC 2231 (https://datatracker.ietf.org/doc/html/rfc2231)
+		$rfc2231	= "/^(?<charset>[A-Z0-9\-]+)(\'(?<language>[A-Z\-]{0,5})\')(?<content>.*)$/i";	//  eG. utf-8'en'Some%20content
+		array_walk( $list, function( &$value, $key ) use ($rfc2231){								//  apply RFC expr to list
+			if( $r = preg_match( $rfc2231, $value, $matches ) ){									//  encoding prefix found
+				$m	= (object) $matches;															//  shortcut matches
+				if( strtoupper( $m->charset ) !== 'UTF-8' )											//  encoding differs from UTF-8
+                    $m->content    = iconv( $m->charset, 'UTF-8', $m->content );					//  recode content to UTF-8
+				$value = urldecode( $m->content );													//  remove prefix and decode content
+			}
+		} );
+
+		return (object) array(
+			'value'			=> $value,
+			'attributes'	=> new \ADT_List_Dictionary( $list ),
+		);
+	}
+
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$content		Header fields block to parse
+	 *	@param		integer		$mode			iconv mode (0-normal, 1-strict, 2-tolerant), default:
+	 *	@return		Section
+ 	 */
+	public static function parseByIconvStrategy( $content, $mode = 0 ): Section
+	{
+		$headers	= iconv_mime_decode_headers( $content, $mode, 'UTF-8' );
+		$section	= new Section();
+		foreach( $headers as $key => $values ){
+			if( !is_array( $values ) )
+				$values	= [$values];
+			foreach( $values as $value ){
+				$field	= new Field( $key, $value );
+				$section->addField( $field );
+			}
+		}
+		return $section;
+	}
+
+	public static function parseByThirdStrategy( string $content ): Section
+	{
+		$section	= new Section();
+		$lines		= preg_split( "/\r?\n/", $content );
+		$fws		= '';
+		foreach( $lines as $nr => $line ){
+			if( preg_match( '/^\S+:/', $line ) ){
+				list( $key, $value ) = explode( ':', $line, 2 );
+				$value	= Encoding::decodeIfNeeded( ltrim( $value ) );
+				$field	= new Field( $key, $value );
+				$section->addField( $field );
+				$buffer	= [$value];
+				$fws	= '';
+			}
+			else{																//  line is folded line
+				if( mb_strlen( $fws ) === 0 )									//  folding white space not detected yet
+					$fws	= preg_replace( '/^(\s+).+$/', '\\1', $line );		//  get only folding white space
+				$reducedLine	= substr( $line, strlen( $fws ) );				//  reduce line by folding white space
+				if( preg_match( '/^\s/', $reducedLine ) )						//  reduced line still contains leading white space
+					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
+				else{															//  reduced line is folding @ level 1
+					$line		= ' '.ltrim( $line );							//  reduce leading white space to one
+					$buffer[]	= Encoding::decodeIfNeeded( $line );		//  collect decoded line
+				}
+				$field->setValue( join( $buffer ) );							//  set unfolded field value
+			}
+		}
+		return $section;
+	}
+
+	public static function parseByFirstStrategy( string $content ): Section
+	{
+		$section	= new Section();
+		$content	= preg_replace( "/\r?\n[\t ]+/", '', $content );				//  unfold field values
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
 		foreach( $lines as $line ){
 			$parts	= explode( ":", $line, 2 );
 			if( count( $parts ) > 1 ){
 				$value	= trim( $parts[1] );
 				if( substr( $value, 0, 2 ) == "=?" )
-					$value	= MessageHeaderEncoding::decodeIfNeeded( $value );
+					$value	= Encoding::decodeIfNeeded( $value );
 				$section->addFieldPair( $parts[0], $value );
 			}
 		}
 		return $section;
 	}
 
-	public static function parseBySecondStrategy( string $content ): MessageHeaderSection
+	public static function parseBySecondStrategy( string $content ): Section
 	{
-		$section	= new MessageHeaderSection();
+		$section	= new Section();
 		$rawPairs	= self::splitIntoListOfUnfoldedDecodedDataObjects( $content );
 		foreach( $rawPairs as $rawPair )
 			$section->addFieldPair( $rawPair->key, $rawPair->value );
 		return $section;
+	}
+
+	public function setStrategy( int $strategy ): self
+	{
+		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
+			throw new \RangeException( 'Invalid strategy' );
+		$this->strategy	= $strategy;
+		return $this;
 	}
 
 	public static function splitIntoListOfUnfoldedDecodedDataObjects( string $content ): array
@@ -144,20 +287,12 @@ class Parser
 				$key	= $parts[0];
 				$value	= ltrim( $parts[1] );
 			}
-			$value		= MessageHeaderEncoding::decodeIfNeeded( $value );
 			$value		= preg_replace( '/[\r\n\t]*/', '', $value );
 			$buffer[]	= trim( $value );
+			$value		= Encoding::decodeIfNeeded( $value );
 		}
 		if( !is_null( $key ) && count( $buffer ) > 0 )
 			$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
 		return $list;
-	}
-
-	public function setStrategy( int $strategy ): self
-	{
-		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
-			throw new \RangeException( 'Invalid strategy' );
-		$this->strategy	= $strategy;
-		return $this;
 	}
 }
