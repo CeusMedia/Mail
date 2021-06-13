@@ -368,7 +368,8 @@ class Mailbox
 			return '{'.$this->host.'}';
 		if( NULL === $this->reference ){
 			$port		= 143;
-			$flags		= array('imap');
+//			$flags		= array('imap');
+			$flags		= array();
 			if( $this->secure ){
 				$port		= 993;
 				$flags[]	= 'ssl';
