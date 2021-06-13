@@ -7,11 +7,17 @@ use CeusMedia\Mail\Transport\SMTP;
 use UI_HTML_PageFrame as Page;
 use UI_HTML_Tag as Tag;
 
+$sendMail		= !TRUE;
+$sendVerbose	= !TRUE;
+
 $configSend	= (object) $config->getAll( 'sending_' );
 $configSmtp	= (object) $config->getAll( 'SMTP_' );
 
 $configSend->subject	= "CeusMedia/Mail: Rendering Demo";
 $configSend->body		= "There should be a blue block at the left.";
+
+//print_m($configSend);
+//print_m($configSmtp);
 
 $html	= new Page();
 $html->setTitle( $configSend->subject );
@@ -32,8 +38,9 @@ $message->addInlineImage( 'image1', '1x1-3094d7bf.png' );
 //$message->addText( "TEXT" );
 //$message->addFile( '1x1-3094d7bf.png' );
 
-if( $configSmtp->username && $configSmtp->password ){
+if( $sendMail && $configSmtp->username && $configSmtp->password ){
 	$transport	= new SMTP( $configSmtp->host, $configSmtp->port );
+	$transport->setVerbose( $sendVerbose );
 	if( $configSend->senderAddress && $configSend->receiverAddress ){
 		$transport->setAuth( $configSmtp->username, $configSmtp->password );
 		$transport->send( $message );
