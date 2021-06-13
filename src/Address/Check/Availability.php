@@ -28,8 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
-use CeusMedia\Cache\AdapterInterface;
-use CeusMedia\Cache\Factory;
+use CeusMedia\Cache\AbstractAdapter as CacheAdapter;
+use CeusMedia\Cache\Factory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
@@ -57,7 +57,7 @@ class Availability
 	/** @var	SmtpResponse	$lastResponse */
 	protected $lastResponse;
 
-	/** @var		AdapterInterface */
+	/** @var	CacheAdapter	$cache */
 	protected $cache;
 
 	/**
@@ -72,7 +72,7 @@ class Availability
 			$sender		= new Address( $sender );
 		$this->sender	= $sender;
 		$this->lastResponse	= new SmtpResponse();
-		$this->cache	= Factory::createStorage( 'Noop' );
+		$this->cache	= CacheFactory::createStorage( 'Noop' );
 	}
 
 	/**
@@ -195,7 +195,7 @@ class Availability
 		}
 	}
 
-	public function setCache( AdapterInterface $cache ): self
+	public function setCache( CacheAdapter $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;
