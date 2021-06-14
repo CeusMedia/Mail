@@ -115,29 +115,6 @@ class Mailbox
 		$this->disconnect();
 	}
 
-	/**
-	 *	...
-	 *	@param		bool		$connect
-	 *	@param		bool		$strict
-	 *	@return		bool
-	 */
-	protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
-	{
-		if( NULL === $this->connection || !imap_ping( $this->connection ) ){
-			if( !$connect ){
-				if( $strict )
-					throw new \RuntimeException( 'Not connected' );
-				return FALSE;
-			}
-			return $this->connect();
-		}
-		if( NULL !== $this->connection && is_resource( $this->connection ) )
-			return TRUE;
-		if( $strict )
-			throw new \RuntimeException( 'Not connected' );
-		return FALSE;
-	}
-
 	public static function checkExtensionInstalled( bool $strict = TRUE ): bool
 	{
 		if( extension_loaded( 'imap' ) )
@@ -230,7 +207,10 @@ class Mailbox
 	public function index( array $criteria = array(), int $sort = SORTARRIVAL, bool $reverse = TRUE, bool $strict = TRUE ): array
 	{
 		$this->checkConnection( TRUE, $strict );
-		return imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+		$result	= imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+		if( $result === FALSE )
+			$result	= [];
+		return $result;
 	}
 
 	public function moveMail( int $mailId, string $folder, bool $expunge = FALSE ): bool
@@ -360,6 +340,31 @@ class Mailbox
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
 		imap_clearflag_full( $this->connection, $mailId, $flag, ST_UID );
 		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	/**
+	 *	...
+	 *	@param		bool		$connect
+	 *	@param		bool		$strict
+	 *	@return		bool
+	 */
+	protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
+	{
+		if( NULL === $this->connection || !imap_ping( $this->connection ) ){
+			if( !$connect ){
+				if( $strict )
+					throw new \RuntimeException( 'Not connected' );
+				return FALSE;
+			}
+			return $this->connect();
+		}
+		if( NULL !== $this->connection && is_resource( $this->connection ) )
+			return TRUE;
+		if( $strict )
+			throw new \RuntimeException( 'Not connected' );
+		return FALSE;
 	}
 
 	protected function renderConnectionReference( bool $withPortAndFlags = TRUE ): string
