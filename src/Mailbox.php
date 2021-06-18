@@ -129,14 +129,14 @@ class Mailbox
 		$reference	= $this->renderConnectionReference( TRUE );
 		$options	= $this->secure && $this->validateCertificates ? OP_SECURE : 0;
 		$uri		= $reference.'INBOX';
-		$resource	= imap_open( $uri, $this->username, $this->password, $options );
+		$resource	= @imap_open( $uri, $this->username, $this->password, $options );
 		if( FALSE !== $resource ){
 			$this->connection	= $resource;
 			return TRUE;
 		}
 		$this->error	= imap_last_error();
 		if( $strict )
-			throw new \RuntimeException( 'Connection to server failed' );
+			throw new \RuntimeException( 'Connection to server failed: '.$this->error );
 		return FALSE;
 	}
 
@@ -373,6 +373,7 @@ class Mailbox
 			return '{'.$this->host.'}';
 		if( NULL === $this->reference ){
 			$port		= 143;
+//			$flags		= array('imap');
 			$flags		= array();
 			if( $this->secure ){
 				$port		= 993;

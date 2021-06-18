@@ -218,10 +218,13 @@ class Parser
 				$methodFactory	= new \Alg_Object_MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->getAttribute( $key );
+					if( is_null( $value ) )
+						continue;
 					if( preg_match( '/-date$/', $key ) )
 						$value	= strtotime( $value );
-					if( $value )
-						\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
+					if( $value ){
+						$methodFactory->setMethod( $method, array( $value ) )->call();
+					}
 				}
 				return $part;
 			}
