@@ -189,10 +189,10 @@ class Parser
 			}
 		} );
 
-		return (object) array(
+		return (object) [
 			'value'			=> $value,
 			'attributes'	=> new Dictionary( $list ),
-		);
+		];
 	}
 
 	/**

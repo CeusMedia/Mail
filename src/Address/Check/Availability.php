@@ -231,15 +231,23 @@ class Availability
 
 	//  --  PROTECTED  --  //
 
+	/**
+	 *	@access		protected
+	 *	@param		string		$hostname
+	 *	@param		boolean		$useCache
+	 *	@param		boolean		$strict
+	 *	@return		array
+	 */
 	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
 	}
 
 	/**
-	 * @param resource $connection
-	 * @param array $acceptedCodes
-	 * @return object
+	 *	@access		protected
+	 *	@param		resource	$connection
+	 *	@param		array		$acceptedCodes
+	 *	@return		object
 	 */
 	protected function readResponse( $connection, array $acceptedCodes = [] ): object
 	{
@@ -278,6 +286,7 @@ class Availability
 
 	/**
 	 *	...
+	 *	@access		protected
 	 *	@param		resource		$connection
 	 *	@param		string			$message
 	 *	@return		bool

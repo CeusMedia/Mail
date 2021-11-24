@@ -342,7 +342,7 @@ abstract class Part
 	 */
 	public function setEncoding( $encoding ): self
 	{
-		$encodings	= array( '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' );
+		$encodings	= [ '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' ];
 		if( !in_array( $encoding, $encodings, TRUE ) )
 			throw new InvalidArgumentException( 'Invalid encoding: '.$encoding );
 		$this->encoding	= $encoding;
@@ -358,7 +358,7 @@ abstract class Part
 	 */
 	public function setFormat( $format ): self
 	{
-		$formats	= array( 'fixed', 'flowed' );
+		$formats	= [ 'fixed', 'flowed' ];
 		if( !in_array( $format, $formats, TRUE ) )
 			throw new InvalidArgumentException( 'Invalid format' );
 		$this->format	= $format;
@@ -387,7 +387,7 @@ abstract class Part
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@param		boolean		$split			Flag: ... (default: yes)
 	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 *	@throws		InvalidArgumentException	if encoding is invalid
 	 */
 	protected static function encodeContent( string $content, string $encoding, bool $split = TRUE ): string
 	{

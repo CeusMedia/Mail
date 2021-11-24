@@ -115,6 +115,44 @@ class Encoding
 		}
 	}
 
+	/**
+	 *	Encodes a mail header value string if needed.
+	 *	@static
+	 *	@access		public
+	 *	@param		string		$string			A mail header value string, subject for example.
+	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
+	 *	@return		string
+	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 */
+	public static function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
+	{
+		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
+			return $string;
+		switch( strtolower( $encoding ) ){
+			case 'base64':
+				return "=?UTF-8?B?".base64_encode( $string )."?=";
+			case 'quoted-printable':
+				$string		= quoted_printable_encode( $string );
+				$string		= str_replace( [ '?', ' ' ], [ '=3F', '_' ], $string );
+				$replace	= $fold ? "?=".Message::$delimiter."\t"."=?UTF-8?Q?" : '';
+				$string   	= str_replace( '='.Message::$delimiter, $replace, $string );
+				return "=?UTF-8?Q?".$string."?=";
+			default:
+				throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+		}
+	}
+
+	/*  --  PROTECTED  --  */
+
+	/**
+	 *	...
+	 *	@static
+	 *	@access		protected
+	 *	@param		string		$string			...
+	 *	@return		string
+	 *	@throws		RuntimeException			if Base64 decoding fails
+	 *	@throws		InvalidArgumentException	if encoding detection & support fails
+	 */
 	protected static function decode( string $string ): string
 	{
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
@@ -150,32 +188,5 @@ class Encoding
 			$list[]	= $line;
 		}
 		return join( $list );
-	}
-
-	/**
-	 *	Encodes a mail header value string if needed.
-	 *	@static
-	 *	@access		public
-	 *	@param		string		$string			A mail header value string, subject for example.
-	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
-	 *	@return		string
-	 *	@throws		InvalidArgumentException	if given encoding is not supported
-	 */
-	public static function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
-	{
-		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
-			return $string;
-		switch( strtolower( $encoding ) ){
-			case 'base64':
-				return "=?UTF-8?B?".base64_encode( $string )."?=";
-			case 'quoted-printable':
-				$string		= quoted_printable_encode( $string );
-				$string		= str_replace( array( '?', ' '), array( '=3F', '_' ), $string );
-				$replace	= $fold ? "?=".Message::$delimiter."\t"."=?UTF-8?Q?" : '';
-				$string   	= str_replace( '='.Message::$delimiter, $replace, $string );
-				return "=?UTF-8?Q?".$string."?=";
-			default:
-				throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
-		}
 	}
 }

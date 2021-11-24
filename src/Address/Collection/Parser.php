@@ -63,6 +63,13 @@ class Parser
 	const METHOD_OWN					= 2;
 	const METHOD_IMAP_PLUS_OWN			= 3;
 
+	const METHODS						= [
+		self::METHOD_AUTO,
+		self::METHOD_IMAP,
+		self::METHOD_OWN,
+		self::METHOD_IMAP_PLUS_OWN,
+	];
+
 	const STATE_SCANNING_FOR_NAME		= 0;
 	const STATE_READING_NAME			= 1;
 	const STATE_READING_QUOTED_NAME		= 2;

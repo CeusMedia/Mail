@@ -90,26 +90,6 @@ class Attachment extends MessagePart
 	}
 
 	/**
-	 *	Returns set file name.
-	 *	@access		public
-	 *	@return		string|NULL
-	 */
-	public function getFileName(): ?string
-	{
-		return $this->fileName;
-	}
-
-	/**
-	 *	Returns file size in bytes.
-	 *	@access		public
-	 *	@return		int|NULL
-	 */
-	public function getFileSize(): ?int
-	{
-		return $this->fileSize;
-	}
-
-	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
 	 *	@return		int|NULL
@@ -137,6 +117,26 @@ class Attachment extends MessagePart
 	public function getFileMTime(): ?int
 	{
 		return $this->fileMTime;
+	}
+
+	/**
+	 *	Returns set file name.
+	 *	@access		public
+	 *	@return		string|NULL
+	 */
+	public function getFileName(): ?string
+	{
+		return $this->fileName;
+	}
+
+	/**
+	 *	Returns file size in bytes.
+	 *	@access		public
+	 *	@return		int|NULL
+	 */
+	public function getFileSize(): ?int
+	{
+		return $this->fileSize;
 	}
 
 	/**
@@ -221,30 +221,6 @@ class Attachment extends MessagePart
 	}
 
 	/**
-	 *	Sets file name.
-	 *	@access		public
-	 *	@param		string		$fileName	File name.
-	 *	@return		self		Self instance for chaining
-	 */
-	public function setFileName( $fileName ): self
-	{
-		$this->fileName		= basename( $fileName );
-		return $this;
-	}
-
-	/**
-	 *	Sets file size in bytes.
-	 *	@access		public
-	 *	@param		integer|NULL	$fileSize		File size in bytes.
-	 *	@return		self			Self instance for chaining
-	 */
-	public function setFileSize( ?int $fileSize ): self
-	{
-		$this->fileSize		= $fileSize;
-		return $this;
-	}
-
-	/**
 	 *	Sets access time by UNIX timestamp.
 	 *	@access		public
 	 *	@param		integer|NULL	$timestamp		Timestamp of latest access.
@@ -277,6 +253,30 @@ class Attachment extends MessagePart
 	public function setFileMTime( ?int $timestamp ): self
 	{
 		$this->fileMTime	= $timestamp;
+		return $this;
+	}
+
+	/**
+	 *	Sets file name.
+	 *	@access		public
+	 *	@param		string		$fileName	File name.
+	 *	@return		self		Self instance for chaining
+	 */
+	public function setFileName( $fileName ): self
+	{
+		$this->fileName		= basename( $fileName );
+		return $this;
+	}
+
+	/**
+	 *	Sets file size in bytes.
+	 *	@access		public
+	 *	@param		integer|NULL	$fileSize		File size in bytes.
+	 *	@return		self			Self instance for chaining
+	 */
+	public function setFileSize( ?int $fileSize ): self
+	{
+		$this->fileSize		= $fileSize;
 		return $this;
 	}
 }

@@ -203,7 +203,7 @@ class Parser
 			$filename		= $disposition->getAttribute( 'filename' );
 			$value			= strtoupper( $disposition->getValue() );
 			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
-			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ), TRUE ) && NULL !== $filename;
+			$isAttachment	= in_array( $value, [ 'INLINE', 'ATTACHMENT' ], TRUE ) && NULL !== $filename;
 
 			if( $isAttachment || $isInlineImage ){
 				$part	= new MessagePartAttachment();
@@ -222,19 +222,19 @@ class Parser
 				if( NULL !== $filename )
 					$part->setFilename( $filename );
 
-				$dispositionAttributesToCopy	= array(
+				$dispositionAttributesToCopy	= [
 					'size'				=> 'setFileSize',
 					'read-date'			=> 'setFileATime',
 					'creation-date'		=> 'setFileCTime',
 					'modification-date'	=> 'setFileMTime',
-				);
+				];
 				$methodFactory	= new MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->getAttribute( $key );
 					if( preg_match( '/-date$/', $key ) )
 						$value	= strtotime( $value );
 					if( $value )
-						MethodFactory::callObjectMethod( $part, $method, array( $value ) );
+						MethodFactory::callObjectMethod( $part, $method, [ $value ] );
 				}
 				return $part;
 			}

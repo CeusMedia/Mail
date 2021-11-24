@@ -332,12 +332,12 @@ class Mailbox
 	 */
 	public function setTimeout( int $type, int $seconds ): self
 	{
-		$timeoutTypes	= array(
+		$timeoutTypes	= [
 			IMAP_OPENTIMEOUT,
 			IMAP_READTIMEOUT,
 			IMAP_WRITETIMEOUT,
 			IMAP_CLOSETIMEOUT
-		);
+		];
 		if( !in_array( $type, $timeoutTypes, TRUE ) )
 			throw new InvalidArgumentException( 'Invalid timeout type' );
 		imap_timeout( $timeoutTypes[$type], $seconds );
@@ -352,7 +352,7 @@ class Mailbox
 	 */
 	public function unsetMailFlag( string $mailId, string $flag ): self
 	{
-		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
+		$flags	= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
 		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
 			throw new RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );

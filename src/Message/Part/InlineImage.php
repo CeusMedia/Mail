@@ -93,26 +93,6 @@ class InlineImage extends MessagePart
 	}
 
 	/**
-	 *	Returns set File Name.
-	 *	@access		public
-	 *	@return		string|NULL
-	 */
-	public function getFileName(): ?string
-	{
-		return $this->fileName;
-	}
-
-	/**
-	 *	Returns file size in bytes.
-	 *	@access		public
-	 *	@return		integer|NULL
-	 */
-	public function getFileSize(): ?int
-	{
-		return $this->fileSize;
-	}
-
-	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
 	 *	@return		integer|NULL
@@ -140,6 +120,26 @@ class InlineImage extends MessagePart
 	public function getFileMTime(): ?int
 	{
 		return $this->fileMTime;
+	}
+
+	/**
+	 *	Returns set File Name.
+	 *	@access		public
+	 *	@return		string|NULL
+	 */
+	public function getFileName(): ?string
+	{
+		return $this->fileName;
+	}
+
+	/**
+	 *	Returns file size in bytes.
+	 *	@access		public
+	 *	@return		integer|NULL
+	 */
+	public function getFileSize(): ?int
+	{
+		return $this->fileSize;
 	}
 
 	/**
@@ -179,10 +179,10 @@ class InlineImage extends MessagePart
 			$section->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
 			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
 			$section->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
-			$disposition	= array(
+			$disposition	= [
 				'INLINE',
 				'filename="'.$this->fileName.'"'
-			);
+			];
 			if( NULL !== $this->fileSize )
 				$disposition[]	= 'size="'.$this->fileSize.'"';
 			if( NULL !== $this->fileATime )
@@ -206,8 +206,8 @@ class InlineImage extends MessagePart
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string|NULL		$encoding		Optional: Encoding of file
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
-	 *	@return		self		  	Self instance for chaining
-	 *	@throws		InvalidArgumentException	if file is not existing
+	 *	@return		self		  					Self instance for chaining
+	 *	@throws		InvalidArgumentException		if file is not existing
 	 *	@todo  		scan file for malware
 	 */
 	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
@@ -233,30 +233,6 @@ class InlineImage extends MessagePart
 		$this->setMimeType( $mimeType );
 		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 			$this->setEncoding( $encoding );
-		return $this;
-	}
-
-	/**
-	 *	Sets file name.
-	 *	@access		public
-	 *	@param		string   	$fileName		File name
-	 *	@return		self	  	Self instance for chaining
-	 */
-	public function setFileName( $fileName ): self
-	{
-		$this->fileName		= basename( $fileName );
-		return $this;
-	}
-
-	/**
-	 *	Sets file size in bytes.
-	 *	@access		public
-	 *	@param		integer  	$fileSize		File size
-	 *	@return		self  		Self instance for chaining
-	 */
-	public function setFileSize( $fileSize ): self
-	{
-		$this->fileSize		= $fileSize;
 		return $this;
 	}
 
@@ -293,6 +269,30 @@ class InlineImage extends MessagePart
 	public function setFileMTime( $timestamp ): self
 	{
 		$this->fileMTime	= $timestamp;
+		return $this;
+	}
+
+	/**
+	 *	Sets file name.
+	 *	@access		public
+	 *	@param		string   	$fileName		File name
+	 *	@return		self	  	Self instance for chaining
+	 */
+	public function setFileName( $fileName ): self
+	{
+		$this->fileName		= basename( $fileName );
+		return $this;
+	}
+
+	/**
+	 *	Sets file size in bytes.
+	 *	@access		public
+	 *	@param		integer  	$fileSize		File size
+	 *	@return		self  		Self instance for chaining
+	 */
+	public function setFileSize( $fileSize ): self
+	{
+		$this->fileSize		= $fileSize;
 		return $this;
 	}
 

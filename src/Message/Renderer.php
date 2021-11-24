@@ -42,6 +42,7 @@ use RuntimeException;
 use function array_pop;
 use function count;
 use function join;
+use function md5;
 use function microtime;
 use function rtrim;
 use function sha1;
@@ -116,14 +117,14 @@ class Renderer
 			return $part->render( MessagePart::SECTION_ALL, $headers );			//  render part and apply part headers as message headers
 		}
 
-		$parts	= (object) array(
-			'body'	=> (object) array(
+		$parts	= (object) [
+			'body'	=> (object) [
 				'html'	=> NULL,
 				'text'	=> NULL,
-			),
+			],
 		'files'		=> [],
 			'images'	=> [],
-		);
+		];
 		foreach( $message->getParts( TRUE ) as $part ){
 			if( $part instanceof MessagePartHTML )
 				$parts->body->html	= $part;
@@ -138,14 +139,12 @@ class Renderer
 		}
 
 		$delim			= Message::$delimiter;
-		$mimeBoundary	= '------'.md5( (string) microtime( TRUE ) );			//  mixed multipart boundary
+		$mimeBoundary	= '------'.md5( (string) ( microtime( TRUE ) + 0 ) );	//  mixed multipart boundary
 		$mimeBoundary1	= '------'.md5( (string) ( microtime( TRUE ) + 1 ) );	//  related multipart boundary
 		$mimeBoundary2	= '------'.md5( (string) ( microtime( TRUE ) + 2 ) );	//  alternative multipart boundary
 		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
-		$contents	= array(
-			'This is a multi-part message in MIME format.',
-		);
-		$bodyParts	= $message->getParts( FALSE, FALSE );
+		$contents		= [ 'This is a multi-part message in MIME format.' ];
+		$bodyParts		= $message->getParts( FALSE, FALSE );
 		if( count( $bodyParts ) > 1 ){							//  alternative content parts
 			$contents[]	= '--'.$mimeBoundary;
 			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';

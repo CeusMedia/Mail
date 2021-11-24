@@ -428,7 +428,7 @@ class Message
 	 */
 	public function getRecipientsByType( string $type = 'TO' ): AddressCollection
 	{
-		if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ), TRUE ) )
+		if( !in_array( strtoupper( $type ), [ 'TO', 'CC', 'BCC' ], TRUE ) )
 			throw new DomainException( 'Type must be of to, cc or bcc' );
 		return $this->recipients[strtolower( $type )];
 	}

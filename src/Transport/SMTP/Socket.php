@@ -76,6 +76,22 @@ class Socket
 	protected $timeout			= 5;
 
 	/**
+	 *	Alias for getInstance.
+	 *	@access		public
+	 *	@static
+	 *	@param		string|NULL		$host		SMTP server host name
+	 *	@param		integer|NULL	$port		SMTP server port
+	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
+	 *	@return		self
+	 *	@deprecated	use getInstance instead
+	 *	@todo		to be removed
+	 */
+	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
+	{
+		return static::getInstance( $host, $port, $timeout );
+	}
+
+	/**
 	 *	Constructor.
 	 *	@access		public
 	 *	@param		string|NULL		$host			SMTP server host name
@@ -96,22 +112,6 @@ class Socket
 	public function __destruct()
 	{
 		$this->close();
-	}
-
-	/**
-	 *	Alias for getInstance.
-	 *	@access		public
-	 *	@static
-	 *	@param		string|NULL		$host		SMTP server host name
-	 *	@param		integer|NULL	$port		SMTP server port
-	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
-	 *	@return		self
-	 *	@deprecated	use getInstance instead
-	 *	@todo		to be removed
-	 */
-	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
-	{
-		return static::getInstance( $host, $port, $timeout );
 	}
 
 	/**
@@ -153,10 +153,10 @@ class Socket
 	 */
 	public function getError(): array
 	{
-		return array(
+		return [
 			'number'	=> $this->errorNumber,
 			'message'	=> $this->errorMessage,
-		);
+		];
 	}
 
 	/**
@@ -294,6 +294,20 @@ class Socket
 	}
 
 	/**
+	 *	Sends command or data to SMTP server.
+	 *	@access		public
+	 *	@param		string		$content	Message to send to SMTP server
+	 *	@return		boolean					Number of written bytes
+	 *	@throws		RuntimeException		if connection is not open
+	 */
+	public function sendChunk( string $content ): bool
+	{
+		if( NULL === $this->connection )
+			throw new RuntimeException( 'Not connected' );
+		return FALSE !== fwrite( $this->connection, $content );
+	}
+
+	/**
 	 *	Set host.
 	 *	@access		public
 	 *	@param		string		$host		SMTP server host name
@@ -327,19 +341,5 @@ class Socket
 	{
 		$this->timeout	= $seconds;
 		return $this;
-	}
-
-	/**
-	 *	Sends command or data to SMTP server.
-	 *	@access		public
-	 *	@param		string		$content	Message to send to SMTP server
-	 *	@return		boolean		Number of written bytes
-	 *	@throws		RuntimeException		if connection is not open
-	 */
-	public function sendChunk( string $content ): bool
-	{
-		if( NULL === $this->connection )
-			throw new RuntimeException( 'Not connected' );
-		return FALSE !== fwrite( $this->connection, $content );
 	}
 }
