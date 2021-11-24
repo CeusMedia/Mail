@@ -28,6 +28,12 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address;
 
+use function array_pop;
+use function array_reverse;
+use function join;
+use function preg_match;
+use function preg_split;
+
 /**
  *	Address name parser.
  *

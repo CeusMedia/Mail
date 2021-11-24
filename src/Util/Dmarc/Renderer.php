@@ -30,6 +30,10 @@ namespace CeusMedia\Mail\Util\Dmarc;
 
 use CeusMedia\Mail\Address;
 
+use function count;
+use function join;
+use function strlen;
+
 /**
  *	Renderer for DMARC records.
  *
@@ -68,17 +72,17 @@ class Renderer
 
 	public function render( Record $record ): string
 	{
-		$facts	= array(
+		$facts	= [
 			'v'		=> 'DMARC'.$record->version,
 			'p'		=> $record->policy,
-		);
+		];
 		if( 0 < strlen( $record->policySubdomains ) )
 			$facts['sp']	= $record->policySubdomains;
 		$facts['adkim']	= $record->alignmentDkim;
 		$facts['aspf']	= $record->alignmentSpf;
 		$facts['pct']	= $record->percent;
 		if( 0 < count( $record->reportAggregate ) ){
-			$list	= array();
+			$list	= [];
 			foreach( $record->reportAggregate as $uri ){
 				if( $uri instanceof Address )
 					$uri	= 'mailto:'.$uri->get();
@@ -87,7 +91,7 @@ class Renderer
 			$facts['rua']	= join( ', ', $list );
 		}
 		if( 0 < count( $record->reportForensic ) ){
-			$list	= array();
+			$list	= [];
 			foreach( $record->reportForensic as $uri ){
 				if( $uri instanceof Address )
 					$uri	= 'mailto:'.$uri->get();
@@ -100,7 +104,7 @@ class Renderer
 		if( $record->failureOption != '0' )
 			$facts['fo']	= $record->failureOption;
 
-		$list	= array();
+		$list	= [];
 		foreach( $facts as $key => $value )
 			$list[]	= $key.'='.(string) $value;
 		return join( '; ', $list );

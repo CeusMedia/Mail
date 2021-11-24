@@ -28,14 +28,26 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Header\Encoding;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
-use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
-use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
-use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
+use RuntimeException;
+
+use function array_pop;
+use function count;
+use function join;
+use function microtime;
+use function rtrim;
+use function sha1;
+use function strlen;
+use function time;
+use function trim;
 
 /**
  *	Renderer for mails.
@@ -82,9 +94,9 @@ class Renderer
 	public static function render( Message $message ): string
 	{
 		if( 0 === count( $message->getParts( TRUE ) ) )
-			throw new \RuntimeException( 'No content part set' );
+			throw new RuntimeException( 'No content part set' );
 		if( 0 === strlen( trim( $message->getSubject() ) ) )
-			throw new \RuntimeException( 'No subject set' );
+			throw new RuntimeException( 'No subject set' );
 
 		$headers	= $message->getHeaders();
 		if( !$headers->hasField( 'Message-ID' ) ){
@@ -109,8 +121,8 @@ class Renderer
 				'html'	=> NULL,
 				'text'	=> NULL,
 			),
-		'files'		=> array(),
-			'images'	=> array(),
+		'files'		=> [],
+			'images'	=> [],
 		);
 		foreach( $message->getParts( TRUE ) as $part ){
 			if( $part instanceof MessagePartHTML )

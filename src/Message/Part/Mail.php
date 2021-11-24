@@ -28,9 +28,14 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Part;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
+use function array_reverse;
+use function join;
+use function strtolower;
+use function trim;
 
 /**
  *	Mail Attachment Data Object.
@@ -86,11 +91,11 @@ class Mail extends MessagePart
 		}
 
 		if( $doHeader || $doAll ){
-			$section->setFieldPair( 'Content-Type', join( '; ', array(
+			$section->setFieldPair( 'Content-Type', join( '; ', [
 				$this->mimeType,
 				'charset="'.strtolower( trim( $this->charset ) ).'"',
 				'format='.$this->format
-			) ) );
+			] ) );
 			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
 			$list[]		= $section->toString( TRUE );
 		}

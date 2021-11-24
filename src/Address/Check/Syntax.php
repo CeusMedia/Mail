@@ -28,6 +28,12 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
+use Alg_Object_Constant;
+use InvalidArgumentException;
+
+use function filter_var;
+use function preg_match;
+
 /**
  *	Validator for mail address syntax.
  *
@@ -72,13 +78,13 @@ class Syntax
 	 *	@param		string			$address		Mail address to validate
 	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer							Bitmask of successfully applied test modes
-	 *	@throws		\InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
+	 *	@throws		InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
 	 */
 	public function check( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result		= 0;
 		$wildcard	= self::MODE_ALL === ( $this->mode & self::MODE_ALL );
-		$constants	= \Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
+		$constants	= Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
 		foreach( $constants as $key => $value ){
 			if( ( $value === ( $this->mode & $value ) ) || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
@@ -111,12 +117,16 @@ class Syntax
 	 *	@param		string			$address		Mail address to validate
 	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer							Bitmask of successfully applied test modes
-	 *	@throws		\InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
+	 *	@throws		InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
 	 */
 	public function evaluate( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result	= 0;
-		$modes	= array( self::MODE_FILTER, self::MODE_SIMPLE_REGEX, self::MODE_EXTENDED_REGEX );
+		$modes	= [
+			self::MODE_FILTER,
+			self::MODE_SIMPLE_REGEX,
+			self::MODE_EXTENDED_REGEX
+		];
 		foreach( $modes as $mode )
 			if( $this->isValidByMode( $address, $mode ) )
 				$result	|= $mode;
@@ -146,7 +156,7 @@ class Syntax
 			return 0 !== preg_match( $this->regexSimple, $address );
 		if( $mode === self::MODE_EXTENDED_REGEX )
 			return 0 !== preg_match( $this->regexExtended, $address );
-		throw new \InvalidArgumentException( 'Invalid mode given' );
+		throw new InvalidArgumentException( 'Invalid mode given' );
 	}
 
 	/**

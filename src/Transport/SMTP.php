@@ -32,8 +32,15 @@ use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
-use RuntimeException;
+
 use InvalidArgumentException;
+use RuntimeException;
+use Throwable;
+
+use function count;
+use function in_array;
+use function join;
+use function strlen;
 
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
@@ -185,7 +192,7 @@ class SMTP
 			$this->checkResponse( [ 221 ] );
 			$this->socket->close();
 		}
-		catch( \Throwable $t ){
+		catch( Throwable $t ){
 			$this->socket->close();
 			throw new RuntimeException( $t->getMessage(), $t->getCode(), $t->getPrevious() );
 		}

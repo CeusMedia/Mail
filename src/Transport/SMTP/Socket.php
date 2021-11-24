@@ -30,6 +30,19 @@ namespace CeusMedia\Mail\Transport\SMTP;
 
 use RuntimeException;
 
+use function abs;
+use function fclose;
+use function fgets;
+use function fsockopen;
+use function fwrite;
+use function is_integer;
+use function is_null;
+use function preg_match;
+use function join;
+use function stream_socket_enable_crypto;
+use function strlen;
+use function trim;
+
 /**
  *	...
  *
@@ -263,7 +276,7 @@ class Socket
 			$response	= fgets( $this->connection, $length );
 			if( FALSE !== $response ){
 				$raw[]		= rtrim( $response, "\r\n" );
-				$matches	= array();
+				$matches	= [];
 				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
 				if( !$matches )
 					throw new RuntimeException( 'SMTP response not understood: '.trim( $response ) );
@@ -273,11 +286,11 @@ class Socket
 			}
 		}
 		while( FALSE !== $response && !$lastLine );
-		return (object) array(
+		return (object) [
 			'code'		=> $code,
 			'message'	=> join( "\n", $buffer ),
 			'raw'		=> $raw,
-		);
+		];
 	}
 
 	/**

@@ -28,12 +28,29 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
-use CeusMedia\Cache\AbstractAdapter as CacheAdapter;
+use CeusMedia\Cache\AdapterInterface as CacheAdapter;
 use CeusMedia\Cache\Factory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Util\MX;
+
+use RangeException;
+use RuntimeException;
+
+use function array_key_exists;
+use function array_shift;
+use function count;
+use function fclose;
+use function fgets;
+use function fputs;
+use function fsockopen;
+use function in_array;
+use function is_string;
+use function join;
+use function preg_match;
+use function stream_socket_enable_crypto;
+use function trim;
 
 /**
  *	Evaluate existence of mail receiver address.
@@ -79,7 +96,7 @@ class Availability
 	 *	...
 	 *	@access		public
 	 *	@param		string|NULL			$key			Response data key (error|code|message)
-	 *	@throws		\RangeException						if given key is invalid
+	 *	@throws		RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 *	@deprecated	use getLastResponse instead
 	 */
@@ -92,7 +109,7 @@ class Availability
 	 *	...
 	 *	@access		public
 	 *	@param		string|NULL			$key			Response data key (error|request|response|code|message)
-	 *	@throws		\RangeException						if given key is invalid
+	 *	@throws		RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 */
 	public function getLastResponse( ?string $key = NULL )
@@ -101,7 +118,7 @@ class Availability
 		if( NULL !== $key ){
 			if( array_key_exists( $key, $properties ) )
 				return $properties[$key];
-			throw new \RangeException( 'Unknown key: '.$key );
+			throw new RangeException( 'Unknown key: '.$key );
 		}
 		return (object) $properties;
 	}
@@ -224,11 +241,11 @@ class Availability
 	 * @param array $acceptedCodes
 	 * @return object
 	 */
-	protected function readResponse( $connection, array $acceptedCodes = array() ): object
+	protected function readResponse( $connection, array $acceptedCodes = [] ): object
 	{
 		$lastLine	= FALSE;
 		$code		= NULL;
-		$buffer		= array();
+		$buffer		= [];
 		do{
 			$response	= fgets( $connection, 1024 );
 			if( FALSE !== $response ) {
@@ -238,14 +255,14 @@ class Availability
 				$this->lastResponse->setMessage();
 				if( $this->verbose )
 					print ' < ' . $response;
-				$matches = array();
+				$matches = [];
 				preg_match('/^([0-9]{3})( |-)(.+)$/', $response, $matches);
 				if( !$matches )
-					throw new \RuntimeException('SMTP response not understood');
+					throw new RuntimeException('SMTP response not understood');
 				$code = (int) $matches[1];
 				$buffer[] = trim( $matches[3] );
 				if( 0 < count($acceptedCodes) && !in_array($code, $acceptedCodes, TRUE ) )
-					throw new \RuntimeException('Unexcepted SMTP response (' . $matches[1] . '): ' . $matches[3], $code );
+					throw new RuntimeException('Unexcepted SMTP response (' . $matches[1] . '): ' . $matches[3], $code );
 				if( ' ' === $matches[2])
 					$lastLine = TRUE;
 				$this->lastResponse->setCode( (int) $matches[1] );
@@ -253,10 +270,10 @@ class Availability
 			}
 		}
 		while( FALSE !== $response && !$lastLine );
-		return (object) array(
+		return (object) [
 			'code'		=> $code,
 			'message'	=> join( "\n", $buffer ),
-		);
+		];
 	}
 
 	/**

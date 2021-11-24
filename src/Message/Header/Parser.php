@@ -28,6 +28,29 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use ADT_List_Dictionary as Dictionary;
+
+use RangeException;
+use RuntimeException;
+
+use function array_shift;
+use function array_walk;
+use function count;
+use function explode;
+use function iconv;
+use function iconv_mime_decode_headers;
+use function is_array;
+use function is_null;
+use function ltrim;
+use function mb_strlen;
+use function preg_match;
+use function preg_replace;
+use function preg_split;
+use function strtoupper;
+use function substr;
+use function trim;
+use function urldecode;
+
 /**
  *	Parser for mail headers.
  *	@category		Library
@@ -101,7 +124,7 @@ class Parser
 			case self::STRATEGY_ICONV_TOLERANT:
 				return self::parseByIconvStrategy( $content, 2 );
 			default:
-				throw new \RuntimeException( 'Unsupported strategy' );
+				throw new RuntimeException( 'Unsupported strategy' );
 		}
 	}
 
@@ -136,7 +159,7 @@ class Parser
 		$string	= trim( preg_replace( "/\r?\n/", "", $headerValue ) );
 		$parts	= preg_split( '/\s*;\s*/', $string );
 		$value	= array_shift( $parts );
-		$list	= array();
+		$list	= [];
 		if( 0 !== count( $parts ) ){
 			foreach( $parts as $part ){
 				if( preg_match( '/=/', $part ) ){
@@ -168,7 +191,7 @@ class Parser
 
 		return (object) array(
 			'value'			=> $value,
-			'attributes'	=> new \ADT_List_Dictionary( $list ),
+			'attributes'	=> new Dictionary( $list ),
 		);
 	}
 
@@ -256,7 +279,7 @@ class Parser
 	public function setStrategy( int $strategy ): self
 	{
 		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
-			throw new \RangeException( 'Invalid strategy' );
+			throw new RangeException( 'Invalid strategy' );
 		$this->strategy	= $strategy;
 		return $this;
 	}
@@ -265,8 +288,8 @@ class Parser
 	{
 		$key		= NULL;
 		$value		= NULL;
-		$list		= array();
-		$buffer		= array();
+		$list		= [];
+		$buffer		= [];
 		$lines		= preg_split( "/\r?\n/", $content );
 		foreach( $lines as $line ){
 			$value	= ltrim( $line );
@@ -274,7 +297,7 @@ class Parser
 				$parts	= explode( ":", $line, 2 );
 				if( !is_null( $key ) && count( $buffer ) > 0 ){
 					$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
-					$buffer	= array();
+					$buffer	= [];
 				}
 				$key	= $parts[0];
 				$value	= ltrim( $parts[1] );

@@ -34,6 +34,11 @@ use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
+use RuntimeException;
+
+use function imap_body;
+use function imap_fetchheader;
+
 /**
  *	...
  *
@@ -113,7 +118,7 @@ class Mail
 	public function getMessage( bool $withBodyParts = FALSE ): Message
 	{
 		if( NULL === $this->connection )
-			throw new \RuntimeException( 'No connection set' );
+			throw new RuntimeException( 'No connection set' );
 		$header	= $this->getRawHeader();
 		$body	= '';
 		if( $withBodyParts )
@@ -130,11 +135,11 @@ class Mail
 	public function getRawHeader( $force = FALSE ): string
 	{
 		if( NULL === $this->connection )
-			throw new \RuntimeException( 'No connection set' );
+			throw new RuntimeException( 'No connection set' );
 		if( NULL === $this->header || 0 === strlen( $this->header ) || $force ){
 			$header	= imap_fetchheader( $this->connection, $this->mailId, FT_UID );
 			if( FALSE === $header )
-				throw new \RuntimeException( 'Invalid mail ID' );
+				throw new RuntimeException( 'Invalid mail ID' );
 			$this->header	= $header;
 		}
 		return $this->header;

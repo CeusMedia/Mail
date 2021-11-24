@@ -28,7 +28,9 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address;
 
-use \CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address;
+
+use RuntimeException;
 
 /**
  *	Renderer for mail addresses.
@@ -73,8 +75,8 @@ class Renderer
 	 *	@access		public
 	 *	@param		Address		$address		Address to render
 	 *	@return		string		Rendered mail address
-	 *	@throws		\RuntimeException			If domain is empty
-	 *	@throws		\RuntimeException			If local part is empty
+	 *	@throws		RuntimeException			If domain is empty
+	 *	@throws		RuntimeException			If local part is empty
 	 *	@todo		addslashes on name?
 	 */
 	public function render( Address $address ): string

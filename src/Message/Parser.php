@@ -28,17 +28,30 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message;
 
-use \CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Header\AttributedField as MessageHeaderAttributedField;
-use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
-use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
-use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
-use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
-use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\AttributedField as MessageHeaderAttributedField;
+use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
+use Alg_Object_MethodFactory as MethodFactory;
+use RuntimeException;
+
+use function in_array;
+use function join;
+use function preg_match;
+use function preg_split;
+use function strlen;
+use function strtolower;
+use function strtotime;
+use function strtoupper;
+use function trim;
 
 /**
  *	Mail message parser.
@@ -123,13 +136,13 @@ class Parser
 		$body		= $parts[1];
 
 		if( !$headers->hasField( 'Content-Type' ) )
-			throw new \RuntimeException( 'Multipart has no content type header' );
+			throw new RuntimeException( 'Multipart has no content type header' );
 
 		$contentType	= $headers->getField( 'Content-Type' );
 		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
 		$mimeBoundary	= $contentType->getAttribute( 'boundary' );
 		if( NULL !== $mimeBoundary ){
-			$lines	= array();
+			$lines	= [];
 			$status	= 0;
 			foreach( preg_split( "/\r?\n/", $body ) as $nr => $line ){
 				if( $line === '--'.$mimeBoundary ){
@@ -138,7 +151,7 @@ class Parser
 						continue;
 					}
 					$this->parseMultipartBody( $message, join( $delim, $lines ) );
-					$lines	= array();
+					$lines	= [];
 				}
 				else if( $line === '--'.$mimeBoundary.'--' ){
 					$this->parseMultipartBody( $message, join( $delim, $lines ) );
@@ -215,13 +228,13 @@ class Parser
 					'creation-date'		=> 'setFileCTime',
 					'modification-date'	=> 'setFileMTime',
 				);
-				$methodFactory	= new \Alg_Object_MethodFactory( $part );
+				$methodFactory	= new MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->getAttribute( $key );
 					if( preg_match( '/-date$/', $key ) )
 						$value	= strtotime( $value );
 					if( $value )
-						\Alg_Object_MethodFactory::callObjectMethod( $part, $method, array( $value ) );
+						MethodFactory::callObjectMethod( $part, $method, array( $value ) );
 				}
 				return $part;
 			}

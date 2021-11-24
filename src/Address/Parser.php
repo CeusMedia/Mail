@@ -28,7 +28,17 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address;
 
-use \CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address;
+
+use InvalidArgumentException;
+
+
+use function array_keys;
+use function implode;
+use function preg_replace;
+use function stripslashes;
+use function trim;
+
 
 /**
  *	Parser for mail addresses.
@@ -44,11 +54,11 @@ use \CeusMedia\Mail\Address;
 class Parser
 {
 	/**	@var	array		$patterns		Map of understandable patterns (regular expressions) */
-	static protected $patterns	= array(												//  define name patterns
-		'name <local-part@domain>'	=> "/^(.*)\s(<((\S+)@(\S+))>)$/U",					//  full address: name and local-part at domain with (maybe in brackets)
-		'<local-part@domain>'		=> "/^<((\S+)@(\S+))>$/U",							//  short address: local-part at domain without name (and no brackets)
-		'local-part@domain'			=> "/^((\S+)@(\S+))$/U",							//  short address: local-part at domain without name (and no brackets)
-	);
+	static protected $patterns	= [												//  define name patterns
+		'name <local-part@domain>'	=> "/^(.*)\s(<((\S+)@(\S+))>)$/U",			//  full address: name and local-part at domain with (maybe in brackets)
+		'<local-part@domain>'		=> "/^<((\S+)@(\S+))>$/U",					//  short address: local-part at domain without name (and no brackets)
+		'local-part@domain'			=> "/^((\S+)@(\S+))$/U",					//  short address: local-part at domain without name (and no brackets)
+	];
 
 	/**
 	 *	Static constructor.
@@ -80,7 +90,7 @@ class Parser
 	 *	@access		public
 	 *	@param		string		$string			Mail address to parse
 	 *	@return		Address		Address object
-	 *	@throws		\InvalidArgumentException	if given string is not a valid mail address
+	 *	@throws		InvalidArgumentException	if given string is not a valid mail address
 	 */
 	public function parse( string $string ): Address
 	{
@@ -107,7 +117,7 @@ class Parser
 		else{																			//  not matching any pattern
 			$list		= '"'.implode( '" or "', array_keys( self::$patterns ) ).'"';
 			$message	= 'Invalid address given (must match '.$list.') - got '.$string ;
-			throw new \InvalidArgumentException( $message );
+			throw new InvalidArgumentException( $message );
 		}
 		$address	= new Address();
 		$address->setDomain( $domain );

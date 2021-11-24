@@ -28,8 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address;
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
 use Countable;
 use Iterator;
 
@@ -46,7 +46,7 @@ use Iterator;
 class Collection implements Countable, Iterator
 {
 	/** @var array $list */
-	protected $list		= array();
+	protected $list		= [];
 
 	/** @var int $position */
 	protected $position	= 0;
@@ -136,7 +136,7 @@ class Collection implements Countable, Iterator
 	{
 		$list	= $this->list;
 		if( $renderValues ){
-			$list	= array();
+			$list	= [];
 			foreach( $this->list as $address )
 				$list[]	= $address->get();
 		}

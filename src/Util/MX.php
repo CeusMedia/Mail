@@ -29,7 +29,20 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Util;
 
 use CeusMedia\Cache\AdapterInterface;
-use \CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address;
+
+use RuntimeException;
+use Throwable;
+
+use function exec;
+use function function_exists;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function ksort;
+use function preg_match;
+use function strlen;
+use function trim;
 
 /**
  *	Resolver for DNS MX records related to hostname or mail address.
@@ -101,10 +114,10 @@ class MX
 		$useCache	= $useCache && $this->useCache;
 		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
 			return json_decode( $this->cache->get( 'mx:'.$hostname ), TRUE );
-		$servers	= array();
+		$servers	= [];
 		getmxrr( $hostname, $mxRecords, $mxWeights );
 		if( !$mxRecords && $strict )
-			throw new \RuntimeException( 'No MX records found for host: '.$hostname );
+			throw new RuntimeException( 'No MX records found for host: '.$hostname );
 		foreach( $mxRecords as $nr => $server )
 			$servers[$mxWeights[$nr]]	= $server;
 		ksort( $servers );
@@ -112,7 +125,7 @@ class MX
 			try{
 				$this->cache->set( 'mx:'.$hostname, json_encode( $servers, JSON_THROW_ON_ERROR ) );
 			}
-			catch( \Throwable $e ){
+			catch( Throwable $e ){
 			}
 		}
 		return $servers;

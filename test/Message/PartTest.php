@@ -72,7 +72,7 @@ class PartTest extends TestCase
 
 	/**
 	 *	@covers		::getFormat
-	 *	@covers		::setFormatTransport_
+	 *	@covers		::setFormat
 	 */
 	public function testFormat()
 	{

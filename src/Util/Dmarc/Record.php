@@ -66,10 +66,10 @@ class Record
 	public $interval			= 86400;
 
 	/**	@var	array			$reportAggregate */
-	public $reportAggregate		= array();
+	public $reportAggregate		= [];
 
 	/**	@var	array			$reportForensic */
-	public $reportForensic		= array();
+	public $reportForensic		= [];
 
 	/**	@var	string			$alignmentDkim */
 	public $alignmentDkim		= self::ALIGNMENT_RELAXED;

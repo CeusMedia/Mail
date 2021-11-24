@@ -28,8 +28,19 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Util\Dmarc;
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Util\Dmarc\Record;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Util\Dmarc\Record;
+
+use function abs;
+use function in_array;
+use function intval;
+use function max;
+use function min;
+use function preg_match;
+use function preg_replace;
+use function preg_split;
+use function rtrim;
+use function trim;
 
 /**
  *	Parser for DMARC records.
@@ -85,21 +96,21 @@ class Parser
 						$record->version	= preg_replace( '/^DMARC/', '', $pair[1] );
 						break;
 					case 'p':
-						$values	= array( 'none', 'quarantine', 'reject' );
+						$values	= [ 'none', 'quarantine', 'reject' ];
 						if( in_array( $pair[1], $values, TRUE ) )
 							$record->policy				= $pair[1];
 						break;
 					case 'sp':
-						$values	= array( 'none', 'quarantine', 'reject' );
+						$values	= [ 'none', 'quarantine', 'reject' ];
 						if( in_array( $pair[1], $values, TRUE ) )
 							$record->policySubdomains	= $pair[1];
 						break;
 					case 'adkim':
-						if( in_array( $pair[1], array( 'r', 's' ), TRUE ) )
+						if( in_array( $pair[1], [ 'r', 's' ], TRUE ) )
 							$record->alignmentDkim		= $pair[1];
 						break;
 					case 'aspf':
-						if( in_array( $pair[1], array( 'r', 's' ), TRUE ) )
+						if( in_array( $pair[1], [ 'r', 's' ], TRUE ) )
 							$record->alignmentSpf		= $pair[1];
 						break;
 					case 'pct':
@@ -123,7 +134,7 @@ class Parser
 						$record->interval				= abs( intval( $pair[1] ) );
 						break;
 					case 'fo':
-						if( in_array( $pair[1], array( '0', '1', 'd', 's' ), TRUE ) )
+						if( in_array( $pair[1], [ '0', '1', 'd', 's' ], TRUE ) )
 							$record->failureOption		= $pair[1];
 						break;
 				}

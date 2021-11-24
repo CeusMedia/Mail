@@ -28,8 +28,25 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use \CeusMedia\Mail\Message;
-use \DomainException;
+use CeusMedia\Mail\Message;
+
+use DomainException;
+use InvalidArgumentException;
+use RuntimeException;
+
+use function base64_decode;
+use function iconv;
+use function iconv_mime_decode;
+use function imap_qprint;
+use function join;
+use function preg_match;
+use function preg_split;
+use function preg_replace;
+use function quoted_printable_decode;
+use function quoted_printable_encode;
+use function strtolower;
+use function strtoupper;
+use function str_replace;
 
 /**
  *	Mail message header encoder and decoder.
@@ -80,7 +97,7 @@ class Encoding
 	 *	@static
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if given encoding is not supported
+	 *	@throws		InvalidArgumentException	if given encoding is not supported
 	 */
 	public static function decodeIfNeeded( string $string ): string
 	{
@@ -103,18 +120,18 @@ class Encoding
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
 		if( !preg_match( $pattern, $string ) )
 			return $string;
-		$matches	= array();
-		$list		= array();
+		$matches	= [];
+		$list		= [];
 		$lines		= preg_split( "@\r?\n\s*@", $string );
 		foreach( $lines as $line ){
-			$parts	= array();
+			$parts	= [];
 			while( preg_match( $pattern, $line, $parts ) ){
 				list( $before, $charset, $encoding, $content, $after ) = array_slice( $parts, 1 );
 				switch( strtolower( $encoding ) ){
 					case 'b':
 						$content	= base64_decode( $content, TRUE );
 						if( FALSE === $content )
-							throw new \RuntimeException( 'Encoded content contains invalid characters' );
+							throw new RuntimeException( 'Encoded content contains invalid characters' );
 						break;
 					case 'q':
 						$content	= str_replace( "_", " ", $content );
@@ -124,7 +141,7 @@ class Encoding
 							$content	= quoted_printable_decode( $content );
 						break;
 					default:
-						throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+						throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 				}
 				if( strtoupper( $charset ) !== 'UTF-8' )
 					$content	= iconv( $charset, 'UTF-8', $content );
@@ -142,7 +159,7 @@ class Encoding
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if given encoding is not supported
+	 *	@throws		InvalidArgumentException	if given encoding is not supported
 	 */
 	public static function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
 	{
@@ -158,7 +175,7 @@ class Encoding
 				$string   	= str_replace( '='.Message::$delimiter, $replace, $string );
 				return "=?UTF-8?Q?".$string."?=";
 			default:
-				throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+				throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 		}
 	}
 }

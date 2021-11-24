@@ -28,6 +28,17 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use InvalidArgumentException;
+
+use function function_exists;
+use function preg_replace;
+use function mb_convert_case;
+use function str_replace;
+use function strlen;
+use function strtolower;
+use function trim;
+use function ucwords;
+
 /**
  *	Mail message header field data object.
  *	@category		Library
@@ -108,7 +119,7 @@ class Field
 	public function setName( string $name ): self
 	{
 		if( 0 === strlen( trim( $name ) ) )
-			throw new \InvalidArgumentException( 'Field name cannot be empty' );
+			throw new InvalidArgumentException( 'Field name cannot be empty' );
 		$this->name	= preg_replace( "/( |-)+/", "-", trim( $name ) );
 		return $this;
 	}

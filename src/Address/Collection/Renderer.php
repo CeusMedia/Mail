@@ -20,7 +20,7 @@ declare(strict_types=1);
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Parser
+ *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
@@ -28,13 +28,18 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Collection;
 
-use \CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Address\Collection as AddressCollection;
+
+use InvalidArgumentException;
+
+use join;
+use strlen;
 
 /**
  *	Parser for list of addresses collected as string.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Parser
+ *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2021 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
@@ -81,7 +86,7 @@ class Renderer
 
 	public function render( AddressCollection $collection ): string
 	{
-		$list	= array();
+		$list	= [];
 		foreach( $collection->getAll() as $address ){
 			$list[]	= $address->get();
 		}
@@ -93,12 +98,12 @@ class Renderer
 	 *	@access		public
 	 *	@param		string		$delimiter
 	 *	@return		self
-	 *	@throws		\InvalidArgumentException	if delimiter is whitespace or empty
+	 *	@throws		InvalidArgumentException	if delimiter is whitespace or empty
 	 */
 	public function setDelimiter( string $delimiter ): self
 	{
 		if( 0 === strlen( trim( $delimiter ) ) )
-			throw new \InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
+			throw new InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$this->delimiter	= $delimiter;
 		return $this;
 	}

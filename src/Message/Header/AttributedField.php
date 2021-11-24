@@ -28,6 +28,9 @@ namespace CeusMedia\Mail\Message\Header;
 
 use ADT_List_Dictionary as Dictionary;
 
+use function count;
+use function sprintf;
+
 /**
  *	Mail message header field data object supporting attributes.
  *	@category		Library

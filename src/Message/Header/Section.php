@@ -28,9 +28,13 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use RangeException;
+
+use function array_shift;
+use function count;
+use function strtolower;
 
 /**
  *	Container for mail message header fields.
@@ -46,7 +50,7 @@ use RangeException;
 class Section
 {
 	/**	@var	array		$fields */
-	protected $fields			= array();
+	protected $fields			= [];
 
 	/**
 	 *	Add a header field object.
@@ -105,7 +109,7 @@ class Section
 	 */
 	public function getFields(): array
 	{
-		$list	= array();
+		$list	= [];
 		foreach( $this->fields as $name => $fields )
 			if( 0 < count( $fields ) )
 				foreach( $fields as $field )
@@ -124,7 +128,7 @@ class Section
 		$name	= strtolower( $name );
 		if( isset( $this->fields[$name] ) )
 			return $this->fields[$name];
-		return array();
+		return [];
 	}
 
 	/**
@@ -168,7 +172,7 @@ class Section
 	{
 		$name	= strtolower( $field->getName() );
 		if( (bool) $emptyBefore || !array_key_exists( $name, $this->fields ) )
-			$this->fields[$name]	= array();
+			$this->fields[$name]	= [];
 		$this->fields[$name][]	= $field;
 		return $this;
 	}
@@ -213,7 +217,7 @@ class Section
 	 */
 	public function toArray( bool $keepCase = FALSE ): array
 	{
-		$list	= array();
+		$list	= [];
 		foreach( $this->fields as $name => $fields )
 			foreach( $fields as $field )
 				$list[]	= $field->toString( $keepCase );
