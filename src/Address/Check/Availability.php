@@ -154,38 +154,46 @@ class Availability
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "EHLO ".$this->sender->getDomain() );
-			$this->readResponse( $conn );
+			$response = $this->readResponse( $conn );
 			if( !in_array( $this->lastResponse->getCode(), [ 220, 250 ], TRUE ) ){
 				$this->lastResponse->setError( SmtpResponse::ERROR_HELO_FAILED );
 				return FALSE;
 			}
-			$this->sendChunk( $conn, "STARTTLS" );
-			$this->readResponse( $conn );
-			if( 220 !== $this->lastResponse->getCode() ){
-				$this->lastResponse->setError( SmtpResponse::ERROR_CRYPTO_FAILED );
-				return FALSE;
+			$features		= explode( "\n", $response->message );
+			$targetHost		= array_shift( $features );
+			if( in_array( 'VRFY', $features ) ){
+				$this->sendChunk( $conn, "VRFY ".$receiver->getAddress() );
+				return in_array( $this->lastResponse->getCode(), [ 250, 251, 252 ], TRUE );
 			}
-			stream_socket_enable_crypto( $conn, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
+			else{
+				$this->sendChunk( $conn, "STARTTLS" );
+				$this->readResponse( $conn );
+				if( 220 !== $this->lastResponse->getCode() ){
+					$this->lastResponse->setError( SmtpResponse::ERROR_CRYPTO_FAILED );
+					return FALSE;
+				}
+				stream_socket_enable_crypto( $conn, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
 
-//			while( $this->lastResponse->getCode() === 220 )									//  for telekom.de
-//				$this->readResponse( $conn );
-			$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
-			$this->readResponse( $conn );
-			if( 250 !== $this->lastResponse->getCode() ){
-				$this->lastResponse->setError( SmtpResponse::ERROR_SENDER_NOT_ACCEPTED );
-				return FALSE;
+//				while( $this->lastResponse->getCode() === 220 )									//  for telekom.de
+//					$this->readResponse( $conn );
+				$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
+				$this->readResponse( $conn );
+				if( 250 !== $this->lastResponse->getCode() ){
+					$this->lastResponse->setError( SmtpResponse::ERROR_SENDER_NOT_ACCEPTED );
+					return FALSE;
+				}
+				$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
+				$this->readResponse( $conn );
+				if( 250 !== $this->lastResponse->getCode() ){
+					$this->lastResponse->setError( SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED );
+					$this->cache->set( 'user:'.$receiver->getAddress(), FALSE );
+					return FALSE;
+				}
+				$this->sendChunk( $conn, "QUIT" );
+				fclose( $conn );
+				$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
+				return TRUE;
 			}
-			$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
-			$this->readResponse( $conn );
-			if( 250 !== $this->lastResponse->getCode() ){
-				$this->lastResponse->setError( SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED );
-				$this->cache->set( 'user:'.$receiver->getAddress(), FALSE );
-				return FALSE;
-			}
-			$this->sendChunk( $conn, "QUIT" );
-			fclose( $conn );
-			$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
-			return TRUE;
 		}
 		catch( \Exception $e ){
 			fclose( $conn );
