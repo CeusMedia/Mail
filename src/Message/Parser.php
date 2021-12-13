@@ -231,10 +231,12 @@ class Parser
 				$methodFactory	= new MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->getAttribute( $key );
+					if( is_null( $value ) )
+						continue;
 					if( preg_match( '/-date$/', $key ) )
 						$value	= strtotime( $value );
 					if( $value )
-						MethodFactory::callObjectMethod( $part, $method, [ $value ] );
+						$methodFactory->setMethod( $method, array( $value ) )->call();
 				}
 				return $part;
 			}

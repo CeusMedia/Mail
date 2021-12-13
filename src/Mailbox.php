@@ -147,14 +147,14 @@ class Mailbox
 		$reference	= $this->renderConnectionReference( TRUE );
 		$options	= $this->secure && $this->validateCertificates ? OP_SECURE : 0;
 		$uri		= $reference.'INBOX';
-		$resource	= imap_open( $uri, $this->username, $this->password, $options );
+		$resource	= @imap_open( $uri, $this->username, $this->password, $options );
 		if( FALSE !== $resource ){
 			$this->connection	= $resource;
 			return TRUE;
 		}
 		$this->error	= imap_last_error();
 		if( $strict )
-			throw new RuntimeException( 'Connection to server failed' );
+			throw new RuntimeException( 'Connection to server failed: '.$this->error );
 		return FALSE;
 	}
 
@@ -190,6 +190,9 @@ class Mailbox
 			foreach( $folders as $nr => $folder )
 				$folders[$nr]	= preg_replace( $regExp, '', $folder );
 		}
+		foreach( $folders as $nr => $folder )
+			$folders[$nr]	= mb_convert_encoding( $folder, 'UTF-8', 'UTF7-IMAP' );
+		natcasesort($folders);
 		return $folders;
 	}
 
@@ -231,14 +234,31 @@ class Mailbox
 		return $result;
 	}
 
+	/**
+	 *	Moves one mail to another folder.
+	 *	@access		public
+	 *	@param		integer		$mailId		Mail UID
+	 *	@param		string		$folder		Target folder, encoded as UTF-8, will be encoded to UTF-7-IMAP internally
+	 *	@param		boolean		$expunge	Flag: apply change immediately, default: no
+	 *	@return		boolean
+	 */
 	public function moveMail( int $mailId, string $folder, bool $expunge = FALSE ): bool
 	{
 		return $this->moveMails( [$mailId], $folder, $expunge );
 	}
 
+	/**
+	 *	Moves several mails to another folder.
+	 *	@access		public
+	 *	@param		array		$mailIds	List of mail UIDs
+	 *	@param		string		$folder		Target folder, encoded as UTF-8, will be encoded to UTF-7-IMAP internally
+	 *	@param		boolean		$expunge	Flag: apply change immediately, default: no
+	 *	@return		boolean
+	 */
 	public function moveMails( array $mailIds, string $folder, bool $expunge = FALSE ): bool
 	{
 		$this->checkConnection( TRUE );
+		$folder	= mb_convert_encoding( $folder, 'UTF7-IMAP', 'UTF-8' );
 		$result	= imap_mail_move( $this->connection, join( ',', $mailIds ), $folder, CP_UID );
 		if( $expunge )
 			imap_expunge( $this->connection );
@@ -391,6 +411,7 @@ class Mailbox
 			return '{'.$this->host.'}';
 		if( NULL === $this->reference ){
 			$port		= 143;
+//			$flags		= ['imap'];
 			$flags		= [];
 			if( $this->secure ){
 				$port		= 993;

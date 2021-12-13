@@ -97,7 +97,7 @@ class Message
 	protected $userAgent;
 
 	/**	@var		string					$defaultUserAgent	Default user agent */
-	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.3';
+	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.4.1';
 
 	/**
 	 *	Constructor.

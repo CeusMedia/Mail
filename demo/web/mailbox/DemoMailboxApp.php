@@ -12,11 +12,12 @@ class DemoMailboxApp{
 	protected $mailbox;
 	protected $request;
 	protected $response;
-	
+
 	public static $urlCssLibrary	= 'https://cdn.ceusmedia.de/css/bootstrap.min.css';
 	public static $urlJsLibrary		= 'https://cdn.ceusmedia.de/js/jquery/1.10.2.min.js';
 
-	public function __construct( $config ){
+	public function __construct( ADT_List_Dictionary $config )
+	{
 		$this->config	= (object) $config->getAll( 'mailbox_' );
 		$this->request	= new Net_HTTP_Request_Receiver;
 		$this->response	= new Net_HTTP_Response;
@@ -30,7 +31,7 @@ class DemoMailboxApp{
 		}
 	}
 
-	protected function getMailAsMessage( $mailId )
+	protected function getMailAsMessage( string $mailId )
 	{
 		$cacheKey	= 'mail.'.$mailId;
 		if( $this->cache->has( $cacheKey ) ){
@@ -41,10 +42,10 @@ class DemoMailboxApp{
 			$this->cache->set($cacheKey, serialize( $message ) );
 		}
 		return $message;
-		
 	}
-	
-	protected function dispatch(){
+
+	protected function dispatch()
+	{
 		$action	= $this->request->get( 'action' );
 		$mailId	= $this->request->get( 'mailId' );
 		switch( $action ){
@@ -106,6 +107,29 @@ class DemoMailboxApp{
 		Net_HTTP_Response_Sender::sendResponse( $this->response );
 	}
 
+	protected function renderIndex(): string
+	{
+		$this->openMailbox();
+		$mailIndex	= array_slice( $this->mailbox->index(), 0, 20 );
+		if( 1 )
+			$list		= $this->renderIndexListAsTable( $mailIndex );
+		else
+			$list		= $this->renderIndexListAsFlexList( $mailIndex );
+
+		$content	= Tag::create( 'div', array(
+			Tag::create( 'div', array(
+				$list,
+			), array( 'id' => 'mail-ui-layout-list' ) ),
+			Tag::create( 'div', array(
+				Tag::create( 'iframe', '', array(
+					'id'		=> 'mail-ui-preview-iframe',
+					'style'		=> 'border: 0px; width: 100%; height: 100%; overflow: auto; position: fixed',
+				) ),
+			), array( 'id' => 'mail-ui-layout-preview' ) ),
+		), array( 'id' => 'mail-ui-layout' ) );
+		return (string) $content;
+	}
+
 	protected function renderIndexListAsTable( array $mailIndex ): string
 	{
 		$contacts	= array(
@@ -119,7 +143,7 @@ class DemoMailboxApp{
 		$rows		= array();
 		foreach( $mailIndex as $item ){
 			$message		= $this->getMailAsMessage( $item );
-			$senderName		= htmlentities( $message->getSender()->getName(), ENT_QUOTES, 'UTF-8' );
+			$senderName		= htmlentities( $message->getSender()->getName( FALSE ), ENT_QUOTES, 'UTF-8' );
 			$senderAddress	= htmlentities( $message->getSender()->getAddress(), ENT_QUOTES, 'UTF-8' );
 			$senderDomain	= $message->getSender()->getDomain();
 			$sender			= $senderAddress;
@@ -129,15 +153,15 @@ class DemoMailboxApp{
 			$buttonRemove	= Tag::create( 'a', 'remove', array( 'href' => './?mailId='.$item.'&action=remove', 'class' => 'btn btn-mini btn-inverse' ) );
 			$buttons	= Tag::create( 'div', array( $buttonRemove ), array( 'class' => 'btn-group' ) );
 			$icon		= Tag::create( 'i', '', array( 'class' => 'fa fa-2x fa-border fa-envelope' ) );
-			
+
 			if( array_key_exists( $senderAddress, $contacts ) )
 				$icon		= Tag::create( 'img', NULL, array( 'src' => $contacts[$senderAddress]['icon'], 'style' => 'width: 44px' ) );
 			else if( array_key_exists( $senderDomain, $icons ) )
 				$icon		= Tag::create( 'img', NULL, array( 'src' => sprintf( $icons[$senderDomain], $senderDomain ), 'style' => 'width: 44px' ) );
 //			else
 //				$icon		= Tag::create( 'img', NULL, array( 'src' => 'https://'.$senderDomain.'/favicon.ico', 'style' => 'width: 32px' ) );
-			
-			
+
+
 			$rows[]	= Tag::create( 'tr', array(
 				Tag::create( 'td', $icon, array( 'class' => 'mail-list-item-cell-icon' ) ),
 				Tag::create( 'td', array(
@@ -174,34 +198,13 @@ class DemoMailboxApp{
 				Tag::create( 'div', $buttons, array( 'class' => 'mail-list-item-buttons' ) ),
 			), array( 'class' => 'mail-list-item mail-list-preview-trigger' ), array( 'id' => $item, 'html' => $message->hasHTML(), 'text' => $message->hasText() ) );
 		}
-		
+
 		$list	= Tag::create( 'div', $rows );
 		return $list;
 	}
-	
-	protected function renderIndex(){
-		$this->openMailbox();
-		$mailIndex	= array_slice( $this->mailbox->index(), 0, 20 );
-		if( 1 )
-			$list		= $this->renderIndexListAsTable( $mailIndex );
-		else
-			$list		= $this->renderIndexListAsFlexList( $mailIndex );
 
-		$content	= Tag::create( 'div', array(
-			Tag::create( 'div', array(
-				$list,
-			), array( 'id' => 'mail-ui-layout-list' ) ),
-			Tag::create( 'div', array(
-				Tag::create( 'iframe', '', array(
-					'id'		=> 'mail-ui-preview-iframe',
-					'style'		=> 'border: 0px; width: 100%; height: 100%; overflow: auto;',
-				) ),
-			), array( 'id' => 'mail-ui-layout-preview' ) ),
-		), array( 'id' => 'mail-ui-layout' ) );
-		return $content;
-	}
-
-	protected function openMailbox( $force = FALSE, $secure = TRUE ){
+	protected function openMailbox( bool $force = FALSE, bool $secure = TRUE )
+	{
 		if( $this->mailbox && !$force ){
 			return;
 		}
@@ -214,6 +217,7 @@ class DemoMailboxApp{
 		if( !$this->config->password ){
 			throw new \RuntimeException( 'Error: No mailbox user password defined.' );
 		}
+
 		$this->mailbox	= new Mailbox( $this->config->host, $this->config->username, $this->config->password );
 		$this->mailbox->setSecure( $secure, $secure );
 		$this->mailbox->connect();
