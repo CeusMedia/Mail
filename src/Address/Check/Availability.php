@@ -180,6 +180,7 @@ class Availability
 			$targetHost	= array_shift( $features );
 			if( in_array( 'VRFY', $features ) ){
 				$this->sendChunk( $conn, "VRFY ".$receiver->getAddress() );
+				$this->readResponse( $conn );
 				return in_array( $this->lastResponse->getCode(), [ 250, 251, 252 ], TRUE );
 			}
 			else{
