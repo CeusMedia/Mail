@@ -260,7 +260,7 @@ class Socket
 		$buffer		= [];
 		$raw		= [];
 		do{
-			$response	= fgets( $this->connection, $length );
+			$response	= fgets( $this->connection, abs( $length ) );
 			if( FALSE !== $response ){
 				$raw[]		= rtrim( $response, "\r\n" );
 				$matches	= array();

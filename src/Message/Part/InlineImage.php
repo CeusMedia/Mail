@@ -28,9 +28,11 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Part;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use FS_File;
+use InvalidArgumentException;
 
 /**
  *	Inline Image Mail Part.
@@ -45,7 +47,7 @@ use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
  */
 class InlineImage extends MessagePart
 {
-	/**	@var	string|NULL		$content */
+	/**	@var	string			$content */
 	protected $content;
 
 	/**	@var	string|NULL		$fileName */
@@ -193,14 +195,14 @@ class InlineImage extends MessagePart
 	 *	@param		string|NULL		$encoding		Optional: Encoding of file
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self		  	Self instance for chaining
-	 *	@throws		\InvalidArgumentException	if file is not existing
+	 *	@throws		InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
 	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
-		$file	= new \FS_File( $filePath );
+		$file	= new FS_File( $filePath );
 		if( !$file->exists() )
-			throw new \InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
+			throw new InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
 
 		if( NULL === $mimeType || 0 === strlen( trim( $mimeType ) ) )
 			$mimeType	= $this->getMimeTypeFromFile( $filePath );

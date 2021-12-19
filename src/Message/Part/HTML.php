@@ -28,7 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Part;
 
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Message\Part\Text as MessagePartText;
 
 /**
  *	HTML Mail Part.
@@ -46,7 +46,7 @@ class HTML extends MessagePartText
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@param		string		$content		HTML content 
+	 *	@param		string		$content		HTML content
 	 *	@param		string		$charset		Character set to set, default: UTF-8
 	 *	@param		string		$encoding		Encoding to set, default: base64, values: 7bit,8bit,base64,quoted-printable,binary
 	 */

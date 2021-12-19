@@ -77,8 +77,10 @@ class Parser
 		$record		= new Record();
 		$content	= rtrim( trim( $content ), ';' );
 		$pairs		= preg_split( '/\s*;\s*/', $content );
-		foreach( $pairs as $pair ){
-			if( preg_match( '/=/', $pair ) ){
+		if( FALSE !== $pairs ){
+			foreach( $pairs as $pair ){
+				if( FALSE === preg_match( '/=/', $pair ) )
+					continue;
 				$pair	= preg_split( '/\s*=\s*/', $pair, 2 );
 				switch( $pair[0] ){
 					case 'v':

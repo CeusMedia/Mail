@@ -28,9 +28,9 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Part;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
 /**
  *	Mail Attachment Data Object.
