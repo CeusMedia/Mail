@@ -6,7 +6,7 @@
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Address\Check;
+namespace CeusMedia\Mail\Test\Unit\Address\Check;
 
 use CeusMedia\Mail\Address\Check\Syntax;
 use CeusMedia\Mail\Test\TestCase;

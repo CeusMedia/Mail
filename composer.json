@@ -23,7 +23,7 @@
   },
   "minimum-stability": "dev",
   "require": {
-    "php": ">=7.3",
+    "php": ">=7.3 | ^8",
     "ceus-media/common": "^0.8 | dev-master",
     "ceus-media/cache": "*",
     "ezyang/htmlpurifier": "dev-master",
@@ -38,7 +38,9 @@
     "squizlabs/php_codesniffer": "*",
     "phan/phan": "dev-master",
     "ceus-media/doc-creator": "dev-master",
-    "ceus-media/phan-viewer": "dev-master"
+    "ceus-media/phan-viewer": "dev-master",
+    "rector/rector": "0.12.x-dev",
+    "brianium/paratest": "dev-master"
   },
   "autoload": {
     "psr-4": {

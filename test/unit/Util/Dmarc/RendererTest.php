@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Util\Dmarc;
+namespace CeusMedia\Mail\Test\Unit\Util\Dmarc;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Util\Dmarc\Record;

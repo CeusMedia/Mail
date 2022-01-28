@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Address\Collection;
+namespace CeusMedia\Mail\Test\Unit\Address\Collection;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
