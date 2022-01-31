@@ -73,7 +73,7 @@ class Syntax
 	}
 
 	/**
-	 *	Validate an mail address against set mode and map of results.
+	 *	Validate an mail address against set mode and returns bitmask of successfully applied test modes.
 	 *	@access		public
 	 *	@param		string			$address		Mail address to validate
 	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
@@ -85,22 +85,25 @@ class Syntax
 		$result		= 0;
 		$wildcard	= self::MODE_ALL === ( $this->mode & self::MODE_ALL );
 		$constants	= Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
+
 		foreach( $constants as $key => $value ){
 			if( ( $value === ( $this->mode & $value ) ) || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
 					if( FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL ) )
-						$result	&= $value;
+						$result	|= $value;
 				}
 				else if( $value === self::MODE_SIMPLE_REGEX || $wildcard ){
 					if( 0 !== preg_match( $this->regexSimple, $address ) )
-						$result	&= $value;
+						$result	|= $value;
 				}
 				else if( $value === self::MODE_EXTENDED_REGEX || $wildcard ){
 					if( 0 !== preg_match( $this->regexExtended, $address ) )
-						$result	&= $value;
+						$result	|= $value;
 				}
 			}
 		}
+		if( $result === 0 && $throwException )
+			throw new InvalidArgumentException( 'Given address is not valid' );
 		return $result;
 	}
 
@@ -112,7 +115,6 @@ class Syntax
 	 *		2 - simple address
 	 *		3 - extended address
 	 *
-	 *	@static
 	 *	@access		public
 	 *	@param		string			$address		Mail address to validate
 	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
@@ -134,18 +136,34 @@ class Syntax
 	}
 
 	/**
+	 *	Indicates whether a mode is set.
+	 *	@access		public
+	 *	@param		integer		$mode			Mode check
+	 *	@return		boolean
+	 */
+	public function isMode( int $mode ): bool
+	{
+		return $mode === ( $this->mode & $mode );
+	}
+
+	/**
 	 *	Indicates whether an address is valid.
-	 *	@static
 	 *	@access		public
 	 *	@param		string		$address		Mail address to validate
 	 *	@return		boolean
 	 */
 	public function isValid( string $address ): bool
 	{
-		return self::check( $address, FALSE ) > 0;
+		return $this->check( $address, FALSE ) > 0;
 	}
 
 	/**
+	 *	...
+	 *	@static
+	 *	@access		public
+	 *	@param		string		$address		Mail address to validate
+	 *	@param		integer		$mode			Mode to use for validation, see class constants
+	 *	@return		boolean
 	 *	@todo		implement MODE_AUTO and MODE_ALL
 	 */
 	public function isValidByMode( string $address, int $mode ): bool

@@ -20,6 +20,28 @@ use CeusMedia\Mail\Test\TestCase;
  */
 class SyntaxTest extends TestCase
 {
+	/**
+	 *	@covers		::__construct
+	 */
+	public function testConstruct()
+	{
+		$checker	= new Syntax();
+		$this->assertTrue( $checker->isMode( Syntax::MODE_AUTO ) );
+
+		$checker	= new Syntax( Syntax::MODE_FILTER );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_FILTER ) );
+
+		$checker->setMode( Syntax::MODE_SIMPLE_REGEX );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+
+		$checker->setMode( Syntax::MODE_EXTENDED_REGEX );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+
+		$checker->setMode( Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+	}
+
 	public function testEvaluate()
 	{
 		$checker	= new Syntax();
@@ -39,90 +61,116 @@ class SyntaxTest extends TestCase
 	/**
 	 *	@covers		::check
 	 */
-/*	public function testCheckValidSimple()
+	public function testCheckValidFilter()
+	{
+		$mode		= Syntax::MODE_FILTER;
+		$checker	= new Syntax( $mode );
+		$actual		= $checker->check( "foo.bar@example.com" );
+		$this->assertEquals( $mode, $actual );
+	}
+
+	/**
+	 *	@covers		::check
+	 */
+	public function testCheckValidSimple()
+	{
+		$mode		= Syntax::MODE_SIMPLE_REGEX;
+		$checker	= new Syntax( $mode );
+		$actual		= $checker->check( "foo.bar@example.com" );
+		$this->assertEquals( $mode, $actual );
+	}
+
+	/**
+	 *	@covers		::check
+	 */
+	public function testCheckValidExtended()
+	{
+		$mode		= Syntax::MODE_EXTENDED_REGEX;
+		$checker	= new Syntax( $mode );
+		$actual		= $checker->check( "foo+bar!@example.com" );
+		$this->assertEquals( $mode, $actual );
+	}
+
+	/**
+	 *	@covers		::check
+	 */
+	public function testCheckInvalid()
+	{
+		$checker	= new Syntax( Syntax::MODE_ALL );
+		$this->assertEquals( 0, $checker->check( "foo.bar.@example.com", FALSE ) );
+		$this->assertEquals( 0, $checker->check( "@example.com", FALSE ) );
+		$this->assertEquals( 0, $checker->check( "test", FALSE ) );
+		$this->assertEquals( 0, $checker->check( "_____@####.++", FALSE ) );
+	}
+
+	/**
+	 *	@covers		::check
+	 */
+	public function testCheckException()
 	{
 		$checker	= new Syntax();
-		$expected	= Syntax::MODE_FILTER;
-		$actual		= $checker->check( "foo.bar@example.com" );
-		$this->assertEquals( $expected, $actual );
-	}*/
-
-	/**
-	 *	@covers		::check
-	 */
-/*	public function testCheckValidExtended()
-	{
-		$expected	= 2;
-		$actual		= Syntax::check( "foo+bar!@example.com" );
-		$this->assertEquals( $expected, $actual );
-	}*/
-
-	/**
-	 *	@covers		::check
-	 */
-/*	public function testCheckInvalid()
-	{
-		$expected	= 0;
-
-		$actual		= Syntax::check( "foo.bar.@example.com", FALSE );
-		$this->assertEquals( $expected, $actual );
-
-		$actual		= Syntax::check( "@example.com", FALSE );
-		$this->assertEquals( $expected, $actual );
-
-		$actual		= Syntax::check( "test", FALSE );
-		$this->assertEquals( $expected, $actual );
-
-		$actual		= Syntax::check( "_____@####.++", FALSE );
-		$this->assertEquals( $expected, $actual );
-	}*/
-
-	/**
-	 *	@covers		::check
-	 */
-/*	public function testCheckException()
-	{
 		$this->expectException( "InvalidArgumentException" );
-		Syntax::check( "foo.bar.@example.com" );
-	}*/
+		$checker->check( "_____@####.++" );
+	}
 
 	/**
-	 *	@covers		::check
+	 *	@covers		::isValidByMode
 	 */
-/*	public function testIsValidValidSimple()
+	public function testIsValidByModeExceptionOnInvalidMode()
 	{
-		$expected	= 1;
-		$actual		= Syntax::check( "foo.bar@example.com" );
-		$this->assertEquals( $expected, $actual );
-	}*/
-
-	/**
-	 *	@covers		::check
-	 */
-/*	public function testIsValidValidExtended()
-	{
-		$expected	= 2;
-		$actual		= Syntax::check( "foo+bar!@example.com" );
-		$this->assertEquals( $expected, $actual );
-	}*/
+		$checker	= new Syntax();
+		$this->expectException( "InvalidArgumentException" );
+		$checker->isValidByMode( "not_important_here", -1 );
+	}
 
 	/**
 	 *	@covers		::isValid
 	 */
-/*	public function testIsValidInvalid()
+	public function testIsValidValidSimple()
 	{
-		$expected	= FALSE;
+		$checker	= new Syntax( Syntax::MODE_SIMPLE_REGEX );
+		$this->assertTrue( $checker->isValid( "foo.bar@example.com" ) );
+	}
 
-		$actual		= Syntax::isValid( "foo.bar.@example.com" );
-		$this->assertEquals( $expected, $actual );
+	/**
+	 *	@covers		::isValid
+	 */
+	public function testIsValidValidExtended()
+	{
+		$checker	= new Syntax( Syntax::MODE_EXTENDED_REGEX );
+		$this->assertTrue( $checker->isValid( "foo+bar!@example.com" ) );
+	}
 
-		$actual		= Syntax::isValid( "@example.com" );
-		$this->assertEquals( $expected, $actual );
+	/**
+	 *	@covers		::isValid
+	 */
+	public function testIsValidInvalid()
+	{
+		$checker	= new Syntax();
+		$this->assertFalse( $checker->isValid( "foo.bar.@example.com" ) );
+		$this->assertFalse( $checker->isValid( "@example.com" ) );
+		$this->assertFalse( $checker->isValid( "test" ) );
+		$this->assertFalse( $checker->isValid( "_____@####.++" ) );
+	}
 
-		$actual		= Syntax::isValid( "test" );
-		$this->assertEquals( $expected, $actual );
+	/**
+	 *	@covers		::isMode
+	 *	@covers		::setMode
+	 */
+	public function testSetMode()
+	{
+		$checker	= new Syntax();
+		$checker->setMode( Syntax::MODE_FILTER );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_FILTER ) );
 
-		$actual		= Syntax::isValid( "_____@####.++" );
-		$this->assertEquals( $expected, $actual );
-	}*/
+		$checker->setMode( Syntax::MODE_SIMPLE_REGEX );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+
+		$checker->setMode( Syntax::MODE_EXTENDED_REGEX );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+
+		$checker->setMode( Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+	}
 }

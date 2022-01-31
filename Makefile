@@ -4,16 +4,16 @@ install: composer-install
 install-dev: composer-install-dev dev-configure
 
 composer-install:
-	@test ! -f vendor/autoload.php && composer install --no-dev || true
+	@test ! -f vendor/autoload.php && XDEBUG_MODE=off composer install --no-dev || true
 
 composer-install-dev:
-	@test ! -d vendor/phpunit/phpunit && composer install || true
+	@test ! -d vendor/phpunit/phpunit && XDEBUG_MODE=off composer install || true
 
 composer-update:
-	@composer update --no-dev
+	@XDEBUG_MODE=off composer update --no-dev
 
 composer-update-dev:
-	@composer update
+	@XDEBUG_MODE=off composer update
 
 dev-configure:
 	@cp Mail.ini.dist Mail.ini
@@ -51,13 +51,23 @@ dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
 	@php vendor/ceus-media/doc-creator/doc.php --config-file=doc.xml
 
-dev-test: composer-install-dev dev-test-syntax dev-test-units dev-test-integration
-
-dev-test-units: composer-install-dev
-	@vendor/bin/phpunit -v --testsuite unit || true
+dev-test:
+	@XDEBUG_MODE=coverage vendor/bin/phpunit -v || true
 
 dev-test-integration: composer-install-dev
-	@vendor/bin/phpunit -v --testsuite integration || true
+	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite integration || true
+
+dev-test-units: composer-install-dev
+	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite unit || true
+
+dev-test-units-with-coverage: composer-install-dev
+	@XDEBUG_MODE=coverage vendor/bin/phpunit -v --testsuite unit || true
+
+dev-retest-integration: composer-install-dev
+	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite integration --order-by=defects --stop-on-defect || true
+
+dev-retest-units: composer-install-dev
+	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite unit --order-by=defects --stop-on-defect || true
 
 dev-test-syntax:
 	@find src -type f -print0 | xargs -0 -n1 xargs php -l
