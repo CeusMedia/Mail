@@ -25,7 +25,7 @@
     </testsuite>
   </testsuites>
   <logging>
-<!--    <junit outputFile="doc/Test/logfile.xml"/>-->
+    <junit outputFile="doc/Test/logfile.xml"/>
 <!--    <testdoxHtml outputFile="doc/Test/testdox.html"/>-->
 <!--    <testdoxText outputFile="doc/Test/testdox.txt"/>-->
   </logging>
