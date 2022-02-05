@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Validator for mail address syntax.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -40,17 +40,17 @@ use function preg_match;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Syntax
 {
-	const MODE_AUTO				= 0;
-	const MODE_ALL				= 1;
-	const MODE_FILTER			= 2;
-	const MODE_SIMPLE_REGEX		= 4;
-	const MODE_EXTENDED_REGEX	= 8;
+	public const MODE_AUTO				= 0;
+	public const MODE_ALL				= 1;
+	public const MODE_FILTER			= 2;
+	public const MODE_SIMPLE_REGEX		= 4;
+	public const MODE_EXTENDED_REGEX	= 8;
 
 	/**	@var int $mode */
 	protected $mode				= 2;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Mail message header encoder and decoder.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -51,7 +51,7 @@ use function str_replace;
 /**
  *	Mail message header encoder and decoder.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -69,18 +69,18 @@ use function str_replace;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Encoding
 {
-	const STRATEGY_IMPL				= 1;
-	const STRATEGY_ICONV			= 2;
-	const STRATEGY_ICONV_STRICT		= 3;
-	const STRATEGY_ICONV_TOLERANT	= 4;
+	public const STRATEGY_IMPL				= 1;
+	public const STRATEGY_ICONV				= 2;
+	public const STRATEGY_ICONV_STRICT		= 3;
+	public const STRATEGY_ICONV_TOLERANT	= 4;
 
-	const STRATEGIES		= [
+	public const STRATEGIES		= [
 		self::STRATEGY_IMPL,
 		self::STRATEGY_ICONV,
 		self::STRATEGY_ICONV_STRICT,
@@ -164,7 +164,7 @@ class Encoding
 		foreach( $lines as $line ){
 			$parts	= [];
 			while( preg_match( $pattern, $line, $parts ) ){
-				list( $before, $charset, $encoding, $content, $after ) = array_slice( $parts, 1 );
+				[$before, $charset, $encoding, $content, $after] = array_slice( $parts, 1 );
 				switch( strtolower( $encoding ) ){
 					case 'b':
 						$content	= base64_decode( $content, TRUE );

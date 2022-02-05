@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Parser for mail headers.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -56,7 +56,7 @@ use function urldecode;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -64,15 +64,15 @@ use function urldecode;
  */
 class Parser
 {
-	const STRATEGY_AUTO				= 0;
-	const STRATEGY_FIRST			= 1;						//  first implementation, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_SECOND			= 2;						//  second implementation, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_THIRD			= 3;						//  own implementation, supports DKIM key folding and RFC 2231
-	const STRATEGY_ICONV			= 4;						//  iconv, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_ICONV_STRICT		= 5;						//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_ICONV_TOLERANT	= 6;						//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_AUTO				= 0;
+	public const STRATEGY_FIRST				= 1;	//  first implementation, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_SECOND			= 2;	//  second implementation, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_THIRD				= 3;	//  own implementation, supports DKIM key folding and RFC 2231
+	public const STRATEGY_ICONV				= 4;	//  iconv, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_ICONV_STRICT		= 5;	//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_ICONV_TOLERANT	= 6;	//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
 
-	const STRATEGIES			= [
+	public const STRATEGIES		= [
 		self::STRATEGY_AUTO,
 		self::STRATEGY_FIRST,
 		self::STRATEGY_SECOND,
@@ -227,7 +227,7 @@ class Parser
 		$field		= NULL;
 		foreach( $lines as $nr => $line ){
 			if( preg_match( '/^\S+:/', $line ) ){
-				list( $key, $value ) = explode( ':', $line, 2 );
+				[$key, $value] = explode( ':', $line, 2 );
 				$value	= Encoding::decodeIfNeeded( ltrim( $value ) );
 				$field	= new Field( $key, $value );
 				$section->addField( $field );

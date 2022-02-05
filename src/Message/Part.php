@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Abstract Mail Part.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -62,21 +62,21 @@ use function rtrim;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
 abstract class Part
 {
-	const TYPE_UNKNOWN			= 0;
-	const TYPE_TEXT				= 1;
-	const TYPE_MAIL				= 2;
-	const TYPE_ATTACHMENT		= 3;
-	const TYPE_HTML				= 4;
-	const TYPE_INLINE_IMAGE		= 5;
+	public const TYPE_UNKNOWN			= 0;
+	public const TYPE_TEXT				= 1;
+	public const TYPE_MAIL				= 2;
+	public const TYPE_ATTACHMENT		= 3;
+	public const TYPE_HTML				= 4;
+	public const TYPE_INLINE_IMAGE		= 5;
 
-	const TYPES					= [
+	public const TYPES					= [
 		self::TYPE_UNKNOWN,
 		self::TYPE_TEXT,
 		self::TYPE_MAIL,
@@ -85,12 +85,12 @@ abstract class Part
 		self::TYPE_INLINE_IMAGE,
 	];
 
-	const SECTION_NONE			= 0;
-	const SECTION_ALL			= 1;
-	const SECTION_HEADER		= 2;
-	const SECTION_CONTENT		= 4;
+	public const SECTION_NONE			= 0;
+	public const SECTION_ALL			= 1;
+	public const SECTION_HEADER			= 2;
+	public const SECTION_CONTENT		= 4;
 
-	const SECTIONS				= [
+	public const SECTIONS				= [
 		self::SECTION_NONE,
 		self::SECTION_ALL,
 		self::SECTION_HEADER,

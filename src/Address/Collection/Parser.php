@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Parser for list of addresses collected as string.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -51,33 +51,33 @@ use function trim;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
  */
 class Parser
 {
-	const METHOD_AUTO					= 0;
-	const METHOD_IMAP					= 1;
-	const METHOD_OWN					= 2;
-	const METHOD_IMAP_PLUS_OWN			= 3;
+	public const METHOD_AUTO					= 0;
+	public const METHOD_IMAP					= 1;
+	public const METHOD_OWN						= 2;
+	public const METHOD_IMAP_PLUS_OWN			= 3;
 
-	const METHODS						= [
+	public const METHODS						= [
 		self::METHOD_AUTO,
 		self::METHOD_IMAP,
 		self::METHOD_OWN,
 		self::METHOD_IMAP_PLUS_OWN,
 	];
 
-	const STATE_SCANNING_FOR_NAME		= 0;
-	const STATE_READING_NAME			= 1;
-	const STATE_READING_QUOTED_NAME		= 2;
-	const STATE_SCANNING_FOR_ADDRESS	= 3;
-	const STATE_READING_ADDRESS			= 4;
+	protected const STATE_SCANNING_FOR_NAME		= 0;
+	protected const STATE_READING_NAME			= 1;
+	protected const STATE_READING_QUOTED_NAME	= 2;
+	protected const STATE_SCANNING_FOR_ADDRESS	= 3;
+	protected const STATE_READING_ADDRESS		= 4;
 
 	/** @var int $method */
-	protected $method					= 0;
+	protected $method							= 0;
 
 	/**
 	 *	Static constructor.
