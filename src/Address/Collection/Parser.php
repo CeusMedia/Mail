@@ -31,6 +31,7 @@ namespace CeusMedia\Mail\Address\Collection;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
+use CeusMedia\Mail\Deprecation;
 
 use Alg_Object_Constant;
 use InvalidArgumentException;
@@ -89,6 +90,10 @@ class Parser
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 

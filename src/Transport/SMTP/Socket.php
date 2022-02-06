@@ -28,6 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Transport\SMTP;
 
+use CeusMedia\Mail\Deprecation;
+
 use RuntimeException;
 
 use function abs;
@@ -88,6 +90,10 @@ class Socket
 	 */
 	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return static::getInstance( $host, $port, $timeout );
 	}
 

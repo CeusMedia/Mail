@@ -30,6 +30,7 @@ namespace CeusMedia\Mail;
 
 use CeusMedia\Mail\Address as Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
@@ -129,6 +130,10 @@ class Message
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 
@@ -270,7 +275,7 @@ class Message
 	 *	Adds Reply-To header to message.
 	 *	@access		public
 	 *	@param		Address|string	$address		Address to reply to
-	 *	@param		string			$name			Additional name of address
+	 *	@param		string|NULL		$name			Additional name of address
 	 *	@return		self
 	 */
 	public function addReplyTo( $address, string $name = NULL ): self
@@ -547,7 +552,7 @@ class Message
 	 *	...
 	 *	@access		public
 	 *	@param		Address|string	$address		Address to send notification to
-	 *	@param		string			$name			Additional name of address
+	 *	@param		string|NULL		$name			Additional name of address
 	 */
 	public function setReadNotificationRecipient( $address, string $name = NULL ): self
 	{

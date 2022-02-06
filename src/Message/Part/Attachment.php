@@ -214,7 +214,8 @@ class Attachment extends MessagePart
 		$this->setFileATime( fileatime( $filePath ) );
 		$this->setFileCTime( filectime( $filePath ) );
 		$this->setFileMTime( filemtime( $filePath ) );
-		$this->setMimeType( $mimeType );
+		if( NULL !== $mimeType )
+			$this->setMimeType( $mimeType );
 		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 			$this->setEncoding( $encoding );
 		return $this;

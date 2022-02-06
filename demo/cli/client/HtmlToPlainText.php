@@ -1,18 +1,21 @@
 <?php
-class HtmlToPlainText{
-
-	static public function convert( $html ){
+class HtmlToPlainText
+{
+	public static function convert( $html )
+	{
 		$doc	= new DOMDocument();
 		$doc->preserveWhitespace = FALSE;
 		$doc->loadHTML( $html );
 		return self::convertNodes( $doc );
 	}
 
-	static protected function underline( $node, $character = '-' ){
+	protected static function underline( $node, $character = '-' )
+	{
 		return str_repeat( $character, strlen( $node->textContent ) ).PHP_EOL;
 	}
 
-	static protected function convertNodes( $root ){
+	protected static function convertNodes( $root )
+	{
 		$text		= '';
 		$cleared	= TRUE;
 		foreach( $root->childNodes as $node ){
@@ -77,7 +80,8 @@ class HtmlToPlainText{
 		return $text;
 	}
 
-	static protected function isBlockElement( $node ){
+	protected static function isBlockElement( $node )
+	{
 		$elements	= array_merge(
 			array( 'div', 'p', 'ul', 'li', 'hr', 'blockquote', 'pre', 'xmp' ),
 			array( 'h1', 'h2', 'h3', 'h4', 'h5' )
@@ -85,8 +89,8 @@ class HtmlToPlainText{
 		return in_array( $node->nodeName, $elements );
 	}
 
-	static protected function isInlineElement( $node ){
+	protected static function isInlineElement( $node )
+	{
 		return !isBlockElement( $node );
 	}
 }
-?>

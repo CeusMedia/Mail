@@ -21,7 +21,7 @@
     "email": "christian.wuerker@ceusmedia.de",
     "jabber": "cwuerker@ceusmedia.de"
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "require": {
     "php": ">=7.3 | ^8",
     "ceus-media/common": "^0.8 | dev-master",
@@ -36,7 +36,7 @@
     "phpstan/phpstan": "*",
     "phpstan/phpstan-strict-rules": "*",
     "squizlabs/php_codesniffer": "*",
-    "phan/phan": "dev-master",
+    "phan/phan": "^v5",
     "ceus-media/doc-creator": "dev-master",
     "ceus-media/phan-viewer": "dev-master",
     "rector/rector": "0.12.x-dev",

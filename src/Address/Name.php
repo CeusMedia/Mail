@@ -46,7 +46,14 @@ use function preg_split;
  */
 class Name
 {
-	static public function splitNameParts( array $list ): array
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		array		$list
+	 *	@return		array
+	 */
+	public static function splitNameParts( array $list ): array
 	{
 		foreach( $list as $nr => $entry ){
 			if( 1 === preg_match( "/ +/", $entry['fullname'] ) ){
@@ -60,7 +67,14 @@ class Name
 		return $list;
 	}
 
-	static public function swapCommaSeparatedNameParts( array $list ): array
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		array		$list
+	 *	@return		array
+	 */
+	public static function swapCommaSeparatedNameParts( array $list ): array
 	{
 		foreach( $list as $nr => $entry ){
 			if( 1 === preg_match( "/, +/", $entry['fullname'] ) ){

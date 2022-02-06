@@ -275,7 +275,7 @@ class Mailbox
 	public function removeMail( int $mailId, bool $expunge = FALSE ): bool
 	{
 		$this->checkConnection( TRUE );
-		$result	= imap_delete( $this->connection, $mailId, FT_UID );
+		$result	= imap_delete( $this->connection, (string) $mailId, FT_UID );
 		if( $expunge )
 			imap_expunge( $this->connection );
 		return $result;

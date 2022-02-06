@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message;
 
+use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Encoding;
 use CeusMedia\Mail\Message\Part as MessagePart;
@@ -75,6 +76,10 @@ class Renderer
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 

@@ -28,9 +28,10 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
-use CeusMedia\Cache\AdapterInterface as CacheAdapter;
+use CeusMedia\Cache\AdapterInterface as CacheAdapterInterface;
 use CeusMedia\Cache\Factory as CacheFactory;
 use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Util\MX;
@@ -74,7 +75,7 @@ class Availability
 	/** @var	SmtpResponse	$lastResponse */
 	protected $lastResponse;
 
-	/** @var	CacheAdapter	$cache */
+	/** @var	CacheAdapterInterface	$cache */
 	protected $cache;
 
 	/**
@@ -102,6 +103,10 @@ class Availability
 	 */
 	public function getLastError( ?string $key = NULL )
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getLastResponse instead' );
 		return $this->getLastResponse( $key );
 	}
 
@@ -178,7 +183,7 @@ class Availability
 			}
 			$features	= explode( "\n", $response->message );
 			$targetHost	= array_shift( $features );
-			if( in_array( 'VRFY', $features ) ){
+			if( in_array( 'VRFY', $features, TRUE ) ){
 				$this->sendChunk( $conn, "VRFY ".$receiver->getAddress() );
 				$this->readResponse( $conn );
 				return in_array( $this->lastResponse->getCode(), [ 250, 251, 252 ], TRUE );
@@ -221,7 +226,7 @@ class Availability
 		}
 	}
 
-	public function setCache( CacheAdapter $cache ): self
+	public function setCache( CacheAdapterInterface $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;

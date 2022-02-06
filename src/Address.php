@@ -30,6 +30,7 @@ namespace CeusMedia\Mail;
 
 use CeusMedia\Mail\Address\Parser as AddressParser;
 use CeusMedia\Mail\Address\Renderer as AddressRenderer;
+use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
 use InvalidArgumentException;
@@ -100,6 +101,10 @@ class Address
 	 */
 	public static function create( string $string = NULL ): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self( $string );
 	}
 

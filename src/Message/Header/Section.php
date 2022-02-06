@@ -49,8 +49,8 @@ use function strtolower;
  */
 class Section
 {
-	/**	@var	Field[]			$fields */
-	protected $fields			= [];
+	/**	@var	array<Field[]>		$fields */
+	protected $fields				= [];
 
 	/**
 	 *	Add a header field object.

@@ -33,13 +33,13 @@ dev-configure:
 	@read -p 'Receiver Auth Password: ' input && sed -i "s {{phpunit.receiver.auth.password}} $$input " Mail.ini
 
 dev-analyse-phan: composer-install-dev
-	@./vendor/bin/phan -k=.phan --color --allow-polyfill-parser || true
+	@XDEBUG_MODE=off ./vendor/bin/phan -k=.phan --color --allow-polyfill-parser || true
 
-dev-analyse-phan-report: dev-analyse-save
+dev-analyse-phan-report: dev-analyse-phan-save
 	@php vendor/ceus-media/phan-viewer/phan-viewer generate --source=phan.json --target=doc/phan/
 
 dev-analyse-phan-save: composer-install-dev
-	@./vendor/bin/phan -k=.phan -m=json -o=phan.json --allow-polyfill-parser -p || true
+	@XDEBUG_MODE=off PHAN_DISABLE_XDEBUG_WARN=1 ./vendor/bin/phan -k=.phan -m=json -o=phan.json --allow-polyfill-parser -p || true
 
 dev-analyse-phpstan: composer-install-dev
 	@vendor/bin/phpstan analyse --configuration phpstan.neon --xdebug || true
@@ -72,3 +72,9 @@ dev-retest-units: composer-install-dev
 dev-test-syntax:
 	@find src -type f -print0 | xargs -0 -n1 xargs php -l
 	@find test -type f -print0 | xargs -0 -n1 xargs php -l
+
+dev-rector-apply:
+	@vendor/bin/rector process src
+
+dev-rector-dry:
+	@vendor/bin/rector process src --dry-run

@@ -21,12 +21,22 @@ parameters:
 			path: src/Address/Check/Syntax.php
 
 		-
-			message: "#^Strict comparison using \\=\\=\\= between false and string will always evaluate to false\\.$#"
-			count: 2
-			path: src/Message/Part.php
+			message: "#^CeusMedia\\\\Mail\\\\Deprecation\\:\\:__construct\\(\\) does not call parent constructor from Deprecation\\.$#"
+			count: 1
+			path: src/Deprecation.php
+
+		-
+			message: "#^Parameter \\#3 \\$reverse of function imap_sort expects int, bool given\\.$#"
+			count: 1
+			path: src/Mailbox/Search.php
 
 		-
 			message: "#^Strict comparison using \\!\\=\\= between false and string will always evaluate to true\\.$#"
 			count: 1
+			path: src/Message/Part.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between false and string will always evaluate to false\\.$#"
+			count: 2
 			path: src/Message/Part.php
 

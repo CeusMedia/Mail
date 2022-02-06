@@ -96,11 +96,10 @@ class Parser
 	 *	@param		integer		$strategy		Optional: strategy to set, leaving auto mode
 	 *	@return		self
 	 */
-	public static function getInstance( int $strategy = NULL ): self
+	public static function getInstance( int $strategy = self::STRATEGY_AUTO ): self
 	{
 		$instance	= new self;
-		if( !is_null( $strategy ) )
-			$instance->setStrategy( $strategy );
+		$instance->setStrategy( $strategy );
 		return $instance;
 	}
 
