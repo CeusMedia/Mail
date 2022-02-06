@@ -59,7 +59,7 @@ use function trim;
  */
 class InlineImage extends MessagePart
 {
-	/**	@var	string|NULL		$content */
+	/**	@var	string			$content */
 	protected $content;
 
 	/**	@var	string|NULL		$fileName */
@@ -206,8 +206,8 @@ class InlineImage extends MessagePart
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string|NULL		$encoding		Optional: Encoding of file
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
-	 *	@return		self		  					Self instance for chaining
-	 *	@throws		InvalidArgumentException		if file is not existing
+	 *	@return		self		  	Self instance for chaining
+	 *	@throws		InvalidArgumentException	if file is not existing
 	 *	@todo  		scan file for malware
 	 */
 	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
