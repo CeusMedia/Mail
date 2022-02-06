@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Mail message header field data object.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,18 +22,29 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Header;
+
+use InvalidArgumentException;
+
+use function function_exists;
+use function preg_replace;
+use function mb_convert_case;
+use function str_replace;
+use function strlen;
+use function strtolower;
+use function trim;
+use function ucwords;
 
 /**
  *	Mail message header field data object.
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -108,7 +119,7 @@ class Field
 	public function setName( string $name ): self
 	{
 		if( 0 === strlen( trim( $name ) ) )
-			throw new \InvalidArgumentException( 'Field name cannot be empty' );
+			throw new InvalidArgumentException( 'Field name cannot be empty' );
 		$this->name	= preg_replace( "/( |-)+/", "-", trim( $name ) );
 		return $this;
 	}

@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Address\Collection;
+namespace CeusMedia\Mail\Test\Unit\Address\Collection;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
@@ -28,6 +28,30 @@ class RendererTest extends TestCase
 	{
 		$this->renderer	= new Renderer();
 //		parent::__construct();
+	}
+
+	/**
+	 *	@covers		::create
+	 *	@covers		::getInstance
+	 *	@todo		remove coverage of create after removing method
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Renderer::getInstance();
+
+		$this->assertEquals( $this->renderer, $instance );
+	}
+
+	/**
+	 *	@covers		::getDelimiter
+	 *	@covers		::setDelimiter
+	 */
+	public function testSetDelimiter()
+	{
+		foreach( $delimiters = ['-', '#'] as $delimiter ){
+			$this->renderer->setDelimiter( $delimiter );
+			$this->assertEquals( $delimiter, $this->renderer->getDelimiter() );
+		}
 	}
 
 	/**

@@ -1,22 +1,22 @@
 <?php
 /**
- *	Unit test for mail message header renderer.
+ *	Unit test for mail message renderer.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message_Header
+ *	@package			CeusMedia_Mail_Message
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Message\Header;
+namespace CeusMedia\Mail\Test\Unit\Message;
 
 use CeusMedia\Mail\Message\Renderer;
 use CeusMedia\Mail\Test\TestCase;
 
 /**
- *	Unit test for mail message header renderer.
+ *	Unit test for mail message renderer.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message_Header
+ *	@package			CeusMedia_Mail_Message
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
- *  @coversDefaultClass \CeusMedia\Mail\Message\Header\Renderer
+ *  @coversDefaultClass \CeusMedia\Mail\Message\Renderer
  */
 class RendererTest extends TestCase
 {
@@ -25,7 +25,7 @@ class RendererTest extends TestCase
 	 */
 	public function testRender()
 	{
-		$this->markTestIncomplete( 'No test defined for Message\\Header\\Renderer' );
+		$this->markTestIncomplete( 'No test defined for Message\\Renderer' );
 
 		$renderer	= Renderer::getInstance();
 	}

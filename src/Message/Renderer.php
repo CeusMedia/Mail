@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Renderer for mails.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,20 +22,34 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Header\Encoding;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
-use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
-use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
-use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
+use RuntimeException;
+
+use function array_pop;
+use function count;
+use function join;
+use function md5;
+use function microtime;
+use function rtrim;
+use function sha1;
+use function strlen;
+use function time;
+use function trim;
 
 /**
  *	Renderer for mails.
@@ -43,7 +57,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -62,6 +76,10 @@ class Renderer
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 
@@ -82,9 +100,9 @@ class Renderer
 	public static function render( Message $message ): string
 	{
 		if( 0 === count( $message->getParts( TRUE ) ) )
-			throw new \RuntimeException( 'No content part set' );
+			throw new RuntimeException( 'No content part set' );
 		if( 0 === strlen( trim( $message->getSubject() ) ) )
-			throw new \RuntimeException( 'No subject set' );
+			throw new RuntimeException( 'No subject set' );
 
 		$headers	= $message->getHeaders();
 		if( !$headers->hasField( 'Message-ID' ) ){
@@ -104,14 +122,14 @@ class Renderer
 			return $part->render( MessagePart::SECTION_ALL, $headers );			//  render part and apply part headers as message headers
 		}
 
-		$parts	= (object) array(
-			'body'	=> (object) array(
+		$parts	= (object) [
+			'body'	=> (object) [
 				'html'	=> NULL,
 				'text'	=> NULL,
-			),
-		'files'		=> array(),
-			'images'	=> array(),
-		);
+			],
+		'files'		=> [],
+			'images'	=> [],
+		];
 		foreach( $message->getParts( TRUE ) as $part ){
 			if( $part instanceof MessagePartHTML )
 				$parts->body->html	= $part;
@@ -126,14 +144,12 @@ class Renderer
 		}
 
 		$delim			= Message::$delimiter;
-		$mimeBoundary	= '------'.md5( (string) microtime( TRUE ) );			//  mixed multipart boundary
+		$mimeBoundary	= '------'.md5( (string) ( microtime( TRUE ) + 0 ) );	//  mixed multipart boundary
 		$mimeBoundary1	= '------'.md5( (string) ( microtime( TRUE ) + 1 ) );	//  related multipart boundary
 		$mimeBoundary2	= '------'.md5( (string) ( microtime( TRUE ) + 2 ) );	//  alternative multipart boundary
 		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
-		$contents	= array(
-			'This is a multi-part message in MIME format.',
-		);
-		$bodyParts	= $message->getParts( FALSE, FALSE );
+		$contents		= [ 'This is a multi-part message in MIME format.' ];
+		$bodyParts		= $message->getParts( FALSE, FALSE );
 		if( count( $bodyParts ) > 1 ){							//  alternative content parts
 			$contents[]	= '--'.$mimeBoundary;
 			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';

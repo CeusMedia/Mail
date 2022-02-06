@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Validator for mail address syntax.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,11 +22,17 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address\Check;
+
+use Alg_Object_Constant;
+use InvalidArgumentException;
+
+use function filter_var;
+use function preg_match;
 
 /**
  *	Validator for mail address syntax.
@@ -34,17 +40,17 @@ namespace CeusMedia\Mail\Address\Check;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Syntax
 {
-	const MODE_AUTO				= 0;
-	const MODE_ALL				= 1;
-	const MODE_FILTER			= 2;
-	const MODE_SIMPLE_REGEX		= 4;
-	const MODE_EXTENDED_REGEX	= 8;
+	public const MODE_AUTO				= 0;
+	public const MODE_ALL				= 1;
+	public const MODE_FILTER			= 2;
+	public const MODE_SIMPLE_REGEX		= 4;
+	public const MODE_EXTENDED_REGEX	= 8;
 
 	/**	@var int $mode */
 	protected $mode				= 2;
@@ -67,34 +73,37 @@ class Syntax
 	}
 
 	/**
-	 *	Validate an mail address against set mode and map of results.
+	 *	Validate an mail address against set mode and returns bitmask of successfully applied test modes.
 	 *	@access		public
 	 *	@param		string			$address		Mail address to validate
 	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer							Bitmask of successfully applied test modes
-	 *	@throws		\InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
+	 *	@throws		InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
 	 */
 	public function check( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result		= 0;
 		$wildcard	= self::MODE_ALL === ( $this->mode & self::MODE_ALL );
-		$constants	= \Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
+		$constants	= Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
+
 		foreach( $constants as $key => $value ){
 			if( ( $value === ( $this->mode & $value ) ) || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
 					if( FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL ) )
-						$result	&= $value;
+						$result	|= $value;
 				}
 				else if( $value === self::MODE_SIMPLE_REGEX || $wildcard ){
 					if( 0 !== preg_match( $this->regexSimple, $address ) )
-						$result	&= $value;
+						$result	|= $value;
 				}
 				else if( $value === self::MODE_EXTENDED_REGEX || $wildcard ){
 					if( 0 !== preg_match( $this->regexExtended, $address ) )
-						$result	&= $value;
+						$result	|= $value;
 				}
 			}
 		}
+		if( $result === 0 && $throwException )
+			throw new InvalidArgumentException( 'Given address is not valid' );
 		return $result;
 	}
 
@@ -106,17 +115,20 @@ class Syntax
 	 *		2 - simple address
 	 *		3 - extended address
 	 *
-	 *	@static
 	 *	@access		public
 	 *	@param		string			$address		Mail address to validate
 	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer							Bitmask of successfully applied test modes
-	 *	@throws		\InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
+	 *	@throws		InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
 	 */
 	public function evaluate( string $address, ?bool $throwException = TRUE ): int
 	{
 		$result	= 0;
-		$modes	= array( self::MODE_FILTER, self::MODE_SIMPLE_REGEX, self::MODE_EXTENDED_REGEX );
+		$modes	= [
+			self::MODE_FILTER,
+			self::MODE_SIMPLE_REGEX,
+			self::MODE_EXTENDED_REGEX
+		];
 		foreach( $modes as $mode )
 			if( $this->isValidByMode( $address, $mode ) )
 				$result	|= $mode;
@@ -124,18 +136,34 @@ class Syntax
 	}
 
 	/**
+	 *	Indicates whether a mode is set.
+	 *	@access		public
+	 *	@param		integer		$mode			Mode check
+	 *	@return		boolean
+	 */
+	public function isMode( int $mode ): bool
+	{
+		return $mode === ( $this->mode & $mode );
+	}
+
+	/**
 	 *	Indicates whether an address is valid.
-	 *	@static
 	 *	@access		public
 	 *	@param		string		$address		Mail address to validate
 	 *	@return		boolean
 	 */
 	public function isValid( string $address ): bool
 	{
-		return self::check( $address, FALSE ) > 0;
+		return $this->check( $address, FALSE ) > 0;
 	}
 
 	/**
+	 *	...
+	 *	@static
+	 *	@access		public
+	 *	@param		string		$address		Mail address to validate
+	 *	@param		integer		$mode			Mode to use for validation, see class constants
+	 *	@return		boolean
 	 *	@todo		implement MODE_AUTO and MODE_ALL
 	 */
 	public function isValidByMode( string $address, int $mode ): bool
@@ -146,7 +174,7 @@ class Syntax
 			return 0 !== preg_match( $this->regexSimple, $address );
 		if( $mode === self::MODE_EXTENDED_REGEX )
 			return 0 !== preg_match( $this->regexExtended, $address );
-		throw new \InvalidArgumentException( 'Invalid mode given' );
+		throw new InvalidArgumentException( 'Invalid mode given' );
 	}
 
 	/**

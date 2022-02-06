@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Mail message header encoder and decoder.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,19 +22,36 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use \CeusMedia\Mail\Message;
-use \DomainException;
+use CeusMedia\Mail\Message;
+
+use DomainException;
+use InvalidArgumentException;
+use RuntimeException;
+
+use function base64_decode;
+use function iconv;
+use function iconv_mime_decode;
+use function imap_qprint;
+use function join;
+use function preg_match;
+use function preg_split;
+use function preg_replace;
+use function quoted_printable_decode;
+use function quoted_printable_encode;
+use function strtolower;
+use function strtoupper;
+use function str_replace;
 
 /**
  *	Mail message header encoder and decoder.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -52,18 +69,18 @@ use \DomainException;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Encoding
 {
-	const STRATEGY_IMPL				= 1;
-	const STRATEGY_ICONV			= 2;
-	const STRATEGY_ICONV_STRICT		= 3;
-	const STRATEGY_ICONV_TOLERANT	= 4;
+	public const STRATEGY_IMPL				= 1;
+	public const STRATEGY_ICONV				= 2;
+	public const STRATEGY_ICONV_STRICT		= 3;
+	public const STRATEGY_ICONV_TOLERANT	= 4;
 
-	const STRATEGIES		= [
+	public const STRATEGIES		= [
 		self::STRATEGY_IMPL,
 		self::STRATEGY_ICONV,
 		self::STRATEGY_ICONV_STRICT,
@@ -80,7 +97,7 @@ class Encoding
 	 *	@static
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if given encoding is not supported
+	 *	@throws		InvalidArgumentException	if given encoding is not supported
 	 */
 	public static function decodeIfNeeded( string $string ): string
 	{
@@ -98,43 +115,6 @@ class Encoding
 		}
 	}
 
-	protected static function decode( string $string ): string
-	{
-		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
-		if( !preg_match( $pattern, $string ) )
-			return $string;
-		$matches	= array();
-		$list		= array();
-		$lines		= preg_split( "@\r?\n\s*@", $string );
-		foreach( $lines as $line ){
-			$parts	= array();
-			while( preg_match( $pattern, $line, $parts ) ){
-				list( $before, $charset, $encoding, $content, $after ) = array_slice( $parts, 1 );
-				switch( strtolower( $encoding ) ){
-					case 'b':
-						$content	= base64_decode( $content, TRUE );
-						if( FALSE === $content )
-							throw new \RuntimeException( 'Encoded content contains invalid characters' );
-						break;
-					case 'q':
-						$content	= str_replace( "_", " ", $content );
-						if( function_exists( 'imap_qprint' ) )
-							$content	= imap_qprint( $content );
-						else
-							$content	= quoted_printable_decode( $content );
-						break;
-					default:
-						throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
-				}
-				if( strtoupper( $charset ) !== 'UTF-8' )
-					$content	= iconv( $charset, 'UTF-8', $content );
-				$line		= preg_replace( $pattern, $before.$content.$after, $line );
-			}
-			$list[]	= $line;
-		}
-		return join( $list );
-	}
-
 	/**
 	 *	Encodes a mail header value string if needed.
 	 *	@static
@@ -142,7 +122,7 @@ class Encoding
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if given encoding is not supported
+	 *	@throws		InvalidArgumentException	if given encoding is not supported
 	 */
 	public static function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
 	{
@@ -153,12 +133,60 @@ class Encoding
 				return "=?UTF-8?B?".base64_encode( $string )."?=";
 			case 'quoted-printable':
 				$string		= quoted_printable_encode( $string );
-				$string		= str_replace( array( '?', ' '), array( '=3F', '_' ), $string );
+				$string		= str_replace( [ '?', ' ' ], [ '=3F', '_' ], $string );
 				$replace	= $fold ? "?=".Message::$delimiter."\t"."=?UTF-8?Q?" : '';
 				$string   	= str_replace( '='.Message::$delimiter, $replace, $string );
 				return "=?UTF-8?Q?".$string."?=";
 			default:
-				throw new \InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+				throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 		}
+	}
+
+	/*  --  PROTECTED  --  */
+
+	/**
+	 *	...
+	 *	@static
+	 *	@access		protected
+	 *	@param		string		$string			...
+	 *	@return		string
+	 *	@throws		RuntimeException			if Base64 decoding fails
+	 *	@throws		InvalidArgumentException	if encoding detection & support fails
+	 */
+	protected static function decode( string $string ): string
+	{
+		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
+		if( !preg_match( $pattern, $string ) )
+			return $string;
+		$matches	= [];
+		$list		= [];
+		$lines		= preg_split( "@\r?\n\s*@", $string );
+		foreach( $lines as $line ){
+			$parts	= [];
+			while( preg_match( $pattern, $line, $parts ) ){
+				[$before, $charset, $encoding, $content, $after] = array_slice( $parts, 1 );
+				switch( strtolower( $encoding ) ){
+					case 'b':
+						$content	= base64_decode( $content, TRUE );
+						if( FALSE === $content )
+							throw new RuntimeException( 'Encoded content contains invalid characters' );
+						break;
+					case 'q':
+						$content	= str_replace( "_", " ", $content );
+						if( function_exists( 'imap_qprint' ) )
+							$content	= imap_qprint( $content );
+						else
+							$content	= quoted_printable_decode( $content );
+						break;
+					default:
+						throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+				}
+				if( strtoupper( $charset ) !== 'UTF-8' )
+					$content	= iconv( $charset, 'UTF-8', $content );
+				$line		= preg_replace( $pattern, $before.$content.$after, $line );
+			}
+			$list[]	= $line;
+		}
+		return join( $list );
 	}
 }

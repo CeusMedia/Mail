@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Parser for list of addresses collected as string.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,44 +20,65 @@ declare(strict_types=1);
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Parser
+ *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address\Collection;
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Collection as AddressCollection;
-use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
+use CeusMedia\Mail\Deprecation;
+
+use Alg_Object_Constant;
+use InvalidArgumentException;
+use RangeException;
+
+use function array_shift;
+use function extension_loaded;
+use function imap_rfc822_parse_adrlist;
+use function in_array;
+use function strlen;
+use function str_replace;
+use function str_split;
+use function trim;
 
 /**
  *	Parser for list of addresses collected as string.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Parser
+ *	@package		CeusMedia_Mail_Address_Collection
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
  */
 class Parser
 {
-	const METHOD_AUTO					= 0;
-	const METHOD_IMAP					= 1;
-	const METHOD_OWN					= 2;
-	const METHOD_IMAP_PLUS_OWN			= 3;
+	public const METHOD_AUTO					= 0;
+	public const METHOD_IMAP					= 1;
+	public const METHOD_OWN						= 2;
+	public const METHOD_IMAP_PLUS_OWN			= 3;
 
-	const STATE_SCANNING_FOR_NAME		= 0;
-	const STATE_READING_NAME			= 1;
-	const STATE_READING_QUOTED_NAME		= 2;
-	const STATE_SCANNING_FOR_ADDRESS	= 3;
-	const STATE_READING_ADDRESS			= 4;
+	public const METHODS						= [
+		self::METHOD_AUTO,
+		self::METHOD_IMAP,
+		self::METHOD_OWN,
+		self::METHOD_IMAP_PLUS_OWN,
+	];
+
+	protected const STATE_SCANNING_FOR_NAME		= 0;
+	protected const STATE_READING_NAME			= 1;
+	protected const STATE_READING_QUOTED_NAME	= 2;
+	protected const STATE_SCANNING_FOR_ADDRESS	= 3;
+	protected const STATE_READING_ADDRESS		= 4;
 
 	/** @var int $method */
-	protected $method					= 0;
+	protected $method							= 0;
 
 	/**
 	 *	Static constructor.
@@ -69,6 +90,10 @@ class Parser
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 
@@ -99,7 +124,7 @@ class Parser
 	 *	@param		string		$string		Address collection string
 	 *	@param		string		$delimiter	Delimiter (default: ,)
 	 *	@return		AddressCollection
-	 *	@throws		\RangeException			if parser method is not supported
+	 *	@throws		RangeException			if parser method is not supported
 	 */
 	public function parse( string $string, string $delimiter = "," ): AddressCollection
 	{
@@ -114,7 +139,7 @@ class Parser
 			case static::METHOD_OWN;
 				return $this->parseUsingOwn( $string );												//  get collection using own implementation
 			default:
-				throw new \RangeException( 'No supported parser set' );
+				throw new RangeException( 'No supported parser set' );
 		}
 	}
 
@@ -137,8 +162,8 @@ class Parser
 	public function parseUsingOwn( string $string, string $delimiter = ',' ): AddressCollection
 	{
 		if( 0 === strlen( $delimiter ) )
-			throw new \InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
-		$list		= array();
+			throw new InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
+		$list		= [];
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
 		if( 0 === strlen( trim( $string ) ) )
 			return new AddressCollection();
@@ -187,7 +212,7 @@ class Parser
 			}
 			else if( $status === static::STATE_READING_ADDRESS ){
 				if( $letter === '>' || $letter === " " || $letter === $delimiter ){
-					$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
+					$list[]	= [ 'fullname' => $part1, 'address' => trim( $buffer ) ];
 					$part1	= "";
 					$buffer	= "";
 					$status	= static::STATE_SCANNING_FOR_NAME;
@@ -197,7 +222,7 @@ class Parser
 			$buffer	.= $letter;
 		}
 		if( 0 < strlen( $buffer ) && 0 < $status )
-			$list[]	= array( 'fullname' => $part1, 'address' => trim( $buffer ) );
+			$list[]	= [ 'fullname' => $part1, 'address' => trim( $buffer ) ];
 
 		$collection	= new AddressCollection();
 		foreach( $list as $entry ){
@@ -212,14 +237,14 @@ class Parser
 	 *	@access		public
 	 *	@param		integer		$method		Parser method to set, see METHOD_* constants
 	 *	@return		self
-	 *	@throws		\InvalidArgumentException	if given method is unknown
+	 *	@throws		InvalidArgumentException	if given method is unknown
 	 */
 	public function setMethod( int $method ): self
 	{
-		$reflextion	= new \Alg_Object_Constant( get_class( $this ) );
+		$reflextion	= new Alg_Object_Constant( get_class( $this ) );
 		$constants	= $reflextion->getAll( 'METHOD' );
 		if( !in_array( $method, $constants, TRUE ) )
-			throw new \InvalidArgumentException( 'Invalid method' );
+			throw new InvalidArgumentException( 'Invalid method' );
 		$this->method	= $method;
 		return $this;
 	}

@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Renderer for mail addresses.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,13 +22,16 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address;
 
-use \CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Deprecation;
+
+use RuntimeException;
 
 /**
  *	Renderer for mail addresses.
@@ -36,7 +39,7 @@ use \CeusMedia\Mail\Address;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			Finish code documentation
@@ -53,6 +56,10 @@ class Renderer
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 
@@ -73,8 +80,8 @@ class Renderer
 	 *	@access		public
 	 *	@param		Address		$address		Address to render
 	 *	@return		string		Rendered mail address
-	 *	@throws		\RuntimeException			If domain is empty
-	 *	@throws		\RuntimeException			If local part is empty
+	 *	@throws		RuntimeException			If domain is empty
+	 *	@throws		RuntimeException			If local part is empty
 	 *	@todo		addslashes on name?
 	 */
 	public function render( Address $address ): string

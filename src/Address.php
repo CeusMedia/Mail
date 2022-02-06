@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Data object for mail addresses, having a local part bound to a domain and optionally a name.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,15 +22,22 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail;
 
-use \CeusMedia\Mail\Address\Parser as AddressParser;
-use \CeusMedia\Mail\Address\Renderer as AddressRenderer;
-use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+use CeusMedia\Mail\Address\Parser as AddressParser;
+use CeusMedia\Mail\Address\Renderer as AddressRenderer;
+use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+
+use InvalidArgumentException;
+use RuntimeException;
+
+use function strlen;
+use function trim;
 
 /**
  *	Data object for mail addresses, having a local part bound to a domain and optionally a name.
@@ -45,7 +52,7 @@ use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
@@ -94,6 +101,10 @@ class Address
 	 */
 	public static function create( string $string = NULL ): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self( $string );
 	}
 
@@ -123,13 +134,13 @@ class Address
 	 *	@access		public
 	 *	@param		boolean			$strict		Flag: throw exception if no domain set
 	 *	@return		string			Domain of mail address
-	 *	@throws		\RuntimeException			if no address has been set, yet
+	 *	@throws		RuntimeException			if no address has been set, yet
 	 */
 	public function getDomain( bool $strict = TRUE ): string
 	{
 		if( NULL === $this->domain || strlen( trim( $this->domain ) ) === 0 ){
 			if( $strict )
-				throw new \RuntimeException( 'No valid address set, yet (domain is missing)' );
+				throw new RuntimeException( 'No valid address set, yet (domain is missing)' );
 			return '';
 		}
 		return $this->domain;
@@ -151,13 +162,13 @@ class Address
 	 *	@access		public
 	 *	@param		boolean			$strict		Flag: throw exception if no local part set
 	 *	@return		string			Local part of mail address
-	 *	@throws		\RuntimeException			if no address has been set, yet
+	 *	@throws		RuntimeException			if no address has been set, yet
 	 */
 	public function getLocalPart( bool $strict = TRUE ): string
 	{
 		if( NULL === $this->localPart || strlen( trim( $this->localPart ) ) === 0 ){
 			if( $strict )
-				throw new \RuntimeException( 'No valid address set, yet (local part missing)' );
+				throw new RuntimeException( 'No valid address set, yet (local part missing)' );
 			return '';
 		}
 		return $this->localPart;
@@ -168,13 +179,13 @@ class Address
 	 *	@access		public
 	 *	@param		boolean			$strict		Flag: throw exception if no name set
 	 *	@return		string			Name of mail address
-	 *	@throws		\RuntimeException			if no name has been set, yet
+	 *	@throws		RuntimeException			if no name has been set, yet
 	 */
 	public function getName( bool $strict = TRUE ): string
 	{
 		if( NULL === $this->name || strlen( trim( $this->name ) ) === 0 ){
 			if( $strict )
-				throw new \RuntimeException( 'No name set' );
+				throw new RuntimeException( 'No name set' );
 			return '';
 		}
 		return $this->name;
@@ -186,8 +197,8 @@ class Address
 	 *	@access		public
 	 *	@param		Address		$address	Address to render
 	 *	@return		string
-	 *	@throws		\RuntimeException		If domain is empty
-	 *	@throws		\RuntimeException		If local part is empty
+	 *	@throws		RuntimeException		If domain is empty
+	 *	@throws		RuntimeException		If local part is empty
 	 *	@todo		Check behaviour: render methods always return member data, why with argument here?
 	 */
 	public function render( Address $address ): string
@@ -200,12 +211,12 @@ class Address
 	 *	@access		public
 	 *	@param		string		$string			Full mail address to set
 	 *	@return		self		Own instance for chainability
-	 *	@throws		\InvalidArgumentException	if given string is empty
+	 *	@throws		InvalidArgumentException	if given string is empty
 	 */
 	public function set( string $string ): self
 	{
 		if( 0 === strlen( trim( $string ) ) )
-			throw new \InvalidArgumentException( 'No address given' );
+			throw new InvalidArgumentException( 'No address given' );
 
 		$address	= AddressParser::getInstance()->parse( $string );
 		$this->setDomain( $address->getDomain() );

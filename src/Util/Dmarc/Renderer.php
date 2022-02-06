@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Renderer for DMARC records.
  *
- *	Copyright (c) 2017-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2017-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,13 +22,18 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Util_Dmarc
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2021 Christian Würker
+ *	@copyright		2017-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Util\Dmarc;
 
 use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Deprecation;
+
+use function count;
+use function join;
+use function strlen;
 
 /**
  *	Renderer for DMARC records.
@@ -36,7 +41,7 @@ use CeusMedia\Mail\Address;
  *	@category		Library
  *	@package		CeusMedia_Mail_Util_Dmarc
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2021 Christian Würker
+ *	@copyright		2017-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -52,6 +57,10 @@ class Renderer
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 
@@ -68,17 +77,17 @@ class Renderer
 
 	public function render( Record $record ): string
 	{
-		$facts	= array(
+		$facts	= [
 			'v'		=> 'DMARC'.$record->version,
 			'p'		=> $record->policy,
-		);
+		];
 		if( 0 < strlen( $record->policySubdomains ) )
 			$facts['sp']	= $record->policySubdomains;
 		$facts['adkim']	= $record->alignmentDkim;
 		$facts['aspf']	= $record->alignmentSpf;
 		$facts['pct']	= $record->percent;
 		if( 0 < count( $record->reportAggregate ) ){
-			$list	= array();
+			$list	= [];
 			foreach( $record->reportAggregate as $uri ){
 				if( $uri instanceof Address )
 					$uri	= 'mailto:'.$uri->get();
@@ -87,7 +96,7 @@ class Renderer
 			$facts['rua']	= join( ', ', $list );
 		}
 		if( 0 < count( $record->reportForensic ) ){
-			$list	= array();
+			$list	= [];
 			foreach( $record->reportForensic as $uri ){
 				if( $uri instanceof Address )
 					$uri	= 'mailto:'.$uri->get();
@@ -100,7 +109,7 @@ class Renderer
 		if( $record->failureOption != '0' )
 			$facts['fo']	= $record->failureOption;
 
-		$list	= array();
+		$list	= [];
 		foreach( $facts as $key => $value )
 			$list[]	= $key.'='.(string) $value;
 		return join( '; ', $list );

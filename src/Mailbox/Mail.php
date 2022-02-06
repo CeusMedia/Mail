@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	...
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Mailbox
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
@@ -34,13 +34,18 @@ use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
+use RuntimeException;
+
+use function imap_body;
+use function imap_fetchheader;
+
 /**
  *	...
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Mailbox
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -113,7 +118,7 @@ class Mail
 	public function getMessage( bool $withBodyParts = FALSE ): Message
 	{
 		if( NULL === $this->connection )
-			throw new \RuntimeException( 'No connection set' );
+			throw new RuntimeException( 'No connection set' );
 		$header	= $this->getRawHeader();
 		$body	= '';
 		if( $withBodyParts )
@@ -130,11 +135,11 @@ class Mail
 	public function getRawHeader( $force = FALSE ): string
 	{
 		if( NULL === $this->connection )
-			throw new \RuntimeException( 'No connection set' );
+			throw new RuntimeException( 'No connection set' );
 		if( NULL === $this->header || 0 === strlen( $this->header ) || $force ){
 			$header	= imap_fetchheader( $this->connection, $this->mailId, FT_UID );
 			if( FALSE === $header )
-				throw new \RuntimeException( 'Invalid mail ID' );
+				throw new RuntimeException( 'Invalid mail ID' );
 			$this->header	= $header;
 		}
 		return $this->header;

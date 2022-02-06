@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Evaluate existence of mail receiver address.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,18 +22,36 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address\Check;
 
-use CeusMedia\Cache\AbstractAdapter as CacheAdapter;
+use CeusMedia\Cache\AdapterInterface as CacheAdapterInterface;
 use CeusMedia\Cache\Factory as CacheFactory;
 use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Util\MX;
+
+use RangeException;
+use RuntimeException;
+
+use function array_key_exists;
+use function array_shift;
+use function count;
+use function fclose;
+use function fgets;
+use function fputs;
+use function fsockopen;
+use function in_array;
+use function is_string;
+use function join;
+use function preg_match;
+use function stream_socket_enable_crypto;
+use function trim;
 
 /**
  *	Evaluate existence of mail receiver address.
@@ -41,7 +59,7 @@ use CeusMedia\Mail\Util\MX;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Check
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
@@ -57,7 +75,7 @@ class Availability
 	/** @var	SmtpResponse	$lastResponse */
 	protected $lastResponse;
 
-	/** @var	CacheAdapter	$cache */
+	/** @var	CacheAdapterInterface	$cache */
 	protected $cache;
 
 	/**
@@ -79,12 +97,16 @@ class Availability
 	 *	...
 	 *	@access		public
 	 *	@param		string|NULL			$key			Response data key (error|code|message)
-	 *	@throws		\RangeException						if given key is invalid
+	 *	@throws		RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 *	@deprecated	use getLastResponse instead
 	 */
 	public function getLastError( ?string $key = NULL )
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getLastResponse instead' );
 		return $this->getLastResponse( $key );
 	}
 
@@ -92,7 +114,7 @@ class Availability
 	 *	...
 	 *	@access		public
 	 *	@param		string|NULL			$key			Response data key (error|request|response|code|message)
-	 *	@throws		\RangeException						if given key is invalid
+	 *	@throws		RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 */
 	public function getLastResponse( ?string $key = NULL )
@@ -101,7 +123,7 @@ class Availability
 		if( NULL !== $key ){
 			if( array_key_exists( $key, $properties ) )
 				return $properties[$key];
-			throw new \RangeException( 'Unknown key: '.$key );
+			throw new RangeException( 'Unknown key: '.$key );
 		}
 		return (object) $properties;
 	}
@@ -154,15 +176,16 @@ class Availability
 				return FALSE;
 			}
 			$this->sendChunk( $conn, "EHLO ".$this->sender->getDomain() );
-			$response = $this->readResponse( $conn );
+			$response	= $this->readResponse( $conn );
 			if( !in_array( $this->lastResponse->getCode(), [ 220, 250 ], TRUE ) ){
 				$this->lastResponse->setError( SmtpResponse::ERROR_HELO_FAILED );
 				return FALSE;
 			}
-			$features		= explode( "\n", $response->message );
-			$targetHost		= array_shift( $features );
-			if( in_array( 'VRFY', $features ) ){
+			$features	= explode( "\n", $response->message );
+			$targetHost	= array_shift( $features );
+			if( in_array( 'VRFY', $features, TRUE ) ){
 				$this->sendChunk( $conn, "VRFY ".$receiver->getAddress() );
+				$this->readResponse( $conn );
 				return in_array( $this->lastResponse->getCode(), [ 250, 251, 252 ], TRUE );
 			}
 			else{
@@ -203,7 +226,7 @@ class Availability
 		}
 	}
 
-	public function setCache( CacheAdapter $cache ): self
+	public function setCache( CacheAdapterInterface $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;
@@ -222,21 +245,29 @@ class Availability
 
 	//  --  PROTECTED  --  //
 
+	/**
+	 *	@access		protected
+	 *	@param		string		$hostname
+	 *	@param		boolean		$useCache
+	 *	@param		boolean		$strict
+	 *	@return		array
+	 */
 	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		return MX::getInstance()->fromHostname( $hostname, $useCache, $strict );
 	}
 
 	/**
-	 * @param resource $connection
-	 * @param array $acceptedCodes
-	 * @return object
+	 *	@access		protected
+	 *	@param		resource	$connection
+	 *	@param		array		$acceptedCodes
+	 *	@return		object
 	 */
-	protected function readResponse( $connection, array $acceptedCodes = array() ): object
+	protected function readResponse( $connection, array $acceptedCodes = [] ): object
 	{
 		$lastLine	= FALSE;
 		$code		= NULL;
-		$buffer		= array();
+		$buffer		= [];
 		do{
 			$response	= fgets( $connection, 1024 );
 			if( FALSE !== $response ) {
@@ -246,14 +277,14 @@ class Availability
 				$this->lastResponse->setMessage();
 				if( $this->verbose )
 					print ' < ' . $response;
-				$matches = array();
+				$matches = [];
 				preg_match('/^([0-9]{3})( |-)(.+)$/', $response, $matches);
 				if( !$matches )
-					throw new \RuntimeException('SMTP response not understood');
+					throw new RuntimeException('SMTP response not understood');
 				$code = (int) $matches[1];
 				$buffer[] = trim( $matches[3] );
 				if( 0 < count($acceptedCodes) && !in_array($code, $acceptedCodes, TRUE ) )
-					throw new \RuntimeException('Unexcepted SMTP response (' . $matches[1] . '): ' . $matches[3], $code );
+					throw new RuntimeException('Unexcepted SMTP response (' . $matches[1] . '): ' . $matches[3], $code );
 				if( ' ' === $matches[2])
 					$lastLine = TRUE;
 				$this->lastResponse->setCode( (int) $matches[1] );
@@ -261,14 +292,15 @@ class Availability
 			}
 		}
 		while( FALSE !== $response && !$lastLine );
-		return (object) array(
+		return (object) [
 			'code'		=> $code,
 			'message'	=> join( "\n", $buffer ),
-		);
+		];
 	}
 
 	/**
 	 *	...
+	 *	@access		protected
 	 *	@param		resource		$connection
 	 *	@param		string			$message
 	 *	@return		bool

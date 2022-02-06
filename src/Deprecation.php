@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 /**
- *	...
+*	...
  *
- *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2021-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,29 +20,40 @@ declare(strict_types=1);
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Message_Header
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2022 Christian Würker
+ *	@copyright		2021-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@todo			code doc
  */
-namespace CeusMedia\Mail\Header;
+namespace CeusMedia\Mail;
+
+use Deprecation as CommonDeprecation;
+use function phpversion;
 
 /**
  *	...
  *
  *	@category		Library
- *	@package		CeusMedia_Mail_Message_Header
+ *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2022 Christian Würker
+ *	@copyright		2021-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
- *	@todo			implement
- *	@todo			code doc
  */
-class Renderer
+class Deprecation extends CommonDeprecation
 {
-
+	/**
+	 *	Constructor.
+	 *	@access		public
+	 *	@return		void
+	 */
+	public function __construct()
+	{
+		$iniFilePath		= dirname( __DIR__ ).'/Mail.ini';
+		$iniFileData		= parse_ini_file( $iniFilePath, TRUE );
+		$this->version		= $iniFileData['library']['version'];
+		$this->phpVersion	= phpversion();
+		$this->errorVersion	= $this->version;
+	}
 }

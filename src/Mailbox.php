@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Handler for IMAP mailboxes.
  *
- *	Copyright (c) 2017-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2017-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2021 Christian Würker
+ *	@copyright		2017-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -32,17 +32,35 @@ use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
-use imap_body;
-use imap_clearflag_full;
-use imap_close;
-use imap_delete;
-use imap_fetchheader;
-use imap_last_error;
-use imap_mail_move;
-use imap_open;
-use imap_ping;
-use imap_sort;
-use imap_timeout;
+
+use InvalidArgumentException;
+use RangeException;
+use RuntimeException;
+
+use function count;
+use function extension_loaded;
+use function imap_body;
+use function imap_clearflag_full;
+use function imap_close;
+use function imap_delete;
+use function imap_expunge;
+use function imap_fetchheader;
+use function imap_last_error;
+use function imap_mail_move;
+use function imap_open;
+use function imap_ping;
+use function imap_setflag_full;
+use function imap_sort;
+use function imap_timeout;
+use function in_array;
+use function is_resource;
+use function join;
+use function preg_replace;
+use function preg_quote;
+use function strlen;
+use function strtolower;
+use function trim;
+use function ucfirst;
 
 /**
  *	Handler for IMAP mailboxes.
@@ -50,7 +68,7 @@ use imap_timeout;
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2021 Christian Würker
+ *	@copyright		2017-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -120,7 +138,7 @@ class Mailbox
 		if( extension_loaded( 'imap' ) )
 			return TRUE;
 		if( $strict )
-			throw new \RuntimeException( 'PHP extension "imap" not installed, but needed' );
+			throw new RuntimeException( 'PHP extension "imap" not installed, but needed' );
 		return FALSE;
 	}
 
@@ -136,7 +154,7 @@ class Mailbox
 		}
 		$this->error	= imap_last_error();
 		if( $strict )
-			throw new \RuntimeException( 'Connection to server failed: '.$this->error );
+			throw new RuntimeException( 'Connection to server failed: '.$this->error );
 		return FALSE;
 	}
 
@@ -166,7 +184,7 @@ class Mailbox
 		$reference	= $this->renderConnectionReference( TRUE );
 		$folders		= imap_list( $this->connection, $reference, $pattern );
 		if( FALSE === $folders )
-			throw new \RuntimeException( imap_last_error() );
+			throw new RuntimeException( imap_last_error() );
 		if( !$fullReference ){
 			$regExp	= '/^'.preg_quote( $reference, '/' ).'/';
 			foreach( $folders as $nr => $folder )
@@ -183,7 +201,7 @@ class Mailbox
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( FALSE === $header )
-			throw new \RuntimeException( 'Invalid mail ID' );
+			throw new RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
@@ -193,7 +211,7 @@ class Mailbox
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( FALSE === $header )
-			throw new \RuntimeException( 'Invalid mail ID' );
+			throw new RuntimeException( 'Invalid mail ID' );
 		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
 		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
@@ -203,11 +221,11 @@ class Mailbox
 		$this->checkConnection( TRUE, $strict );
 		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
 		if( FALSE === $header )
-			throw new \RuntimeException( 'Invalid mail ID' );
+			throw new RuntimeException( 'Invalid mail ID' );
 		return MessageHeaderParser::getInstance()->parse( $header );
 	}
 
-	public function index( array $criteria = array(), int $sort = SORTARRIVAL, bool $reverse = TRUE, bool $strict = TRUE ): array
+	public function index( array $criteria = [], int $sort = SORTARRIVAL, bool $reverse = TRUE, bool $strict = TRUE ): array
 	{
 		$this->checkConnection( TRUE, $strict );
 		$result	= imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
@@ -310,9 +328,9 @@ class Mailbox
 	 */
 	public function setMailFlag( string $mailId, string $flag ): self
 	{
-		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
+		$flags	= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
 		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
-			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
+			throw new RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
 		imap_setflag_full( $this->connection, $mailId, $flag, ST_UID );
 		return $this;
@@ -339,14 +357,14 @@ class Mailbox
 	 */
 	public function setTimeout( int $type, int $seconds ): self
 	{
-		$timeoutTypes	= array(
+		$timeoutTypes	= [
 			IMAP_OPENTIMEOUT,
 			IMAP_READTIMEOUT,
 			IMAP_WRITETIMEOUT,
 			IMAP_CLOSETIMEOUT
-		);
+		];
 		if( !in_array( $type, $timeoutTypes, TRUE ) )
-			throw new \InvalidArgumentException( 'Invalid timeout type' );
+			throw new InvalidArgumentException( 'Invalid timeout type' );
 		imap_timeout( $timeoutTypes[$type], $seconds );
 		return $this;
 	}
@@ -359,9 +377,9 @@ class Mailbox
 	 */
 	public function unsetMailFlag( string $mailId, string $flag ): self
 	{
-		$flags	= array( 'seen', 'answered', 'flagged', 'deleted', 'draft' );
+		$flags	= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
 		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
-			throw new \RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
+			throw new RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
 		imap_clearflag_full( $this->connection, $mailId, $flag, ST_UID );
 		return $this;
@@ -380,7 +398,7 @@ class Mailbox
 		if( NULL === $this->connection || !imap_ping( $this->connection ) ){
 			if( !$connect ){
 				if( $strict )
-					throw new \RuntimeException( 'Not connected' );
+					throw new RuntimeException( 'Not connected' );
 				return FALSE;
 			}
 			return $this->connect();
@@ -388,7 +406,7 @@ class Mailbox
 		if( NULL !== $this->connection && is_resource( $this->connection ) )
 			return TRUE;
 		if( $strict )
-			throw new \RuntimeException( 'Not connected' );
+			throw new RuntimeException( 'Not connected' );
 		return FALSE;
 	}
 
@@ -398,8 +416,8 @@ class Mailbox
 			return '{'.$this->host.'}';
 		if( NULL === $this->reference ){
 			$port		= 143;
-//			$flags		= array('imap');
-			$flags		= array();
+//			$flags		= ['imap'];
+			$flags		= [];
 			if( $this->secure ){
 				$port		= 993;
 				$flags[]	= 'ssl';

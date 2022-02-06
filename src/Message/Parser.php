@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Mail message parser.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,23 +22,36 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message;
 
-use \CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Header\AttributedField as MessageHeaderAttributedField;
-use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
-use \CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
-use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
-use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
-use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\AttributedField as MessageHeaderAttributedField;
+use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
+use Alg_Object_MethodFactory as MethodFactory;
+use RuntimeException;
+
+use function in_array;
+use function join;
+use function preg_match;
+use function preg_split;
+use function strlen;
+use function strtolower;
+use function strtotime;
+use function strtoupper;
+use function trim;
 
 /**
  *	Mail message parser.
@@ -46,7 +59,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			finish: parse mail headers too
@@ -123,13 +136,13 @@ class Parser
 		$body		= $parts[1];
 
 		if( !$headers->hasField( 'Content-Type' ) )
-			throw new \RuntimeException( 'Multipart has no content type header' );
+			throw new RuntimeException( 'Multipart has no content type header' );
 
 		$contentType	= $headers->getField( 'Content-Type' );
 		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
 		$mimeBoundary	= $contentType->getAttribute( 'boundary' );
 		if( NULL !== $mimeBoundary ){
-			$lines	= array();
+			$lines	= [];
 			$status	= 0;
 			foreach( preg_split( "/\r?\n/", $body ) as $nr => $line ){
 				if( $line === '--'.$mimeBoundary ){
@@ -138,7 +151,7 @@ class Parser
 						continue;
 					}
 					$this->parseMultipartBody( $message, join( $delim, $lines ) );
-					$lines	= array();
+					$lines	= [];
 				}
 				else if( $line === '--'.$mimeBoundary.'--' ){
 					$this->parseMultipartBody( $message, join( $delim, $lines ) );
@@ -190,7 +203,7 @@ class Parser
 			$filename		= $disposition->getAttribute( 'filename' );
 			$value			= strtoupper( $disposition->getValue() );
 			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
-			$isAttachment	= in_array( $value, array( 'INLINE', 'ATTACHMENT' ), TRUE ) && NULL !== $filename;
+			$isAttachment	= in_array( $value, [ 'INLINE', 'ATTACHMENT' ], TRUE ) && NULL !== $filename;
 
 			if( $isAttachment || $isInlineImage ){
 				$part	= new MessagePartAttachment();
@@ -209,22 +222,21 @@ class Parser
 				if( NULL !== $filename )
 					$part->setFilename( $filename );
 
-				$dispositionAttributesToCopy	= array(
+				$dispositionAttributesToCopy	= [
 					'size'				=> 'setFileSize',
 					'read-date'			=> 'setFileATime',
 					'creation-date'		=> 'setFileCTime',
 					'modification-date'	=> 'setFileMTime',
-				);
-				$methodFactory	= new \Alg_Object_MethodFactory( $part );
+				];
+				$methodFactory	= new MethodFactory( $part );
 				foreach( $dispositionAttributesToCopy as $key => $method ){
 					$value	= $disposition->getAttribute( $key );
 					if( is_null( $value ) )
 						continue;
 					if( preg_match( '/-date$/', $key ) )
 						$value	= strtotime( $value );
-					if( $value ){
+					if( $value )
 						$methodFactory->setMethod( $method, array( $value ) )->call();
-					}
 				}
 				return $part;
 			}

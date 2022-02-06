@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Resolver for DNS MX records related to hostname or mail address.
  *
- *	Copyright (c) 2017-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2017-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,14 +22,28 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Util
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2021 Christian Würker
+ *	@copyright		2017-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Util;
 
 use CeusMedia\Cache\AdapterInterface;
-use \CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Deprecation;
+
+use RuntimeException;
+use Throwable;
+
+use function exec;
+use function function_exists;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function ksort;
+use function preg_match;
+use function strlen;
+use function trim;
 
 /**
  *	Resolver for DNS MX records related to hostname or mail address.
@@ -37,7 +51,7 @@ use \CeusMedia\Mail\Address;
  *	@category		Library
  *	@package		CeusMedia_Mail_Util
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2021 Christian Würker
+ *	@copyright		2017-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -67,7 +81,12 @@ class MX
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
+
 	}
 
 	/**
@@ -82,8 +101,8 @@ class MX
 	}
 
 	/**
-	 *	...
-	 *	@public
+	 *	Resolve from mail address.
+	 *	@access		public
 	 *	@param		Address|string	$address
 	 *	@param		boolean			$useCache
 	 *	@param		boolean			$strict
@@ -96,28 +115,46 @@ class MX
 		return $this->fromHostname( $address->getDomain(), $useCache, $strict );
 	}
 
+	/**
+	*	Resolve from mail address host name / domain.
+	 *	@access		public
+	 *	@param		string			$hostname
+	 *	@param		boolean			$useCache
+	 *	@param		boolean			$strict
+	 *	@return		array
+	 *	@throws		RuntimeException	if no MX records found in strict mode
+	 *	@throws		RuntimeException	if saving found MX records to cache failed
+	 */
 	public function fromHostname( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		$useCache	= $useCache && $this->useCache;
 		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
-			return json_decode( $this->cache->get( 'mx:'.$hostname ), TRUE );
-		$servers	= array();
+			return json_decode( $this->cache->get( 'mx:'.$hostname ), TRUE, 512, JSON_THROW_ON_ERROR );
+		$servers	= [];
 		getmxrr( $hostname, $mxRecords, $mxWeights );
 		if( !$mxRecords && $strict )
-			throw new \RuntimeException( 'No MX records found for host: '.$hostname );
+			throw new RuntimeException( 'No MX records found for host: '.$hostname );
 		foreach( $mxRecords as $nr => $server )
-			$servers[$mxWeights[$nr]]	= $server;
+			if( array_key_exists( $nr, $mxWeights) )
+				$servers[$mxWeights[$nr]]	= $server;
 		ksort( $servers );
 		if( $useCache && NULL !== $this->cache ){
 			try{
 				$this->cache->set( 'mx:'.$hostname, json_encode( $servers, JSON_THROW_ON_ERROR ) );
 			}
-			catch( \Throwable $e ){
+			catch( Throwable $t ){
+				throw new RuntimeException( 'Saving found MX records to cache failed', 0, $t );
 			}
 		}
 		return $servers;
 	}
 
+	/**
+	 *	Sets cache.
+	 *	@access		public
+	 *	@param		AdapterInterface	$cache
+	 *	@return		self
+	 */
 	public function setCache( AdapterInterface $cache ): self
 	{
 		$this->useCache		= (bool) $cache;

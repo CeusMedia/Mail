@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Abstract Mail Part.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,19 +22,39 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message;
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
-use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
-use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
-use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
-use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
+use InvalidArgumentException;
+use RuntimeException;
+
+use function base64_decode;
+use function chunk_split;
+use function file_exists;
+use function finfo_close;
+use function finfo_file;
+use function finfo_open;
+use function function_exists;
+use function imap_8bit;
+use function imap_qprint;
+use function in_array;
+use function mb_convert_encoding;
+use function quoted_printable_decode;
+use function quoted_printable_encode;
+use function strlen;
+use function strtolower;
+use function rtrim;
 
 /**
  *	Abstract Mail Part.
@@ -42,21 +62,21 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
 abstract class Part
 {
-	const TYPE_UNKNOWN			= 0;
-	const TYPE_TEXT				= 1;
-	const TYPE_MAIL				= 2;
-	const TYPE_ATTACHMENT		= 3;
-	const TYPE_HTML				= 4;
-	const TYPE_INLINE_IMAGE		= 5;
+	public const TYPE_UNKNOWN			= 0;
+	public const TYPE_TEXT				= 1;
+	public const TYPE_MAIL				= 2;
+	public const TYPE_ATTACHMENT		= 3;
+	public const TYPE_HTML				= 4;
+	public const TYPE_INLINE_IMAGE		= 5;
 
-	const TYPES					= [
+	public const TYPES					= [
 		self::TYPE_UNKNOWN,
 		self::TYPE_TEXT,
 		self::TYPE_MAIL,
@@ -65,12 +85,12 @@ abstract class Part
 		self::TYPE_INLINE_IMAGE,
 	];
 
-	const SECTION_NONE			= 0;
-	const SECTION_ALL			= 1;
-	const SECTION_HEADER		= 2;
-	const SECTION_CONTENT		= 4;
+	public const SECTION_NONE			= 0;
+	public const SECTION_ALL			= 1;
+	public const SECTION_HEADER			= 2;
+	public const SECTION_CONTENT		= 4;
 
-	const SECTIONS				= [
+	public const SECTIONS				= [
 		self::SECTION_NONE,
 		self::SECTION_ALL,
 		self::SECTION_HEADER,
@@ -80,7 +100,7 @@ abstract class Part
 	/**	@var	string			$charset		Character set */
 	protected $charset;
 
-	/**	@var	string			$content		Content */
+	/**	@var	string|NULL		$content		Content */
 	protected $content;
 
 	/**	@var	string			$encoding		Encoding */
@@ -103,7 +123,7 @@ abstract class Part
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@param		string		$charset		Target character set, default: UTF-8
 	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 *	@throws		InvalidArgumentException	if encoding is invalid
 	 */
 	public static function decodeContent( string $content, string $encoding, string $charset = 'UTF-8' ): string
 	{
@@ -111,7 +131,7 @@ abstract class Part
 			case '7bit':
 				$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
 				if( FALSE === $result )
-					throw new \RuntimeException( 'Decoding 7bit content failed' );
+					throw new RuntimeException( 'Decoding 7bit content failed' );
 				$content	= $result;
 				break;
 			case '8bit':
@@ -120,7 +140,7 @@ abstract class Part
 			case 'binary':
 				$result	= base64_decode( $content, TRUE );
 				if( FALSE === $result )
-					throw new \RuntimeException( 'Encoded content contains invalid characters' );
+					throw new RuntimeException( 'Encoded content contains invalid characters' );
 				$content	= $result;
 				break;
 			case 'quoted-printable':
@@ -129,13 +149,13 @@ abstract class Part
 				else
 					$result	= quoted_printable_decode( $content );
 				if( FALSE === $result )
-					throw new \RuntimeException( 'Decoding quoted-printable content failed' );
+					throw new RuntimeException( 'Decoding quoted-printable content failed' );
 				$content	= $result;
 				break;
 			case '':
 				break;
 			default:
-				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
+				throw new InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
 		}
 		return $content;
 	}
@@ -318,13 +338,13 @@ abstract class Part
 	 *	@access		public
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@return		self
-	 *	@throws		\InvalidArgumentException	if encodfgets(ing is invalid
+	 *	@throws		InvalidArgumentException	if encodfgets(ing is invalid
 	 */
 	public function setEncoding( $encoding ): self
 	{
-		$encodings	= array( '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' );
+		$encodings	= [ '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' ];
 		if( !in_array( $encoding, $encodings, TRUE ) )
-			throw new \InvalidArgumentException( 'Invalid encoding: '.$encoding );
+			throw new InvalidArgumentException( 'Invalid encoding: '.$encoding );
 		$this->encoding	= $encoding;
 		return $this;
 	}
@@ -334,13 +354,13 @@ abstract class Part
 	 *	@access		public
 	 *	@param		string		$format			Format (fixed,flowed)
 	 *	@return		self
-	 *	@throws		\InvalidArgumentException	if format is invalid
+	 *	@throws		InvalidArgumentException	if format is invalid
 	 */
 	public function setFormat( $format ): self
 	{
-		$formats	= array( 'fixed', 'flowed' );
+		$formats	= [ 'fixed', 'flowed' ];
 		if( !in_array( $format, $formats, TRUE ) )
-			throw new \InvalidArgumentException( 'Invalid format' );
+			throw new InvalidArgumentException( 'Invalid format' );
 		$this->format	= $format;
 		return $this;
 	}
@@ -367,7 +387,7 @@ abstract class Part
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@param		boolean		$split			Flag: ... (default: yes)
 	 *	@return		string
-	 *	@throws		\InvalidArgumentException	if encoding is invalid
+	 *	@throws		InvalidArgumentException	if encoding is invalid
 	 */
 	protected static function encodeContent( string $content, string $encoding, bool $split = TRUE ): string
 	{
@@ -396,13 +416,13 @@ abstract class Part
 				else
 					$result	= quoted_printable_encode( $content );
 				if( FALSE === $result )
-					throw new \RuntimeException( 'Decoding quoted-printable content failed' );
+					throw new RuntimeException( 'Decoding quoted-printable content failed' );
 				$content	= $result;
 				break;
 			case '':
 				break;
 			default:
-				throw new \InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
+				throw new InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
 		}
 		return $content;
 	}
@@ -416,10 +436,10 @@ abstract class Part
 	protected function getMimeTypeFromFile( string $filePath ): ?string
 	{
 		if( !file_exists( $filePath ) )
-			throw new \InvalidArgumentException( 'File "'.$filePath.'" is not existing' );
+			throw new InvalidArgumentException( 'File "'.$filePath.'" is not existing' );
 		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
 		if( FALSE === $finfo )
-			throw new \RuntimeException( 'fileinfo is not available' );
+			throw new RuntimeException( 'fileinfo is not available' );
 		$type	= finfo_file( $finfo, $filePath );
 		finfo_close( $finfo );
 		return FALSE !== $type ? $type : NULL;

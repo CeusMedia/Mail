@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Collector container for mails.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,23 +22,40 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail;
 
-use \CeusMedia\Mail\Address as Address;
-use \CeusMedia\Mail\Address\Collection as AddressCollection;
-use \CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
-use \CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
-use \CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
-use \CeusMedia\Mail\Message\Part as MessagePart;
-use \CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
-use \CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
-use \CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
-use \CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
-use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Address as Address;
+use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Message\Part as MessagePart;
+use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
+use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
+use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
+use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+
+use DomainException;
+use InvalidArgumentException;
+use RangeException;
+
+use function array_reverse;
+use function dirname;
+use function file_exists;
+use function in_array;
+use function is_a;
+use function is_string;
+use function parse_ini_file;
+use function strlen;
+use function strtoupper;
+use function trim;
+use function ucfirst;
 
 /**
  *	Collector container for mails
@@ -46,7 +63,7 @@ use \CeusMedia\Mail\Message\Part\Text as MessagePartText;
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -59,7 +76,7 @@ class Message
 	public static $lineLength				= 75;
 
 	/**	@var		array					$parts			List of mail parts */
-	protected $parts						= array();
+	protected $parts						= [];
 
 	/**	@var		MessageHeaderSection	$headers		Mail header section */
 	protected $headers;
@@ -68,11 +85,11 @@ class Message
 	protected $sender;
 
 	/**	@var		array					$recipients		List of recipients */
-	protected $recipients	= array(
-		'to'	=> array(),
-		'cc'	=> array(),
-		'bcc'	=> array(),
-	);
+	protected $recipients	= [
+		'to'	=> [],
+		'cc'	=> [],
+		'bcc'	=> [],
+	];
 
 	/**	@var		string					$subject		Mail subject */
 	protected $subject;
@@ -113,6 +130,10 @@ class Message
 	 */
 	public static function create(): self
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
 		return new self();
 	}
 
@@ -227,9 +248,9 @@ class Message
 		if( is_string( $address ) )
 			$address	= new Address( $address );
 		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
-			throw new \InvalidArgumentException( 'Invalid value of first argument' );
-		if( !in_array( strtoupper( $type ), array( "TO", "CC", "BCC" ), TRUE ) )
-			throw new \InvalidArgumentException( 'Invalid recipient type' );
+			throw new InvalidArgumentException( 'Invalid value of first argument' );
+		if( !in_array( strtoupper( $type ), [ "TO", "CC", "BCC" ], TRUE ) )
+			throw new InvalidArgumentException( 'Invalid recipient type' );
 
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
@@ -254,7 +275,7 @@ class Message
 	 *	Adds Reply-To header to message.
 	 *	@access		public
 	 *	@param		Address|string	$address		Address to reply to
-	 *	@param		string			$name			Additional name of address
+	 *	@param		string|NULL		$name			Additional name of address
 	 *	@return		self
 	 */
 	public function addReplyTo( $address, string $name = NULL ): self
@@ -262,7 +283,7 @@ class Message
 		if( is_string( $address ) )
 			$address	= new Address( $address );
 		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
-			throw new \InvalidArgumentException( 'Invalid value of first argument' );
+			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
 		$this->addHeaderPair( 'Reply-To', $address->get() );
@@ -290,7 +311,7 @@ class Message
 	 */
 	public function getAttachments(): array
 	{
-		$list	= array();
+		$list	= [];
 		foreach( $this->parts as $part )
 			if( $part->isAttachment() )
 				$list[]	= $part;
@@ -299,7 +320,7 @@ class Message
 
 	public function getDeliveryChain(): array
 	{
-		$list	= array();
+		$list	= [];
 		foreach( $this->headers->getFieldsByName( 'X-Original-To' ) as $field ){
 			$list[]	= new Address( $field->getValue() );
 		}
@@ -320,14 +341,14 @@ class Message
 	 *	Returns set HTML part.
 	 *	@access		public
 	 *	@return		MessagePartHTML
-	 *	@throws		\RangeException		if no HTML part is available
+	 *	@throws		RangeException		if no HTML part is available
 	 */
 	public function getHTML(): MessagePartHTML
 	{
 		foreach( $this->parts as $part )
 			if( $part->isHTML() )
 				return $part;
-		throw new \RangeException( 'No HTML part assigned' );
+		throw new RangeException( 'No HTML part assigned' );
 	}
 
 	/**
@@ -337,7 +358,7 @@ class Message
 	 */
 	public function getInlineImages(): array
 	{
-		$list	= array();
+		$list	= [];
 		foreach( $this->parts as $part )
 			if( $part->isInlineImage() )
 				$list[]	= $part;
@@ -362,7 +383,7 @@ class Message
 	 */
 	public function getMails(): array
 	{
-		$list	= array();
+		$list	= [];
 		foreach( $this->parts as $part )
 			if( $part->isMail() )
 				$list[]	= $part;
@@ -381,7 +402,7 @@ class Message
 	{
 		if( $withAttachments && $withInlineImages && $withMails  )
 			return $this->parts;
-		$list	= array();
+		$list	= [];
 		foreach( $this->parts as $part ){
 			if( !$withAttachments && $part->isAttachment() )
 				continue;
@@ -412,8 +433,8 @@ class Message
 	 */
 	public function getRecipientsByType( string $type = 'TO' ): AddressCollection
 	{
-		if( !in_array( strtoupper( $type ), array( 'TO', 'CC', 'BCC' ), TRUE ) )
-			throw new \DomainException( 'Type must be of to, cc or bcc' );
+		if( !in_array( strtoupper( $type ), [ 'TO', 'CC', 'BCC' ], TRUE ) )
+			throw new DomainException( 'Type must be of to, cc or bcc' );
 		return $this->recipients[strtolower( $type )];
 	}
 
@@ -442,14 +463,14 @@ class Message
 	 *	Returns set text part.
 	 *	@access		public
 	 *	@return		MessagePartText
-	 *	@throws		\RangeException		if no text part is available
+	 *	@throws		RangeException		if no text part is available
 	 */
 	public function getText(): MessagePartText
 	{
 		foreach( $this->parts as $part )
 			if( $part->isText() )
 				return $part;
-		throw new \RangeException( 'No text part assigned' );
+		throw new RangeException( 'No text part assigned' );
 	}
 
 	/**
@@ -531,7 +552,7 @@ class Message
 	 *	...
 	 *	@access		public
 	 *	@param		Address|string	$address		Address to send notification to
-	 *	@param		string			$name			Additional name of address
+	 *	@param		string|NULL		$name			Additional name of address
 	 */
 	public function setReadNotificationRecipient( $address, string $name = NULL ): self
 	{
@@ -549,14 +570,14 @@ class Message
 	 *	@param		Address|string	$address		Address object or string
 	 *	@param		string|NULL		$name			Optional: Mail sender name
 	 *	@return		self			Message object for chaining
-	 *	@throws		\InvalidArgumentException		if given address is neither string nor instance of \CeusMedia\Mail\Address
+	 *	@throws		InvalidArgumentException		if given address is neither string nor instance of \CeusMedia\Mail\Address
 	 */
 	public function setSender( $address, string $name = NULL ): self
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
 		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
-			throw new \InvalidArgumentException( 'Invalid value of first argument' );
+			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
 		$this->sender	= $address;

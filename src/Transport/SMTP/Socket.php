@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	...
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,13 +22,28 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Transport\SMTP;
 
+use CeusMedia\Mail\Deprecation;
+
 use RuntimeException;
+
+use function abs;
+use function fclose;
+use function fgets;
+use function fsockopen;
+use function fwrite;
+use function is_integer;
+use function is_null;
+use function preg_match;
+use function join;
+use function stream_socket_enable_crypto;
+use function strlen;
+use function trim;
 
 /**
  *	...
@@ -36,7 +51,7 @@ use RuntimeException;
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			https://www.knownhost.com/wiki/email/troubleshooting/error-numbers
@@ -63,6 +78,26 @@ class Socket
 	protected $timeout			= 5;
 
 	/**
+	 *	Alias for getInstance.
+	 *	@access		public
+	 *	@static
+	 *	@param		string|NULL		$host		SMTP server host name
+	 *	@param		integer|NULL	$port		SMTP server port
+	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
+	 *	@return		self
+	 *	@deprecated	use getInstance instead
+	 *	@todo		to be removed
+	 */
+	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
+	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getInstance instead' );
+		return static::getInstance( $host, $port, $timeout );
+	}
+
+	/**
 	 *	Constructor.
 	 *	@access		public
 	 *	@param		string|NULL		$host			SMTP server host name
@@ -83,22 +118,6 @@ class Socket
 	public function __destruct()
 	{
 		$this->close();
-	}
-
-	/**
-	 *	Alias for getInstance.
-	 *	@access		public
-	 *	@static
-	 *	@param		string|NULL		$host		SMTP server host name
-	 *	@param		integer|NULL	$port		SMTP server port
-	 *	@param		integer|NULL	$timeout	Timeout (in seconds) on opening connection
-	 *	@return		self
-	 *	@deprecated	use getInstance instead
-	 *	@todo		to be removed
-	 */
-	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
-	{
-		return static::getInstance( $host, $port, $timeout );
 	}
 
 	/**
@@ -140,10 +159,10 @@ class Socket
 	 */
 	public function getError(): array
 	{
-		return array(
+		return [
 			'number'	=> $this->errorNumber,
 			'message'	=> $this->errorMessage,
-		);
+		];
 	}
 
 	/**
@@ -263,7 +282,7 @@ class Socket
 			$response	= fgets( $this->connection, abs( $length ) );
 			if( FALSE !== $response ){
 				$raw[]		= rtrim( $response, "\r\n" );
-				$matches	= array();
+				$matches	= [];
 				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
 				if( !$matches )
 					throw new RuntimeException( 'SMTP response not understood: '.trim( $response ) );
@@ -273,11 +292,25 @@ class Socket
 			}
 		}
 		while( FALSE !== $response && !$lastLine );
-		return (object) array(
+		return (object) [
 			'code'		=> $code,
 			'message'	=> join( "\n", $buffer ),
 			'raw'		=> $raw,
-		);
+		];
+	}
+
+	/**
+	 *	Sends command or data to SMTP server.
+	 *	@access		public
+	 *	@param		string		$content	Message to send to SMTP server
+	 *	@return		boolean					Number of written bytes
+	 *	@throws		RuntimeException		if connection is not open
+	 */
+	public function sendChunk( string $content ): bool
+	{
+		if( NULL === $this->connection )
+			throw new RuntimeException( 'Not connected' );
+		return FALSE !== fwrite( $this->connection, $content );
 	}
 
 	/**
@@ -314,19 +347,5 @@ class Socket
 	{
 		$this->timeout	= $seconds;
 		return $this;
-	}
-
-	/**
-	 *	Sends command or data to SMTP server.
-	 *	@access		public
-	 *	@param		string		$content	Message to send to SMTP server
-	 *	@return		boolean		Number of written bytes
-	 *	@throws		RuntimeException		if connection is not open
-	 */
-	public function sendChunk( string $content ): bool
-	{
-		if( NULL === $this->connection )
-			throw new RuntimeException( 'Not connected' );
-		return FALSE !== fwrite( $this->connection, $content );
 	}
 }

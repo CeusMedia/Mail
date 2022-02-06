@@ -65,7 +65,7 @@ class Search
 	/** @var string $sender */
 	protected $sender;
 
-	public function applyConditions( array $conditions = array() ): self
+	public function applyConditions( array $conditions = [] ): self
 	{
 		foreach( $conditions as $key => $value ){
 			switch( strtoupper( $key ) ){
@@ -110,7 +110,7 @@ class Search
 		$mailIds	= imap_sort(
 			$this->connection,
 			$this->orderSort,
-			(int) $this->orderReverse,
+			$this->orderReverse,
 			SE_UID,
 			$criteria,
 			'UTF-8'
@@ -133,7 +133,7 @@ class Search
 
 	public function getCriteria(): array
 	{
-		$criteria	= array();
+		$criteria	= [];
 		if( 0 < strlen( $this->subject ) )
 			$criteria['SUBJECT']	= $this->subject;
 		if( 0 < strlen( $this->sender ) )
@@ -143,7 +143,7 @@ class Search
 
 	public function renderCriteria(): string
 	{
-		$criteria	= array();
+		$criteria	= [];
 		if( NULL !== $this->subject && 0 !== strlen( trim( $this->subject ) ) )
 			$criteria[]	= 'SUBJECT "'.$this->subject.'"';
 		if( NULL !== $this->sender && 0 !== strlen( trim( $this->sender ) ) )

@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Collection of mail addresses.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,14 +22,14 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address;
 
-use \CeusMedia\Mail\Address;
-use \CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
 use Countable;
 use Iterator;
 
@@ -39,14 +39,14 @@ use Iterator;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Collection implements Countable, Iterator
 {
 	/** @var array $list */
-	protected $list		= array();
+	protected $list		= [];
 
 	/** @var int $position */
 	protected $position	= 0;
@@ -136,7 +136,7 @@ class Collection implements Countable, Iterator
 	{
 		$list	= $this->list;
 		if( $renderValues ){
-			$list	= array();
+			$list	= [];
 			foreach( $this->list as $address )
 				$list[]	= $address->get();
 		}

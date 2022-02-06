@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Inline Image Mail Part.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -31,8 +31,20 @@ namespace CeusMedia\Mail\Message\Part;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
 use FS_File;
 use InvalidArgumentException;
+
+use function array_reverse;
+use function basename;
+use function date;
+use function fileatime;
+use function filectime;
+use function filemtime;
+use function filesize;
+use function join;
+use function strlen;
+use function trim;
 
 /**
  *	Inline Image Mail Part.
@@ -40,7 +52,7 @@ use InvalidArgumentException;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -81,26 +93,6 @@ class InlineImage extends MessagePart
 	}
 
 	/**
-	 *	Returns set File Name.
-	 *	@access		public
-	 *	@return		string|NULL
-	 */
-	public function getFileName(): ?string
-	{
-		return $this->fileName;
-	}
-
-	/**
-	 *	Returns file size in bytes.
-	 *	@access		public
-	 *	@return		integer|NULL
-	 */
-	public function getFileSize(): ?int
-	{
-		return $this->fileSize;
-	}
-
-	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
 	 *	@return		integer|NULL
@@ -128,6 +120,26 @@ class InlineImage extends MessagePart
 	public function getFileMTime(): ?int
 	{
 		return $this->fileMTime;
+	}
+
+	/**
+	 *	Returns set File Name.
+	 *	@access		public
+	 *	@return		string|NULL
+	 */
+	public function getFileName(): ?string
+	{
+		return $this->fileName;
+	}
+
+	/**
+	 *	Returns file size in bytes.
+	 *	@access		public
+	 *	@return		integer|NULL
+	 */
+	public function getFileSize(): ?int
+	{
+		return $this->fileSize;
 	}
 
 	/**
@@ -167,10 +179,10 @@ class InlineImage extends MessagePart
 			$section->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
 			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
 			$section->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
-			$disposition	= array(
+			$disposition	= [
 				'INLINE',
 				'filename="'.$this->fileName.'"'
-			);
+			];
 			if( NULL !== $this->fileSize )
 				$disposition[]	= 'size="'.$this->fileSize.'"';
 			if( NULL !== $this->fileATime )
@@ -225,30 +237,6 @@ class InlineImage extends MessagePart
 	}
 
 	/**
-	 *	Sets file name.
-	 *	@access		public
-	 *	@param		string   	$fileName		File name
-	 *	@return		self	  	Self instance for chaining
-	 */
-	public function setFileName( $fileName ): self
-	{
-		$this->fileName		= basename( $fileName );
-		return $this;
-	}
-
-	/**
-	 *	Sets file size in bytes.
-	 *	@access		public
-	 *	@param		integer  	$fileSize		File size
-	 *	@return		self  		Self instance for chaining
-	 */
-	public function setFileSize( $fileSize ): self
-	{
-		$this->fileSize		= $fileSize;
-		return $this;
-	}
-
-	/**
 	 *	Sets access time by UNIX timestamp.
 	 *	@access		public
 	 *	@param		integer   	$timestamp		Timestamp of latest access
@@ -281,6 +269,30 @@ class InlineImage extends MessagePart
 	public function setFileMTime( $timestamp ): self
 	{
 		$this->fileMTime	= $timestamp;
+		return $this;
+	}
+
+	/**
+	 *	Sets file name.
+	 *	@access		public
+	 *	@param		string   	$fileName		File name
+	 *	@return		self	  	Self instance for chaining
+	 */
+	public function setFileName( $fileName ): self
+	{
+		$this->fileName		= basename( $fileName );
+		return $this;
+	}
+
+	/**
+	 *	Sets file size in bytes.
+	 *	@access		public
+	 *	@param		integer  	$fileSize		File size
+	 *	@return		self  		Self instance for chaining
+	 */
+	public function setFileSize( $fileSize ): self
+	{
+		$this->fileSize		= $fileSize;
 		return $this;
 	}
 

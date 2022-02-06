@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Sends Mail using PHPs mail function and local SMTP server.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -31,12 +31,27 @@ namespace CeusMedia\Mail\Transport;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
 
+use UI_OutputBuffer;
+
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
+
+use function base64_encode;
+use function implode;
+use function date;
+use function is_array;
+use function mail;
+use function preg_match;
+use function strlen;
+use function trim;
+
 /**
  *	Sends Mails of different Types.
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -54,14 +69,14 @@ class Local
 	/**
 	 *	Sends Mail.
 	 *	@access		public
-	 *	@param		\CeusMedia\Mail\Message	$message		Mail message object
-	 *	@param		array					$parameters	Additional mail parameters
+	 *	@param		Message		$message		Mail message object
+	 *	@param		array						$parameters	Additional mail parameters
 	 *	@return		array
-	 *	@throws		\InvalidArgumentException				if sender is not set
-	 *	@throws		\InvalidArgumentException				if receiver is not set
-	 *	@throws		\InvalidArgumentException				if subject is not set
+	 *	@throws		InvalidArgumentException	if sender is not set
+	 *	@throws		InvalidArgumentException	if receiver is not set
+	 *	@throws		InvalidArgumentException	if subject is not set
 	 */
-	public function send( \CeusMedia\Mail\Message $message, $parameters = array() )
+	public function send( Message $message, $parameters = [] )
 	{
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipientsByType( 'to' );
@@ -71,11 +86,11 @@ class Local
 		//  --  VALIDATION & SECURITY CHECK  --  //
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
-			throw new \InvalidArgumentException( 'No mail sender defined' );
+			throw new InvalidArgumentException( 'No mail sender defined' );
 		if( 0 === count( $receivers ) )
-			throw new \InvalidArgumentException( 'No mail receiver defined' );
+			throw new InvalidArgumentException( 'No mail receiver defined' );
 		if( NULL === $subject || 0 === strlen( trim( $subject ) ) )
-			throw new \InvalidArgumentException( 'No mail subject defined' );
+			throw new InvalidArgumentException( 'No mail subject defined' );
 		$subject	= "=?UTF-8?B?".base64_encode( $subject )."?=";
 
 /*		foreach( $headers as $key => $value )
@@ -92,8 +107,8 @@ class Local
 		if( is_array( $parameters ) )
 			$parameters	= implode( PHP_EOL, $parameters );
 
-		$list	= array();
-		$buffer	= new \UI_OutputBuffer();
+		$list	= [];
+		$buffer	= new UI_OutputBuffer();
 		foreach( $receivers as $receiver ){
 			try{
 				$this->checkForInjection( $receiver );
@@ -105,18 +120,18 @@ class Local
 					$parameters
 				);
 				if( !$result ){
-					throw new \RuntimeException( $buffer->get() );
+					throw new RuntimeException( $buffer->get() );
 				}
-				$list[]	= array(
+				$list[]	= [
 					'status'		=> 'ok',
 					'message'		=> 'mail sent to '.$receiver->getAddress(),
-				);
+				];
 			}
-			catch( \Exception $e ){
-				$list[]	= array(
+			catch( Exception $e ){
+				$list[]	= [
 					'status'		=> 'failed',
 					'message'		=> $e->getMessage(),
-				);
+				];
 			}
 		}
 		$buffer->close();
@@ -128,11 +143,11 @@ class Local
 	 *	Sends Mail statically.
 	 *	@access		public
 	 *	@static
-	 *	@param		\CeusMedia\Mail\Message	$message		Mail Object
-	 *	@param		array		$parameters	Additional mail parameters
+	 *	@param		Message		$message		Mail Object
+	 *	@param		array		$parameters		Additional mail parameters
 	 *	@return		void
 	 */
-	public static function sendMail( Message $message, $parameters = array() )
+	public static function sendMail( Message $message, $parameters = [] )
 	{
 		$transport	= new self();
 		$transport->send( $message, $parameters );
@@ -145,11 +160,11 @@ class Local
 	 *	@access		protected
 	 *	@param		string		$value		Header Value
 	 *	@return		void
-	 *	@throws		\InvalidArgumentException
+	 *	@throws		InvalidArgumentException
 	 */
 	protected function checkForInjection( $value )
 	{
 		if( 0 < preg_match( '/(\r|\n)/', $value ) )
-			throw new \InvalidArgumentException( 'Mail injection attempt detected' );
+			throw new InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }

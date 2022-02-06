@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Address name parser.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,11 +22,17 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Address;
+
+use function array_pop;
+use function array_reverse;
+use function join;
+use function preg_match;
+use function preg_split;
 
 /**
  *	Address name parser.
@@ -34,13 +40,20 @@ namespace CeusMedia\Mail\Address;
  *	@category		Library
  *	@package		CeusMedia_Mail_Address
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Name
 {
-	static public function splitNameParts( array $list ): array
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		array		$list
+	 *	@return		array
+	 */
+	public static function splitNameParts( array $list ): array
 	{
 		foreach( $list as $nr => $entry ){
 			if( 1 === preg_match( "/ +/", $entry['fullname'] ) ){
@@ -54,7 +67,14 @@ class Name
 		return $list;
 	}
 
-	static public function swapCommaSeparatedNameParts( array $list ): array
+	/**
+	 *	...
+	 *	@access		public
+	 *	@static
+	 *	@param		array		$list
+	 *	@return		array
+	 */
+	public static function swapCommaSeparatedNameParts( array $list ): array
 	{
 		foreach( $list as $nr => $entry ){
 			if( 1 === preg_match( "/, +/", $entry['fullname'] ) ){

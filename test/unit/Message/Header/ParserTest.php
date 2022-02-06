@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Message\Header;
+namespace CeusMedia\Mail\Test\Unit\Message\Header;
 
 use CeusMedia\Mail\Message\Header\Parser;
 use CeusMedia\Mail\Test\TestCase;

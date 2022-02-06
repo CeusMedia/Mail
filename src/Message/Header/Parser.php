@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Parser for mail headers.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,18 +22,41 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Message\Header;
+
+use ADT_List_Dictionary as Dictionary;
+
+use RangeException;
+use RuntimeException;
+
+use function array_shift;
+use function array_walk;
+use function count;
+use function explode;
+use function iconv;
+use function iconv_mime_decode_headers;
+use function is_array;
+use function is_null;
+use function ltrim;
+use function mb_strlen;
+use function preg_match;
+use function preg_replace;
+use function preg_split;
+use function strtoupper;
+use function substr;
+use function trim;
+use function urldecode;
 
 /**
  *	Parser for mail headers.
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -41,15 +64,15 @@ namespace CeusMedia\Mail\Message\Header;
  */
 class Parser
 {
-	const STRATEGY_AUTO				= 0;
-	const STRATEGY_FIRST			= 1;						//  first implementation, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_SECOND			= 2;						//  second implementation, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_THIRD			= 3;						//  own implementation, supports DKIM key folding and RFC 2231
-	const STRATEGY_ICONV			= 4;						//  iconv, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_ICONV_STRICT		= 5;						//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
-	const STRATEGY_ICONV_TOLERANT	= 6;						//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_AUTO				= 0;
+	public const STRATEGY_FIRST				= 1;	//  first implementation, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_SECOND			= 2;	//  second implementation, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_THIRD				= 3;	//  own implementation, supports DKIM key folding and RFC 2231
+	public const STRATEGY_ICONV				= 4;	//  iconv, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_ICONV_STRICT		= 5;	//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
+	public const STRATEGY_ICONV_TOLERANT	= 6;	//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
 
-	const STRATEGIES			= [
+	public const STRATEGIES		= [
 		self::STRATEGY_AUTO,
 		self::STRATEGY_FIRST,
 		self::STRATEGY_SECOND,
@@ -73,11 +96,10 @@ class Parser
 	 *	@param		integer		$strategy		Optional: strategy to set, leaving auto mode
 	 *	@return		self
 	 */
-	public static function getInstance( int $strategy = NULL ): self
+	public static function getInstance( int $strategy = self::STRATEGY_AUTO ): self
 	{
 		$instance	= new self;
-		if( !is_null( $strategy ) )
-			$instance->setStrategy( $strategy );
+		$instance->setStrategy( $strategy );
 		return $instance;
 	}
 
@@ -101,7 +123,7 @@ class Parser
 			case self::STRATEGY_ICONV_TOLERANT:
 				return self::parseByIconvStrategy( $content, 2 );
 			default:
-				throw new \RuntimeException( 'Unsupported strategy' );
+				throw new RuntimeException( 'Unsupported strategy' );
 		}
 	}
 
@@ -136,7 +158,7 @@ class Parser
 		$string	= trim( preg_replace( "/\r?\n/", "", $headerValue ) );
 		$parts	= preg_split( '/\s*;\s*/', $string );
 		$value	= array_shift( $parts );
-		$list	= array();
+		$list	= [];
 		if( 0 !== count( $parts ) ){
 			foreach( $parts as $part ){
 				if( preg_match( '/=/', $part ) ){
@@ -166,10 +188,10 @@ class Parser
 			}
 		} );
 
-		return (object) array(
+		return (object) [
 			'value'			=> $value,
-			'attributes'	=> new \ADT_List_Dictionary( $list ),
-		);
+			'attributes'	=> new Dictionary( $list ),
+		];
 	}
 
 	/**
@@ -204,7 +226,7 @@ class Parser
 		$field		= NULL;
 		foreach( $lines as $nr => $line ){
 			if( preg_match( '/^\S+:/', $line ) ){
-				list( $key, $value ) = explode( ':', $line, 2 );
+				[$key, $value] = explode( ':', $line, 2 );
 				$value	= Encoding::decodeIfNeeded( ltrim( $value ) );
 				$field	= new Field( $key, $value );
 				$section->addField( $field );
@@ -256,7 +278,7 @@ class Parser
 	public function setStrategy( int $strategy ): self
 	{
 		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
-			throw new \RangeException( 'Invalid strategy' );
+			throw new RangeException( 'Invalid strategy' );
 		$this->strategy	= $strategy;
 		return $this;
 	}
@@ -265,8 +287,8 @@ class Parser
 	{
 		$key		= NULL;
 		$value		= NULL;
-		$list		= array();
-		$buffer		= array();
+		$list		= [];
+		$buffer		= [];
 		$lines		= preg_split( "/\r?\n/", $content );
 		foreach( $lines as $line ){
 			$value	= ltrim( $line );
@@ -274,7 +296,7 @@ class Parser
 				$parts	= explode( ":", $line, 2 );
 				if( !is_null( $key ) && count( $buffer ) > 0 ){
 					$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
-					$buffer	= array();
+					$buffer	= [];
 				}
 				$key	= $parts[0];
 				$value	= ltrim( $parts[1] );

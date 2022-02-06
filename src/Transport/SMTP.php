@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -32,8 +32,15 @@ use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
-use RuntimeException;
+
 use InvalidArgumentException;
+use RuntimeException;
+use Throwable;
+
+use function count;
+use function in_array;
+use function join;
+use function strlen;
 
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
@@ -41,7 +48,7 @@ use InvalidArgumentException;
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://www.der-webdesigner.net/tutorials/php/anwendungen/329-php-und-oop-mailversand-via-smtp.html
@@ -185,7 +192,7 @@ class SMTP
 			$this->checkResponse( [ 221 ] );
 			$this->socket->close();
 		}
-		catch( \Throwable $t ){
+		catch( Throwable $t ){
 			$this->socket->close();
 			throw new RuntimeException( $t->getMessage(), $t->getCode(), $t->getPrevious() );
 		}

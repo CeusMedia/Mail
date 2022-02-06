@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test;
+namespace CeusMedia\Mail\Test\Unit;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
@@ -109,7 +109,7 @@ class MessageTest extends PhpUnitTestCase
 	 */
 	public function testAddGetAndHasInlineImages()
 	{
-		$filePath	= __DIR__."/../demo/files/outbox.png";
+		$filePath	= __DIR__."/../../demo/files/outbox.png";
 		$part		= new InlineImage('id');
 		$part->setFile($filePath);
 

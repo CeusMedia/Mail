@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Attachment Mail Part.
  *
- *	Copyright (c) 2007-2021 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -31,8 +31,20 @@ namespace CeusMedia\Mail\Message\Part;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+
 use FS_File;
 use InvalidArgumentException;
+
+use function array_reverse;
+use function basename;
+use function date;
+use function fileatime;
+use function filectime;
+use function filemtime;
+use function filesize;
+use function join;
+use function strlen;
+use function trim;
 
 /**
  *	Attachment Mail Part.
@@ -40,7 +52,7 @@ use InvalidArgumentException;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Part
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2021 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
@@ -78,26 +90,6 @@ class Attachment extends MessagePart
 	}
 
 	/**
-	 *	Returns set file name.
-	 *	@access		public
-	 *	@return		string|NULL
-	 */
-	public function getFileName(): ?string
-	{
-		return $this->fileName;
-	}
-
-	/**
-	 *	Returns file size in bytes.
-	 *	@access		public
-	 *	@return		int|NULL
-	 */
-	public function getFileSize(): ?int
-	{
-		return $this->fileSize;
-	}
-
-	/**
 	 *	Returns latest access time as UNIX timestamp.
 	 *	@access		public
 	 *	@return		int|NULL
@@ -128,6 +120,26 @@ class Attachment extends MessagePart
 	}
 
 	/**
+	 *	Returns set file name.
+	 *	@access		public
+	 *	@return		string|NULL
+	 */
+	public function getFileName(): ?string
+	{
+		return $this->fileName;
+	}
+
+	/**
+	 *	Returns file size in bytes.
+	 *	@access		public
+	 *	@return		int|NULL
+	 */
+	public function getFileSize(): ?int
+	{
+		return $this->fileSize;
+	}
+
+	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
 	 *	@param		integer						$sections				Section(s) to render, default: all
@@ -151,10 +163,10 @@ class Attachment extends MessagePart
 		}
 
 		if( $doHeader || $doAll ){
-			$disposition	= array(
+			$disposition	= [
 				'attachment',
 				'filename="'.$this->fileName.'"'
-			);
+			];
 			if( NULL !== $this->fileSize )
 				$disposition[]	= 'size='.$this->fileSize;
 			if( NULL !== $this->fileATime )
@@ -202,33 +214,10 @@ class Attachment extends MessagePart
 		$this->setFileATime( fileatime( $filePath ) );
 		$this->setFileCTime( filectime( $filePath ) );
 		$this->setFileMTime( filemtime( $filePath ) );
-		$this->setMimeType( $mimeType );
+		if( NULL !== $mimeType )
+			$this->setMimeType( $mimeType );
 		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 			$this->setEncoding( $encoding );
-		return $this;
-	}
-
-	/**
-	 *	Sets file name.
-	 *	@access		public
-	 *	@param		string		$fileName	File name.
-	 *	@return		self		Self instance for chaining
-	 */
-	public function setFileName( $fileName ): self
-	{
-		$this->fileName		= basename( $fileName );
-		return $this;
-	}
-
-	/**
-	 *	Sets file size in bytes.
-	 *	@access		public
-	 *	@param		integer|NULL	$fileSize		File size in bytes.
-	 *	@return		self			Self instance for chaining
-	 */
-	public function setFileSize( ?int $fileSize ): self
-	{
-		$this->fileSize		= $fileSize;
 		return $this;
 	}
 
@@ -265,6 +254,30 @@ class Attachment extends MessagePart
 	public function setFileMTime( ?int $timestamp ): self
 	{
 		$this->fileMTime	= $timestamp;
+		return $this;
+	}
+
+	/**
+	 *	Sets file name.
+	 *	@access		public
+	 *	@param		string		$fileName	File name.
+	 *	@return		self		Self instance for chaining
+	 */
+	public function setFileName( $fileName ): self
+	{
+		$this->fileName		= basename( $fileName );
+		return $this;
+	}
+
+	/**
+	 *	Sets file size in bytes.
+	 *	@access		public
+	 *	@param		integer|NULL	$fileSize		File size in bytes.
+	 *	@return		self			Self instance for chaining
+	 */
+	public function setFileSize( ?int $fileSize ): self
+	{
+		$this->fileSize		= $fileSize;
 		return $this;
 	}
 }
