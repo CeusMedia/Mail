@@ -28,6 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
+
 use InvalidArgumentException;
 
 use function function_exists;
@@ -145,6 +147,6 @@ class Field
 	 */
 	public function toString( ?bool $keepCase = TRUE ): string
 	{
-		return $this->getName( $keepCase ).": ".$this->getValue();
+		return MessageHeaderRenderer::renderField( $this, $keepCase );
 	}
 }

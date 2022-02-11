@@ -28,6 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
+
 use ADT_List_Dictionary as Dictionary;
 
 use function count;
@@ -117,10 +119,6 @@ class AttributedField extends Field
 	 */
 	public function toString( ?bool $keepCase = TRUE ): string
 	{
-		$attr	= '';
-		if( count( $this->attributes ) !== 0 )
-			foreach( $this->attributes->getAll() as $key => $value )
-				$attr	.= sprintf( ' %s="%s"', $key, $value );
-		return $this->getName( $keepCase ).": ".$this->getValue().$attr;
+		return MessageHeaderRenderer::renderAttributedField( $this, $keepCase );
 	}
 }

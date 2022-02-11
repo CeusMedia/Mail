@@ -30,6 +30,8 @@ namespace CeusMedia\Mail\Message\Header;
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
+
 use Countable;
 use RangeException;
 
@@ -244,9 +246,6 @@ class Section implements Countable
 	 */
 	public function toString( bool $keepCase = FALSE ): string
 	{
-		$list	= $this->toArray( $keepCase );
-		if( 0 < count( $list ) )
-			return implode( Message::$delimiter, $list );
-		return "";
+		return MessageHeaderRenderer::render( $this, $keepCase );
 	}
 }

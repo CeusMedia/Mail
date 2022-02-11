@@ -27,7 +27,14 @@ declare(strict_types=1);
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			code doc
  */
-namespace CeusMedia\Mail\Header;
+namespace CeusMedia\Mail\Message\Header;
+
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\AttributedField;
+use CeusMedia\Mail\Message\Header\Field;
+use CeusMedia\Mail\Message\Header\Section;
+
+use DomainException;
 
 /**
  *	...
@@ -44,5 +51,99 @@ namespace CeusMedia\Mail\Header;
  */
 class Renderer
 {
+	/**
+	 *	@var		array		$encodeOptionKeys		List of available encoding option keys
+	 *	@static
+	 */
+	protected static $encodeOptionKeys	= [
+		'scheme',
+		'input-charset',
+		'output-charset',
+		'line-length',
+		'line-break-chars',
+	];
 
+	/**
+	 *	@var		array		$preferences			Map of encoding options
+	 *	@static
+	 */
+	protected static $preferences = [
+	];
+
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
+	public static function getInstance(): self
+	{
+		return new self();
+	}
+
+	/**
+	 *	Render complete header section.
+	 *	@access		public
+	 *	@static
+	 *	@param		Section			$section		...
+	 *	@param		boolean|NULL	$keepCase		...
+	 *	@return		string
+	 */
+	public static function render( Section $section, ?bool $keepCase = FALSE ): string
+	{
+		return implode( Message::$delimiter, array_map(static function( Field $field ) use ( $keepCase ) {
+			if( $field instanceof AttributedField )
+				return static::renderAttributedField( $field, $keepCase );
+			return static::renderField( $field, $keepCase );
+		}, $section->getFields() ) );
+	}
+
+	/**
+	 *	Render header field.
+	 *	@access		public
+	 *	@static
+	 *	@param		Field			$field			...
+	 *	@param		boolean|NULL	$keepCase		...
+	 *	@return		string
+	 *	@todo 		investigate further, how iconv_mime_encode could help encoding header values
+	 */
+	public static function renderField( Field $field, ?bool $keepCase = FALSE ): string
+	{
+		return $field->getName( $keepCase ).': '.$field->getValue();
+//		if( preg_match( "/^[\w\s\.-:#]+$/", $field->getValue() ) )
+//			return $field->getName( $keepCase ).": ".$field->getValue();
+//		return iconv_mime_encode( $field->getName(), $field->getValue(), self::$preferences );
+	}
+
+	/**
+	 *	Render attributed header field.
+	 *	@access		public
+	 *	@static
+	 *	@param		AttributedField		$field			...
+	 *	@param		boolean|NULL		$keepCase		...
+	 *	@return		string
+	 */
+	public static function renderAttributedField( AttributedField $field, ?bool $keepCase = FALSE ): string
+	{
+		$attr	= '';
+		foreach( $field->getAttributes() as $key => $value )
+			$attr	.= sprintf( '; %s="%s"', $key, addslashes( $value ) );
+		return $field->getName( $keepCase ).": ".$field->getValue().$attr;
+	}
+
+	/**
+	 *	Set encoding options.
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$key		Option key
+	 *	@param		string		$value		Option valie
+	 *	@return		void
+	 *	@see		https://www.php.net/manual/en/function.iconv-mime-encode.php
+	 */
+	public static function setEncodeOption( string $key, $value )
+	{
+		if( !in_array( $key, static::$encodeOptionKeys, TRUE ) )
+			throw new DomainException( 'Invalid encoding option key: '.$key );
+		self::$preferences[$key]	= $value;
+	}
 }
