@@ -169,10 +169,10 @@ class Parser
 						$label	= preg_replace( '/^(.+)\*\d+\*?$/', '\\1', $p[0] );
 						if( !isset( $list[$label] ) )
 							$list[$label]	= '';
-						$list[$label]	.= $p[1];
+						$list[$label]	.= stripslashes( $p[1] );
 					}
 					else
-						$list[$p[0]]	= $p[1];
+						$list[$p[0]]	= stripslashes( $p[1] );
 				}
 			}
 		}
