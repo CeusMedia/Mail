@@ -44,6 +44,20 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testEncodeIfNeeded()
 	{
+		$expected	= 'no_need_to_encode';
+		$this->assertEquals( $expected, Encoding::encodeIfNeeded( $expected ) );
+
+
+		Encoding::setEncodeStrategy( Encoding::ENCODE_STRATEGY_MB );
+		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ" );
+		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
+		$this->assertEquals( $expected, $actual );
+
+		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
+		$expected	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
+		$this->assertEquals( $expected, $actual );
+
+		Encoding::setEncodeStrategy( Encoding::ENCODE_STRATEGY_IMPL );
 		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ" );
 		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $expected, $actual );
@@ -58,7 +72,47 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testEncodeIfNeededException()
 	{
-		$this->expectException( 'InvalidArgumentException' );
+		$this->expectException( 'RangeException' );
 		Encoding::encodeIfNeeded( "ÄÖÜ", "_invalid_" );
+	}
+
+	/**
+	 *	@covers		::setDecodeStrategy
+	 */
+	public function testSetDecodeStrategy()
+	{
+		foreach( Encoding::DECODE_STRATEGIES as $strategy ){
+			Encoding::setDecodeStrategy( $strategy );
+			$this->assertEquals( $strategy, Encoding::$decodeStrategy );
+		}
+	}
+
+	/**
+	 *	@covers		::setDecodeStrategy
+	 */
+	public function testSetDecodeStrategyException()
+	{
+		$this->expectException( 'RangeException' );
+		Encoding::setDecodeStrategy( -1 );
+	}
+
+	/**
+	 *	@covers		::setEncodeStrategy
+	 */
+	public function testSetEncodeStrategy()
+	{
+		foreach( Encoding::ENCODE_STRATEGIES as $strategy ){
+			Encoding::setEncodeStrategy( $strategy );
+			$this->assertEquals( $strategy, Encoding::$encodeStrategy );
+		}
+	}
+
+	/**
+	 *	@covers		::setEncodeStrategy
+	 */
+	public function testSetEncodeStrategyException()
+	{
+		$this->expectException( 'RangeException' );
+		Encoding::setEncodeStrategy( -1 );
 	}
 }

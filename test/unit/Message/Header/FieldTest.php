@@ -25,7 +25,7 @@ class FieldTest extends TestCase
 	 */
 	public function testConstruct()
 	{
-		$header	= new Field( "key", "value" );
+		$header	= new Field( 'key', 'value' );
 		$expected	= true;
 		$actual	= (bool) strlen( $header->toString() );
 		$this->assertEquals( $expected, $actual );
@@ -33,24 +33,45 @@ class FieldTest extends TestCase
 
 	/**
 	 *	@covers		::getName
+	 *	@covers		::setName
 	 */
 	public function testName()
 	{
-		$header		= new Field( "Key-with-Value", "Value with Space" );
-		$expected	= "Key-with-Value";
+		$header		= new Field( 'Key-with-Value', 'Value with Space' );
+		$expected	= 'Key-with-Value';
 		$this->assertEquals( $expected, $header->getName() );
 
-		$header		= new Field( "as-HTML", "Value with Space" );
-		$expected	= "as-HTML";
+		$header		= new Field( 'as-HTML', 'Value with Space' );
+		$expected	= 'as-HTML';
 		$this->assertEquals( $expected, $header->getName() );
 
-		$header		= new Field( "as HTML", "Value with Space" );
-		$expected	= "as-HTML";
+		$header		= new Field( 'as HTML', 'Value with Space' );
+		$expected	= 'as-HTML';
 		$this->assertEquals( $expected, $header->getName() );
 
-		$header->setName( "key with spaces" );
-		$expected	= "key-with-spaces";
+		$header->setName( 'key with spaces' );
+		$expected	= 'key-with-spaces';
 		$this->assertEquals( $expected, $header->getName() );
+	}
+
+	/**
+	 *	@covers		::setName
+	 */
+	public function testSetNameExceptionEmpty()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$field	= new Field( 'Key-with-Value', 'Value with Space' );
+		$field->setName( '' );
+	}
+
+	/**
+	 *	@covers		::setName
+	 */
+	public function testSetNameExceptionEmptyOnlySpace()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$field	= new Field( 'Key-with-Value', 'Value with Space' );
+		$field->setName( '  ' );
 	}
 
 	/**
@@ -58,12 +79,12 @@ class FieldTest extends TestCase
 	 */
 	public function testNameNotKeepCase()
 	{
-		$header		= new Field( "Key-with-Value", "Value with Space" );
-		$expected	= "Key-With-Value";
+		$header		= new Field( 'Key-with-Value', 'Value with Space' );
+		$expected	= 'Key-With-Value';
 		$this->assertEquals( $expected, $header->getName( FALSE ) );
 
-		$header		= new Field( "as-HTML", "Value with Space" );
-		$expected	= "As-Html";
+		$header		= new Field( 'as-HTML', 'Value with Space' );
+		$expected	= 'As-Html';
 		$this->assertEquals( $expected, $header->getName( FALSE ) );
 	}
 
@@ -72,39 +93,44 @@ class FieldTest extends TestCase
 	 */
 	public function testNameIgnoreMbConvert()
 	{
-		$header		= new Field( "as-HTML", "Value with Space" );
-		$expected	= "As-Html";
+		$header		= new Field( 'as-HTML', 'Value with Space' );
+		$expected	= 'As-Html';
 		$this->assertEquals( $expected, $header->getName( FALSE, TRUE ) );
 
-		$expected	= "as-HTML";
+		$expected	= 'as-HTML';
 		$this->assertEquals( $expected, $header->getName( TRUE, TRUE ) );
 	}
 
 	/**
 	 *	@covers		::getValue
+	 *	@covers		::setValue
 	 */
 	public function testValue()
 	{
-		$header		= new Field( "Key-with-Value", "Value with Space" );
-		$expected	= "Value with Space";
-		$actual	= $header->getValue();
-		$this->assertEquals( $expected, $actual );
+		$header		= new Field( 'Key-with-Value', 'Value with Space' );
+		$expected	= 'Value with Space';
+		$this->assertEquals( $expected, $header->getValue() );
+
+		$expected	= 'New Value, with space and "quote"';
+		$header->setValue( $expected );
+		$this->assertEquals( $expected, $header->getValue() );
 	}
 
 	/**
+	 *	@covers		::__toString
 	 *	@covers		::toString
 	 */
 	public function testToString()
 	{
-		$header		= new Field( "key", "value" );
-		$expected	= "key: value";
-		$actual	= $header->toString();
-		$this->assertEquals( $expected, $actual );
+		$header		= new Field( 'key', 'value' );
+		$expected	= 'key: value';
+		$this->assertEquals( $expected, $header->toString() );
 
-		$header		= new Field( "key-with-more-words", "value" );
-		$expected	= "key-with-more-words: value";
-		$actual	= $header->toString();
-		$this->assertEquals( $expected, $actual );
+		$header		= new Field( 'key-with-more-words', 'value' );
+		$expected	= 'key-with-more-words: value';
+		$this->assertEquals( $expected, $header->toString() );
+
+		$this->assertEquals( $expected, (string) $header );
 	}
 
 	/**
@@ -112,8 +138,8 @@ class FieldTest extends TestCase
 	 */
 	public function testToStringByConversion()
 	{
-		$header		= new Field( "key", "value" );
-		$expected	= "key: value";
+		$header		= new Field( 'key', 'value' );
+		$expected	= 'key: value';
 		$actual	= (string) $header;
 		$this->assertEquals( $expected, $actual );
 	}

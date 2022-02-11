@@ -153,6 +153,135 @@ class MessageTest extends PhpUnitTestCase
 	}
 
 	/**
+	 *	@covers		::addReplyTo
+	 *	@covers		::getReplyTo
+	 */
+	public function testAddAndGetReplyTo()
+	{
+		$string		= 'test1@example.com';
+		$message	= Message::getInstance();
+		$actual		= $message->addReplyTo( $string );
+		$this->assertEquals( $message, $actual );
+
+		$header		= $message->getHeaders()->getField( 'Reply-To' );
+		$this->assertEquals( $string, $header->getValue( $string ) );
+
+		$expected	= [new Address( $string )];
+		$this->assertEquals( $expected, $message->getReplyTo() );
+
+		$address1	= (new Address( 'test2@example.com' ))->setName( 'Test 2' );
+		$actual		= $message->addReplyTo( $address1 );
+		$this->assertEquals( $message, $actual );
+
+		$header		= $message->getHeaders()->getFieldsByName( 'Reply-To' );
+		$this->assertEquals( 2, count( $header ) );
+
+		$expected	= [new Address( $string ), $address1];
+		$this->assertEquals( $expected, $message->getReplyTo() );
+
+		$address2	= new Address( 'test2@example.com' );
+		$actual		= $message->addReplyTo( $address2, 'Test 3' );
+		$this->assertEquals( $message, $actual );
+
+		$header		= $message->getHeaders()->getFieldsByName( 'Reply-To' );
+		$this->assertEquals( 3, count( $header ) );
+
+		$expected	= [new Address( $string ), $address1, $address2->setName( 'Test 3' )];
+		$this->assertEquals( $expected, $message->getReplyTo() );
+	}
+
+	/**
+	 *	@covers		::addReplyTo
+	 */
+	public function testAddReplyToException()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$message	= Message::getInstance();
+		$message->addReplyTo( new Message() );
+	}
+
+	/**
+	 *	@covers		::addRecipient
+	 *	@covers		::getRecipients
+	 *	@covers		::getRecipientsByType
+	 */
+	public function testAddAndGetRecipients()
+	{
+		$message	= Message::getInstance();
+
+		$receiverTo		= new Address( "receiver_to@example.com" );
+		$receiverCc1	= new Address( "receiver_cc1@example.com" );
+		$receiverCc2	= new Address( "receiver_cc2@example.com" );
+		$receiverCc2->setName( "Test Name 1" );
+		$receiverBcc1	= new Address( "receiver_bcc1@example.com" );
+		$receiverBcc2	= new Address( "receiver_bcc2@example.com" );
+		$receiverBcc2->setName( "Test Name 2" );
+
+		$actual	= $message->addRecipient( $receiverTo );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverCc1, NULL, 'cc' );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverCc2, "Test Name 1", 'cc' );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverBcc1, NULL, 'bcc' );
+		$this->assertEquals( $message, $actual );
+		$actual	= $message->addRecipient( $receiverBcc2, "Test Name 2", 'bcc' );
+		$this->assertEquals( $message, $actual );
+
+		$expected	= array(
+			'to'	=> new AddressCollection( array(
+				new Address( 'receiver_to@example.com' ),
+			) ),
+			'cc'	=> new AddressCollection( array(
+				new Address( 'receiver_cc1@example.com' ),
+				new Address( 'Test Name 1 <receiver_cc2@example.com>' ),
+			) ),
+			'bcc'	=> new AddressCollection( array(
+				new Address( 'receiver_bcc1@example.com' ),
+				new Address( 'Test Name 2 <receiver_bcc2@example.com>' ),
+			) ),
+		);
+		$this->assertEquals( $expected, $message->getRecipients() );
+
+		$this->assertEquals( $expected['to'], $message->getRecipientsByType( 'to' ) );
+		$this->assertEquals( $expected['to'], $message->getRecipientsByType( 'TO' ) );
+		$this->assertEquals( $expected['cc'], $message->getRecipientsByType( 'cc' ) );
+		$this->assertEquals( $expected['cc'], $message->getRecipientsByType( 'Cc' ) );
+		$this->assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcc' ) );
+		$this->assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcC' ) );
+	}
+
+	/**
+	 *	@covers		::addRecipient
+	 */
+	public function testAddRecipientException()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$message	= Message::getInstance();
+		$message->addRecipient( new Message() );
+	}
+
+	/**
+	 *	@covers		::addRecipient
+	 */
+	public function testAddRecipientExceptionType()
+	{
+		$this->expectException( 'DomainException' );
+		$message	= Message::getInstance();
+		$message->addRecipient( 'not_important@domain.tld', NULL, 'invalid' );
+	}
+
+	/**
+	 *	@covers		::getRecipientsByType
+	 */
+	public function testGetRecipientsByTypeException()
+	{
+		$this->expectException( 'DomainException' );
+		$message	= Message::getInstance();
+		$message->getRecipientsByType( 'invalid' );
+	}
+
+	/**
 	 *	@covers		::getSender
 	 *	@covers		::setSender
 	 */
@@ -211,59 +340,6 @@ class MessageTest extends PhpUnitTestCase
 	}
 
 	/**
-	 *	@covers		::addRecipient
-	 *	@covers		::getRecipients
-	 */
-	public function testAddAndGetRecipients()
-	{
-		$message	= Message::getInstance();
-
-		$receiverTo		= new Address( "receiver_to@example.com" );
-		$receiverCc1	= new Address( "receiver_cc1@example.com" );
-		$receiverCc2	= new Address( "receiver_cc2@example.com" );
-		$receiverCc2->setName( "Test Name 1" );
-		$receiverBcc1	= new Address( "receiver_bcc1@example.com" );
-		$receiverBcc2	= new Address( "receiver_bcc2@example.com" );
-		$receiverBcc2->setName( "Test Name 2" );
-
-		$actual	= $message->addRecipient( $receiverTo );
-		$this->assertEquals( $message, $actual );
-		$actual	= $message->addRecipient( $receiverCc1, NULL, 'cc' );
-		$this->assertEquals( $message, $actual );
-		$actual	= $message->addRecipient( $receiverCc2, "Test Name 1", 'cc' );
-		$this->assertEquals( $message, $actual );
-		$actual	= $message->addRecipient( $receiverBcc1, NULL, 'bcc' );
-		$this->assertEquals( $message, $actual );
-		$actual	= $message->addRecipient( $receiverBcc2, "Test Name 2", 'bcc' );
-		$this->assertEquals( $message, $actual );
-
-		$expected	= array(
-			'to'	=> new AddressCollection( array(
-				new Address( 'receiver_to@example.com' ),
-			) ),
-			'cc'	=> new AddressCollection( array(
-				new Address( 'receiver_cc1@example.com' ),
-				new Address( 'Test Name 1 <receiver_cc2@example.com>' ),
-			) ),
-			'bcc'	=> new AddressCollection( array(
-				new Address( 'receiver_bcc1@example.com' ),
-				new Address( 'Test Name 2 <receiver_bcc2@example.com>' ),
-			) ),
-		);
-		$this->assertEquals( $expected, $message->getRecipients() );
-	}
-
-	/**
-	 *	@covers		::setSender
-	 */
-	public function testSetSenderException()
-	{
-		$this->expectException( 'InvalidArgumentException' );
-		$message	= Message::getInstance();
-		$message->setSender( (object) array( 'invalid' ) );
-	}
-
-	/**
 	 *	@covers		::getHTML
 	 */
 	public function testGetHTMLException()
@@ -281,5 +357,55 @@ class MessageTest extends PhpUnitTestCase
 		$this->expectException( 'RangeException' );
 		$message	= Message::getInstance();
 		$message->getText();
+	}
+
+	/**
+	 *	@covers		::setSender
+	 */
+	public function testSetSenderException()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$message	= Message::getInstance();
+		$message->setSender( (object) array( 'invalid' ) );
+	}
+
+	/**
+	 *	@covers		::setReadNotificationRecipient
+	 */
+	public function testSetReadNotificationRecipient()
+	{
+		$message	= Message::getInstance();
+		$string		= 'Observer <observer@example.net>';
+		$address	= new Address( $string );
+		$actual		= $message->setReadNotificationRecipient( $address );
+		$this->assertEquals( $message, $actual );
+
+		$fields		= $message->getHeaders()->getFieldsByName( 'Disposition-Notification-To' );
+		$this->assertEquals( 1, count( $fields ) );
+
+		$field		= $message->getHeaders()->getField( 'Disposition-Notification-To' );
+		$this->assertEquals( $string, $field->getValue() );
+
+
+		$actual		= $message->setReadNotificationRecipient( $string );
+		$this->assertEquals( $message, $actual );
+
+		$fields		= $message->getHeaders()->getFieldsByName( 'Disposition-Notification-To' );
+		$this->assertEquals( 2, count( $fields ) );
+
+		$this->assertEquals( $string, $fields[1]->getValue() );
+
+
+		$message	= Message::getInstance();
+		$address	= new Address( 'observer@example.net' );
+
+		$actual		= $message->setReadNotificationRecipient( $string, 'Observer' );
+		$this->assertEquals( $message, $actual );
+
+		$fields		= $message->getHeaders()->getFieldsByName( 'Disposition-Notification-To' );
+		$this->assertEquals( 1, count( $fields ) );
+
+		$expected	= 'Observer <observer@example.net>';
+		$this->assertEquals( $expected, $fields[0]->getValue() );
 	}
 }
