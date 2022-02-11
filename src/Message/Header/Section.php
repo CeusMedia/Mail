@@ -30,6 +30,7 @@ namespace CeusMedia\Mail\Message\Header;
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
+use Countable;
 use RangeException;
 
 use function array_shift;
@@ -47,7 +48,7 @@ use function strtolower;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
-class Section
+class Section implements Countable
 {
 	/**	@var	array<Field[]>		$fields */
 	protected $fields				= [];
@@ -85,6 +86,17 @@ class Section
 	public function addFields( array $fields ): self
 	{
 		return $this->setFields( $fields, FALSE );
+	}
+
+	/**
+	 *	Returns number of header fields in section.
+	 *	Implements countable interface.
+	 *	@access		public
+	 *	@return		integer		Number of header fields in section.
+	 */
+	public function count(): int
+	{
+		return count( $this->fields );
 	}
 
 	/**
