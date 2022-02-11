@@ -32,6 +32,7 @@ use CeusMedia\Mail\Message;
 
 use DomainException;
 use InvalidArgumentException;
+use RangeException;
 use RuntimeException;
 
 use function base64_decode;
@@ -75,20 +76,34 @@ use function str_replace;
  */
 class Encoding
 {
-	public const STRATEGY_IMPL				= 1;
-	public const STRATEGY_ICONV				= 2;
-	public const STRATEGY_ICONV_STRICT		= 3;
-	public const STRATEGY_ICONV_TOLERANT	= 4;
+	public const DECODE_STRATEGY_IMPL			= 1;
+	public const DECODE_STRATEGY_ICONV			= 2;
+	public const DECODE_STRATEGY_ICONV_STRICT	= 3;
+	public const DECODE_STRATEGY_ICONV_TOLERANT	= 4;
 
-	public const STRATEGIES		= [
-		self::STRATEGY_IMPL,
-		self::STRATEGY_ICONV,
-		self::STRATEGY_ICONV_STRICT,
-		self::STRATEGY_ICONV_TOLERANT,
+	public const ENCODE_STRATEGY_IMPL			= 1;
+	public const ENCODE_STRATEGY_MB				= 2;
+
+	public const DECODE_STRATEGIES		= [
+		self::DECODE_STRATEGY_IMPL,
+		self::DECODE_STRATEGY_ICONV,
+		self::DECODE_STRATEGY_ICONV_STRICT,
+		self::DECODE_STRATEGY_ICONV_TOLERANT,
 	];
 
-	/** @var		integer		$strategy		Decode strategy to use */
-	public static $strategy	= self::STRATEGY_ICONV_TOLERANT;
+	public const ENCODE_STRATEGIES		= [
+		self::DECODE_STRATEGY_IMPL,
+		self::ENCODE_STRATEGY_MB,
+	];
+
+	/** @var		integer			$decodeStrategy		Decode strategy to use */
+	public static $decodeStrategy	= self::DECODE_STRATEGY_ICONV_TOLERANT;
+
+	/** @var		integer			$encodeStrategy		Decode strategy to use */
+	public static $encodeStrategy	= self::ENCODE_STRATEGY_MB;
+
+	/** @var		string			$charset			Target character set */
+	public static $charset			= 'UTF-8';
 
 	/**
 	 *	Encodes a mail header value string if needed.
@@ -97,18 +112,18 @@ class Encoding
 	 *	@static
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@return		string
-	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 *	@throws		DomainException				if given encoding is not supported
 	 */
 	public static function decodeIfNeeded( string $string ): string
 	{
-		switch( self::$strategy ){
-			case self::STRATEGY_ICONV:
-				return iconv_mime_decode( $string, 0, 'UTF-8' );
-			case self::STRATEGY_ICONV_STRICT:
-				return iconv_mime_decode( $string, 1, 'UTF-8' );
-			case self::STRATEGY_ICONV_TOLERANT:
-				return iconv_mime_decode( $string, 2, 'UTF-8' );
-			case self::STRATEGY_IMPL:
+		switch( static::$decodeStrategy ){
+			case self::DECODE_STRATEGY_ICONV:
+				return iconv_mime_decode( $string, 0, static::$charset );
+			case self::DECODE_STRATEGY_ICONV_STRICT:
+				return iconv_mime_decode( $string, 1, static::$charset );
+			case self::DECODE_STRATEGY_ICONV_TOLERANT:
+				return iconv_mime_decode( $string, 2, static::$charset );
+			case self::DECODE_STRATEGY_IMPL:
 				return self::decode( $string );
 			default:
 				throw new DomainException( 'Invalid strategy' );
@@ -122,24 +137,58 @@ class Encoding
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@return		string
-	 *	@throws		InvalidArgumentException	if given encoding is not supported
+	 *	@throws		RangeException				if given encoding is not supported
 	 */
-	public static function encodeIfNeeded( string $string, string $encoding = "base64", ?bool $fold = TRUE ): string
+	public static function encodeIfNeeded( string $string, string $encoding = 'base64', ?bool $fold = TRUE ): string
 	{
 		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 		switch( strtolower( $encoding ) ){
 			case 'base64':
+				if( static::ENCODE_STRATEGY_MB === static::$encodeStrategy )
+					return mb_encode_mimeheader( $string, static::$charset, 'B', Message::$delimiter );
 				return "=?UTF-8?B?".base64_encode( $string )."?=";
 			case 'quoted-printable':
+				if( static::ENCODE_STRATEGY_MB === static::$encodeStrategy )
+					return mb_encode_mimeheader( $string, static::$charset, 'Q', Message::$delimiter );
 				$string		= quoted_printable_encode( $string );
 				$string		= str_replace( [ '?', ' ' ], [ '=3F', '_' ], $string );
 				$replace	= $fold ? "?=".Message::$delimiter."\t"."=?UTF-8?Q?" : '';
 				$string   	= str_replace( '='.Message::$delimiter, $replace, $string );
-				return "=?UTF-8?Q?".$string."?=";
+				return		"=?UTF-8?Q?".$string."?=";
 			default:
-				throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
+				throw new RangeException( 'Unsupported encoding: '.$encoding );
 		}
+	}
+
+	/**
+	 *	Sets decoding strategy to apply.
+	 *	@static
+	 *	@access		public
+	 *	@param		integer		$strategy		Decoding strategy, see ::DECODE_STRATEGIES
+	 *	@return		void
+	 *	@throws		RangeException				if given strategy is not supported
+	 */
+	public static function setDecodeStrategy( int $strategy )
+	{
+		if( !in_array( $strategy, static::DECODE_STRATEGIES, TRUE ) )
+			throw new RangeException( 'Invalid decoding strategy' );
+		static::$decodeStrategy	= $strategy;
+	}
+
+	/**
+	 *	Sets encoding strategy to apply.
+	 *	@static
+	 *	@access		public
+	 *	@param		integer		$strategy		Encoding strategy, see ::ENCODE_STRATEGIES
+	 *	@return		void
+	 *	@throws		RangeException				if given strategy is not supported
+	 */
+	public static function setEncodeStrategy( int $strategy )
+	{
+		if( !in_array( $strategy, static::ENCODE_STRATEGIES, TRUE ) )
+			throw new RangeException( 'Invalid encoding strategy' );
+		static::$encodeStrategy	= $strategy;
 	}
 
 	/*  --  PROTECTED  --  */
@@ -181,8 +230,8 @@ class Encoding
 					default:
 						throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 				}
-				if( strtoupper( $charset ) !== 'UTF-8' )
-					$content	= iconv( $charset, 'UTF-8', $content );
+				if( strtoupper( $charset ) !== static::$charset )
+					$content	= iconv( $charset, static::$charset, $content );
 				$line		= preg_replace( $pattern, $before.$content.$after, $line );
 			}
 			$list[]	= $line;
