@@ -56,9 +56,17 @@ class Name
 	public static function splitNameParts( array $list ): array
 	{
 		foreach( $list as $nr => $entry ){
-			if( 1 === preg_match( "/ +/", $entry['fullname'] ) ){
-				$parts	= preg_split( "/ +/", $entry['fullname'] );
-				if( FALSE !== $parts ){
+			$fullname	= trim( $entry['fullname'] );
+			$fullname	= preg_replace( '/ +/', ' ', $fullname );
+			if( 1 === preg_match( "/ +/", $fullname ) ){
+				$list[$nr]['fullname']	= $fullname;
+				$parts	= preg_split( "/ +/", $fullname );
+				if( $parts[0] === strtoupper( $parts[0] ) ){
+					$surname	= array_shift( $parts );
+					$list[$nr]['surname']	= ucfirst( strtolower( $surname ) );
+					$list[$nr]['firstname']	= join( ' ', $parts );
+				}
+				else {
 					$list[$nr]['surname']	= array_pop( $parts );
 					$list[$nr]['firstname']	= join( ' ', $parts );
 				}

@@ -9,3 +9,4 @@ parameters:
 	checkMissingIterableValueType: false
 	checkGenericClassInNonGenericObjectType: false
 	treatPhpDocTypesAsCertain: false
+	reportMaybesInPropertyPhpDocTypes: false

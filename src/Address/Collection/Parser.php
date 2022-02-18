@@ -161,8 +161,8 @@ class Parser
 
 	public function parseUsingOwn( string $string, string $delimiter = ',' ): AddressCollection
 	{
-		if( 0 === strlen( $delimiter ) )
-			throw new InvalidArgumentException( 'Delimiter cannot be empty of whitespace' );
+		if( 0 === strlen( trim( $delimiter ) ) )
+			throw new InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$list		= [];
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
 		if( 0 === strlen( trim( $string ) ) )

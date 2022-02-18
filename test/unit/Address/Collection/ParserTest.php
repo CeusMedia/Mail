@@ -23,9 +23,23 @@ use CeusMedia\Mail\Test\TestCase;
 class ParserTest extends TestCase
 {
 	/**
+	 *	@covers		::create
+	 *	@covers		::getInstance
+	 *	@todo		remove coverage of create after removing method
+	 */
+	public function testGetInstance()
+	{
+		$parser		= new Parser();
+		$instance	= Parser::getInstance();
+
+		$this->assertEquals( $parser, $instance );
+	}
+
+	/**
 	 *	@covers		::parse
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
+	 *	@covers		::realizeParserMethod
 	 */
 	public function testParse()
 	{
@@ -45,6 +59,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parse
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
+	 *	@covers		::realizeParserMethod
 	 */
 	public function testParseNameless()
 	{
@@ -68,6 +83,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parse
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
+	 *	@covers		::realizeParserMethod
 	 */
 	public function testParseWithName()
 	{
@@ -85,6 +101,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parse
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
+	 *	@covers		::realizeParserMethod
 	 */
 	public function testParseWithNameHavingComma()
 	{
@@ -99,6 +116,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parse
 	 *	@covers		::parseUsingImap
 	 *	@covers		::parseUsingOwn
+	 *	@covers		::realizeParserMethod
 	 */
 	public function testParseWithNameHavingSymbols()
 	{
@@ -109,6 +127,54 @@ class ParserTest extends TestCase
 		$this->assertEqualsForAllMethods( $expected, $string );
 	}
 
+	public function testParseUsingOwn()
+	{
+		$parser		= Parser::getInstance();
+		$actual		= $parser->parseUsingOwn( '', ',' );
+		$expected	= new AddressCollection();
+		$this->assertEqualsForAllMethods( $expected, $actual );
+	}
+
+	public function testParseUsingOwnException1()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$parser		= Parser::getInstance()->parseUsingOwn( 'a', '' );
+	}
+
+	public function testParseUsingOwnException2()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$parser		= Parser::getInstance()->parseUsingOwn( 'a', ' ' );
+	}
+
+	/**
+	 *	@covers		::setMethod
+	 *	@covers		::getMethod
+	 */
+	public function testSetMethod()
+	{
+		$parser		= Parser::getInstance();
+		$methods	= [
+			Parser::METHOD_AUTO,
+			Parser::METHOD_OWN,
+			Parser::METHOD_IMAP,
+			Parser::METHOD_IMAP_PLUS_OWN,
+		];
+		foreach( $methods as $method ){
+			$parser->setMethod( $method );
+			$this->assertEquals( $method, $parser->getMethod() );
+		}
+	}
+
+	/**
+	 *	@covers		::setMethod
+	 */
+	public function testSetMethodException()
+	{
+		$this->expectException( 'InvalidArgumentException' );
+		$parser	= Parser::getInstance()->setMethod( -1 );
+	}
+
 	//  --  PROTECTED  --  //
 	protected function assertEqualsForAllMethods( $expected, $string )
 	{
@@ -116,6 +182,8 @@ class ParserTest extends TestCase
 		$parser->setMethod( Parser::METHOD_OWN );
 		$this->assertEquals( $expected, $parser->parse( $string ) );
 		$parser->setMethod( Parser::METHOD_IMAP );
+		$this->assertEquals( $expected, $parser->parse( $string ) );
+		$parser->setMethod( Parser::METHOD_IMAP_PLUS_OWN );
 		$this->assertEquals( $expected, $parser->parse( $string ) );
 	}
 }
