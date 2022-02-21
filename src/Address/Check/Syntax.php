@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
+use ADT_Bitmask;
 use Alg_Object_Constant;
 use InvalidArgumentException;
 
@@ -53,7 +54,7 @@ class Syntax
 	public const MODE_EXTENDED_REGEX	= 8;
 
 	/**	@var int $mode */
-	protected $mode				= 2;
+	protected $mode				= self::MODE_FILTER;
 
 	/**	@var string $regexSimple */
 	protected $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
@@ -76,33 +77,34 @@ class Syntax
 	 *	Validate an mail address against set mode and returns bitmask of successfully applied test modes.
 	 *	@access		public
 	 *	@param		string			$address		Mail address to validate
-	 *	@param		boolean|NULL	$throwException	Flag: throw exception if invalid, default: TRUE
+	 *	@param		boolean			$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer							Bitmask of successfully applied test modes
 	 *	@throws		InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
 	 */
-	public function check( string $address, ?bool $throwException = TRUE ): int
+	public function check( string $address, bool $throwException = TRUE ): int
 	{
 		$result		= 0;
-		$wildcard	= self::MODE_ALL === ( $this->mode & self::MODE_ALL );
+		$modes		= new ADT_Bitmask( $this->mode );
+		$wildcard	= $modes->has( self::MODE_ALL );
 		$constants	= Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
 
 		foreach( $constants as $key => $value ){
-			if( ( $value === ( $this->mode & $value ) ) || $wildcard ){
+			if( $modes->has( $value ) || $wildcard ){
 				if( $value === self::MODE_FILTER || $wildcard ){
 					if( FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL ) )
 						$result	|= $value;
 				}
-				else if( $value === self::MODE_SIMPLE_REGEX || $wildcard ){
+				if( ( $value === self::MODE_SIMPLE_REGEX ) || $wildcard ){
 					if( 0 !== preg_match( $this->regexSimple, $address ) )
 						$result	|= $value;
 				}
-				else if( $value === self::MODE_EXTENDED_REGEX || $wildcard ){
+				if( ( $value === self::MODE_EXTENDED_REGEX ) || $wildcard ){
 					if( 0 !== preg_match( $this->regexExtended, $address ) )
 						$result	|= $value;
 				}
 			}
 		}
-		if( $result === 0 && $throwException )
+		if( 0 === $result && $throwException )
 			throw new InvalidArgumentException( 'Given address is not valid' );
 		return $result;
 	}

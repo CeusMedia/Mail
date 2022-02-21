@@ -32,6 +32,8 @@ use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Util\Dmarc\Record;
 
+use RuntimeException;
+
 use function abs;
 use function in_array;
 use function intval;
@@ -98,9 +100,14 @@ class Parser
 				if( FALSE === preg_match( '/=/', $pair ) )
 					continue;
 				$pair	= preg_split( '/\s*=\s*/', $pair, 2 );
+				if( FALSE === $pair )
+					continue;
 				switch( $pair[0] ){
 					case 'v':
-						$record->version	= preg_replace( '/^DMARC/', '', $pair[1] );
+						$version	= preg_replace( '/^DMARC/', '', $pair[1] );
+						if( NULL === $version )
+							throw new RuntimeException( 'Parsing version failed' );
+						$record->version	= $version;
 						break;
 					case 'p':
 						$values	= [ 'none', 'quarantine', 'reject' ];
@@ -121,20 +128,26 @@ class Parser
 							$record->alignmentSpf		= $pair[1];
 						break;
 					case 'pct':
-						$record->percent				= min( 100, max( 0, intval( $pair[1] ) ) );
+						$record->percent	= min( 100, max( 0, intval( $pair[1] ) ) );
 						break;
 					case 'rua':
-						foreach( preg_split( '/\s*,\s*/', $pair[1] ) as $part ){
-							if( preg_match( '/^mailto:/', $part ) )
-								$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
-							$record->reportAggregate[]	= $part;
+						$parts = preg_split( '/\s*,\s*/', $pair[1] );
+						if( FALSE !== $parts ){
+							foreach( $parts as $part ){
+								if( 1 === preg_match( '/^mailto:/', $part ) )
+									$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
+								$record->reportAggregate[]	= $part;
+							}
 						}
 						break;
 					case 'ruf':
-						foreach( preg_split( '/\s*,\s*/', $pair[1] ) as $part ){
-							if( preg_match( '/^mailto:/', $part ) )
-								$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
-							$record->reportForensic[]	= $part;
+						$parts	= preg_split( '/\s*,\s*/', $pair[1] );
+						if( FALSE !== $parts ){
+							foreach( $parts as $part ){
+								if( 1 === preg_match( '/^mailto:/', $part ) )
+									$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
+								$record->reportForensic[]	= $part;
+							}
 						}
 						break;
 					case 'ri':
