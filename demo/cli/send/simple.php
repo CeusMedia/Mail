@@ -1,8 +1,9 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-use \CeusMedia\Mail\Message;
-use \CeusMedia\Mail\Transport\SMTP;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Transport\SMTP;
+use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 
 $smtp		= (object) $config->getAll( 'SMTP_' );
 $sending	= (object) $config->getAll( 'sending_' );
@@ -28,8 +29,14 @@ try{
 			->addText( sprintf( $sending->body, time() ), "UTF-8", "quoted-printable" )
 		);
 }
+catch( SmtpException $e ){
+	CLI::out();
+	CLI::out( 'Error: '.$e->getMessage() );
+	CLI::out( print_m( $e->getResponse(), NULL, NULL, TRUE ) );
+}
 catch( Exception $e ){
-	CLI::out( $e->getMessage() );
+	CLI::out();
+	CLI::out( 'Error: '.$e->getMessage() );
 }
 if( $verbose )
 	CLI::out();

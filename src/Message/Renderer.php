@@ -101,7 +101,8 @@ class Renderer
 	{
 		if( 0 === count( $message->getParts( TRUE ) ) )
 			throw new RuntimeException( 'No content part set' );
-		if( 0 === strlen( trim( $message->getSubject() ) ) )
+		$subject	= trim( $message->getSubject() ?? '' );
+		if( 0 === strlen( $subject ) )
 			throw new RuntimeException( 'No subject set' );
 
 		$headers	= $message->getHeaders();
@@ -111,7 +112,7 @@ class Renderer
 		}
 		if( !$headers->hasField( 'Date' ) )
 			$headers->setFieldPair( 'Date', date( 'D, d M Y H:i:s O', time() ) );
-		$encodedSubject	= Encoding::encodeIfNeeded( $message->getSubject(), self::$encodingSubject );
+		$encodedSubject	= Encoding::encodeIfNeeded( $subject, self::$encodingSubject );
 		$headers->setFieldPair( 'Subject', $encodedSubject );
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );

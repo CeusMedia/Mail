@@ -247,10 +247,10 @@ class Message
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
+		if( !is_a( $address, Address::class ) )
 			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( !in_array( strtoupper( $type ), [ "TO", "CC", "BCC" ], TRUE ) )
-			throw new InvalidArgumentException( 'Invalid recipient type' );
+			throw new DomainException( 'Invalid recipient type' );
 
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
@@ -282,7 +282,7 @@ class Message
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
+		if( !is_a( $address, Address::class ) )
 			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
@@ -436,6 +436,18 @@ class Message
 		if( !in_array( strtoupper( $type ), [ 'TO', 'CC', 'BCC' ], TRUE ) )
 			throw new DomainException( 'Type must be of to, cc or bcc' );
 		return $this->recipients[strtolower( $type )];
+	}
+
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		Address[]|NULL
+	 */
+	public function getReplyTo(): ?array
+	{
+		return array_map(static function( Message\Header\Field $field ){
+			return new Address( $field->getValue() );
+		}, $this->headers->getFieldsByName( 'Reply-To' ) );
 	}
 
 	/**

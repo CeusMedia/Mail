@@ -117,7 +117,7 @@ function handleMailException( $e ){
 
 #### Good to know
 
-##### Using Google as SMTP#
+##### Using Google as SMTP
 
 Google tried to protect its SMTP access by several measures.
 If you are [having problems](https://support.google.com/accounts/answer/6009563) sending mails using Google SMTP, tried [these steps](https://serverfault.com/a/745666):
@@ -125,4 +125,4 @@ If you are [having problems](https://support.google.com/accounts/answer/6009563)
 1. Open a browser an log into Google using a Google account.
 2. [Allow "less secure apps"](https://www.google.com/settings/security/lesssecureapps) to have access.
 3. [Allow app](https://accounts.google.com/DisplayUnlockCaptcha) to have access.
-4. Try again! 
+4. Try again!

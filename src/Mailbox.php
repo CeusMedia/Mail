@@ -31,6 +31,7 @@ namespace CeusMedia\Mail;
 use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 
 use InvalidArgumentException;
@@ -75,7 +76,7 @@ use function ucfirst;
 class Mailbox
 {
 	/**
-	 * @var resource|NULL $connection
+	 * @var MailboxConnection $connection
 	 */
 	protected $connection;
 
@@ -119,18 +120,15 @@ class Mailbox
 	 */
 	protected $error;
 
-	public function __construct( string $host, string $username = '', string $password = '', bool $secure = TRUE, bool $validateCertificates = TRUE )
+	public function __construct( MailboxConnection $connection )
 	{
 		self::checkExtensionInstalled( TRUE );
-		$this->setHost( $host );
-		if( 0 < strlen( trim( $username ) ) && 0 < strlen( trim( $password ) ) )
-			$this->setAuth( $username, $password );
-		$this->setSecure( $secure, $validateCertificates );
+		$this->connection	= $connection;
 	}
 
 	public function __destruct()
 	{
-		$this->disconnect();
+		$this->connection->disconnect();
 	}
 
 	public static function checkExtensionInstalled( bool $strict = TRUE ): bool
@@ -142,35 +140,9 @@ class Mailbox
 		return FALSE;
 	}
 
-	public function connect( bool $strict = TRUE ): bool
+	public static function getInstance( MailboxConnection $connection ): self
 	{
-		$reference	= $this->renderConnectionReference( TRUE );
-		$options	= $this->secure && $this->validateCertificates ? OP_SECURE : 0;
-		$uri		= $reference.'INBOX';
-		$resource	= @imap_open( $uri, $this->username, $this->password, $options );
-		if( FALSE !== $resource ){
-			$this->connection	= $resource;
-			return TRUE;
-		}
-		$this->error	= imap_last_error();
-		if( $strict )
-			throw new RuntimeException( 'Connection to server failed: '.$this->error );
-		return FALSE;
-	}
-
-	public function disconnect(): bool
-	{
-		if( $this->checkConnection( FALSE, FALSE ) ){
-			$result	= imap_close( $this->connection, CL_EXPUNGE );
-			$this->connection	= NULL;
-			return $result;
-		}
-		return TRUE;
-	}
-
-	public static function getInstance( string $host, string $username = '', string $password = '', bool $secure = TRUE, bool $validateCertificates = TRUE ): self
-	{
-		return new self( $host, $username, $password, $secure, $validateCertificates );
+		return new self( $connection );
 	}
 
 	public function getError(): ?string
@@ -178,13 +150,17 @@ class Mailbox
 		return $this->error;
 	}
 
-	public function getFolders( bool $recursive = NULL, bool $fullReference = FALSE ): array
+	public function getFolders( bool $recursive = FALSE, bool $fullReference = FALSE ): array
 	{
 		$pattern	= $recursive ? '*' : '%';
-		$reference	= $this->renderConnectionReference( TRUE );
-		$folders		= imap_list( $this->connection, $reference, $pattern );
-		if( FALSE === $folders )
-			throw new RuntimeException( imap_last_error() );
+		$resource	= $this->connection->getResource( TRUE );
+		$reference	= $this->connection->renderReference( TRUE );
+		$folders	= imap_list( $resource, $reference, $pattern );
+		if( FALSE === $folders ){
+			if( FALSE !== imap_last_error() )
+				throw new RuntimeException( imap_last_error() );
+			throw new RuntimeException( 'Listing folders failed' );
+		}
 		if( !$fullReference ){
 			$regExp	= '/^'.preg_quote( $reference, '/' ).'/';
 			foreach( $folders as $nr => $folder )
@@ -196,39 +172,39 @@ class Mailbox
 		return $folders;
 	}
 
-	public function getMail( int $mailId, bool $strict = TRUE ): string
+	public function getMail( int $mailId ): string
 	{
-		$this->checkConnection( TRUE, $strict );
-		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
+		$resource	= $this->connection->getResource( TRUE );
+		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
 		if( FALSE === $header )
 			throw new RuntimeException( 'Invalid mail ID' );
-		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
+		$body	= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
-	public function getMailAsMessage( int $mailId, bool $strict = TRUE ): Message
+	public function getMailAsMessage( int $mailId ): Message
 	{
-		$this->checkConnection( TRUE, $strict );
-		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
+		$resource	= $this->connection->getResource( TRUE );
+		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
 		if( FALSE === $header )
 			throw new RuntimeException( 'Invalid mail ID' );
-		$body	= imap_body( $this->connection, $mailId, FT_UID | FT_PEEK );
+		$body	= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
 		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
-	public function getMailHeaders( int $mailId, bool $strict = TRUE ): MessageHeaderSection
+	public function getMailHeaders( int $mailId ): MessageHeaderSection
 	{
-		$this->checkConnection( TRUE, $strict );
-		$header	= imap_fetchheader( $this->connection, $mailId, FT_UID );
+		$resource	= $this->connection->getResource( TRUE );
+		$header	= imap_fetchheader( $resource, $mailId, FT_UID );
 		if( FALSE === $header )
 			throw new RuntimeException( 'Invalid mail ID' );
 		return MessageHeaderParser::getInstance()->parse( $header );
 	}
 
-	public function index( array $criteria = [], int $sort = SORTARRIVAL, bool $reverse = TRUE, bool $strict = TRUE ): array
+	public function index( array $criteria = [], int $sort = SORTARRIVAL, bool $reverse = TRUE ): array
 	{
-		$this->checkConnection( TRUE, $strict );
-		$result	= imap_sort( $this->connection, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+		$resource	= $this->connection->getResource( TRUE );
+		$result	= imap_sort( $resource, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 		if( $result === FALSE )
 			$result	= [];
 		return $result;
@@ -257,18 +233,18 @@ class Mailbox
 	 */
 	public function moveMails( array $mailIds, string $folder, bool $expunge = FALSE ): bool
 	{
-		$this->checkConnection( TRUE );
+		$resource	= $this->connection->getResource( TRUE );
 		$folder	= mb_convert_encoding( $folder, 'UTF7-IMAP', 'UTF-8' );
-		$result	= imap_mail_move( $this->connection, join( ',', $mailIds ), $folder, CP_UID );
+		$result	= imap_mail_move( $resource, join( ',', $mailIds ), $folder, CP_UID );
 		if( $expunge )
-			imap_expunge( $this->connection );
+			imap_expunge( $resource );
 		return $result;
 	}
 
 	public function performSearch( MailboxSearch $search ): array
 	{
-		$this->checkConnection( TRUE, TRUE );
-		$search->setConnection( $this->connection );
+		$resource	= $this->connection->getResource( TRUE );
+		$search->setConnection( $resource );
 		return $search->getAll();
 	}
 
@@ -279,18 +255,18 @@ class Mailbox
 
 	public function removeMailsBySequence( string $sequence, bool $expunge = FALSE ): bool
 	{
-		$this->checkConnection( TRUE );
-		$result	= imap_delete( $this->connection, $sequence, FT_UID );
+		$resource	= $this->connection->getResource( TRUE );
+		$result	= imap_delete( $resource, $sequence, FT_UID );
 		if( $expunge )
-			imap_expunge( $this->connection );
+			imap_expunge( $resource );
 		return $result;
 	}
 
 	public function search( array $conditions ): array
 	{
-		$this->checkConnection( TRUE, TRUE );
+		$resource	= $this->connection->getResource( TRUE );
 		return MailboxSearch::getInstance()
-			->setConnection( $this->connection )
+			->setConnection( $resource )
 			->applyConditions( $conditions )
 			->getAll();
 	}
@@ -301,71 +277,14 @@ class Mailbox
 	 *	@return		self		Own instance for chainability
 	 *	@todo		code doc
 	 */
-	public function setAuth( string $username, string $password ): self
-	{
-		$this->username	= $username;
-		$this->password	= $password;
-		return $this;
-	}
-
-	/**
-	 *	...
-	 *	@access		public
-	 *	@return		self		Own instance for chainability
-	 *	@todo		code doc
-	 */
-	public function setHost( string $host ): self
-	{
-		$this->host	= $host;
-		return $this;
-	}
-
-	/**
-	 *	...
-	 *	@access		public
-	 *	@return		self		Own instance for chainability
-	 *	@todo		code doc
-	 */
 	public function setMailFlag( string $mailId, string $flag ): self
 	{
+		$resource	= $this->connection->getResource( TRUE );
 		$flags	= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
 		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
 			throw new RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
-		imap_setflag_full( $this->connection, $mailId, $flag, ST_UID );
-		return $this;
-	}
-
-	/**
-	 *	...
-	 *	@access		public
-	 *	@return		self		Own instance for chainability
-	 *	@todo		code doc
-	 */
-	public function setSecure( bool $secure = TRUE, bool $validateCertificates = TRUE ): self
-	{
-		$this->secure				= $secure;
-		$this->validateCertificates	= $validateCertificates;
-		return $this;
-	}
-
-	/**
-	 *	...
-	 *	@access		public
-	 *	@return		self		Own instance for chainability
-	 *	@todo		code doc
-	 */
-	public function setTimeout( int $type, int $seconds ): self
-	{
-		$timeoutTypes	= [
-			IMAP_OPENTIMEOUT,
-			IMAP_READTIMEOUT,
-			IMAP_WRITETIMEOUT,
-			IMAP_CLOSETIMEOUT
-		];
-		if( !in_array( $type, $timeoutTypes, TRUE ) )
-			throw new InvalidArgumentException( 'Invalid timeout type' );
-		imap_timeout( $timeoutTypes[$type], $seconds );
+		imap_setflag_full( $resource, $mailId, $flag, ST_UID );
 		return $this;
 	}
 
@@ -377,59 +296,14 @@ class Mailbox
 	 */
 	public function unsetMailFlag( string $mailId, string $flag ): self
 	{
+		$resource	= $this->connection->getResource( TRUE );
 		$flags	= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
 		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
 			throw new RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
 		$flag	= '\\'.ucfirst( strtolower( $flag ) );
-		imap_clearflag_full( $this->connection, $mailId, $flag, ST_UID );
+		imap_clearflag_full( $resource, $mailId, $flag, ST_UID );
 		return $this;
 	}
 
 	//  --  PROTECTED  --  //
-
-	/**
-	 *	...
-	 *	@param		bool		$connect
-	 *	@param		bool		$strict
-	 *	@return		bool
-	 */
-	protected function checkConnection( bool $connect = FALSE, bool $strict = TRUE ): bool
-	{
-		if( NULL === $this->connection || !imap_ping( $this->connection ) ){
-			if( !$connect ){
-				if( $strict )
-					throw new RuntimeException( 'Not connected' );
-				return FALSE;
-			}
-			return $this->connect();
-		}
-		if( NULL !== $this->connection && is_resource( $this->connection ) )
-			return TRUE;
-		if( $strict )
-			throw new RuntimeException( 'Not connected' );
-		return FALSE;
-	}
-
-	protected function renderConnectionReference( bool $withPortAndFlags = TRUE ): string
-	{
-		if( !$withPortAndFlags )
-			return '{'.$this->host.'}';
-		if( NULL === $this->reference ){
-			$port		= 143;
-//			$flags		= ['imap'];
-			$flags		= [];
-			if( $this->secure ){
-				$port		= 993;
-				$flags[]	= 'ssl';
-				if( $this->validateCertificates ){
-					$flags[]	= 'validate-cert';
-				}
-			}
-			if( !$this->validateCertificates )
-				$flags[]	= 'novalidate-cert';
-			$flags	= 0 !== count( $flags ) ? '/'.join( '/', $flags ) : '';
-			$this->reference	= '{'.$this->host.':'.$port.$flags.'}';
-		}
-		return $this->reference;
-	}
 }

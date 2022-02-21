@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
-*	...
+ *	...
  *
  *	Copyright (c) 2021-2022 Christian Würker (ceusmedia.de)
  *
@@ -20,50 +20,48 @@ declare(strict_types=1);
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *	@category		Library
- *	@package		CeusMedia_Mail
+ *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2021-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-namespace CeusMedia\Mail;
-
-use Deprecation as CommonDeprecation;
+namespace CeusMedia\Mail\Transport\SMTP;
 
 use RuntimeException;
-
-use function dirname;
-use function file_exists;
-use function parse_ini_file;
-use function phpversion;
 
 /**
  *	...
  *
  *	@category		Library
- *	@package		CeusMedia_Mail
+ *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2021-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
-class Deprecation extends CommonDeprecation
+class Exception extends RuntimeException
 {
+	/** @var Response|NULL $response */
+	protected $response;
+
 	/**
-	 *	Constructor.
 	 *	@access		public
-	 *	@return		void
+	 *	@return		Response|NULL
 	 */
-	public function __construct()
+	public function getResponse(): ?Response
 	{
-		$iniFilePath		= dirname( __DIR__ ).'/Mail.ini';
-		if( !file_exists( $iniFilePath ) )
-			$iniFilePath		.= '.dist';
-		$iniFileData		= parse_ini_file( $iniFilePath, TRUE );
-		if( FALSE === $iniFileData )
-			throw new RuntimeException( 'Loading library configuration failed' );
-		$this->version		= $iniFileData['library']['version'];
-		$this->phpVersion	= phpversion();
-		$this->errorVersion	= $this->version;
+		return $this->response;
+	}
+
+	/**
+	 *	@access		public
+	 *	@param		Response		$response		SMTP response object to store
+	 *	@return		self
+	 */
+	public function setResponse( Response $response ): self
+	{
+		$this->response	= $response;
+		return $this;
 	}
 }

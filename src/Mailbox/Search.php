@@ -110,7 +110,7 @@ class Search
 		$mailIds	= imap_sort(
 			$this->connection,
 			$this->orderSort,
-			$this->orderReverse,
+			$this->orderReverse ? 1 : 0,
 			SE_UID,
 			$criteria,
 			'UTF-8'

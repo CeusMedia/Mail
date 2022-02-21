@@ -32,14 +32,13 @@ use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 
 use InvalidArgumentException;
-
+use RuntimeException;
 
 use function array_keys;
 use function implode;
 use function preg_replace;
 use function stripslashes;
 use function trim;
-
 
 /**
  *	Parser for mail addresses.
@@ -95,29 +94,48 @@ class Parser
 	 *	@access		public
 	 *	@param		string		$string			Mail address to parse
 	 *	@return		Address		Address object
+	 *	@throws		RuntimeException			if unfolding of address failed
 	 *	@throws		InvalidArgumentException	if given string is not a valid mail address
 	 */
 	public function parse( string $string ): Address
 	{
 		$string		= stripslashes( trim( $string ) );
 		$string		= preg_replace( "/\r\n /", " ", $string );					//  unfold @see http://tools.ietf.org/html/rfc822#section-3.1
+		if( NULL === $string )
+			throw new RuntimeException( 'Unfolding of address failed' );
 		$regex1		= self::$patterns['name <local-part@domain>'];				//  get pattern of full address
 		$regex2		= self::$patterns['<local-part@domain>'];					//  get pattern of short address
 		$regex3		= self::$patterns['local-part@domain'];						//  get pattern of short address
 		$name		= '';
 		if( 1 === preg_match( $regex1, $string ) ){								//  found full address: with name or in brackets
 			$localPart	= preg_replace( $regex1, "\\4", $string );				//  extract local part
+			if( NULL === $localPart )
+				throw new RuntimeException( 'Extraction of local part failed' );
 			$domain		= preg_replace( $regex1, "\\5", $string );				//  extract domain part
-			$name		= trim( preg_replace( $regex1, "\\1", $string ) );		//  extract user name
-			$name		= preg_replace( "/^\"(.+)\"$/", "\\1", $name );			//  strip quotes from user name
+			if( NULL === $domain )
+				throw new RuntimeException( 'Extraction of domain part failed' );
+			$name		= preg_replace( $regex1, "\\1", $string );				//  extract user name
+			if( NULL === $name )
+				throw new RuntimeException( 'Extraction of name failed' );
+			$name		= preg_replace( "/^\"(.+)\"$/", "\\1", trim( $name ) );	//  strip quotes from user name
+			if( NULL === $name )
+				throw new RuntimeException( 'Unquoting of name failed' );
 		}
 		else if( 1 === preg_match( $regex2, $string ) ){						//  otherwise found short address: neither name nor brackets
 			$localPart	= preg_replace( $regex2, "\\2", $string );				//  extract local part
+			if( NULL === $localPart )
+				throw new RuntimeException( 'Extraction of local part failed' );
 			$domain		= preg_replace( $regex2, "\\3", $string );				//  extract domain part
+			if( NULL === $domain )
+				throw new RuntimeException( 'Extraction of domain part failed' );
 		}
 		else if( 1 === preg_match( $regex3, $string ) ){						//  otherwise found short address: neither name nor brackets
 			$localPart	= preg_replace( $regex3, "\\2", $string );				//  extract local part
+			if( NULL === $localPart )
+				throw new RuntimeException( 'Extraction of local part failed' );
 			$domain		= preg_replace( $regex3, "\\3", $string );				//  extract domain part
+			if( NULL === $domain )
+				throw new RuntimeException( 'Extraction of domain part failed' );
 		}
 		else{																	//  not matching any pattern
 			$list		= '"'.implode( '" or "', array_keys( self::$patterns ) ).'"';

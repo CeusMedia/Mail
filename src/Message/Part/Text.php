@@ -83,7 +83,7 @@ class Text extends MessagePart
 		$section	= $additionalHeaders ?? new MessageHeaderSection();
 
 		if( $doContent || $doAll ){
-			$content	= static::encodeContent( $this->content, $this->encoding );
+			$content	= static::encodeContent( $this->content ?? '', $this->encoding );
 			$list[]		= $content;
 //			$section->setFieldPair( 'Content-Length', (string) $content );
 		}

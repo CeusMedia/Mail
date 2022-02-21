@@ -61,6 +61,18 @@ class SyntaxTest extends TestCase
 	/**
 	 *	@covers		::check
 	 */
+	public function testCheckValidAll()
+	{
+		$mode		= Syntax::MODE_ALL;
+		$checker	= new Syntax( $mode );
+		$expected	= Syntax::MODE_ALL | Syntax::MODE_FILTER | Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX;
+		$actual		= $checker->check( "foo+bar!@example.com" );
+		$this->assertEquals( $expected, $actual );
+	}
+
+	/**
+	 *	@covers		::check
+	 */
 	public function testCheckValidFilter()
 	{
 		$mode		= Syntax::MODE_FILTER;

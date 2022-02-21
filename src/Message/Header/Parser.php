@@ -138,9 +138,9 @@ class Parser
 	 */
 	public static function parseAttributedField( Field $field ): AttributedField
 	{
-		$object	= self::parseAttributedHeaderValue( $field->getValue() );
-		$field	= new AttributedField( $field->getName(), $object->value );
-		$field->setAttributes( $object->attributes->getAll() );
+		$fieldValue	= self::parseAttributedHeaderValue( $field->getValue() );
+		$field		= new AttributedField( $field->getName(), $fieldValue->getValue() );
+		$field->setAttributes( $fieldValue->getAttributes() );
 		return $field;
 	}
 
@@ -150,37 +150,50 @@ class Parser
 	 *	Return a map object with pure header value and attributes dictionary.
 	 *	@access		public
 	 *	@static
-	 *	@param		string		$headerValue		Complete header field value, may be multiline
-	 *	@return 	object		Map object with pure header value and attributes dictionary
+	 *	@param		string			$headerValue		Complete header field value, may be multiline
+	 *	@return 	AttributedValue	Map object with pure header value and attributes dictionary
+	 *	@throws		RuntimeException					if parsing the value failed
 	 */
-	public static function parseAttributedHeaderValue( string $headerValue )
+	public static function parseAttributedHeaderValue( string $headerValue ): AttributedValue
 	{
-		$string	= trim( preg_replace( "/\r?\n/", "", $headerValue ) );
-		$parts	= preg_split( '/\s*;\s*/', $string );
+		$string	= preg_replace( "/\r?\n/", "", $headerValue );
+		if( NULL === $string )
+			throw new RuntimeException( 'Unfolding the value failed' );
+		$parts	= preg_split( '/\s*;\s*/', trim( $string ) );
+		if( FALSE === $parts || 0 === count( $parts ) )
+			throw new RuntimeException( 'Parsing the value failed' );
 		$value	= array_shift( $parts );
 		$list	= [];
 		if( 0 !== count( $parts ) ){
 			foreach( $parts as $part ){
-				if( preg_match( '/=/', $part ) ){
+				$hasAssignment	= preg_match( '/=/', $part );
+				if( FALSE === $hasAssignment )
+					throw new RuntimeException( 'Parsing the value failed' );
+				if( 1 === preg_match( '/=/', $part ) ){
 					$p = preg_split( '/\s?=\s?/', $part, 2 );
+					if( FALSE === $p )
+						throw new RuntimeException( 'Parsing the value failed' );
 					if( trim( $p[1][0] ) === '"' )
 						$p[1]	= substr( trim( $p[1] ), 1, -1 );
-					if( preg_match( '/\*\d+\*?$/', $p[0] ) ){
+					$hasLabel = preg_match( '/\*\d+\*?$/', $p[0] );
+					if( FALSE === $hasLabel )
+						throw new RuntimeException( 'Parsing the value failed' );
+					if( 1 === $hasLabel ){
 						$label	= preg_replace( '/^(.+)\*\d+\*?$/', '\\1', $p[0] );
 						if( !isset( $list[$label] ) )
 							$list[$label]	= '';
-						$list[$label]	.= $p[1];
+						$list[$label]	.= stripslashes( $p[1] );
 					}
 					else
-						$list[$p[0]]	= $p[1];
+						$list[$p[0]]	= stripslashes( $p[1] );
 				}
 			}
 		}
 
 		//  Apply RFC 2231 (https://datatracker.ietf.org/doc/html/rfc2231)
 		$rfc2231	= "/^(?<charset>[A-Z0-9\-]+)(\'(?<language>[A-Z\-]{0,5})\')(?<content>.*)$/i";	//  eG. utf-8'en'Some%20content
-		array_walk( $list, function( &$value, $key ) use ($rfc2231): void{								//  apply RFC expr to list
-			if( $r = preg_match( $rfc2231, $value, $matches ) ){									//  encoding prefix found
+		array_walk( $list, function( &$value, $key ) use ( $rfc2231 ): void {						//  apply RFC expr to list
+			if( 1 === preg_match( $rfc2231, $value, $matches ) ){									//  encoding prefix found
 				$m	= (object) $matches;															//  shortcut matches
 				if( strtoupper( $m->charset ) !== 'UTF-8' )											//  encoding differs from UTF-8
 					$m->content    = iconv( $m->charset, 'UTF-8', $m->content );					//  recode content to UTF-8
@@ -188,10 +201,7 @@ class Parser
 			}
 		} );
 
-		return (object) [
-			'value'			=> $value,
-			'attributes'	=> new Dictionary( $list ),
-		];
+		return new AttributedValue( $value, $list );
 	}
 
 	/**
@@ -201,10 +211,14 @@ class Parser
 	 *	@param		string		$content		Header fields block to parse
 	 *	@param		integer		$mode			iconv mode (0-normal, 1-strict, 2-tolerant), default:
 	 *	@return		Section
+	 *	@throws		RuntimeException			if decoding of header failed
  	 */
 	public static function parseByIconvStrategy( $content, $mode = 0 ): Section
 	{
 		$headers	= iconv_mime_decode_headers( $content, $mode, 'UTF-8' );
+		if( FALSE === $headers )
+			throw new RuntimeException( 'Decoding of header failed' );
+
 		$section	= new Section();
 		foreach( $headers as $key => $values ){
 			if( !is_array( $values ) )
@@ -219,13 +233,15 @@ class Parser
 
 	public static function parseByThirdStrategy( string $content ): Section
 	{
-		$section	= new Section();
 		$lines		= preg_split( "/\r?\n/", $content );
+		if( FALSE === $lines )
+			throw new RuntimeException( 'Splitting of header failed' );
 		$fws		= '';
 		$buffer		= [];
 		$field		= NULL;
+		$section	= new Section();
 		foreach( $lines as $nr => $line ){
-			if( preg_match( '/^\S+:/', $line ) ){
+			if( 1 === preg_match( '/^\S+:/', $line ) ){
 				[$key, $value] = explode( ':', $line, 2 );
 				$value	= Encoding::decodeIfNeeded( ltrim( $value ) );
 				$field	= new Field( $key, $value );
@@ -234,10 +250,12 @@ class Parser
 				$fws	= '';
 			}
 			else if( NULL !== $field ){											//  line is folded line
-				if( mb_strlen( $fws ) === 0 )									//  folding white space not detected yet
+				if( 0 === mb_strlen( $fws ) )									//  folding white space not detected yet
 					$fws	= preg_replace( '/^(\s+).+$/', '\\1', $line );		//  get only folding white space
+				if( NULL === $fws )
+					throw new RuntimeException( 'Unfolding the value failed' );
 				$reducedLine	= substr( $line, strlen( $fws ) );				//  reduce line by folding white space
-				if( preg_match( '/^\s/', $reducedLine ) )						//  reduced line still contains leading white space
+				if( 1 === preg_match( '/^\s/', $reducedLine ) )					//  reduced line still contains leading white space
 					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
 				else{															//  reduced line is folding @ level 1
 					$line		= ' '.ltrim( $line );							//  reduce leading white space to one
@@ -252,8 +270,12 @@ class Parser
 	public static function parseByFirstStrategy( string $content ): Section
 	{
 		$section	= new Section();
-		$content	= preg_replace( "/\r?\n[\t ]+/", '', $content );				//  unfold field values
+		$content	= preg_replace( "/\r?\n[\t ]+/", '', $content );			//  unfold field values
+		if( NULL === $content )
+			throw new RuntimeException( 'Unfolding of header failed' );
 		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
+		if( FALSE === $lines )
+			throw new RuntimeException( 'Splitting of header failed' );
 		foreach( $lines as $line ){
 			$parts	= explode( ":", $line, 2 );
 			if( count( $parts ) > 1 ){
@@ -290,6 +312,8 @@ class Parser
 		$list		= [];
 		$buffer		= [];
 		$lines		= preg_split( "/\r?\n/", $content );
+		if( FALSE === $lines )
+			throw new RuntimeException( 'Splitting of header failed' );
 		foreach( $lines as $line ){
 			$value	= ltrim( $line );
 			if( preg_match( '/^\S/', $line ) > 0 ){
@@ -302,8 +326,10 @@ class Parser
 				$value	= ltrim( $parts[1] );
 			}
 			$value		= preg_replace( '/[\r\n\t]*/', '', $value );
-			$buffer[]	= trim( $value );
-			$value		= Encoding::decodeIfNeeded( $value );
+			if( NULL !== $value ){
+				$buffer[]	= trim( $value );
+				$value		= Encoding::decodeIfNeeded( $value );
+			}
 		}
 		if( !is_null( $key ) && count( $buffer ) > 0 )
 			$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];

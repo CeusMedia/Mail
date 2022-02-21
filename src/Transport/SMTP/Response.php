@@ -41,14 +41,23 @@ namespace CeusMedia\Mail\Transport\SMTP;
 class Response
 {
 	public const ERROR_NONE						= 0;
-	public const ERROR_MX_RESOLUTION_FAILED		= 1;
-	public const ERROR_SOCKET_FAILED			= 2;
-	public const ERROR_SOCKET_EXCEPTION			= 3;
-	public const ERROR_CONNECTION_FAILED		= 4;
-	public const ERROR_HELO_FAILED				= 5;
-	public const ERROR_CRYPTO_FAILED			= 6;
-	public const ERROR_SENDER_NOT_ACCEPTED		= 7;
-	public const ERROR_RECEIVER_NOT_ACCEPTED	= 8;
+	public const ERROR_UNSPECIFIED				= 1;
+	public const ERROR_NO_HOST_SET				= 2;
+	public const ERROR_NO_PORT_SET				= 3;
+	public const ERROR_MX_RESOLUTION_FAILED		= 4;
+	public const ERROR_SOCKET_FAILED			= 5;
+	public const ERROR_SOCKET_EXCEPTION			= 6;
+	public const ERROR_CONNECTION_FAILED		= 7;
+	public const ERROR_RESPONSE_NOT_UNTERSTOOD	= 8;
+	public const ERROR_CODE_NOT_ACCEPTED		= 9;
+	public const ERROR_HELO_FAILED				= 10;
+	public const ERROR_CRYPTO_FAILED			= 11;
+	public const ERROR_LOGIN_FAILED				= 12;
+	public const ERROR_SENDER_NOT_ACCEPTED		= 13;
+	public const ERROR_RECEIVER_NOT_ACCEPTED	= 14;
+
+	/** @var	int[]		$acceptedCodes */
+	public $acceptedCodes	= [];
 
 	/** @var	integer		$code */
 	public $code			= 0;
@@ -62,8 +71,8 @@ class Response
 	/** @var	string		$request */
 	public $request			= '';
 
-	/** @var	string		$response */
-	public $response		= '';
+	/** @var	string[]	$response */
+	public $response		= [];
 
 	public function __construct( ?int $code = NULL, ?string $message = NULL )
 	{
@@ -71,6 +80,11 @@ class Response
 			$this->code = $code;
 		if( NULL !== $message )
 			$this->message = $message;
+	}
+
+	public function getAcceptedCodes(): array
+	{
+		return $this->acceptedCodes;
 	}
 
 	public function getCode(): int
@@ -93,9 +107,29 @@ class Response
 		return $this->request;
 	}
 
-	public function getResponse(): string
+	public function getResponse(): array
 	{
 		return $this->response;
+	}
+
+	public function isAccepted(): ?bool
+	{
+		if( self::ERROR_NONE !== $this->error )
+			return FALSE;
+		if( 0 === count( $this->acceptedCodes ) )
+			return NULL;
+		return in_array( $this->code, $this->acceptedCodes, TRUE );
+	}
+
+	public function isError(): bool
+	{
+		return self::ERROR_NONE !== $this->error;
+	}
+
+	public function setAcceptedCodes( array $codes ): self
+	{
+		$this->acceptedCodes	= $codes;
+		return $this;
 	}
 
 	public function setCode( int $code ): self
@@ -122,7 +156,7 @@ class Response
 		return $this;
 	}
 
-	public function setResponse( string $response = '' ): self
+	public function setResponse( array $response = [] ): self
 	{
 		$this->response	= $response;
 		return $this;

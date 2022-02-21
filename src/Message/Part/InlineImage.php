@@ -221,16 +221,18 @@ class InlineImage extends MessagePart
 		if( NULL === $fileName || 0 === strlen( trim( $fileName ) ) )
 			$fileName	= basename( $filePath );
  		$this->content	= $file->getContent();
-		$fileSize	= filesize( $filePath );
-		$fileATime	= fileatime( $filePath );
-		$fileCTime	= filectime( $filePath );
-		$fileMTime	= filemtime( $filePath );
+
 		$this->setFileName( $fileName );
-		$this->setFileSize( FALSE !== $fileSize ? $fileSize : NULL );
-		$this->setFileATime( FALSE !== $fileATime ? $fileATime : NULL );
-		$this->setFileCTime( FALSE !== $fileCTime ? $fileCTime : NULL );
-		$this->setFileMTime( FALSE !== $fileMTime ? $fileMTime : NULL );
-		$this->setMimeType( $mimeType );
+		if( FALSE !== ( $fileSize = filesize( $filePath ) ) )
+			$this->setFileSize( $fileSize );
+		if( FALSE !== ( $fileATime = fileatime( $filePath ) ) )
+			$this->setFileATime( $fileATime );
+		if( FALSE !== ( $fileCTime = filectime( $filePath ) ) )
+			$this->setFileCTime( $fileCTime );
+		if( FALSE !== ( $fileMTime = filemtime( $filePath ) ) )
+			$this->setFileMTime ($fileMTime );
+		if( NULL !== $mimeType )
+			$this->setMimeType( $mimeType );
 		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
 			$this->setEncoding( $encoding );
 		return $this;

@@ -3,9 +3,10 @@ includes:
 	- phpstan-baseline.neon
 
 parameters:
-	level: 6
+	level: max
 	paths:
 		- src
 	checkMissingIterableValueType: false
 	checkGenericClassInNonGenericObjectType: false
-	treatPhpDocTypesAsCertain: false
+	reportMaybesInPropertyPhpDocTypes: false
+#	treatPhpDocTypesAsCertain: false

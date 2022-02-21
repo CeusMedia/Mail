@@ -61,7 +61,7 @@ class Mail extends MessagePart
 	{
 		$this->type		= static::TYPE_MAIL;
 		$this->setContent( $content );
-		$this->setMimeType( 'text/plain' );
+		$this->setMimeType( 'message/rfc822' );
 		$this->setCharset( $charset );
 		$this->setEncoding( $encoding );
 		$this->setFormat( 'fixed' );
@@ -85,7 +85,7 @@ class Mail extends MessagePart
 		$section	= $additionalHeaders ?? new MessageHeaderSection();
 
 		if( $doContent || $doAll ){
-			$content	= static::encodeContent( $this->content, $this->encoding );
+			$content	= static::encodeContent( $this->content ?? '', $this->encoding );
 			$list[]		= $content;
 //			$section->setFieldPair( 'Content-Length', (string) $content );
 		}

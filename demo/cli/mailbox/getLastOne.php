@@ -3,6 +3,7 @@ require_once dirname( __DIR__ ).'/_bootstrap.php';
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Mailbox\Connection;
 
 $mailboxAccess	= (object) $config->getAll( 'mailbox_' );
 
@@ -14,14 +15,15 @@ if( !$mailboxAccess->username )
 	die( 'Error: No mailbox user name defined.' );
 if( !$mailboxAccess->password )
 	die( 'Error: No mailbox user password defined.' );
-$mailbox	= new Mailbox(
+$connection	= new Connection(
 	$mailboxAccess->host,
 	$mailboxAccess->username,
 	$mailboxAccess->password
 );
-$mailbox->setSecure( TRUE, TRUE );
-$mailbox->connect();
-$mailIndex	= array_slice( $mailbox->index(), 0, 3 );
-foreach( $mailIndex as $item ){
+$connection->setSecure( TRUE, TRUE );
+//$mailbox->connect();
+
+$mailbox	= new Mailbox( $connection );
+$mailIndex	= array_slice( $mailbox->index(), 1, 1 );
+foreach( $mailIndex as $item )
 	print_r( $mailbox->getMail( $item ) );
-}

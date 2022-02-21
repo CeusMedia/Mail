@@ -173,14 +173,17 @@ class AddressTest extends TestCase
 
 	/**
 	 *	@covers		::render
+	 *	@covers		::__toString
 	 */
 	public function testRender()
 	{
 		$participant	= new Address( 'Hans.Mustermann@muster-server.tld' );
+		$expected		= $participant->get();
 
-		$expected	= $participant->get();
 		$actual		= Address::getInstance()->render( $participant );
 		$this->assertEquals( $expected, $actual );
+
+		$this->assertEquals( $expected, (string) $participant );
 	}
 
 	/**

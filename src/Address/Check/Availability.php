@@ -33,9 +33,12 @@ use CeusMedia\Cache\Factory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
+use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 use CeusMedia\Mail\Util\MX;
 
+use Exception;
 use RangeException;
 use RuntimeException;
 
@@ -85,12 +88,13 @@ class Availability
 	 */
 	public function __construct( $sender, bool $verbose = FALSE )
 	{
-		$this->setVerbose( $verbose );
 		if( is_string( $sender ) )
 			$sender		= new Address( $sender );
 		$this->sender	= $sender;
+		$this->setVerbose( $verbose );
+
+		$this->cache		= CacheFactory::createStorage( 'Noop' );
 		$this->lastResponse	= new SmtpResponse();
-		$this->cache	= CacheFactory::createStorage( 'Noop' );
 	}
 
 	/**
@@ -145,84 +149,66 @@ class Availability
 			}
 		}
 
-		$this->lastResponse->setError( SmtpResponse::ERROR_NONE );
-		$this->lastResponse->setCode( 0 );
-		$this->lastResponse->setMessage();
-		$this->lastResponse->setResponse();
-		$this->lastResponse->setRequest();
+		$this->lastResponse	= new SmtpResponse();
 
 		if( NULL === $host || 0 === strlen( $host ) ){
 			try{
 				$servers	= $this->getMailServers( $receiver->getDomain(), !$force, TRUE );
 				$host		= array_shift( $servers );
 			}
-			catch( \Exception $e ){
+			catch( Exception $e ){
 				$this->lastResponse->setError( SmtpResponse::ERROR_MX_RESOLUTION_FAILED );
 				$this->lastResponse->setMessage( $e->getMessage() );
 				return FALSE;
 			}
 		}
 
-		$conn	= @fsockopen( $host, $port, $errno, $errstr, 5 );
-		if( FALSE === $conn ){
-			$this->lastResponse->setError( SmtpResponse::ERROR_SOCKET_FAILED );
-			$this->lastResponse->setMessage( 'Connection to server '.$host.':'.$port.' failed' );
-			return FALSE;
-		}
+		$socket		= SmtpSocket::getInstance( $host, $port, 5 );
 		try{
-			$this->readResponse( $conn );
-			if( 220 !== $this->lastResponse->getCode() ){
-				$this->lastResponse->setError( SmtpResponse::ERROR_CONNECTION_FAILED );
-				return FALSE;
-			}
-			$this->sendChunk( $conn, "EHLO ".$this->sender->getDomain() );
-			$response	= $this->readResponse( $conn );
-			if( !in_array( $this->lastResponse->getCode(), [ 220, 250 ], TRUE ) ){
-				$this->lastResponse->setError( SmtpResponse::ERROR_HELO_FAILED );
-				return FALSE;
-			}
-			$features	= explode( "\n", $response->message );
+			$this->lastResponse	= $socket->open();
+			if( SmtpResponse::ERROR_NONE !== $this->lastResponse->getError() )
+				return $this->quit( $socket, FALSE );
+
+			$request	= "EHLO ".$this->sender->getDomain();
+			$response	= $this->request( $socket, $request, [ 220, 250 ], SmtpResponse::ERROR_HELO_FAILED );
+			if( $response->isError() )
+				return $this->quit( $socket, FALSE );
+			$features	= $response->getResponse();
 			$targetHost	= array_shift( $features );
 			if( in_array( 'VRFY', $features, TRUE ) ){
-				$this->sendChunk( $conn, "VRFY ".$receiver->getAddress() );
-				$this->readResponse( $conn );
-				return in_array( $this->lastResponse->getCode(), [ 250, 251, 252 ], TRUE );
+				$request	= "VRFY ".$receiver->getAddress();
+				$response	= $this->request( $socket, $request );
+				$success	= in_array( $response->getCode(), [ 250, 251, 252 ], TRUE );
+				$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
+				return $this->quit( $socket, $success );
 			}
 			else{
-				$this->sendChunk( $conn, "STARTTLS" );
-				$this->readResponse( $conn );
-				if( 220 !== $this->lastResponse->getCode() ){
-					$this->lastResponse->setError( SmtpResponse::ERROR_CRYPTO_FAILED );
-					return FALSE;
-				}
-				stream_socket_enable_crypto( $conn, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
+				$response	= $this->request( $socket, "STARTTLS", [ 220 ], SmtpResponse::ERROR_CRYPTO_FAILED );
+				if( $response->isError() )
+					return $this->quit( $socket, FALSE );
+				$socket->enableCrypto( TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
 
-//				while( $this->lastResponse->getCode() === 220 )									//  for telekom.de
+//				while( $response->getCode() === 220 )									//  for telekom.de
 //					$this->readResponse( $conn );
-				$this->sendChunk( $conn, "MAIL FROM: <".$this->sender->getAddress().">" );
-				$this->readResponse( $conn );
-				if( 250 !== $this->lastResponse->getCode() ){
-					$this->lastResponse->setError( SmtpResponse::ERROR_SENDER_NOT_ACCEPTED );
-					return FALSE;
-				}
-				$this->sendChunk( $conn, "RCPT TO: <".$receiver->getAddress().">" );
-				$this->readResponse( $conn );
-				if( 250 !== $this->lastResponse->getCode() ){
-					$this->lastResponse->setError( SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED );
+
+				$request	= "MAIL FROM: <".$this->sender->getAddress().">";
+				$response	= $this->request( $socket, $request, [ 250 ], SmtpResponse::ERROR_SENDER_NOT_ACCEPTED );
+				if( $response->isError() )
+					return $this->quit( $socket, FALSE );
+				$request	= "RCPT TO: <".$receiver->getAddress().">";
+				$response	= $this->request( $socket, $request, [ 250 ], SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED );
+				if( $response->isError() ){
 					$this->cache->set( 'user:'.$receiver->getAddress(), FALSE );
-					return FALSE;
+					return $this->quit( $socket, FALSE );
 				}
-				$this->sendChunk( $conn, "QUIT" );
-				fclose( $conn );
 				$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
-				return TRUE;
+				return $this->quit( $socket, TRUE );
 			}
 		}
-		catch( \Exception $e ){
-			fclose( $conn );
-			$this->lastResponse->setError( SmtpResponse::ERROR_SOCKET_EXCEPTION );
+		catch( Exception $e ){
+			$this->lastResponse->setError( SmtpResponse::ERROR_UNSPECIFIED );
 			$this->lastResponse->setMessage( $e->getMessage() );
-			return FALSE;
+			return $this->quit( $socket, FALSE );
 		}
 	}
 
@@ -258,58 +244,52 @@ class Availability
 	}
 
 	/**
-	 *	@access		protected
-	 *	@param		resource	$connection
-	 *	@param		array		$acceptedCodes
-	 *	@return		object
+	 *	Closes socket connection if open and returns given return status.
+	 *	@param		SmtpSocket	$socket			Possibly connected SMTP Socket
+	 *	@param		boolean		$withSuccess	Return status to reflect
+	 *	@return		boolean
 	 */
-	protected function readResponse( $connection, array $acceptedCodes = [] ): object
+	protected function quit( SmtpSocket $socket, bool $withSuccess = FALSE ): bool
 	{
-		$lastLine	= FALSE;
-		$code		= NULL;
-		$buffer		= [];
-		do{
-			$response	= fgets( $connection, 1024 );
-			if( FALSE !== $response ) {
-				$this->lastResponse->setResponse( $response );
-				$this->lastResponse->setError(SmtpResponse::ERROR_NONE);
-				$this->lastResponse->setCode(0);
-				$this->lastResponse->setMessage();
-				if( $this->verbose )
-					print ' < ' . $response;
-				$matches = [];
-				preg_match('/^([0-9]{3})( |-)(.+)$/', $response, $matches);
-				if( !$matches )
-					throw new RuntimeException('SMTP response not understood');
-				$code = (int) $matches[1];
-				$buffer[] = trim( $matches[3] );
-				if( 0 < count($acceptedCodes) && !in_array($code, $acceptedCodes, TRUE ) )
-					throw new RuntimeException('Unexcepted SMTP response (' . $matches[1] . '): ' . $matches[3], $code );
-				if( ' ' === $matches[2])
-					$lastLine = TRUE;
-				$this->lastResponse->setCode( (int) $matches[1] );
-				$this->lastResponse->setMessage( trim( $matches[3] ) );
-			}
-		}
-		while( FALSE !== $response && !$lastLine );
-		return (object) [
-			'code'		=> $code,
-			'message'	=> join( "\n", $buffer ),
-		];
+		$socket->close();
+		return $withSuccess;
 	}
 
 	/**
-	 *	...
-	 *	@access		protected
-	 *	@param		resource		$connection
-	 *	@param		string			$message
-	 *	@return		bool
+	 *	Sends request message and receives response.
+	 *	@param		SmtpSocket	$socket			Connected SMTP Socket
+	 *	@param		string		$request		Request message to send
+	 *	@return		SmtpResponse
 	 */
-	protected function sendChunk( $connection, string $message ): bool
+	protected function request( SmtpSocket $socket, string $request, array $acceptedCodes = [], ?int $errorCode = NULL ): SmtpResponse
 	{
 		if( $this->verbose )
-			print ' > '.$message.PHP_EOL;//htmlentities( $message), ENT_QUOTES, 'UTF-8' );
-		$this->lastResponse->setRequest( $message );
-		return FALSE !== fputs( $connection, $message.Message::$delimiter );
+			print ' > '.$request.PHP_EOL;//htmlentities( $request, ENT_QUOTES, 'UTF-8' );
+		$socket->sendChunk( $request.Message::$delimiter );
+
+		$response	= $socket->readResponse();
+		$response->setRequest( $request );
+
+		if( $this->verbose )
+			print ' < ' . join( PHP_EOL . '   ', $response->getResponse() ) . PHP_EOL;
+		if( 0 !== count( $acceptedCodes ) ){
+			$response->setAcceptedCodes( $acceptedCodes );
+			if( !in_array( $response->getCode(), $acceptedCodes, TRUE ) ){
+				if( NULL !== $errorCode )
+					$response->setError( $errorCode );
+				else{
+					$message	= vsprintf( 'Unexcepted SMTP response (%s): %s', [
+						$response->getCode(),
+						$response->message
+					] );
+					$exception	= new SmtpException( $message );
+					$exception->setResponse( $response );
+					throw $exception;
+				}
+			}
+		}
+
+		$this->lastResponse = $response;
+		return $response;
 	}
 }

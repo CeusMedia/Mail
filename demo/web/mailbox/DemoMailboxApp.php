@@ -2,13 +2,14 @@
 new UI_DevOutput;
 
 use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Mailbox\Connection;
 use CeusMedia\Cache\Factory as CacheFactory;
 use UI_HTML_PageFrame as Page;
 use UI_HTML_Tag as Tag;
 
 
-class DemoMailboxApp{
-
+class DemoMailboxApp
+{
 	protected $mailbox;
 	protected $request;
 	protected $response;
@@ -218,9 +219,9 @@ class DemoMailboxApp{
 			throw new \RuntimeException( 'Error: No mailbox user password defined.' );
 		}
 
-		$this->mailbox	= new Mailbox( $this->config->host, $this->config->username, $this->config->password );
-		$this->mailbox->setSecure( $secure, $secure );
-		$this->mailbox->connect();
+		$connection		= new Connection($this->config->host, $this->config->username, $this->config->password );
+		$connection->setSecure( $secure, $secure );
+		$this->mailbox	= new Mailbox( $connection );
 	}
 
 	protected function purifyHtmlContent( string $content ): string

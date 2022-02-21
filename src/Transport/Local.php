@@ -76,11 +76,11 @@ class Local
 	 *	@throws		InvalidArgumentException	if receiver is not set
 	 *	@throws		InvalidArgumentException	if subject is not set
 	 */
-	public function send( Message $message, $parameters = [] )
+	public function send( Message $message, array $parameters = [] )
 	{
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipientsByType( 'to' );
-		$subject	= $message->getSubject();
+		$subject	= $message->getSubject() ?? '';
 		$body		= Renderer::render( $message );
 
 		//  --  VALIDATION & SECURITY CHECK  --  //
@@ -89,7 +89,7 @@ class Local
 			throw new InvalidArgumentException( 'No mail sender defined' );
 		if( 0 === count( $receivers ) )
 			throw new InvalidArgumentException( 'No mail receiver defined' );
-		if( NULL === $subject || 0 === strlen( trim( $subject ) ) )
+		if( 0 === strlen( trim( $subject ) ) )
 			throw new InvalidArgumentException( 'No mail subject defined' );
 		$subject	= "=?UTF-8?B?".base64_encode( $subject )."?=";
 
@@ -104,8 +104,7 @@ class Local
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
-		if( is_array( $parameters ) )
-			$parameters	= implode( PHP_EOL, $parameters );
+		$parameters	= implode( PHP_EOL, $parameters );
 
 		$list	= [];
 		$buffer	= new UI_OutputBuffer();

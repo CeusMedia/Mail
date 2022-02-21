@@ -33,6 +33,7 @@ use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\AttributedField as MessageHeaderAttributedField;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
@@ -87,7 +88,8 @@ class Parser
 	{
 		$message	= new Message();
 		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-
+		if( FALSE === $parts )
+			throw new RuntimeException( 'Splitting message into parts failed' );
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		foreach( $headers->getFields() as $field ){
 			$message->addHeader( $field );
@@ -109,13 +111,13 @@ class Parser
 		}
 		if( $headers->hasField( 'Content-Type' ) ){
 			$mimeType	= $headers->getField( 'Content-Type' )->getValue();
-			if( preg_match( "/multipart/", $mimeType ) ){						//  is multipart message
-				$this->parseMultipartBody( $message, $content );				//  parse multipart containers
+			if( 1 === preg_match( "/multipart/", $mimeType ) ){					//  is multipart message
+				self::parseMultipartBody( $message, $content );					//  parse multipart containers
 				return $message;
 			}
 		}
 
-		$message->addPart( $this->parseAtomicBodyPart( $content ) );			//  directly parse mail content as part
+		$message->addPart( self::parseAtomicBodyPart( $content ) );			//  directly parse mail content as part
 		return $message;
 	}
 
@@ -124,16 +126,247 @@ class Parser
 	/**
 	 *	...
 	 *	@access		protected
+	 *	@static
+	 *	@param		string							$content
+	 *	@param		MessageHeaderAttributedField	$contentType
+	 *	@param		MessageHeaderAttributedField	$disposition
+	 *	@param		string							$mimeType
+	 *	@param		string|NULL						$encoding
+	 *	@param		string|NULL						$format
+	 *	@return		MessagePartAttachment
+	 */
+	protected static function createAttachmentPart( string $content, MessageHeaderAttributedField $contentType, MessageHeaderAttributedField $disposition, string $mimeType, ?string $encoding = NULL, ?string $format = NULL ): MessagePartAttachment
+	{
+		$part	= new MessagePartAttachment();
+		$part->setMimeType( $mimeType );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+			$part->setEncoding( $encoding );
+		$part->setContent( $content );
+		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+			$part->setFormat( $format );
+
+		$filename	= $disposition->getAttribute( 'filename' );
+		if( NULL === $filename && NULL !== $contentType->getAttribute( 'name' ) )
+			$filename	= $contentType->getAttribute( 'name' );
+		if( NULL !== $filename )
+			$part->setFileName( $filename );
+
+		$dispositionAttributesToCopy	= [
+			'size'				=> 'setFileSize',
+			'read-date'			=> 'setFileATime',
+			'creation-date'		=> 'setFileCTime',
+			'modification-date'	=> 'setFileMTime',
+		];
+		$methodFactory	= new MethodFactory( $part );
+		foreach( $dispositionAttributesToCopy as $key => $method ){
+			$value	= $disposition->getAttribute( $key );
+			if( is_null( $value ) )
+				continue;
+			if( 1 === preg_match( '/-date$/', $key ) )
+				$value	= strtotime( $value );
+			if( FALSE !== $value )
+				$methodFactory->setMethod( $method, array( $value ) )->call();
+		}
+		return $part;
+	}
+
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@static
+	 *	@param		MessageHeaderSection			$headers
+	 *	@param		string							$content
+	 *	@param		MessageHeaderAttributedField	$contentType
+	 *	@param		string							$mimeType
+	 *	@param		string|NULL						$encoding
+	 *	@param		string|NULL						$format
+	 *	@return		MessagePart|NULL				Instance of MessagePartAttachment or MessagePartInlineImage
+	 */
+	protected static function createDispositionPart( MessageHeaderSection $headers, string $content, MessageHeaderAttributedField $contentType, string $mimeType, ?string $encoding = NULL, ?string $format = NULL ): ?MessagePart
+	{
+		$disposition		= $headers->getField( 'Content-Disposition' );
+		$disposition		= MessageHeaderParser::parseAttributedField( $disposition );
+		$dispositionType	= strtoupper( $disposition->getValue() );
+
+		if( $dispositionType === 'INLINE' && $headers->hasField( 'Content-Id' ) ){
+			return self::createInlineImagePart(
+				$headers,
+				$content,
+				$contentType,
+				$disposition,
+				$mimeType,
+				$encoding,
+				$format
+			);
+		}
+
+		$filename	= $disposition->getAttribute( 'filename' );
+		$couldBeAttachment	= in_array( $dispositionType, [ 'INLINE', 'ATTACHMENT' ], TRUE );
+		if( $couldBeAttachment && NULL !== $filename ){
+			return self::createAttachmentPart(
+				$content,
+				$contentType,
+				$disposition,
+				$mimeType,
+				$encoding,
+				$format
+			);
+		}
+		return NULL;
+	}
+
+	protected static function createHTMLPart( string $content, string $charset, ?string $encoding = NULL, ?string $format = NULL ): MessagePartHTML
+	{
+		$part	= new MessagePartHTML( $content, $charset );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+			$part->setEncoding( $encoding );
+		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+			$part->setFormat( $format );
+		return $part;
+	}
+
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@static
+	 *	@param		MessageHeaderSection			$headers
+	 *	@param		string							$content
+	 *	@param		MessageHeaderAttributedField	$contentType
+	 *	@param		MessageHeaderAttributedField	$disposition
+	 *	@param		string							$mimeType
+	 *	@param		string|NULL						$encoding
+	 *	@param		string|NULL						$format
+	 *	@return		MessagePartInlineImage
+	 */
+	protected static function createInlineImagePart( MessageHeaderSection $headers, string $content, MessageHeaderAttributedField $contentType, MessageHeaderAttributedField $disposition, string $mimeType, ?string $encoding = NULL, ?string $format = NULL ): MessagePartInlineImage
+	{
+		$id		= $headers->getField( 'Content-Id' )->getValue();
+		$part	= new MessagePartInlineImage( $id );
+
+		$part->setMimeType( $mimeType );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+			$part->setEncoding( $encoding );
+		$part->setContent( $content );
+		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+			$part->setFormat( $format );
+
+		$filename	= $disposition->getAttribute( 'filename' );
+		if( NULL === $filename && NULL !== $contentType->getAttribute( 'name' ) )
+			$filename	= $contentType->getAttribute( 'name' );
+		if( NULL !== $filename )
+			$part->setFileName( $filename );
+
+		$dispositionAttributesToCopy	= [
+			'size'				=> 'setFileSize',
+			'read-date'			=> 'setFileATime',
+			'creation-date'		=> 'setFileCTime',
+			'modification-date'	=> 'setFileMTime',
+		];
+		$methodFactory	= new MethodFactory( $part );
+		foreach( $dispositionAttributesToCopy as $key => $method ){
+			$value	= $disposition->getAttribute( $key );
+			if( is_null( $value ) )
+				continue;
+			if( 1 === preg_match( '/-date$/', $key ) )
+				$value	= strtotime( $value );
+			if( FALSE !== $value )
+				$methodFactory->setMethod( $method, array( $value ) )->call();
+		}
+		return $part;
+	}
+
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@static
+	 *	@param		string					$content
+	 *	@param		string					$charset
+	 *	@param		string|NULL				$encoding
+	 *	@param		string|NULL				$format
+	 *	@return		MessagePartMail
+	 */
+	protected static function createMailPart( string $content, string $charset, ?string $encoding = NULL, ?string $format = NULL ): MessagePartMail
+	{
+		$part	= new MessagePartMail( $content, $charset );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+			$part->setEncoding( $encoding );
+		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+			$part->setFormat( $format );
+		return $part;
+	}
+
+	protected static function createTextPart( string $content, string $charset, ?string $encoding = NULL, ?string $format = NULL ): MessagePartText
+	{
+		$part	= new MessagePartText( $content, $charset );
+		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+			$part->setEncoding( $encoding );
+		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+			$part->setFormat( $format );
+		return $part;
+	}
+
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@static
+	 *	@param		string		$content			...
+	 *	@return		MessagePart
+	 */
+	protected static function parseAtomicBodyPart( string $content ): MessagePart
+	{
+		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
+		if( FALSE === $parts )
+			throw new RuntimeException( 'Splitting multipart message body into parts failed' );
+		$content	= $parts[1];
+		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
+
+		$contentType	= $headers->getField( 'Content-Type' );
+		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
+		$mimeType		= $contentType->getValue();
+		$charset		= $contentType->getAttribute( 'charset' ) ?? 'UTF-8';
+		$format			= $contentType->getAttribute( 'format' );
+		$encoding		= NULL;
+		if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
+			$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
+			$content	= MessagePart::decodeContent( $content, $encoding, $charset );
+		}
+
+		if( $mimeType === 'message/rfc822' )
+			return self::createMailPart( $content, $charset, $encoding, $format );
+
+		if( $headers->hasField( 'Content-Disposition' ) ){
+			$part	= self::createDispositionPart( $headers, $content, $contentType, $mimeType, $encoding, $format );
+			if( NULL !== $part )
+				return $part;
+		}
+		switch( strtolower( $mimeType ) ){
+			case 'text/html':
+				return self::createHTMLPart( $content, $charset, $encoding, $format );
+			case 'text/plain':
+			default:
+				return self::createTextPart( $content, $charset, $encoding, $format );
+		}
+	}
+
+	/**
+	 *	Parses complete body of a multipart message.
+	 *	Adds found body parts to given message object.
+	 *	Supports nested multiparts by working recursivly.
+	 *	@access		protected
+	 *	@static
 	 *	@param		Message		$message		...
 	 *	@param		string		$content		...
 	 *	@return		void
 	 */
-	protected function parseMultipartBody( Message $message, string $content )
+	protected static function parseMultipartBody( Message $message, string $content )
 	{
 		$delim		= Message::$delimiter;
-		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
-		$body		= $parts[1];
+		$bodyParts	= preg_split( "/\r?\n\r?\n/", $content, 2 );
+		if( FALSE === $bodyParts )
+			throw new RuntimeException( 'Splitting multipart message body into parts failed' );
+
+		$headers	= MessageHeaderParser::getInstance()->parse( $bodyParts[0] );
+		$body		= $bodyParts[1];
 
 		if( !$headers->hasField( 'Content-Type' ) )
 			throw new RuntimeException( 'Multipart has no content type header' );
@@ -144,121 +377,27 @@ class Parser
 		if( NULL !== $mimeBoundary ){
 			$lines	= [];
 			$status	= 0;
-			foreach( preg_split( "/\r?\n/", $body ) as $nr => $line ){
+			$boundParts	= preg_split( "/\r?\n/", $body );
+			if( FALSE === $boundParts )
+				throw new RuntimeException( 'Splitting multipart message body into parts failed' );
+			foreach( $boundParts as $nr => $line ){
 				if( $line === '--'.$mimeBoundary ){
 					if( $status === 0 ){
 						$status	= 1;
 						continue;
 					}
-					$this->parseMultipartBody( $message, join( $delim, $lines ) );
+					self::parseMultipartBody( $message, join( $delim, $lines ) );
 					$lines	= [];
 				}
 				else if( $line === '--'.$mimeBoundary.'--' ){
-					$this->parseMultipartBody( $message, join( $delim, $lines ) );
+					self::parseMultipartBody( $message, join( $delim, $lines ) );
 					break;
 				}
 				else if( $status === 1 )
 					$lines[]	= $line;
 			}
 		}
-		$part	= $this->parseAtomicBodyPart( $content );
+		$part	= self::parseAtomicBodyPart( $content );
 		$message->addPart( $part );
-	}
-
-	/**
-	 *	...
-	 *	@access		protected
-	 *	@param		string		$content			...
-	 *	@return		MessagePart
-	 */
-	protected function parseAtomicBodyPart( string $content ): MessagePart
-	{
-		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		$content	= $parts[1];
-		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
-
-		$contentType	= $headers->getField( 'Content-Type' );
-		$contentType	= MessageHeaderParser::parseAttributedField( $contentType );
-		$mimeType		= $contentType->getValue();
-		$charset		= $contentType->getAttribute( 'charset', 'UTF-8' );
-		$format			= $contentType->getAttribute( 'format' );
-		$encoding		= NULL;
-		if( $headers->hasField( 'Content-Transfer-Encoding' ) ){
-			$encoding	= $headers->getField( 'Content-Transfer-Encoding' )->getValue();
-			$content	= MessagePart::decodeContent( $content, $encoding, $charset );
-		}
-		if( $mimeType === 'message/rfc822' ){
-			$part	= new MessagePartMail( $content, $charset );
-			$part->setMimeType( $mimeType );
-			if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
-				$part->setEncoding( $encoding );
-			if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
-				$part->setFormat( $format );
-			return $part;
-		}
-
-		if( $headers->hasField( 'Content-Disposition' ) ){
-			$disposition	= $headers->getField( 'Content-Disposition' );
-			$disposition	= MessageHeaderParser::parseAttributedField( $disposition );
-			$filename		= $disposition->getAttribute( 'filename' );
-			$value			= strtoupper( $disposition->getValue() );
-			$isInlineImage	= $value === 'INLINE' && $headers->hasField( 'Content-Id' );
-			$isAttachment	= in_array( $value, [ 'INLINE', 'ATTACHMENT' ], TRUE ) && NULL !== $filename;
-
-			if( $isAttachment || $isInlineImage ){
-				$part	= new MessagePartAttachment();
-				if( $isInlineImage ){
-					$id		= $headers->getField( 'Content-Id' )->getValue();
-					$part	= new MessagePartInlineImage( $id );
-				}
-				$part->setMimeType( $mimeType );
-				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
-					$part->setEncoding( $encoding );
-				$part->setContent( $content );
-				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
-					$part->setFormat( $format );
-				if( NULL === $filename && NULL !== $contentType->getAttribute( 'name' ) )
-					$filename	= $contentType->getAttribute( 'name' );
-				if( NULL !== $filename )
-					$part->setFilename( $filename );
-
-				$dispositionAttributesToCopy	= [
-					'size'				=> 'setFileSize',
-					'read-date'			=> 'setFileATime',
-					'creation-date'		=> 'setFileCTime',
-					'modification-date'	=> 'setFileMTime',
-				];
-				$methodFactory	= new MethodFactory( $part );
-				foreach( $dispositionAttributesToCopy as $key => $method ){
-					$value	= $disposition->getAttribute( $key );
-					if( is_null( $value ) )
-						continue;
-					if( preg_match( '/-date$/', $key ) )
-						$value	= strtotime( $value );
-					if( $value )
-						$methodFactory->setMethod( $method, array( $value ) )->call();
-				}
-				return $part;
-			}
-		}
-		switch( strtolower( $mimeType ) ){
-			case 'text/html':
-				$part	= new MessagePartHTML( $content, $charset );
-				$part->setMimeType( $mimeType );
-				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
-					$part->setEncoding( $encoding );
-				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
-					$part->setFormat( $format );
-				return $part;
-			case 'text/plain':
-			default:
-				$part	= new MessagePartText( $content, $charset );
-				$part->setMimeType( $mimeType );
-				if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
-					$part->setEncoding( $encoding );
-				if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
-					$part->setFormat( $format );
-				return $part;
-		}
 	}
 }
