@@ -11,7 +11,9 @@ namespace CeusMedia\Mail\Test\Transport;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Transport\SMTP;
+use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
 use CeusMedia\Mail\Test\TestCase;
 
@@ -106,11 +108,11 @@ class SMTPTest extends TestCase
 		}
 
 		/*  --  RECEIVING  --  */
-		$mailbox	= Mailbox::getInstance(
+		$mailbox	= Mailbox::getInstance( MailboxConnection::getInstance(
 			$configReceiver->get( 'server.host' ),
 			$configReceiver->get( 'mailbox.address' ),
 			$configReceiver->get( 'auth.password' )
- 		)->setSecure( TRUE, FALSE );
+ 		)->setSecure( TRUE, FALSE ) );
 		if( !$mailbox->connect( FALSE ) )
 			$this->markTestSkipped( 'Reason: Receiver mailbox connection failed' );
 
@@ -176,11 +178,11 @@ class SMTPTest extends TestCase
 		/*  --  RECEIVING  --  */
 		$receiveLoopSleep	= 10;
 		$receiveLoopTimeout	= 300;
-		$mailbox	= Mailbox::getInstance(
+		$mailbox	= Mailbox::getInstance( MailboxConnection::getInstance(
 			$configSender->get( 'server.host' ),
 			$configSender->get( 'mailbox.address' ),
 			$configSender->get( 'auth.password' )
- 		)->setSecure( TRUE, FALSE );
+ 		)->setSecure( TRUE, FALSE ) );
 		if( !$mailbox->connect( FALSE ) )
 			$this->markTestSkipped( sprintf(
 				'Reason: Receiver mailbox "%s" connection failed',
@@ -213,7 +215,10 @@ class SmtpSocketMock extends SmtpSocket
 	protected $status			= 0;
 	protected $log				= array();
 
-	public function __construct(){}
+	public function __construct(){
+		$this->setHost( 'notimportant.invalid.tld' );
+		$this->setPort( 1 );
+	}
 
 	public function close(): SmtpSocket
 	{
@@ -253,23 +258,21 @@ class SmtpSocketMock extends SmtpSocket
 		return $this->log;
 	}
 
-	public function open( bool $forceReopen = FALSE ): SmtpSocket
+	public function open( bool $forceReopen = FALSE ): SmtpResponse
 	{
 		$this->connection	= NULL;
 		return $this;
 	}
 
-	public function readResponse( int $length )
+	public function readResponse( int $length = 1024 ): SmtpResponse
 	{
 		$response	= $this->getFakeAnswer();
 		$raw		= $response[0].' '.$response[1];
 //		print( PHP_EOL.' < '. $raw );
 		$this->log[]	= trim( ' < '. $raw );
-		return (object) array(
-			'code'		=> $response[0],
-			'message'	=> $response[1],
-			'raw'		=> array( $raw ),
-		);
+		$response	= new SmtpSocket( $response[0], $response[1] );
+		$response->setResponse( array( $raw ) );
+		return $response;
 	}
 
 	public function sendChunk( string $content ): bool

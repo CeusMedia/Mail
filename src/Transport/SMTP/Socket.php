@@ -112,7 +112,7 @@ class Socket
 		if( is_integer( $port ) )
 			$this->setPort( abs( $port ) );
 		if( is_integer( $timeout ) )
-			$this->setPort( abs( $timeout ) );
+			$this->setTimeout( abs( $timeout ) );
 	}
 
 	public function __destruct()
@@ -128,6 +128,7 @@ class Socket
 	public function close(): self
 	{
 		if( NULL !== $this->connection ){
+			$this->sendChunk( "QUIT" );
 			fclose( $this->connection );
 			$this->connection	= NULL;
 		}
@@ -228,37 +229,61 @@ class Socket
 	}
 
 	/**
+	 *	Indicates whether a socker connection has been established.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function isOpen(): bool
+	{
+		return NULL !== $this->connection;
+	}
+
+	/**
 	 *	Open socket connection.
 	 *	@access		public
 	 *	@param		boolean			$forceReopen	Flag: close current and open new connection (default: no)
-	 *	@throws		RuntimeException				if not host is set
-	 *	@throws		RuntimeException				if not port is set
-	 *	@throws		RuntimeException				if connection failed
-	 *	@return		self
+	 *	@return		Response
 	 */
-	public function open( bool $forceReopen = FALSE ): self
+	public function open( bool $forceReopen = FALSE ): Response
 	{
-		if( NULL !== $this->connection ){
-			if( $forceReopen )
-				$this->close();
-			else
-				return $this;
+		if( $this->isOpen() ){
+			if( !$forceReopen )
+				return new Response();
+			$this->close();
 		}
-		if( NULL === $this->host || 0 === strlen( trim( $this->host ) ) )
-			throw new RuntimeException( 'No host set' );
-		if( NULL === $this->port || 0 === $this->port )
-			throw new RuntimeException( 'No port set' );
-		$socket	= fsockopen(
+		$response	= new Response();
+		if( NULL === $this->host || 0 === strlen( trim( $this->host ) ) ){
+			$response->setError( Response::ERROR_NO_HOST_SET );
+			$response->setMessage( 'No host set' );
+			return $response;
+		}
+		if( NULL === $this->port || 0 === $this->port ){
+			$response->setError( Response::ERROR_NO_PORT_SET );
+			$response->setMessage( 'No port set' );
+			return $response;
+		}
+
+		$socket		= @fsockopen(
 			$this->host,
 			$this->port,
 			$this->errorNumber,
 			$this->errorMessage,
 			$this->timeout
 		);
-		if( FALSE === $socket )
-			throw new RuntimeException( 'Connection to SMTP server "'.$this->host.':'.$this->port.'" failed' );
+		if( FALSE === $socket ){
+			$message	= 'Socket connection to SMTP server "%s" at port %d failed';
+			$response->setMessage( sprintf( $message, $this->host, $this->port ) );
+			$response->setError( Response::ERROR_SOCKET_FAILED );
+			return $response;
+		}
 		$this->connection	= $socket;
-		return $this;
+		$response			= $this->readResponse();
+		if( 220 !== $response->getCode() ){
+			$response->setError( Response::ERROR_CONNECTION_FAILED );
+			$this->close();
+		}
+
+		return $response;
 	}
 
 	/**
@@ -267,36 +292,40 @@ class Socket
 	 *	@param		integer			$length			Size of chunks
 	 *	@throws		RuntimeException				if connection is not open
 	 *	@throws		RuntimeException				if request failed
-	 *	@return		object
+	 *	@return		Response
 	 */
-	public function readResponse( int $length )
+	public function readResponse( int $length = 1024 ): Response
 	{
 		if( NULL === $this->connection )
-			throw new RuntimeException( 'Not connected' );
+			throw new RuntimeException( 'Not connected, thus reading response failed' );
 
 		$lastLine	= FALSE;
 		$code		= NULL;
 		$buffer		= [];
 		$raw		= [];
 		do{
-			$response	= fgets( $this->connection, abs( $length ) );
-			if( FALSE !== $response ){
-				$raw[]		= rtrim( $response, "\r\n" );
+			$chunk	= fgets( $this->connection, abs( $length ) );
+			if( FALSE !== $chunk ){
+				$raw[]		= rtrim( $chunk, "\r\n" );
 				$matches	= [];
-				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $response ), $matches );
-				if( !$matches )
-					throw new RuntimeException( 'SMTP response not understood: '.trim( $response ) );
+				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $chunk ), $matches );
+				if( !$matches ){
+					$response = new Response();
+					$response->setError( Response::ERROR_RESPONSE_NOT_UNTERSTOOD );
+					$response->setMessage( 'SMTP response not understood: '.trim( $chunk ) );
+					return $response;
+				}
 				$code		= (int) $matches[1];
 				$buffer[]	= $matches[3];
 				$lastLine	= $matches[2] === ' ';
 			}
 		}
-		while( FALSE !== $response && !$lastLine );
-		return (object) [
-			'code'		=> $code,
-			'message'	=> join( "\n", $buffer ),
-			'raw'		=> $raw,
-		];
+		while( FALSE !== $chunk && !$lastLine );
+
+		$response	= new Response( $code );
+		$response->setMessage( join( "\n", $buffer ) );
+		$response->setResponse( $raw );
+		return $response;
 	}
 
 	/**

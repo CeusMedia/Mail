@@ -32,8 +32,10 @@ use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
+use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 
 use InvalidArgumentException;
+use RangeException;
 use RuntimeException;
 use Throwable;
 
@@ -155,47 +157,41 @@ class SMTP
 		if( 0 === count( $message->getParts() ) )
 			throw new RuntimeException( 'No mail body parts set' );
 		$content	= MessageRenderer::render( $message );
+		$response	= $this->socket->open();
+		if( $response->isError() )
+			throw new SmtpException( $response->getMessage(), $response->getError() );
 
-		$this->socket->open();
-		try{
-			$this->checkResponse( [ 220 ] );
-			$this->sendChunk( 'EHLO '.$this->host );
-			$this->checkResponse( [ 250 ] );
-			if( $this->isSecure ){
-				$this->sendChunk( 'STARTTLS' );
-				$this->checkResponse( [ 220 ] );
-				$this->socket->enableCrypto( TRUE, $this->cryptoMode );
-			}
-			if( 0 < strlen( trim( $this->username ) ) ){
-				if( 0 < strlen( trim( $this->password ) ) ){
-					$this->sendChunk( 'AUTH LOGIN' );
-					$this->checkResponse( [ 334 ] );
-					$this->sendChunk( base64_encode( $this->username ) );
-					$this->checkResponse( [ 334 ] );
-					$this->sendChunk( base64_encode( $this->password ) );
-					$this->checkResponse( [ 235 ] );
-				}
-			}
-			$sender		= $message->getSender();
-			$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
-			$this->checkResponse( [ 250 ] );
-			foreach( $message->getRecipientsByType( 'TO' ) as $receiver ){
-				$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
-				$this->checkResponse( [ 250 ] );
-			}
-			$this->sendChunk( 'DATA' );
-			$this->checkResponse( [ 354 ] );
-			$this->sendChunk( $content );
-			$this->sendChunk( '.' );
-			$this->checkResponse( [ 250 ] );
-			$this->sendChunk( 'QUIT' );
-			$this->checkResponse( [ 221 ] );
-			$this->socket->close();
+		$this->sendChunk( 'EHLO '.$this->host );
+		$this->checkResponse( [ 250 ], SmtpResponse::ERROR_HELO_FAILED );
+		if( $this->isSecure ){
+			$this->sendChunk( 'STARTTLS' );
+			$this->checkResponse( [ 220 ], SmtpResponse::ERROR_CRYPTO_FAILED );
+			$this->socket->enableCrypto( TRUE, $this->cryptoMode );
 		}
-		catch( Throwable $t ){
-			$this->socket->close();
-			throw new RuntimeException( $t->getMessage(), $t->getCode(), $t->getPrevious() );
+		if( 0 < strlen( trim( $this->username ) ) ){
+			if( 0 < strlen( trim( $this->password ) ) ){
+				$this->sendChunk( 'AUTH LOGIN' );
+				$this->checkResponse( [ 334 ] );
+				$this->sendChunk( base64_encode( $this->username ) );
+				$this->checkResponse( [ 334 ] );
+				$this->sendChunk( base64_encode( $this->password ) );
+				$this->checkResponse( [ 235 ], SmtpResponse::ERROR_LOGIN_FAILED );
+			}
 		}
+		$sender		= $message->getSender();
+		$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
+		$this->checkResponse( [ 250 ] );
+		foreach( $message->getRecipientsByType( 'TO' ) as $receiver ){
+			$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
+			$this->checkResponse( [ 250 ] );
+		}
+		$this->sendChunk( 'DATA' );
+		$this->checkResponse( [ 354 ] );
+		$this->sendChunk( $content );
+		$this->sendChunk( '.' );
+		$this->checkResponse( [ 250 ] );
+		$this->socket->close();
+
 		return $this;
 	}
 
@@ -310,14 +306,36 @@ class SMTP
 
 	//  --  PROTECTED  --  //
 
-	protected function checkResponse( array $acceptedCodes = [] ): SmtpResponse
+	protected function checkResponse( array $acceptedCodes = [], ?int $errorCode = NULL, bool $strict = TRUE ): SmtpResponse
 	{
+		if( 0 === count( $acceptedCodes ) )
+			throw new RangeException( 'No accepted codes set' );
+
 		$response	= $this->socket->readResponse( 1024 );
+		if( $response->isError() ){
+			$exception	= new SmtpException( $response->getMessage(), $response->getError() );
+			$exception->setResponse( $response );
+			throw $exception;
+		}
+		$response->setAcceptedCodes( $acceptedCodes );
 		if( $this->verbose )
-			print ' < '.join( PHP_EOL.'   ', $response->raw );
-		if( 0 < count( $acceptedCodes ) && !in_array( (int) $response->code, $acceptedCodes, TRUE ) )
-			throw new RuntimeException( 'Unexcepted SMTP response ('.$response->code.'): '.$response->message, $response->code );
-		return new SmtpResponse( $response->code, $response->message );
+			print ' < ' . join( PHP_EOL . '   ', $response->getResponse() );
+
+		if( FALSE === $response->isAccepted() ){
+			if( NULL !== $errorCode )
+				$response->setError( $errorCode );
+			if( $strict ){
+				$this->socket->close();
+				$message	= vsprintf( 'Unexcepted SMTP response (%s): %s', [
+					$response->getCode(),
+					$response->getMessage(),
+				] );
+				$exception	= new SmtpException( $message, $errorCode ?? 0 );
+				$exception->setResponse( $response );
+				throw $exception;
+			}
+		}
+		return $response;
 	}
 
 	protected function sendChunk( string $message ): bool
