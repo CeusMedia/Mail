@@ -26,21 +26,21 @@ class NameTest extends TestCase
 	public function testSplitNameParts()
 	{
 		$names		= [
-			['fullname' => 'Hans Testmann'],
-			['fullname' => ' Hans  Testmann '],
-			['fullname' => 'Firstname Surname'],
-			['fullname' => 'SURNAME Firstname'],
-			['fullname' => 'invalid'],
+			new Name( 'Hans Testmann' ),
+			new Name( ' Hans  Testmann ' ),
+			new Name( 'Firstname Surname' ),
+			new Name( 'SURNAME Firstname' ),
+			new Name( 'invalid' ),
 		];
 		$expected	= [
-			['fullname' => 'Hans Testmann', 'firstname' => 'Hans', 'surname' => 'Testmann'],
-			['fullname' => 'Hans Testmann', 'firstname' => 'Hans', 'surname' => 'Testmann'],
-			['fullname' => 'Firstname Surname', 'firstname' => 'Firstname', 'surname' => 'Surname'],
-			['fullname' => 'SURNAME Firstname', 'firstname' => 'Firstname', 'surname' => 'Surname'],
-			['fullname' => 'invalid'],
+			(new Name( 'Hans Testmann' ))->setFirstname( 'Hans' )->setSurname( 'Testmann' ),
+			(new Name( 'Hans Testmann' ))->setFirstname( 'Hans' )->setSurname( 'Testmann' ),
+			(new Name( 'Firstname Surname' ))->setFirstname( 'Firstname' )->setSurname( 'Surname' ),
+			(new Name( 'SURNAME Firstname' ))->setFirstname( 'Firstname' )->setSurname( 'Surname' ),
+			(new Name( 'invalid' )),
 		];
-		$actual		= Name::splitNameParts( $names );
-		$this->assertEquals( $expected, $actual );
+		foreach( $names as $nr => $name )
+			$this->assertEquals( $expected[$nr], Name::splitNameParts( $names[$nr] ) );
 	}
 
 	/**
@@ -49,14 +49,14 @@ class NameTest extends TestCase
 	public function testSwapCommaSeparatedNameParts()
 	{
 		$names	= [
-			['fullname' => 'Testmann, Hans'],
-			['fullname' => 'invalid'],
+			new Name( 'Testmann, Hans' ),
+			new Name( 'invalid' ),
 		];
 		$expected	= [
-			['fullname' => 'Hans Testmann'],
-			['fullname' => 'invalid'],
+			new Name( 'Hans Testmann' ),
+			new Name( 'invalid' ),
 		];
-		$actual		= Name::swapCommaSeparatedNameParts( $names );
-		$this->assertEquals( $expected, $actual );
+		foreach( $names as $nr => $name )
+			$this->assertEquals( $expected[$nr], Name::swapCommaSeparatedNameParts( $name ) );
 	}
 }

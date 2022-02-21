@@ -74,8 +74,8 @@ class ParserTest extends TestCase
 	{
 		$string	= 'value; complex-key.1="Project Name \"Vanitas 2.0\""';
 		$object	= Parser::parseAttributedHeaderValue( $string );
-		$this->assertEquals( 'value', $object->value );
+		$this->assertEquals( 'value', $object->getValue() );
 		$expected	= ['complex-key.1' => 'Project Name "Vanitas 2.0"'];
-		$this->assertEquals( $expected, $object->attributes->getAll() );
+		$this->assertEquals( $expected, $object->getAttributes() );
 	}
 }

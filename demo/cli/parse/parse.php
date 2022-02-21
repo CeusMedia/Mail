@@ -7,12 +7,12 @@ use CeusMedia\Mail\Message\Parser;
 //  --  CONFIGuRE  ---------------------------------------------------------------------  //
 
 $files		= [
-	'../../mails/01-simple-7bit',
-	'../../mails/02-simple-umlauts',
-	'../../mails/03-simple-printable',
-	'../../mails/04-simple-base64',
-	'../../mails/05-simple-attachment',
-	'../../mails/06-complex-folding',
+	dirname( dirname( __DIR__ ) ).'/mails/01-simple-7bit',
+	dirname( dirname( __DIR__ ) ).'/mails/02-simple-umlauts',
+	dirname( dirname( __DIR__ ) ).'/mails/03-simple-printable',
+	dirname( dirname( __DIR__ ) ).'/mails/04-simple-base64',
+	dirname( dirname( __DIR__ ) ).'/mails/05-simple-attachment',
+	dirname( dirname( __DIR__ ) ).'/mails/06-complex-folding',
 ];
 
 $showParts			= TRUE;
