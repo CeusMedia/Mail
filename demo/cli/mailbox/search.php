@@ -2,6 +2,7 @@
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
 use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Mailbox\Connection;
 use CeusMedia\Mail\Mailbox\Mail;
 use CeusMedia\Mail\Mailbox\Search;
 use CeusMedia\Mail\Message;
@@ -92,14 +93,13 @@ function connectMailbox( object $config ): Mailbox
 		die( 'Error: No mailbox user name defined.' );
 	if( !$config->password )
 		die( 'Error: No mailbox user password defined.' );
-	$mailbox	= new Mailbox(
+	return new Mailbox( new Connection(
 		$config->host,
 		$config->username,
-		$config->password
-	);
-	$mailbox->setSecure( TRUE, TRUE );
-	$mailbox->connect();
-	return $mailbox;
+		$config->password,
+		TRUE,
+		TRUE
+	) );
 }
 
 function println( $line )
