@@ -51,7 +51,7 @@ dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
 	@php vendor/ceus-media/doc-creator/doc.php --config-file=doc.xml
 
-dev-test:
+dev-test-all-with-coverage:
 	@XDEBUG_MODE=coverage vendor/bin/phpunit -v || true
 
 dev-test-integration: composer-install-dev
