@@ -118,11 +118,20 @@ class Encoding
 	{
 		switch( static::$decodeStrategy ){
 			case self::DECODE_STRATEGY_ICONV:
-				return iconv_mime_decode( $string, 0, static::$charset );
+				$string	= iconv_mime_decode( $string, 0, static::$charset );
+				if( FALSE === $string )
+					throw new RuntimeException( 'Decoding failed' );
+				return $string;
 			case self::DECODE_STRATEGY_ICONV_STRICT:
-				return iconv_mime_decode( $string, 1, static::$charset );
+				$string	= iconv_mime_decode( $string, 1, static::$charset );
+				if( FALSE === $string )
+					throw new RuntimeException( 'Decoding failed' );
+				return $string;
 			case self::DECODE_STRATEGY_ICONV_TOLERANT:
-				return iconv_mime_decode( $string, 2, static::$charset );
+				$string	= iconv_mime_decode( $string, 2, static::$charset );
+				if( FALSE === $string )
+					throw new RuntimeException( 'Decoding failed' );
+				return $string;
 			case self::DECODE_STRATEGY_IMPL:
 				return self::decode( $string );
 			default:
@@ -136,12 +145,13 @@ class Encoding
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
+	 *	@param		bool		$fold			Flag: apply folding, default: yes
 	 *	@return		string
 	 *	@throws		RangeException				if given encoding is not supported
 	 */
-	public static function encodeIfNeeded( string $string, string $encoding = 'base64', ?bool $fold = TRUE ): string
+	public static function encodeIfNeeded( string $string, string $encoding = 'base64', bool $fold = TRUE ): string
 	{
-		if( preg_match( "/^[\w\s\.-:#]+$/", $string ) )
+		if( 1 === preg_match( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 		switch( strtolower( $encoding ) ){
 			case 'base64':
@@ -200,39 +210,50 @@ class Encoding
 	 *	@param		string		$string			...
 	 *	@return		string
 	 *	@throws		RuntimeException			if Base64 decoding fails
+	 *	@throws		RuntimeException			if quoted-printable decoding fails
+	 *	@throws		RuntimeException			if line replacing fails
 	 *	@throws		InvalidArgumentException	if encoding detection & support fails
 	 */
 	protected static function decode( string $string ): string
 	{
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
-		if( !preg_match( $pattern, $string ) )
+		if( 1 !== preg_match( $pattern, $string ) )
 			return $string;
 		$matches	= [];
 		$list		= [];
 		$lines		= preg_split( "@\r?\n\s*@", $string );
+		if( FALSE === $lines )
+			throw new RuntimeException( 'Splitting of header failed' );
 		foreach( $lines as $line ){
 			$parts	= [];
-			while( preg_match( $pattern, $line, $parts ) ){
+			while( 1 === preg_match( $pattern, $line, $parts ) ){
 				[$before, $charset, $encoding, $content, $after] = array_slice( $parts, 1 );
 				switch( strtolower( $encoding ) ){
 					case 'b':
 						$content	= base64_decode( $content, TRUE );
 						if( FALSE === $content )
-							throw new RuntimeException( 'Encoded content contains invalid characters' );
+							throw new RuntimeException( 'Decoded failed' );
 						break;
 					case 'q':
 						$content	= str_replace( "_", " ", $content );
-						if( function_exists( 'imap_qprint' ) )
+						if( function_exists( 'imap_qprint' ) ){
 							$content	= imap_qprint( $content );
-						else
+							if( FALSE === $content )
+								throw new RuntimeException( 'Decoded failed' );
+						}
+						else{
 							$content	= quoted_printable_decode( $content );
+						}
 						break;
 					default:
 						throw new InvalidArgumentException( 'Unsupported encoding: '.$encoding );
 				}
 				if( strtoupper( $charset ) !== static::$charset )
 					$content	= iconv( $charset, static::$charset, $content );
-				$line		= preg_replace( $pattern, $before.$content.$after, $line );
+				$newLine	= preg_replace( $pattern, $before.$content.$after, $line );
+				if( NULL === $newLine )
+					throw new RuntimeException( 'Decoded failed' );
+				$line	= $newLine;
 			}
 			$list[]	= $line;
 		}

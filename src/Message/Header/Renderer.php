@@ -86,16 +86,17 @@ class Renderer
 	 *	@access		public
 	 *	@static
 	 *	@param		Section			$section		...
-	 *	@param		boolean|NULL	$keepCase		...
+	 *	@param		boolean			$keepCase		...
 	 *	@return		string
 	 */
-	public static function render( Section $section, ?bool $keepCase = FALSE ): string
+	public static function render( Section $section, bool $keepCase = FALSE ): string
 	{
-		return implode( Message::$delimiter, array_map(static function( Field $field ) use ( $keepCase ) {
+		$lines	= array_map(static function( $field ) use ( $keepCase ) {
 			if( $field instanceof AttributedField )
 				return static::renderAttributedField( $field, $keepCase );
 			return static::renderField( $field, $keepCase );
-		}, $section->getFields() ) );
+		}, $section->getFields() );
+		return implode( Message::$delimiter, $lines );
 	}
 
 	/**
@@ -103,11 +104,11 @@ class Renderer
 	 *	@access		public
 	 *	@static
 	 *	@param		Field			$field			...
-	 *	@param		boolean|NULL	$keepCase		...
+	 *	@param		boolean			$keepCase		...
 	 *	@return		string
 	 *	@todo 		investigate further, how iconv_mime_encode could help encoding header values
 	 */
-	public static function renderField( Field $field, ?bool $keepCase = FALSE ): string
+	public static function renderField( Field $field, bool $keepCase = FALSE ): string
 	{
 		return $field->getName( $keepCase ).': '.$field->getValue();
 //		if( preg_match( "/^[\w\s\.-:#]+$/", $field->getValue() ) )
@@ -120,15 +121,29 @@ class Renderer
 	 *	@access		public
 	 *	@static
 	 *	@param		AttributedField		$field			...
+	 *	@param		boolean				$keepCase		...
+	 *	@return		string
+	 */
+	public static function renderAttributedField( AttributedField $field, bool $keepCase = FALSE ): string
+	{
+		$value	= self::renderAttributedValue( $field, $keepCase );
+		return $field->getName( $keepCase ).": ".$value;
+	}
+
+	/**
+	 *	Render attributed header field value.
+	 *	@access		public
+	 *	@static
+	 *	@param		AttributedValue		$value			...
 	 *	@param		boolean|NULL		$keepCase		...
 	 *	@return		string
 	 */
-	public static function renderAttributedField( AttributedField $field, ?bool $keepCase = FALSE ): string
+	public static function renderAttributedValue( AttributedValue $value, ?bool $keepCase = FALSE ): string
 	{
 		$attr	= '';
-		foreach( $field->getAttributes() as $key => $value )
-			$attr	.= sprintf( '; %s="%s"', $key, addslashes( $value ) );
-		return $field->getName( $keepCase ).": ".$field->getValue().$attr;
+		foreach( $value->getAttributes() as $key => $content )
+			$attr	.= sprintf( '; %s="%s"', $key, addslashes( $content ) );
+		return $value->getValue().$attr;
 	}
 
 	/**
