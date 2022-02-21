@@ -179,7 +179,8 @@ class Attachment extends MessagePart
 			$section->setFieldPair( 'Content-Disposition', join( ';'.$delim.' ', $disposition ) );
 			$section->setFieldPair( 'Content-Type', $this->mimeType );
 			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-			$section->setFieldPair( 'Content-Description', $this->fileName );
+			if( NULL !== $this->fileName )
+				$section->setFieldPair( 'Content-Description', $this->fileName );
 			$list[]		= $section->toString( TRUE );
 		}
 
@@ -210,10 +211,14 @@ class Attachment extends MessagePart
 			$fileName	= basename( $filePath );
  		$this->content	= $file->getContent();
 		$this->setFileName( $fileName );
-		$this->setFileSize( filesize( $filePath ) );
-		$this->setFileATime( fileatime( $filePath ) );
-		$this->setFileCTime( filectime( $filePath ) );
-		$this->setFileMTime( filemtime( $filePath ) );
+		if( FALSE !== ( $fileSize = filesize( $filePath ) ) )
+			$this->setFileSize( $fileSize );
+		if( FALSE !== ( $fileATime = fileatime( $filePath ) ) )
+			$this->setFileATime( $fileATime );
+		if( FALSE !== ( $fileCTime = filectime( $filePath ) ) )
+			$this->setFileCTime( $fileCTime );
+		if( FALSE !== ( $fileMTime = filemtime( $filePath ) ) )
+			$this->setFileMTime( $fileMTime );
 		if( NULL !== $mimeType )
 			$this->setMimeType( $mimeType );
 		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )

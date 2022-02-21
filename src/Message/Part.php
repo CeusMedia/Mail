@@ -457,7 +457,7 @@ abstract class Part
 	protected static function wrapContent( string $content, ?int $length = NULL, ?string $delimiter = NULL ): string
 	{
 		$delimiter	= $delimiter ?? Message::$delimiter;
-		$lineLength	= $length ?? Message::$lineLength;
+		$lineLength	= max( 1, $length ?? Message::$lineLength );
 		$content	= chunk_split( $content, $lineLength, $delimiter );
 		return rtrim( $content, $delimiter );
 	}
