@@ -29,6 +29,12 @@ declare(strict_types=1);
 namespace CeusMedia\Mail;
 
 use Deprecation as CommonDeprecation;
+
+use RuntimeException;
+
+use function dirname;
+use function file_exists;
+use function parse_ini_file;
 use function phpversion;
 
 /**
@@ -51,7 +57,11 @@ class Deprecation extends CommonDeprecation
 	public function __construct()
 	{
 		$iniFilePath		= dirname( __DIR__ ).'/Mail.ini';
+		if( !file_exists( $iniFilePath ) )
+			$iniFilePath		.= '.dist';
 		$iniFileData		= parse_ini_file( $iniFilePath, TRUE );
+		if( FALSE === $iniFileData )
+			throw new RuntimeException( 'Loading library configuration failed' );
 		$this->version		= $iniFileData['library']['version'];
 		$this->phpVersion	= phpversion();
 		$this->errorVersion	= $this->version;
