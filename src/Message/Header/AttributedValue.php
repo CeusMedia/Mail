@@ -99,6 +99,16 @@ class AttributedValue
 	}
 
 	/**
+	 *	Indicates whether header attributes are set.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasAttributes(): bool
+	{
+		return 0 !== count( $this->attributes );
+	}
+
+	/**
 	 *	Returns set header value.
 	 *	@access		public
 	 *	@return		string		Header value

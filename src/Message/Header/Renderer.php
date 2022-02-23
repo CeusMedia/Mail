@@ -30,7 +30,6 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Message\Header;
 
 use CeusMedia\Mail\Message;
-use CeusMedia\Mail\Message\Header\AttributedField;
 use CeusMedia\Mail\Message\Header\Field;
 use CeusMedia\Mail\Message\Header\Section;
 
@@ -92,8 +91,6 @@ class Renderer
 	public static function render( Section $section, bool $keepCase = FALSE ): string
 	{
 		$lines	= array_map(static function( $field ) use ( $keepCase ) {
-			if( $field instanceof AttributedField )
-				return static::renderAttributedField( $field, $keepCase );
 			return static::renderField( $field, $keepCase );
 		}, $section->getFields() );
 		return implode( Message::$delimiter, $lines );
@@ -110,40 +107,14 @@ class Renderer
 	 */
 	public static function renderField( Field $field, bool $keepCase = FALSE ): string
 	{
-		return $field->getName( $keepCase ).': '.$field->getValue();
+		$attr	= '';
+		foreach( $field->getAttributes() as $key => $content )
+			$attr	.= sprintf( '; %s="%s"', $key, addslashes( $content ) );
+
+		return $field->getName( $keepCase ).': '.$field->getValue().$attr;
 //		if( preg_match( "/^[\w\s\.-:#]+$/", $field->getValue() ) )
 //			return $field->getName( $keepCase ).": ".$field->getValue();
 //		return iconv_mime_encode( $field->getName(), $field->getValue(), self::$preferences );
-	}
-
-	/**
-	 *	Render attributed header field.
-	 *	@access		public
-	 *	@static
-	 *	@param		AttributedField		$field			...
-	 *	@param		boolean				$keepCase		...
-	 *	@return		string
-	 */
-	public static function renderAttributedField( AttributedField $field, bool $keepCase = FALSE ): string
-	{
-		$value	= self::renderAttributedValue( $field, $keepCase );
-		return $field->getName( $keepCase ).": ".$value;
-	}
-
-	/**
-	 *	Render attributed header field value.
-	 *	@access		public
-	 *	@static
-	 *	@param		AttributedValue		$value			...
-	 *	@param		boolean|NULL		$keepCase		...
-	 *	@return		string
-	 */
-	public static function renderAttributedValue( AttributedValue $value, ?bool $keepCase = FALSE ): string
-	{
-		$attr	= '';
-		foreach( $value->getAttributes() as $key => $content )
-			$attr	.= sprintf( '; %s="%s"', $key, addslashes( $content ) );
-		return $value->getValue().$attr;
 	}
 
 	/**
