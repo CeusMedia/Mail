@@ -65,26 +65,21 @@ use function urldecode;
 class Parser
 {
 	public const STRATEGY_AUTO				= 0;
-	public const STRATEGY_FIRST				= 1;	//  first implementation, not supporting DKIM key folding and RFC 2231
-	public const STRATEGY_SECOND			= 2;	//  second implementation, not supporting DKIM key folding and RFC 2231
-	public const STRATEGY_THIRD				= 3;	//  own implementation, supports DKIM key folding and RFC 2231
+	public const STRATEGY_OWN				= 3;	//  own implementation, supports DKIM key folding and RFC 2231
 	public const STRATEGY_ICONV				= 4;	//  iconv, not supporting DKIM key folding and RFC 2231
 	public const STRATEGY_ICONV_STRICT		= 5;	//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
 	public const STRATEGY_ICONV_TOLERANT	= 6;	//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
 
 	public const STRATEGIES		= [
 		self::STRATEGY_AUTO,
-		self::STRATEGY_FIRST,
-		self::STRATEGY_SECOND,
-		self::STRATEGY_THIRD,
+		self::STRATEGY_OWN,
 		self::STRATEGY_ICONV,
 		self::STRATEGY_ICONV_STRICT,
 		self::STRATEGY_ICONV_TOLERANT,
 	];
 
 	/** @var		integer		$defaultStategy			Strategy to use in auto mode */
-//	protected $defaultStategy	= self::STRATEGY_ICONV_TOLERANT;
-	protected $defaultStategy	= self::STRATEGY_THIRD;
+	protected $defaultStategy	= self::STRATEGY_OWN;
 
 	/** @var		integer		$strategy				Strategy to use */
 	protected $strategy			= self::STRATEGY_AUTO;
@@ -110,12 +105,8 @@ class Parser
 			$strategy	= $this->defaultStategy;
 
 		switch( $strategy ){
-			case self::STRATEGY_FIRST:
-				return self::parseByFirstStrategy( $content );
-			case self::STRATEGY_SECOND:
-				return self::parseBySecondStrategy( $content );
-			case self::STRATEGY_THIRD:
-				return self::parseByThirdStrategy( $content );
+			case self::STRATEGY_OWN:
+				return self::parseByOwnStrategy( $content );
 			case self::STRATEGY_ICONV:
 				return self::parseByIconvStrategy( $content, 0 );
 			case self::STRATEGY_ICONV_STRICT:
@@ -125,23 +116,6 @@ class Parser
 			default:
 				throw new RuntimeException( 'Unsupported strategy' );
 		}
-	}
-
-	/**
-	 *	Splits up header field value with attributes, like: text/csv; filename="test.csv"
-	 *	Applies RFC 2231 to support attribute encoding, (language) and containments (=attribute value folding).
-	 *	Returns instance of attributed header field.
-	 *	@access		public
-	 *	@static
-	 *	@param		Field	$field		Instance of header field
-	 *	@return 	AttributedField
-	 */
-	public static function parseAttributedField( Field $field ): AttributedField
-	{
-		$fieldValue	= self::parseAttributedHeaderValue( $field->getValue() );
-		$field		= new AttributedField( $field->getName(), $fieldValue->getValue() );
-		$field->setAttributes( $fieldValue->getAttributes() );
-		return $field;
 	}
 
 	/**
@@ -225,13 +199,18 @@ class Parser
 				$values	= [$values];
 			foreach( $values as $value ){
 				$field	= new Field( $key, $value );
+				$attributedValue = self::parseAttributedHeaderValue( $value );
+				if( $attributedValue->getValue() !== $value ){
+					$field->setValue( $attributedValue->getValue() );
+					$field->setAttributes( $attributedValue->getAttributes() );
+				}
 				$section->addField( $field );
 			}
 		}
 		return $section;
 	}
 
-	public static function parseByThirdStrategy( string $content ): Section
+	public static function parseByOwnStrategy( string $content ): Section
 	{
 		$lines		= preg_split( "/\r?\n/", $content );
 		if( FALSE === $lines )
@@ -264,37 +243,18 @@ class Parser
 				$field->setValue( join( $buffer ) );							//  set unfolded field value
 			}
 		}
-		return $section;
-	}
 
-	public static function parseByFirstStrategy( string $content ): Section
-	{
-		$section	= new Section();
-		$content	= preg_replace( "/\r?\n[\t ]+/", '', $content );			//  unfold field values
-		if( NULL === $content )
-			throw new RuntimeException( 'Unfolding of header failed' );
-		$lines		= preg_split( "/\r?\n/", $content );						//  split header fields
-		if( FALSE === $lines )
-			throw new RuntimeException( 'Splitting of header failed' );
-		foreach( $lines as $line ){
-			$parts	= explode( ":", $line, 2 );
-			if( count( $parts ) > 1 ){
-				$value	= trim( $parts[1] );
-				if( substr( $value, 0, 2 ) == "=?" )
-					$value	= Encoding::decodeIfNeeded( $value );
-				$section->addFieldPair( $parts[0], $value );
+		//  iterate all fields again to detect attributed values
+		$finalSection	= new Section();
+		foreach( $section->getFields() as $field ){
+			$attributedValue = self::parseAttributedHeaderValue( $field->getValue() );
+			if( $attributedValue->hasAttributes() ){
+				$field->setValue( $attributedValue->getValue() );				//  set unfolded field value
+				$field->setAttributes( $attributedValue->getAttributes() );
 			}
+			$finalSection->addField( $field );
 		}
-		return $section;
-	}
-
-	public static function parseBySecondStrategy( string $content ): Section
-	{
-		$section	= new Section();
-		$rawPairs	= self::splitIntoListOfUnfoldedDecodedDataObjects( $content );
-		foreach( $rawPairs as $rawPair )
-			$section->addFieldPair( $rawPair->key, $rawPair->value );
-		return $section;
+		return $finalSection;
 	}
 
 	public function setStrategy( int $strategy ): self
@@ -303,36 +263,5 @@ class Parser
 			throw new RangeException( 'Invalid strategy' );
 		$this->strategy	= $strategy;
 		return $this;
-	}
-
-	public static function splitIntoListOfUnfoldedDecodedDataObjects( string $content ): array
-	{
-		$key		= NULL;
-		$value		= NULL;
-		$list		= [];
-		$buffer		= [];
-		$lines		= preg_split( "/\r?\n/", $content );
-		if( FALSE === $lines )
-			throw new RuntimeException( 'Splitting of header failed' );
-		foreach( $lines as $line ){
-			$value	= ltrim( $line );
-			if( preg_match( '/^\S/', $line ) > 0 ){
-				$parts	= explode( ":", $line, 2 );
-				if( !is_null( $key ) && count( $buffer ) > 0 ){
-					$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
-					$buffer	= [];
-				}
-				$key	= $parts[0];
-				$value	= ltrim( $parts[1] );
-			}
-			$value		= preg_replace( '/[\r\n\t]*/', '', $value );
-			if( NULL !== $value ){
-				$buffer[]	= trim( $value );
-				$value		= Encoding::decodeIfNeeded( $value );
-			}
-		}
-		if( !is_null( $key ) && count( $buffer ) > 0 )
-			$list[]	= (object) ['key' => $key, 'value' => join( $buffer )];
-		return $list;
 	}
 }
