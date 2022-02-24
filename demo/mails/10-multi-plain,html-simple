@@ -1,0 +1,21 @@
+Return-Path: <christian.wuerker@gmail.com>
+Delivered-To: christian.wuerker@ceusmedia.de
+MIME-Version: 1.0
+From: =?UTF-8?Q?Christian_W=C3=BCrker?= <christian.wuerker@gmail.com>
+Date: Tue, 22 Feb 2022 03:57:34 +0100
+Message-ID: <CAB8aVBuYQEr633fdJ+yG4xLzH+tRnLkbGYMAm2UZ_VTZNizKHg@mail.gmail.com>
+Subject: Test
+To: dev@ceusmedia.de
+Content-Type: multipart/alternative; boundary="00000000000067c15705d8928369"
+
+--00000000000067c15705d8928369
+Content-Type: text/plain; charset="UTF-8"
+
+Das ist ein *Test*.
+
+--00000000000067c15705d8928369
+Content-Type: text/html; charset="UTF-8"
+
+<div dir="ltr">Das ist ein <b>Test</b>.</div>
+
+--00000000000067c15705d8928369--

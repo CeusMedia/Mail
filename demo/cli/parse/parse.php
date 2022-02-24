@@ -4,16 +4,7 @@ require_once dirname( __DIR__ ).'/_bootstrap.php';
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Parser;
 
-//  --  CONFIGuRE  ---------------------------------------------------------------------  //
-
-$files		= [
-	dirname( dirname( __DIR__ ) ).'/mails/01-simple-7bit',
-	dirname( dirname( __DIR__ ) ).'/mails/02-simple-umlauts',
-	dirname( dirname( __DIR__ ) ).'/mails/03-simple-printable',
-	dirname( dirname( __DIR__ ) ).'/mails/04-simple-base64',
-	dirname( dirname( __DIR__ ) ).'/mails/05-simple-attachment',
-	dirname( dirname( __DIR__ ) ).'/mails/06-complex-folding',
-];
+//  --  CONFIGURE  ---------------------------------------------------------------------  //
 
 $showParts			= TRUE;
 $showHeaders		= TRUE;
@@ -22,7 +13,7 @@ $showDeliveryChain	= TRUE;
 //  --  NO CHANGES NEEDED BELOW  -------------------------------------------------------  //
 
 $fileNr		= $argv[1] ?? 0;
-$fileName	= $files[$fileNr] ?? $files[0];
+$fileName	= array_keys( $files )[$fileNr];
 
 remark( 'File: '.array_reduce( preg_split( '@/@', $fileName ), function( $carry, $item ){return $item;} ) );
 remark();

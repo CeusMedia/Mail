@@ -39,6 +39,7 @@
     "phan/phan": "^v5",
     "ceus-media/doc-creator": "dev-master",
     "ceus-media/phan-viewer": "dev-master",
+    "ceus-media/bootstrap": "^0.5.2",
     "rector/rector": "0.12.x-dev",
     "brianium/paratest": "dev-master"
   },

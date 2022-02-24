@@ -30,6 +30,8 @@ namespace CeusMedia\Mail\Message\Header;
 
 use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
 
+use ADT_List_Dictionary as Dictionary;
+
 use InvalidArgumentException;
 
 use function function_exists;
@@ -53,6 +55,9 @@ use function ucwords;
  */
 class Field
 {
+	/**	@var		Dictionary	$attributes		Dictionary of header attributes */
+	protected $attributes;
+
 	/**	@var		string		$name		Name of header */
 	protected $name;
 
@@ -64,12 +69,14 @@ class Field
 	 *	@access		public
 	 *	@param		string		$name		Name of header
 	 *	@param		string		$value		Value of header
+	 *	@param		array		$attributes	Map of header attributes
 	 *	@return		void
 	 */
-	public function __construct( string $name, string $value )
+	public function __construct( string $name, string $value, array $attributes = [] )
 	{
 		$this->setName( $name );
 		$this->setValue( $value );
+		$this->setAttributes( $attributes );
 	}
 
 	/**
@@ -80,6 +87,28 @@ class Field
 	public function __toString(): string
 	{
 		return $this->toString( TRUE );
+	}
+
+	/**
+	 *	Returns value of header attribute, if set. NULL otherwise.
+	 *	@access		public
+	 *	@param		string		$name			Name of header attribute to get
+	 *	@param		mixed		$default		Optional: Value to return if key is not set
+	 *	@return		string|NULL	Value of header attribute (if set) or NULL otherwise
+	 */
+	public function getAttribute( string $name, $default = NULL ): ?string
+	{
+		return $this->attributes->get( $name, $default );
+	}
+
+	/**
+	 *	Returns set header attributes as array.
+	 *	@access		public
+	 *	@return		array		Header attributes as dictionary
+	 */
+	public function getAttributes(): array
+	{
+		return (array) $this->attributes->getAll();
 	}
 
 	/**
@@ -110,6 +139,31 @@ class Field
 	public function getValue(): string
 	{
 		return $this->value;
+	}
+
+	/**
+	 *	Sets header attribute.
+	 *	@access		public
+	 *	@param		string		$name			Name of header attribute
+	 *	@param		string		$value			Value of header attribute
+	 *	@return		self
+	 */
+	public function setAttribute( $name, $value ): self
+	{
+		$this->attributes->set( $name, $value );
+		return $this;
+	}
+
+	/**
+	 *	Sets header attributes.
+	 *	@access		public
+	 *	@param		array		$attributes		Map of header attributes
+	 *	@return		self
+	 */
+	public function setAttributes( array $attributes ): self
+	{
+		$this->attributes	= new Dictionary( $attributes );
+		return $this;
 	}
 
 	/**

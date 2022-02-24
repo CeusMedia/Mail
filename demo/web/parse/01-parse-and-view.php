@@ -1,14 +1,7 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-$fileName	= "../../mails/01-simple-7bit";
-$fileName	= "../../mails/02-simple-umlauts";
-$fileName	= "../../mails/03-simple-printable";
-$fileName	= "../../mails/04-simple-base64";
-$fileName	= "../../mails/05-simple-attachment";
-$fileName	= "../../mails/07-complex-fail-forward";
-$fileName	= "../../mails/00-header-partly";
-$fileName	= "../../mails/08-complex-attachment";
+$fileName	= array_keys( $files )[1];
 
 //  --------------------------------  //
 

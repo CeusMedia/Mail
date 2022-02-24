@@ -13,3 +13,11 @@ $config		= new ADT_List_Dictionary();
 foreach( parse_ini_file( $configFile, TRUE ) as $section => $values )
 	foreach( $values as $key => $value )
 		$config->set( $section.'_'.$key, $value );
+
+$files	= [];
+foreach( new DirectoryIterator( __DIR__.'/../mails' ) as $entry ){
+	if( $entry->isDir() || $entry->isDot() )
+		continue;
+	$files[$entry->getPathname()]	= $entry->getFilename();
+}
+ksort( $files );

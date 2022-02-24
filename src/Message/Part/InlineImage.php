@@ -292,7 +292,7 @@ class InlineImage extends MessagePart
 	 *	@param		integer  	$fileSize		File size
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileSize( $fileSize ): self
+	public function setFileSize( ?int $fileSize = NULL ): self
 	{
 		$this->fileSize		= $fileSize;
 		return $this;
