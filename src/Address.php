@@ -257,7 +257,7 @@ class Address
 	 */
 	public function setName( string $name ): self
 	{
-		$this->name		= MessageHeaderEncoding::decodeIfNeeded( $name );
+		$this->name		= $name;
 		return $this;
 	}
 }

@@ -1,0 +1,77 @@
+Return-Path: <christian.wuerker@ceusmedia.de>
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on
+	omnitron-vm1.itflow.de
+X-Spam-Level:
+X-Spam-Status: No, score=-2.3 required=7.0 tests=ALL_TRUSTED,BAYES_00,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HTML_MESSAGE,
+	MPART_ALT_DIFF,SPF_PASS,TVD_SPACE_RATIO,T_SCC_BODY_TEXT_LINE,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.2
+X-Original-To: christian.wuerker@ceusmedia.de
+Delivered-To: christian.wuerker@ceusmedia.de
+Received: from [192.168.178.55] (unknown [146.52.110.15])
+	by mail.itflow.de (Postfix) with ESMTPSA id 4B9BF165800;
+	Wed, 23 Feb 2022 08:06:46 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ceusmedia.de;
+	s=default; t=1645600007;
+	bh=GF/nonKfQvlQt2VmVxpPT2LHTkjc595E4OnHcipVfzg=; h=To:From:Subject;
+	b=ZMUPDgRzb6cAvXiHKgXLnmy0OZKgkhItsb3zmpA2c3cNY8zfAQRxK0MlaBLmti2LE
+	 pSv/MJvinYxTyKVdzvgMmvthpCZsC9rlRRctEJ4M42zjfQtG2sCVAr8FoUOk7J9JjM
+	 wMVoxhEF7XyLFJ3KGscTh3WVD7fyL+pzH7hQEIhI=
+Authentication-Results: omnitron-vm1.itflow.de;
+	dmarc=pass (p=QUARANTINE sp=NONE) smtp.from=ceusmedia.de header.from=ceusmedia.de;
+	dkim=pass header.d=ceusmedia.de;
+        spf=pass (sender IP is 146.52.110.15) smtp.mailfrom=christian.wuerker@ceusmedia.de smtp.helo=[192.168.178.55]
+Received-SPF: pass (omnitron-vm1.itflow.de: connection is authenticated)
+Content-Type: multipart/mixed; boundary="------------5WoemagRCcLaYg70yp0v2ffk"
+Message-ID: <25f8daf9-1eba-6c9e-48b8-3ba1ac5d3710@ceusmedia.de>
+Date: Wed, 23 Feb 2022 08:06:45 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Content-Language: en-US
+To: =?UTF-8?Q?Christian_W=c3=bcrker?= <christian.wuerker@ceusmedia.de>
+Cc: =?UTF-8?Q?Christian_W=c3=bcrker?= <christian.wuerker@ceusmedia.de>
+Reply-To: =?UTF-8?Q?Christian_W=c3=bcrker?= <christian.wuerker@ceusmedia.de>
+From: =?UTF-8?Q?Christian_W=c3=bcrker?= <christian.wuerker@ceusmedia.de>
+Subject: Pixel
+Organization: Ceus Media
+X-PPP-Message-ID: <164560000661.12190.8974684272201624072@omnitron-vm1.itflow.de>
+X-PPP-Vhost: ceusmedia.de
+
+This is a multi-part message in MIME format.
+--------------5WoemagRCcLaYg70yp0v2ffk
+Content-Type: multipart/alternative;
+ boundary="------------OYKt98n5F0Xw6NIgN0m3JB07"
+
+--------------OYKt98n5F0Xw6NIgN0m3JB07
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+*Pixel*
+
+--------------OYKt98n5F0Xw6NIgN0m3JB07
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><b>Pixel</b><br>
+    </p>
+  </body>
+</html>
+
+--------------OYKt98n5F0Xw6NIgN0m3JB07--
+
+--------------5WoemagRCcLaYg70yp0v2ffk
+Content-Type: image/png; name="pixel.png"
+Content-Disposition: attachment; filename="pixel.png"
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFU
+GFdjYAtt/g8AAyEB3qMn6coAAAAASUVORK5CYII=
+
+--------------5WoemagRCcLaYg70yp0v2ffk--

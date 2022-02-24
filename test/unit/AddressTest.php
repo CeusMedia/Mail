@@ -60,6 +60,9 @@ class AddressTest extends TestCase
 
 		$participant	= new Address( 'hans.mustermann@muster-server.tld' );
 		$this->assertEquals( 'hans.mustermann@muster-server.tld', $participant->get() );
+
+		$participant	= new Address( 'Christian Würker <christian.wuerker@ceusmedia.de>' );
+		$this->assertEquals( '"Christian Würker" <christian.wuerker@ceusmedia.de>', $participant->get() );
 	}
 
 	/**
@@ -145,6 +148,12 @@ class AddressTest extends TestCase
 
 		$participant	= new Address( 'Hans Mustermann <hans.mustermann@muster-server.tld>');
 		$this->assertEquals( 'Hans Mustermann', $participant->getName() );
+
+		$participant->setName( 'Christian Würker' );
+		$this->assertEquals( 'Christian Würker', $participant->getName() );
+
+		$participant	= new Address( '"Christian Würker" <christian.wuerker@ceusmedia.de>');
+		$this->assertEquals( 'Christian Würker', $participant->getName() );
 	}
 
 	/**

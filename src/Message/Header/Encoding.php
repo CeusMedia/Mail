@@ -97,7 +97,7 @@ class Encoding
 	];
 
 	/** @var		integer			$decodeStrategy		Decode strategy to use */
-	public static $decodeStrategy	= self::DECODE_STRATEGY_ICONV_TOLERANT;
+	public static $decodeStrategy	= self::DECODE_STRATEGY_ICONV;
 
 	/** @var		integer			$encodeStrategy		Decode strategy to use */
 	public static $encodeStrategy	= self::ENCODE_STRATEGY_MB;
