@@ -98,7 +98,10 @@ class Field
 	 */
 	public function getAttribute( string $name, $default = NULL ): ?string
 	{
-		return $this->attributes->get( $name, $default );
+		$value	= $this->attributes->get( $name, $default );
+		if( !is_string( $value ) )
+			return NULL;
+		return $value;
 	}
 
 	/**

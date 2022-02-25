@@ -1,6 +1,7 @@
 <?php
 
 use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP as Transport;
@@ -19,8 +20,17 @@ class MailClient
 
 	public function __construct()
 	{
-		$this->output = new CLI_Output();
+		$this->output	= new CLI_Output();
 		$this->color	= new CLI_Color();
+	}
+
+	public function __destruct()
+	{
+//		$this->clearScreen();
+	}
+
+	public function run()
+	{
 		if( !file_exists( $this->configFileName ) ){
 			$this->output->newLine( $this->color->asInfo( 'No configuration saved yet' ) );
 			$this->output->newLine();
@@ -37,12 +47,12 @@ class MailClient
 		if( $this->config->hasProperty( 'SMTP', 'password' ) )
 			$this->passwordSmtp	= $this->config->getProperty( 'SMTP', 'password' );
 
-		$this->mailbox	= Mailbox::getInstance(
+		$this->mailbox	= Mailbox::getInstance(MailboxConnection::getInstance(
 			$this->config->getProperty( 'IMAP', 'host' ),
 			$this->config->getProperty( 'IMAP', 'username' ),
 			$this->passwordImap,
 			$this->config->getProperty( 'IMAP', 'port' ) == 993
-		);
+		));
 		$this->transport	= Transport::getInstance(
 			$this->config->getProperty( 'SMTP', 'host' ),
 			$this->config->getProperty( 'SMTP', 'port' ),
@@ -52,10 +62,12 @@ class MailClient
 		$this->showMainMenu();
 	}
 
-	public function __destruct()
+	public function setConfigFile( string $configFile ): self
 	{
-//		$this->clearScreen();
+		$this->configFileName	= $configFile;
+		return $this;
 	}
+
 
 	protected function clearScreen()
 	{

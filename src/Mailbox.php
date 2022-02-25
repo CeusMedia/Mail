@@ -42,17 +42,13 @@ use function count;
 use function extension_loaded;
 use function imap_body;
 use function imap_clearflag_full;
-use function imap_close;
 use function imap_delete;
 use function imap_expunge;
 use function imap_fetchheader;
 use function imap_last_error;
 use function imap_mail_move;
-use function imap_open;
-use function imap_ping;
 use function imap_setflag_full;
 use function imap_sort;
-use function imap_timeout;
 use function in_array;
 use function is_resource;
 use function join;
@@ -81,44 +77,9 @@ class Mailbox
 	protected $connection;
 
 	/**
-	 * @var string $username
-	 */
-	protected $username;
-
-	/**
-	 * @var string $password
-	 */
-	protected $password;
-
-	/**
-	 * @var string $host
-	 */
-	protected $host;
-
-	/**
-	 * @var int $port
-	 */
-	protected $port						= 143;
-
-	/**
 	 * @var string|NULL $reference
 	 */
 	protected $reference;
-
-	/**
-	 * @var bool $secure
-	 */
-	protected $secure					= TRUE;
-
-	/**
-	 * @var bool $validateCertificates
-	 */
-	protected $validateCertificates		= TRUE;
-
-	/**
-	 * @var string $error
-	 */
-	protected $error;
 
 	public function __construct( MailboxConnection $connection )
 	{
@@ -143,11 +104,6 @@ class Mailbox
 	public static function getInstance( MailboxConnection $connection ): self
 	{
 		return new self( $connection );
-	}
-
-	public function getError(): ?string
-	{
-		return $this->error;
 	}
 
 	public function getFolders( bool $recursive = FALSE, bool $fullReference = FALSE ): array
@@ -178,7 +134,7 @@ class Mailbox
 		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
 		if( FALSE === $header )
 			throw new RuntimeException( 'Invalid mail ID' );
-		$body	= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
+		$body		= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
@@ -188,14 +144,14 @@ class Mailbox
 		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
 		if( FALSE === $header )
 			throw new RuntimeException( 'Invalid mail ID' );
-		$body	= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
+		$body		= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
 		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
 	public function getMailHeaders( int $mailId ): MessageHeaderSection
 	{
 		$resource	= $this->connection->getResource( TRUE );
-		$header	= imap_fetchheader( $resource, $mailId, FT_UID );
+		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
 		if( FALSE === $header )
 			throw new RuntimeException( 'Invalid mail ID' );
 		return MessageHeaderParser::getInstance()->parse( $header );
@@ -204,7 +160,7 @@ class Mailbox
 	public function index( array $criteria = [], int $sort = SORTARRIVAL, bool $reverse = TRUE ): array
 	{
 		$resource	= $this->connection->getResource( TRUE );
-		$result	= imap_sort( $resource, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+		$result		= imap_sort( $resource, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 		if( $result === FALSE )
 			$result	= [];
 		return $result;
@@ -234,8 +190,8 @@ class Mailbox
 	public function moveMails( array $mailIds, string $folder, bool $expunge = FALSE ): bool
 	{
 		$resource	= $this->connection->getResource( TRUE );
-		$folder	= mb_convert_encoding( $folder, 'UTF7-IMAP', 'UTF-8' );
-		$result	= imap_mail_move( $resource, join( ',', $mailIds ), $folder, CP_UID );
+		$folder		= mb_convert_encoding( $folder, 'UTF7-IMAP', 'UTF-8' );
+		$result		= imap_mail_move( $resource, join( ',', $mailIds ), $folder, CP_UID );
 		if( $expunge )
 			imap_expunge( $resource );
 		return $result;
@@ -256,7 +212,7 @@ class Mailbox
 	public function removeMailsBySequence( string $sequence, bool $expunge = FALSE ): bool
 	{
 		$resource	= $this->connection->getResource( TRUE );
-		$result	= imap_delete( $resource, $sequence, FT_UID );
+		$result		= imap_delete( $resource, $sequence, FT_UID );
 		if( $expunge )
 			imap_expunge( $resource );
 		return $result;
@@ -280,10 +236,10 @@ class Mailbox
 	public function setMailFlag( string $mailId, string $flag ): self
 	{
 		$resource	= $this->connection->getResource( TRUE );
-		$flags	= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
+		$flags		= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
 		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
 			throw new RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
-		$flag	= '\\'.ucfirst( strtolower( $flag ) );
+		$flag		= '\\'.ucfirst( strtolower( $flag ) );
 		imap_setflag_full( $resource, $mailId, $flag, ST_UID );
 		return $this;
 	}
@@ -297,10 +253,10 @@ class Mailbox
 	public function unsetMailFlag( string $mailId, string $flag ): self
 	{
 		$resource	= $this->connection->getResource( TRUE );
-		$flags	= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
+		$flags		= [ 'seen', 'answered', 'flagged', 'deleted', 'draft' ];
 		if( !in_array( strtolower( $flag ), $flags, TRUE ) )
 			throw new RangeException( 'Invalid flag, must be one of: '.join( ', ', $flags ) );
-		$flag	= '\\'.ucfirst( strtolower( $flag ) );
+		$flag		= '\\'.ucfirst( strtolower( $flag ) );
 		imap_clearflag_full( $resource, $mailId, $flag, ST_UID );
 		return $this;
 	}

@@ -72,10 +72,14 @@ class Client
 	 *	@param			integer|NULL	$offset
 	 *	@return			array
 	 *	@deprecated		use search with mailbox search instance instead
-	 *	@todo			to be removed
+	 *	@todo			to be removed in 2.6
 	 */
 	public function find( array $conditions, $limit = NULL, $offset = NULL ): array
 	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method search with mailbox search instance, instead' );
 		$mailbox	= $this->getMailbox();
 		return $mailbox->search( $conditions );
 	}
@@ -86,11 +90,23 @@ class Client
 		return $mailbox->performSearch( $search );
 	}
 
+	/**
+	 *	Static constructor.
+	 *	@access		public
+	 *	@static
+	 *	@return		self
+	 */
 	public static function getInstance(): self
 	{
 		return new self();
 	}
 
+	/**
+	 *	Returns set connectable mailbox instance.
+	 *	@access		public
+	 *	@return		Mailbox				Set connectable mailbox instance
+	 *	@throws		RuntimeException	if no mailbox instance has been set
+	 */
 	public function getMailbox(): Mailbox
 	{
 		if( NULL === $this->mailbox )
@@ -98,6 +114,12 @@ class Client
 		return $this->mailbox;
 	}
 
+	/**
+	 *	Returns set SMTP transport instance.
+	 *	@access		public
+	 *	@return		SmtpTransport		Set SMTP transport instance
+	 *	@throws		RuntimeException	if no SMTP transport instance has been set
+	 */
 	public function getTransport(): SmtpTransport
 	{
 		if( NULL === $this->transport )
@@ -113,12 +135,24 @@ class Client
 		return $this;
 	}
 
+	/**
+	 *	Set connectable mailbox instance.
+	 *	@access		public
+	 *	@param		Mailbox	$mailbox
+	 *	@return		self
+	 */
 	public function setMailbox( Mailbox $mailbox ): self
 	{
 		$this->mailbox		= $mailbox;
 		return $this;
 	}
 
+	/**
+	 *	Set instance of SMTP transport.
+	 *	@access		public
+	 *	@param		SmtpTransport	$transport
+	 *	@return		self
+	 */
 	public function setTransport( SmtpTransport $transport ): self
 	{
 		$this->transport	= $transport;

@@ -73,7 +73,7 @@ class AttributedValue
 	 */
 	public function __toString(): string
 	{
-		return $this->toString( TRUE );
+		return $this->toString();
 	}
 
 	/**
@@ -158,11 +158,10 @@ class AttributedValue
 	/**
 	 *	Returns a representative string of header field value.
 	 *	@access		public
-	 *	@param		boolean		$keepCase	Flag: do not use mb_convert_case or ucwords, protected uppercased acronyms
 	 *	@return		string
 	 */
-	public function toString( bool $keepCase = TRUE ): string
+	public function toString(): string
 	{
-		return MessageHeaderRenderer::renderAttributedValue( $this, $keepCase );
+		return MessageHeaderRenderer::renderAttributedValue( $this );
 	}
 }

@@ -117,6 +117,14 @@ class Renderer
 //		return iconv_mime_encode( $field->getName(), $field->getValue(), self::$preferences );
 	}
 
+	public static function renderAttributedValue( AttributedValue $value ): string
+	{
+		$attr	= '';
+		foreach( $value->getAttributes() as $key => $content )
+			$attr	.= sprintf( '; %s="%s"', $key, addslashes( $content ) );
+		return $value->getValue().$attr;
+	}
+
 	/**
 	 *	Set encoding options.
 	 *	@access		public

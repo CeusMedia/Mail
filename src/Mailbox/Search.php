@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Mailbox search object.
  *
- *	Copyright (c) 2007-2018 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2007-2022 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Mailbox
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2019 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -37,7 +37,7 @@ use RuntimeException;
  *	@category		Library
  *	@package		CeusMedia_Mail_Mailbox
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2019 Christian Würker
+ *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@todo			implement new structure of criteria and flags, see comments at the bottom
@@ -131,6 +131,11 @@ class Search
 		return new self();
 	}
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		array
+	 */
 	public function getCriteria(): array
 	{
 		$criteria	= [];
@@ -141,6 +146,11 @@ class Search
 		return $criteria;
 	}
 
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		string
+	 */
 	public function renderCriteria(): string
 	{
 		$criteria	= [];
@@ -153,7 +163,7 @@ class Search
 
 	/**
 	 *	...
-	 *	@access
+	 *	@access		public
 	 *	@param		resource	$connection
 	 *	@return		self
 	 */
@@ -266,15 +276,15 @@ DIVIDED INTO FLAGS AND CRITERIA:
 
 DIVIDED EVEN MORE:
 	XOR FLAGS:
-	- ANSWERED|UNANSWERED		- match messages that have (not) been answered
-	- DELETED|UNDELETED			- match messages that are (not) deleted
-	- FLAGGED|UNFLAGGED			- match messages that are (not) flagged
-	- NEW|OLD					- match (not) new messages
-	- SEEN|UNSEEN				- match messages which have (not) been read yet
+	- ANSWERED|UNANSWERED	- match messages that have (not) been answered
+	- DELETED|UNDELETED		- match messages that are (not) deleted
+	- FLAGGED|UNFLAGGED		- match messages that are (not) flagged
+	- NEW|OLD				- match (not) new messages
+	- SEEN|UNSEEN			- match messages which have (not) been read yet
 
 	OTHER FLAGS:
-	- ALL			- return all messages matching the rest of the criteria
-	- RECENT		- match messages with the \\RECENT flag set
+	- ALL					- return all messages matching the rest of the criteria
+	- RECENT				- match messages with the \\RECENT flag set
 
 	CRITERIA: STRING BASED:
 	- BCC "string"			- match messages with "string" in the Bcc: field
