@@ -252,13 +252,15 @@ class Message
 		if( !in_array( strtoupper( $type ), [ "TO", "CC", "BCC" ], TRUE ) )
 			throw new DomainException( 'Invalid recipient type' );
 
+		$encoder	= MessageHeaderEncoding::getInstance();
+
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
 		$this->recipients[strtolower( $type )]->add( $address );
 
 		$recipient	= '<'.$address->getAddress().'>';
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
-			$recipient	= MessageHeaderEncoding::encodeIfNeeded( $name ).' '.$recipient;
+			$recipient	= $encoder->encodeIfNeeded( $name ).' '.$recipient;
 		$recipient	= $address->get();
 
 		if( 'BCC' !== strtoupper( $type ) ){

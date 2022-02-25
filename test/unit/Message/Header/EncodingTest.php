@@ -23,20 +23,26 @@ class EncodingTest extends PhpUnitTestCase
 {
 	/**
 	 *	@covers		::decodeIfNeeded
+	 *	@covers		::decodeByOwnStrategy
 	 */
 	public function testDecodeIfNeeded()
 	{
-		$expected	= '[Gruppenpost] Gruppe "Deli 124": Mike ist beigetreten und benötigt Freigabe';
+		$encoder	= Encoding::getInstance();
 
-		$string		= '=?UTF-8?Q?[Gruppenpost]_Gruppe_"Deli_124":_Mike_ist_beigetreten_und_ben?=
-	=?UTF-8?Q?=C3=B6tigt_Freigabe?=';
-		$actual		= Encoding::decodeIfNeeded( $string );
-		$expected	= '[Gruppenpost] Gruppe "Deli 124": Mike ist beigetreten und benötigt Freigabe';
-		$this->assertEquals( $expected, $actual );
+		foreach( Encoding::DECODE_STRATEGIES as $strategy ){
+			$encoder->setDecodeStrategy( $strategy );
+			$expected	= '[Gruppenpost] Gruppe "Deli 124": Mike ist beigetreten und benötigt Freigabe';
 
-		$string		= '=?UTF-8?B?W0dydXBwZW5wb3N0XSBHcnVwcGUgIkRlbGkgMTI0IjogTWlrZSBpc3QgYmVpZ2V0cmV0ZW4gdW5kIGJlbsO2dGlndCBGcmVpZ2FiZQ==?=';
-		$actual		= Encoding::decodeIfNeeded( $string );
-		$this->assertEquals( $expected, $actual );
+			$string		= '=?UTF-8?Q?[Gruppenpost]_Gruppe_"Deli_124":_Mike_ist_beigetreten_und_ben?=
+		=?UTF-8?Q?=C3=B6tigt_Freigabe?=';
+			$actual		= $encoder->decodeIfNeeded( $string );
+			$expected	= '[Gruppenpost] Gruppe "Deli 124": Mike ist beigetreten und benötigt Freigabe';
+			$this->assertEquals( $expected, $actual );
+
+			$string		= '=?UTF-8?B?W0dydXBwZW5wb3N0XSBHcnVwcGUgIkRlbGkgMTI0IjogTWlrZSBpc3QgYmVpZ2V0cmV0ZW4gdW5kIGJlbsO2dGlndCBGcmVpZ2FiZQ==?=';
+			$actual		= $encoder->decodeIfNeeded( $string );
+			$this->assertEquals( $expected, $actual );
+		}
 	}
 
 	/**
@@ -44,25 +50,26 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testEncodeIfNeeded()
 	{
+		$encoder	= Encoding::getInstance();
+
 		$expected	= 'no_need_to_encode';
-		$this->assertEquals( $expected, Encoding::encodeIfNeeded( $expected ) );
+		$this->assertEquals( $expected, $encoder->encodeIfNeeded( $expected ) );
 
-
-		Encoding::setEncodeStrategy( Encoding::ENCODE_STRATEGY_MB );
-		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ" );
+		$encoder->setEncodeStrategy( Encoding::ENCODE_STRATEGY_MB );
+		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ" );
 		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
+		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
 		$expected	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $expected, $actual );
 
-		Encoding::setEncodeStrategy( Encoding::ENCODE_STRATEGY_IMPL );
-		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ" );
+		$encoder->setEncodeStrategy( Encoding::ENCODE_STRATEGY_IMPL );
+		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ" );
 		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $expected, $actual );
 
-		$actual	= Encoding::encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
+		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
 		$expected	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
 		$this->assertEquals( $expected, $actual );
 	}
@@ -72,8 +79,10 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testEncodeIfNeededException()
 	{
-		$this->expectException( 'RangeException' );
-		Encoding::encodeIfNeeded( "ÄÖÜ", "_invalid_" );
+		$encoder	= Encoding::getInstance();
+
+		$this->expectException( 'RuntimeException' );
+		$encoder->encodeIfNeeded( "ÄÖÜ", "_invalid_" );
 	}
 
 	/**
@@ -81,9 +90,11 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testSetDecodeStrategy()
 	{
+		$encoder	= Encoding::getInstance();
+
 		foreach( Encoding::DECODE_STRATEGIES as $strategy ){
-			Encoding::setDecodeStrategy( $strategy );
-			$this->assertEquals( $strategy, Encoding::$decodeStrategy );
+			$encoder->setDecodeStrategy( $strategy );
+			$this->assertEquals( $strategy, $encoder->decodeStrategy );
 		}
 	}
 
@@ -92,8 +103,34 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testSetDecodeStrategyException()
 	{
+		$encoder	= Encoding::getInstance();
+
 		$this->expectException( 'RangeException' );
-		Encoding::setDecodeStrategy( -1 );
+		$encoder->setDecodeStrategy( -1 );
+	}
+
+	/**
+	 *	@covers		::setDecodeStrategyFallback
+	 */
+	public function testSetDecodeStrategyFallback()
+	{
+		$encoder	= Encoding::getInstance();
+
+		foreach( Encoding::DECODE_STRATEGIES as $strategy ){
+			$encoder->setDecodeStrategyFallback( $strategy );
+			$this->assertEquals( $strategy, $encoder->decodeStrategyFallback );
+		}
+	}
+
+	/**
+	 *	@covers		::setDecodeStrategyFallback
+	 */
+	public function testSetDecodeStrategyFallbackException()
+	{
+		$encoder	= Encoding::getInstance();
+
+		$this->expectException( 'RangeException' );
+		$encoder->setDecodeStrategyFallback( -1 );
 	}
 
 	/**
@@ -101,9 +138,11 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testSetEncodeStrategy()
 	{
+		$encoder	= Encoding::getInstance();
+
 		foreach( Encoding::ENCODE_STRATEGIES as $strategy ){
-			Encoding::setEncodeStrategy( $strategy );
-			$this->assertEquals( $strategy, Encoding::$encodeStrategy );
+			$encoder->setEncodeStrategy( $strategy );
+			$this->assertEquals( $strategy, $encoder->encodeStrategy );
 		}
 	}
 
@@ -112,7 +151,33 @@ class EncodingTest extends PhpUnitTestCase
 	 */
 	public function testSetEncodeStrategyException()
 	{
+		$encoder	= Encoding::getInstance();
+
 		$this->expectException( 'RangeException' );
-		Encoding::setEncodeStrategy( -1 );
+		$encoder->setEncodeStrategy( -1 );
+	}
+
+	/**
+	 *	@covers		::setEncodeStrategyFallback
+	 */
+	public function testSetEncodeStrategyFallback()
+	{
+		$encoder	= Encoding::getInstance();
+
+		foreach( Encoding::ENCODE_STRATEGIES as $strategy ){
+			$encoder->setEncodeStrategyFallback( $strategy );
+			$this->assertEquals( $strategy, $encoder->encodeStrategyFallback );
+		}
+	}
+
+	/**
+	 *	@covers		::setEncodeStrategyFallback
+	 */
+	public function testSetEncodeStrategyFallbackException()
+	{
+		$encoder	= Encoding::getInstance();
+
+		$this->expectException( 'RangeException' );
+		$encoder->setEncodeStrategyFallback( -1 );
 	}
 }

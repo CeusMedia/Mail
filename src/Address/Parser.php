@@ -121,7 +121,6 @@ class Parser
 			$name		= preg_replace( "/^\"(.+)\"$/", "\\1", trim( $name ) );	//  strip quotes from user name
 			if( NULL === $name )
 				throw new RuntimeException( 'Unquoting of name failed' );
-//			$name		= MessageHeaderEncoding::decodeIfNeeded( $name );
 		}
 		else if( 1 === preg_match( $regex2, $string ) ){						//  otherwise found short address: neither name nor brackets
 			$localPart	= preg_replace( $regex2, "\\2", $string );				//  extract local part

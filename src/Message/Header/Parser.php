@@ -212,6 +212,8 @@ class Parser
 
 	public static function parseByOwnStrategy( string $content ): Section
 	{
+		$encoder	= Encoding::getInstance();
+
 		$lines		= preg_split( "/\r?\n/", $content );
 		if( FALSE === $lines )
 			throw new RuntimeException( 'Splitting of header failed' );
@@ -222,7 +224,7 @@ class Parser
 		foreach( $lines as $nr => $line ){
 			if( 1 === preg_match( '/^\S+:/', $line ) ){
 				[$key, $value] = explode( ':', $line, 2 );
-				$value	= Encoding::decodeIfNeeded( ltrim( $value ) );
+				$value	= $encoder->decodeByOwnStrategy( ltrim( $value ) );
 				$field	= new Field( $key, $value );
 				$section->addField( $field );
 				$buffer	= [$value];
@@ -238,7 +240,7 @@ class Parser
 					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
 				else{															//  reduced line is folding @ level 1
 					$line		= ' '.ltrim( $line );							//  reduce leading white space to one
-					$buffer[]	= Encoding::decodeIfNeeded( $line );			//  collect decoded line
+					$buffer[]	= $encoder->decodeByOwnStrategy( $line );		//  collect decoded line
 				}
 				$field->setValue( join( $buffer ) );							//  set unfolded field value
 			}
@@ -246,13 +248,13 @@ class Parser
 
 		//  iterate all fields again to detect attributed values
 		$finalSection	= new Section();
-		foreach( $section->getFields() as $field ){
-			$attributedValue = self::parseAttributedHeaderValue( $field->getValue() );
+		foreach( $section->getFields() as $foundField ){
+			$attributedValue = self::parseAttributedHeaderValue( $foundField->getValue() );
 			if( $attributedValue->hasAttributes() ){
-				$field->setValue( $attributedValue->getValue() );				//  set unfolded field value
-				$field->setAttributes( $attributedValue->getAttributes() );
+				$foundField->setValue( $attributedValue->getValue() );				//  set unfolded field value
+				$foundField->setAttributes( $attributedValue->getAttributes() );
 			}
-			$finalSection->addField( $field );
+			$finalSection->addField( $foundField );
 		}
 		return $finalSection;
 	}
