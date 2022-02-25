@@ -42,11 +42,20 @@ class MailFactsRenderer
 
 	//  --  PROTECTED  --  //
 
-	protected function addListItem( & $list, $key, $value )
+	protected function addListItem( & $list, string $key, $value, array $attributes = [] )
 	{
+		$sublist	= '';
+		if( 0 !== count( $attributes ) ){
+			$attr	= [];
+			foreach( $attributes as $attrKey => $attrValue ){
+				$attrKey	= Tag::create( 'span', $attrKey, ['class' => 'list-item-attribute'] );
+				$attr[]		= Tag::create( 'li', $attrKey.' '.$attrValue );
+			}
+			$sublist	= Tag::create( 'ul', $attr, ['class' => 'unstyled facts-attribute-list'] );
+		}
 		$value	= htmlentities( $value, ENT_QUOTES, 'UTF-8' );
 		$key	= Tag::create( 'span', $key, ['class' => 'list-item-key'] );
-		$list[]	= Tag::create( 'li', $key.' '.$value );
+		$list[]	= Tag::create( 'li', $key.' '.$value.$sublist );
 	}
 
 	protected function renderListMain(): string
@@ -68,7 +77,7 @@ class MailFactsRenderer
 		if( $headerReturnPath )
 			$this->addListItem( $listMain, 'Return', $headerReturnPath[0]->getValue() );
 		$this->addListItem( $listMain, 'ID', current( $headers->getFieldsByName( 'Message-ID' ) )->getValue() );
-		return Tag::create( 'ul', $listMain );
+		return Tag::create( 'ul', $listMain, ['class' => 'unstyled facts-header-list'] );
 	}
 
 	protected function renderListParts(): string
@@ -94,7 +103,7 @@ class MailFactsRenderer
 				if( $part->getFileSize() )
 					$this->addListItem( $list2, 'Filesize', $part->getFileSize() );
 			}
-			$listParts[]	= Tag::create( 'ul', $list2 );
+			$listParts[]	= Tag::create( 'ul', $list2, ['class' => 'unstyled facts-header-list'] );
 		}
 		return join( $listParts );
 	}
@@ -109,9 +118,9 @@ class MailFactsRenderer
 				continue;
 			if( !strlen( trim( $header->getValue() ) ) )
 				continue;
-			$this->addListItem( $listMore, $header->getName(), $header->getValue() );
+			$this->addListItem( $listMore, $header->getName(), $header->getValue(), $header->getAttributes() );
 		}
-		return Tag::create( 'ul', $listMore );
+		return Tag::create( 'ul', $listMore, ['class' => 'unstyled facts-header-list'] );
 	}
 
 	protected function renderListExtended(): string
@@ -124,6 +133,6 @@ class MailFactsRenderer
 				continue;
 			$this->addListItem( $listExtended, $header->getName(), $header->getValue() );
 		}
-		return Tag::create( 'ul', $listExtended );
+		return Tag::create( 'ul', $listExtended, ['class' => 'unstyled facts-header-list'] );
 	}
 }
