@@ -87,6 +87,7 @@ class Socket
 	 *	@return		self
 	 *	@deprecated	use getInstance instead
 	 *	@todo		to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
 	{

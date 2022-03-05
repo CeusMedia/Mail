@@ -104,6 +104,7 @@ class Availability
 	 *	@throws		RangeException						if given key is invalid
 	 *	@return		object|string|integer|NULL
 	 *	@deprecated	use getLastResponse instead
+	 *	@codeCoverageIgnore
 	 */
 	public function getLastError( ?string $key = NULL )
 	{

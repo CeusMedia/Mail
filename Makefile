@@ -78,3 +78,6 @@ dev-rector-apply:
 
 dev-rector-dry:
 	@vendor/bin/rector process src --dry-run
+
+dev-test-units-parallel: composer-install-dev
+	@XDEBUG_MODE=off vendor/bin/paratest -v --no-coverage --testsuite unit || true

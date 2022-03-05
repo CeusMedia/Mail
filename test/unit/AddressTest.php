@@ -44,7 +44,25 @@ class AddressTest extends TestCase
 	}
 
 	/**
-	*	@covers		::get
+	 *	@covers		::create
+	 */
+/*	public function testCreate()
+	{
+		$this->markTestSkipped();
+		if( version_compare( $this->version, '2.6' ) >= 0 ){
+			$this->expectException();
+			$this->expectExceptionMessageMatches( '/^Deprecated/' );
+
+		}
+		else if( version_compare( $this->version, '2.5' ) >= 0 ){
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '/^Deprecated/' );
+		}
+		$parser	= Parser::create();
+	}*/
+
+	/**
+	 *	@covers		::get
 	 *	@covers		::__construct
 	 */
 	public function testGet()

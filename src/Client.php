@@ -73,6 +73,7 @@ class Client
 	 *	@return			array
 	 *	@deprecated		use search with mailbox search instance instead
 	 *	@todo			to be removed in 2.6
+	 *	@codeCoverageIgnore
 	 */
 	public function find( array $conditions, $limit = NULL, $offset = NULL ): array
 	{

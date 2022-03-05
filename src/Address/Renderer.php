@@ -53,6 +53,7 @@ class Renderer
 	 *	@return			self
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create(): self
 	{

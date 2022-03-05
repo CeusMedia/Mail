@@ -98,6 +98,7 @@ class Address
 	 *	Alias for getInstance.
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create( string $string = NULL ): self
 	{
