@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Util;
+namespace CeusMedia\Mail\Test\Integration\Util;
 
 use CeusMedia\Mail\Util\MX;
 use CeusMedia\Mail\Test\TestCase;

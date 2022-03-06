@@ -40,6 +40,15 @@ class ParserTest extends TestCase
 	}*/
 
 	/**
+	 *	@covers		::getInstance
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Parser::getInstance();
+		$this->assertEquals( new Parser(), $instance );
+	}
+
+	/**
 	 *	@covers		::parse
 	 */
 	public function testParse()

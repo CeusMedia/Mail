@@ -22,6 +22,15 @@ use PHPUnit_Framework_TestCase as PhpUnitTestCase;
 class EncodingTest extends PhpUnitTestCase
 {
 	/**
+	 *	@covers		::getInstance
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Encoding::getInstance();
+		$this->assertEquals( new Encoding(), $instance );
+	}
+
+	/**
 	 *	@covers		::decodeIfNeeded
 	 *	@covers		::decodeByOwnStrategy
 	 */

@@ -48,10 +48,20 @@ class ParserTest extends TestCase
 
 	}
 
+	/**
+	 *	@covers		::parse
+	 *	@covers		::getInstance
+	 *	@covers		::parseAtomicBodyPart
+	 *	@covers		::parseMultipartBody
+	 *	@covers		::createTextPart
+	 *	@covers		::createHTMLPart
+	 *	@covers		::createAttachmentPart
+	 *	@covers		::createDispositionPart
+	 */
 	public function testParseWithAttachment()
 	{
 		$raw		= file_get_contents( __DIR__.'/parserMailMultipart-plain,html,attachment.eml' );
-		$message	= Parser::parse( $raw );
+		$message	= Parser::getInstance()->parse( $raw );
 
 		$this->assertEquals( TRUE, $message->hasHTML() );
 		$this->assertEquals( TRUE, $message->hasText() );

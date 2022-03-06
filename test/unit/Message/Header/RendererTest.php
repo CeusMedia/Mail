@@ -8,7 +8,7 @@
 
 namespace CeusMedia\Mail\Test\Unit\Message\Header;
 
-use CeusMedia\Mail\Message\Renderer;
+use CeusMedia\Mail\Message\Header\Renderer;
 use CeusMedia\Mail\Test\TestCase;
 
 /**
@@ -21,12 +21,21 @@ use CeusMedia\Mail\Test\TestCase;
 class RendererTest extends TestCase
 {
 	/**
+	 *	@covers		::getInstance
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Renderer::getInstance();
+		$this->assertEquals( new Renderer(), $instance );
+	}
+
+	/**
 	 *	@covers		::render
 	 */
-	public function testRender()
+/*	public function testRender()
 	{
-		$this->markTestIncomplete( 'No test defined for Message\\Header\\Renderer' );
+		$this->markTestIncomplete( 'No test defined for Message\\Header\\Renderer::render' );
 
 		$renderer	= Renderer::getInstance();
-	}
+	}*/
 }

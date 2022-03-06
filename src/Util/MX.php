@@ -164,9 +164,12 @@ class MX
 	}
 }
 
-// support windows platforms
 if( !function_exists( 'getmxrr' ) )
 {
+	/**
+	 *	support windows platforms
+	 *	@codeCoverageIgnore
+	 */
 	function getmxrr( string $hostname, array &$mxhosts, array &$mxweight ): bool
 	{
 		$pattern	= "/^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$/";

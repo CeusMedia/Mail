@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Transport;
+namespace CeusMedia\Mail\Test\Integration\Transport;
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Address;

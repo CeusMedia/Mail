@@ -13,7 +13,7 @@ use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection;
 
 /**
-*	...
+ *	...
  *	@category			Test
  *	@package			CeusMedia_Mail_Address
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
