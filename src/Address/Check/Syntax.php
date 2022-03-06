@@ -28,12 +28,13 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
+use CeusMedia\Mail\Conduct\RegularStringHandling;
+
 use ADT_Bitmask;
 use Alg_Object_Constant;
 use InvalidArgumentException;
 
 use function filter_var;
-use function preg_match;
 
 /**
  *	Validator for mail address syntax.
@@ -47,6 +48,8 @@ use function preg_match;
  */
 class Syntax
 {
+	use RegularStringHandling;
+
 	public const MODE_AUTO				= 0;
 	public const MODE_ALL				= 1;
 	public const MODE_FILTER			= 2;
@@ -95,11 +98,11 @@ class Syntax
 						$result	|= $value;
 				}
 				if( ( $value === self::MODE_SIMPLE_REGEX ) || $wildcard ){
-					if( 0 !== preg_match( $this->regexSimple, $address ) )
+					if( self::regMatch( $this->regexSimple, $address ) )
 						$result	|= $value;
 				}
 				if( ( $value === self::MODE_EXTENDED_REGEX ) || $wildcard ){
-					if( 0 !== preg_match( $this->regexExtended, $address ) )
+					if( self::regMatch( $this->regexExtended, $address ) )
 						$result	|= $value;
 				}
 			}
@@ -173,9 +176,9 @@ class Syntax
 		if( $mode === self::MODE_FILTER )
 			return FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL );
 		if( $mode === self::MODE_SIMPLE_REGEX )
-			return 0 !== preg_match( $this->regexSimple, $address );
+			return self::regMatch( $this->regexSimple, $address );
 		if( $mode === self::MODE_EXTENDED_REGEX )
-			return 0 !== preg_match( $this->regexExtended, $address );
+			return self::regMatch( $this->regexExtended, $address );
 		throw new InvalidArgumentException( 'Invalid mode given' );
 	}
 

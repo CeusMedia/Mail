@@ -52,7 +52,6 @@ use function fsockopen;
 use function in_array;
 use function is_string;
 use function join;
-use function preg_match;
 use function stream_socket_enable_crypto;
 use function trim;
 

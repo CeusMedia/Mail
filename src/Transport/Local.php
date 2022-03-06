@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Transport;
 
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
 
@@ -42,7 +43,6 @@ use function implode;
 use function date;
 use function is_array;
 use function mail;
-use function preg_match;
 use function strlen;
 use function trim;
 
@@ -57,6 +57,8 @@ use function trim;
  */
 class Local
 {
+	use RegularStringHandling;
+
 	/**
 	 *	Constructor.
 	 *	@access		public
@@ -100,7 +102,7 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-		if( 0 !== strlen( trim( $message->getUserAgent() ) ) )
+		if( self::strHasContent( $message->getUserAgent() ) )
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
@@ -163,7 +165,7 @@ class Local
 	 */
 	protected function checkForInjection( $value )
 	{
-		if( 0 < preg_match( '/(\r|\n)/', $value ) )
+		if( self::regMatch( '/(\r|\n)/', $value ) )
 			throw new InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }

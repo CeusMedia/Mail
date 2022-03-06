@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Util\Dmarc;
 
 use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Util\Dmarc\Record;
 
@@ -39,8 +40,6 @@ use function in_array;
 use function intval;
 use function max;
 use function min;
-use function preg_match;
-use function preg_replace;
 use function preg_split;
 use function rtrim;
 use function trim;
@@ -57,6 +56,8 @@ use function trim;
  */
 class Parser
 {
+	use RegularStringHandling;
+
 	/**
 	 *	Static constructor.
 	 *	@access			public
@@ -95,70 +96,60 @@ class Parser
 	{
 		$record		= new Record();
 		$content	= rtrim( trim( $content ), ';' );
-		$pairs		= preg_split( '/\s*;\s*/', $content );
-		if( FALSE !== $pairs ){
-			foreach( $pairs as $pair ){
-				if( FALSE === preg_match( '/=/', $pair ) )
-					continue;
-				$pair	= preg_split( '/\s*=\s*/', $pair, 2 );
-				if( FALSE === $pair )
-					continue;
-				switch( $pair[0] ){
-					case 'v':
-						$version	= preg_replace( '/^DMARC/', '', $pair[1] );
-						if( NULL === $version )
-							throw new RuntimeException( 'Parsing version failed' );
-						$record->version	= $version;
-						break;
-					case 'p':
-						$values	= [ 'none', 'quarantine', 'reject' ];
-						if( in_array( $pair[1], $values, TRUE ) )
-							$record->policy				= $pair[1];
-						break;
-					case 'sp':
-						$values	= [ 'none', 'quarantine', 'reject' ];
-						if( in_array( $pair[1], $values, TRUE ) )
-							$record->policySubdomains	= $pair[1];
-						break;
-					case 'adkim':
-						if( in_array( $pair[1], [ 'r', 's' ], TRUE ) )
-							$record->alignmentDkim		= $pair[1];
-						break;
-					case 'aspf':
-						if( in_array( $pair[1], [ 'r', 's' ], TRUE ) )
-							$record->alignmentSpf		= $pair[1];
-						break;
-					case 'pct':
-						$record->percent	= min( 100, max( 0, intval( $pair[1] ) ) );
-						break;
-					case 'rua':
-						$parts = preg_split( '/\s*,\s*/', $pair[1] );
-						if( FALSE !== $parts ){
-							foreach( $parts as $part ){
-								if( 1 === preg_match( '/^mailto:/', $part ) )
-									$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
-								$record->reportAggregate[]	= $part;
-							}
-						}
-						break;
-					case 'ruf':
-						$parts	= preg_split( '/\s*,\s*/', $pair[1] );
-						if( FALSE !== $parts ){
-							foreach( $parts as $part ){
-								if( 1 === preg_match( '/^mailto:/', $part ) )
-									$part	= new Address( preg_replace( '/^mailto:/', '', $part ) );
-								$record->reportForensic[]	= $part;
-							}
-						}
-						break;
-					case 'ri':
-						$record->interval				= abs( intval( $pair[1] ) );
-						break;
-					case 'fo':
-						if( in_array( $pair[1], [ '0', '1', 'd', 's' ], TRUE ) )
-							$record->failureOption		= $pair[1];
-						break;
-				}
+		$pairs		= self::regSplit( '/\s*;\s*/', $content );
+		foreach( $pairs as $pair ){
+			if( !self::regMatch( '/=/', $pair ) )
+				continue;
+			$pair	= preg_split( '/\s*=\s*/', $pair, 2 );
+			if( FALSE === $pair )
+				continue;
+			switch( $pair[0] ){
+				case 'v':
+					$record->version	= self::regReplace( '/^DMARC/', '', $pair[1],
+						'Parsing version failed' );
+					break;
+				case 'p':
+					if( in_array( $pair[1], [ 'none', 'quarantine', 'reject' ], TRUE ) )
+						$record->policy				= $pair[1];
+					break;
+				case 'sp':
+					if( in_array( $pair[1], [ 'none', 'quarantine', 'reject' ], TRUE ) )
+						$record->policySubdomains	= $pair[1];
+					break;
+				case 'adkim':
+					if( in_array( $pair[1], [ 'r', 's' ], TRUE ) )
+						$record->alignmentDkim		= $pair[1];
+					break;
+				case 'aspf':
+					if( in_array( $pair[1], [ 'r', 's' ], TRUE ) )
+						$record->alignmentSpf		= $pair[1];
+					break;
+				case 'pct':
+					$record->percent	= min( 100, max( 0, intval( $pair[1] ) ) );
+					break;
+				case 'rua':
+					$parts = self::regSplit( '/\s*,\s*/', $pair[1] );
+					foreach( $parts as $part ){
+						if( self::regMatch( '/^mailto:/', $part ) )
+							$part	= new Address( self::regReplace( '/^mailto:/', '', $part ) );
+						$record->reportAggregate[]	= $part;
+					}
+					break;
+				case 'ruf':
+					$parts	= self::regSplit( '/\s*,\s*/', $pair[1] );
+					foreach( $parts as $part ){
+						if( self::regMatch( '/^mailto:/', $part ) )
+							$part	= new Address( self::regReplace( '/^mailto:/', '', $part ) );
+						$record->reportForensic[]	= $part;
+					}
+					break;
+				case 'ri':
+					$record->interval	= abs( intval( $pair[1] ) );
+					break;
+				case 'fo':
+					if( in_array( $pair[1], [ '0', '1', 'd', 's' ], TRUE ) )
+						$record->failureOption		= $pair[1];
+					break;
 			}
 		}
 		return $record;

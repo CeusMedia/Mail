@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
 
 use DomainException;
@@ -41,9 +42,6 @@ use function iconv;
 use function iconv_mime_decode;
 use function imap_qprint;
 use function join;
-use function preg_match;
-use function preg_split;
-use function preg_replace;
 use function quoted_printable_decode;
 use function quoted_printable_encode;
 use function strtolower;
@@ -77,6 +75,8 @@ use function str_replace;
  */
 class Encoding
 {
+	use RegularStringHandling;
+
 	public const DECODE_STRATEGY_IMPL			= 1;
 	public const DECODE_STRATEGY_ICONV			= 2;
 	public const DECODE_STRATEGY_ICONV_STRICT	= 3;
@@ -178,7 +178,7 @@ class Encoding
 	 */
 	public function encodeIfNeeded( string $string, string $encoding = 'base64', bool $fold = TRUE ): string
 	{
-		if( 1 === preg_match( "/^[\w\s\.-:#]+$/", $string ) )
+		if( self::regMatch( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 
 		$strategies	= [$this->encodeStrategy];
@@ -294,16 +294,14 @@ class Encoding
 	public function decodeByOwnStrategy( string $string ): string
 	{
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
-		if( 1 !== preg_match( $pattern, $string ) )
+		if( !self::regMatch( $pattern, $string ) )
 			return $string;
 		$matches	= [];
 		$list		= [];
-		$lines		= preg_split( "@\r?\n\s*@", $string );
-		if( FALSE === $lines )
-			throw new RuntimeException( 'Splitting of header failed' );
+		$lines		= self::regSplit( "@\r?\n\s*@", $string, 0, 'Splitting of header failed' );
 		foreach( $lines as $line ){
 			$parts	= [];
-			while( 1 === preg_match( $pattern, $line, $parts ) ){
+			while( self::regMatch( $pattern, $line, NULL, $parts ) ){
 				[$before, $charset, $encoding, $content, $after] = array_slice( $parts, 1 );
 				switch( strtolower( $encoding ) ){
 					case 'b':
@@ -327,10 +325,8 @@ class Encoding
 				}
 				if( strtoupper( $charset ) !== $this->charset )
 					$content	= iconv( $charset, $this->charset, $content );
-				$newLine	= preg_replace( $pattern, $before.$content.$after, $line );
-				if( NULL === $newLine )
-					throw new RuntimeException( 'Decoded failed' );
-				$line	= $newLine;
+				$newLine	= $before.$content.$after;
+				$line		= self::regReplace( $pattern, $newLine, $line, 'Decoded failed' );
 			}
 			$list[]	= $line;
 		}

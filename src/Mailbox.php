@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail;
 
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
@@ -52,7 +53,6 @@ use function imap_sort;
 use function in_array;
 use function is_resource;
 use function join;
-use function preg_replace;
 use function preg_quote;
 use function strlen;
 use function strtolower;
@@ -71,6 +71,8 @@ use function ucfirst;
  */
 class Mailbox
 {
+	use RegularStringHandling;
+
 	/**
 	 * @var MailboxConnection $connection
 	 */
@@ -120,7 +122,7 @@ class Mailbox
 		if( !$fullReference ){
 			$regExp	= '/^'.preg_quote( $reference, '/' ).'/';
 			foreach( $folders as $nr => $folder )
-				$folders[$nr]	= preg_replace( $regExp, '', $folder );
+				$folders[$nr]	= self::regReplace( $regExp, '', $folder );
 		}
 		foreach( $folders as $nr => $folder )
 			$folders[$nr]	= mb_convert_encoding( $folder, 'UTF-8', 'UTF7-IMAP' );
