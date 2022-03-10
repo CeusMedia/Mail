@@ -83,6 +83,9 @@ ul.facts-header-list {
 	list-item-style: none;
 	}
 */
+ul.facts-attribute-list li {
+	margin-left: 20px;
+	}
 li > span.not-list-item-key {
 	border: 1px solid #AAA;
 	background-color: #EEE;
