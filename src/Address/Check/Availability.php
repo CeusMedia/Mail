@@ -28,8 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
-use CeusMedia\Cache\AdapterInterface as CacheAdapterInterface;
-use CeusMedia\Cache\Factory as CacheFactory;
+use CeusMedia\Cache\SimpleCacheInterface as CacheInterface;
+use CeusMedia\Cache\SimpleCacheFactory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
@@ -77,7 +77,7 @@ class Availability
 	/** @var	SmtpResponse	$lastResponse */
 	protected $lastResponse;
 
-	/** @var	CacheAdapterInterface	$cache */
+	/** @var	CacheInterface	$cache */
 	protected $cache;
 
 	/**
@@ -212,7 +212,7 @@ class Availability
 		}
 	}
 
-	public function setCache( CacheAdapterInterface $cache ): self
+	public function setCache( CacheInterface $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;

@@ -28,7 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Util;
 
-use CeusMedia\Cache\AdapterInterface;
+use CeusMedia\Cache\SimpleCacheInterface as CacheInterface;
+use CeusMedia\Cache\SimpleCacheFactory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 
@@ -57,11 +58,11 @@ use function trim;
  */
 class MX
 {
-	/**	@var	AdapterInterface	$cache */
+	/**	@var	CacheInterface	$cache */
 	protected $cache;
 
-	/** @var	bool				$useCache */
-	protected $useCache		= FALSE;
+	/** @var	bool			$useCache */
+	protected $useCache			= FALSE;
 
 	/**
 	 *	Constructor.
@@ -153,10 +154,10 @@ class MX
 	/**
 	 *	Sets cache.
 	 *	@access		public
-	 *	@param		AdapterInterface	$cache
+	 *	@param		CacheInterface	$cache
 	 *	@return		self
 	 */
-	public function setCache( AdapterInterface $cache ): self
+	public function setCache( CacheInterface $cache ): self
 	{
 		$this->useCache		= (bool) $cache;
 		$this->cache		= $cache;
