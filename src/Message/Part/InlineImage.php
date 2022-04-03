@@ -58,9 +58,6 @@ use function trim;
  */
 class InlineImage extends MessagePart
 {
-	/**	@var	string			$content */
-	protected $content;
-
 	/**	@var	string|NULL		$fileName */
 	protected $fileName;
 

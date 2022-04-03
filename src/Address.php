@@ -96,6 +96,7 @@ class Address
 
 	/**
 	 *	Alias for getInstance.
+	 *	@static
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 *	@codeCoverageIgnore
@@ -116,7 +117,7 @@ class Address
 	 */
 	public function get(): string
 	{
-		return self::render( $this );
+		return $this->render();
 	}
 
 	/**
@@ -150,6 +151,7 @@ class Address
 	/**
 	 *	Static constructor.
 	 *	@access		public
+	 *	@static
 	 *	@param		string|NULL		$string		Full mail address to parse, optional
 	 *	@return		self
 	 */

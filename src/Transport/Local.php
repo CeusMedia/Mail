@@ -112,7 +112,7 @@ class Local
 		$buffer	= new UI_OutputBuffer();
 		foreach( $receivers as $receiver ){
 			try{
-				$this->checkForInjection( $receiver );
+				$this->checkForInjection( $receiver->get() );
 				$result	= mail(
 					$receiver->getAddress(),
 					$subject,

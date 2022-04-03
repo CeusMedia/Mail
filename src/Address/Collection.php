@@ -45,7 +45,7 @@ use Iterator;
  */
 class Collection implements Countable, Iterator
 {
-	/** @var array $list */
+	/** @var Address[] $list */
 	protected $list		= [];
 
 	/** @var int $position */
@@ -82,9 +82,9 @@ class Collection implements Countable, Iterator
 	/**
 	 *	Returns current Value.
 	 *	@access		public
-	 *	@return		mixed
+	 *	@return		Address|NULL
 	 */
-	public function current()
+	public function current(): ?Address
 	{
 		if( $this->position >= $this->count() )
 			return NULL;

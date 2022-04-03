@@ -112,7 +112,7 @@ abstract class Part
 	protected $mimeType;
 
 	/**	@var	integer			$type			Detected type of part */
-	protected $type				= 0;
+	protected $type				= self::TYPE_UNKNOWN;
 
 	/**
 	 *	Convert content to UTF-8.
@@ -382,14 +382,16 @@ abstract class Part
 	 *	Applies encoding to UTF-8 content.
 	 *	@access		protected
 	 *	@static
-	 *	@param		string		$content		Content to be encode
+	 *	@param		string|NULL	$content		Content to be encode
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@param		boolean		$split			Flag: ... (default: yes)
 	 *	@return		string
 	 *	@throws		InvalidArgumentException	if encoding is invalid
 	 */
-	protected static function encodeContent( string $content, string $encoding, bool $split = TRUE ): string
+	protected static function encodeContent( ?string $content, string $encoding, bool $split = TRUE ): string
 	{
+		if( NULL === $content )
+			return '';
 		$delimiter	= Message::$delimiter;
 		$lineLength	= Message::$lineLength;
 		switch( strtolower( $encoding ) ){
