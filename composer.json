@@ -23,16 +23,17 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "php": ">=7.3 | ^8",
-    "ceus-media/common": "^0.8 | dev-master",
-    "ceus-media/cache": "*",
+    "php": ">=7.4 | ^8",
     "ext-imap": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ceus-media/common": "^0.8 | dev-master",
     "ceus-media/cache": ">=0.3",
     "ezyang/htmlpurifier": "dev-master"
   },
   "require-dev": {
-    "php": ">=7.3",
+    "php": ">=7.3 | ^8",
+    "ext-imap": "*",
+    "ext-json": "*",
     "phpunit/phpunit": "*",
     "phpstan/phpstan": "^1",
     "phpstan/phpstan-strict-rules": "^1",
