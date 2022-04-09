@@ -195,18 +195,16 @@ class Address
 	}
 
 	/**
-	 *	Renders full mail address by given parts.
+	 *	Renders full mail address.
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
-	 *	@param		Address		$address	Address to render
 	 *	@return		string
 	 *	@throws		RuntimeException		If domain is empty
 	 *	@throws		RuntimeException		If local part is empty
-	 *	@todo		Check behaviour: render methods always return member data, why with argument here?
 	 */
-	public function render( Address $address ): string
+	public function render(): string
 	{
-		return AddressRenderer::getInstance()->render( $address );
+		return AddressRenderer::getInstance()->render( $this );
 	}
 
 	/**
