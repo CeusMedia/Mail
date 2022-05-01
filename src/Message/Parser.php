@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message;
 
+use CeusMedia\Mail\Address as Address;
 use CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
@@ -105,7 +106,8 @@ class Parser
 				case 'cc':
 				case 'bcc':
 					$addresses	= AddressCollectionParser::getInstance()->parse( $field->getValue() );
-					foreach( $addresses as $address )
+					/** @var Address $address */
+					foreach( $addresses->filter() as $address )
 						$message->addRecipient( $address, NULL, $field->getName() );
 					break;
 			}

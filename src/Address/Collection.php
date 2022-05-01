@@ -92,6 +92,12 @@ class Collection implements Countable, Iterator
 		return $this->list[$this->position];
 	}
 
+	public function filter(): self
+	{
+		$this->list	= array_filter( $this->list );
+		return $this;
+	}
+
 	public function getAll(): array
 	{
 		return $this->list;

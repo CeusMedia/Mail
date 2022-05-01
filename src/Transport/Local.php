@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Transport;
 
+use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
@@ -89,7 +90,7 @@ class Local
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new InvalidArgumentException( 'No mail sender defined' );
-		if( 0 === count( $receivers ) )
+		if( 0 === count( $receivers->filter() ) )
 			throw new InvalidArgumentException( 'No mail receiver defined' );
 		if( 0 === strlen( trim( $subject ) ) )
 			throw new InvalidArgumentException( 'No mail subject defined' );
@@ -110,7 +111,8 @@ class Local
 
 		$list	= [];
 		$buffer	= new UI_OutputBuffer();
-		foreach( $receivers as $receiver ){
+		/** @var Address $receiver */
+		foreach( $receivers->filter() as $receiver ){
 			try{
 				$this->checkForInjection( $receiver->get() );
 				$result	= mail(
