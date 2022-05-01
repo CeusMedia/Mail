@@ -130,8 +130,10 @@ class MX
 	public function fromHostname( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		$useCache	= $useCache && $this->useCache;
-		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
-			return json_decode( $this->cache->get( 'mx:'.$hostname ), TRUE, 512, JSON_THROW_ON_ERROR );
+		if( $useCache && $this->cache->has( 'mx:'.$hostname ) ){
+			$cacheValue	= strval( $this->cache->get( 'mx:'.$hostname ) );
+			return (array) json_decode( $cacheValue, TRUE, 512, JSON_THROW_ON_ERROR );
+		}
 		$servers	= [];
 		getmxrr( $hostname, $mxRecords, $mxWeights );
 		if( !$mxRecords && $strict )

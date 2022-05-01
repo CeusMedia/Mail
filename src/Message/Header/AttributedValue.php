@@ -76,7 +76,8 @@ class AttributedValue
 	}
 
 	/**
-	 *	Returns value of header attribute, if set. NULL otherwise.
+	 *	Returns value of header attribute as string, if set. NULL otherwise.
+	 *
 	 *	@access		public
 	 *	@param		string		$name			Name of header attribute to get
 	 *	@param		mixed		$default		Optional: Value to return if key is not set
@@ -84,7 +85,10 @@ class AttributedValue
 	 */
 	public function getAttribute( string $name, $default = NULL ): ?string
 	{
-		return $this->attributes->get( $name, $default );
+		$value	= $this->attributes->get( $name, $default );
+		if( NULL !== $value )
+ 			$value	= strval( $value );
+		return $value;
 	}
 
 	/**
