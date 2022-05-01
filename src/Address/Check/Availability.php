@@ -99,37 +99,59 @@ class Availability
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		string|NULL			$key			Response data key (error|code|message)
-	 *	@throws		RangeException						if given key is invalid
-	 *	@return		object|string|integer|NULL
+	 *	@return		SmtpResponse
 	 *	@deprecated	use getLastResponse instead
 	 *	@codeCoverageIgnore
 	 */
-	public function getLastError( ?string $key = NULL )
+	public function getLastError(): SmtpResponse
 	{
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
 			->message(  'Use method getLastResponse instead' );
-		return $this->getLastResponse( $key );
+		return $this->getLastResponse();
 	}
 
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		string|NULL			$key			Response data key (error|request|response|code|message)
-	 *	@throws		RangeException						if given key is invalid
-	 *	@return		object|string|integer|NULL
+	 *	@param		string		$key		Response data key (error|code|message)
+	 *	@return		mixed
+	 *	@deprecated	use getLastResponse instead
+	 *	@codeCoverageIgnore
 	 */
-	public function getLastResponse( ?string $key = NULL )
+	public function getLastErrorValue( string $key )
+	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getLastResponseValue instead' );
+		return $this->getLastResponseValue( $key );
+	}
+
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		SmtpResponse
+	 */
+	public function getLastResponse(): SmtpResponse
+	{
+		return $this->lastResponse;
+	}
+
+	/**
+	 *	...
+	 *	@access		public
+	 *	@param		string		$key		Response data key (error|request|response|code|message)
+	 *	@throws		RangeException			if given key is invalid
+	 *	@return		mixed
+	 */
+	public function getLastResponseValue( string $key )
 	{
 		$properties = get_object_vars( $this->lastResponse );
-		if( NULL !== $key ){
-			if( array_key_exists( $key, $properties ) )
-				return $properties[$key];
+		if( !array_key_exists( $key, $properties ) )
 			throw new RangeException( 'Unknown key: '.$key );
-		}
-		return (object) $properties;
+		return $properties[$key];
 	}
 
 	/**
@@ -145,7 +167,7 @@ class Availability
 			$receiver	= new Address( $receiver );
 		if( !$force ){
 			if( $this->cache->has( 'user:'.$receiver->getAddress() ) ){
-				return $this->cache->get( 'user:'.$receiver->getAddress() );
+				return (bool) $this->cache->get( 'user:'.$receiver->getAddress() );
 			}
 		}
 
