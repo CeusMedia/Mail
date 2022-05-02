@@ -50,18 +50,6 @@ use function phpversion;
 class Deprecation extends CommonDeprecation
 {
 	/**
-	 *	Contructor, needs to be called statically by getInstance.
-	 *	Will call onInit at the end to handle self detection.
-	 *	@access		protected
-	 *	@return		void
-	 */
-	protected function __construct()
-	{
-		$this->phpVersion	= phpversion();
-		$this->onInit();
-	}
-
-	/**
 	 *	Event to handle self detection on end of static construction.
 	 *	Will detect library version.
 	 *	Will set error version to curent library version by default.
