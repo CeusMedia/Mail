@@ -85,9 +85,8 @@ class AttributedValue
 	 */
 	public function getAttribute( string $name, $default = NULL ): ?string
 	{
+		/** @var string|NULL $value */
 		$value	= $this->attributes->get( $name, $default );
-		if( NULL !== $value )
- 			$value	= strval( $value );
 		return $value;
 	}
 

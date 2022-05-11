@@ -128,6 +128,7 @@ abstract class Part
 	{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
+				/** @var string|FALSE $result */
 				$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
 				if( FALSE === $result )
 					throw new RuntimeException( 'Decoding 7bit content failed' );
@@ -398,8 +399,10 @@ abstract class Part
 			case '7bit':
 			case '8bit':
 				$result	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				/** @var string|FALSE $result */
 				if( FALSE === $result )
 					$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				/** @var string|FALSE $result */
 				if( FALSE !== $result )
 					$content	= $result;
 				if( $split && strlen( $content ) > $lineLength )

@@ -131,8 +131,12 @@ class MX
 	{
 		$useCache	= $useCache && $this->useCache;
 		if( $useCache && $this->cache->has( 'mx:'.$hostname ) ){
-			$cacheValue	= strval( $this->cache->get( 'mx:'.$hostname ) );
-			return (array) json_decode( $cacheValue, TRUE, 512, JSON_THROW_ON_ERROR );
+			/** @var string $json */
+			$json	= $this->cache->get( 'mx:'.$hostname );
+			$records	= json_decode( $json, TRUE, 512, JSON_THROW_ON_ERROR );
+			if( !is_array( $records ) )
+				throw new RuntimeException( 'Cache item "mx:'.$hostname.'" is invalid' );
+			return $records;
 		}
 		$servers	= [];
 		getmxrr( $hostname, $mxRecords, $mxWeights );

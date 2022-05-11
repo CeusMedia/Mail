@@ -179,6 +179,7 @@ class SMTP
 				$this->checkResponse( [ 235 ], SmtpResponse::ERROR_LOGIN_FAILED );
 			}
 		}
+		/** @var Address $sender */
 		$sender		= $message->getSender();
 		$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
 		$this->checkResponse( [ 250 ] );

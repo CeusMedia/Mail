@@ -138,14 +138,20 @@ class Collection implements Countable, Iterator
 		$this->position	= 0;
 	}
 
+	/**
+	 *	Returns array of all addresses.
+	 *	Eather as address objects or strings (rendered addresses).
+	 *	@access		public
+	 *	@param		boolean		$renderValues		Return strings (rendered addresses), default: no
+	 *	@return		array
+	 */
 	public function toArray( bool $renderValues = FALSE ): array
 	{
 		$list	= $this->list;
-		if( $renderValues ){
-			$list	= [];
-			foreach( $this->list as $address )
-				$list[]	= $address->get();
-		}
+		if( $renderValues )
+			array_walk( $list, function( Address $address ){
+				return $address->render();
+			} );
 		return $list;
 	}
 
