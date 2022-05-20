@@ -31,6 +31,7 @@ namespace CeusMedia\Mail;
 use CeusMedia\Mail\Address as Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Library;
 use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
@@ -97,9 +98,6 @@ class Message
 	/**	@var		string					$userAgent		Mailer agent aka user agent */
 	protected $userAgent;
 
-	/**	@var		string					$defaultUserAgent	Default user agent */
-	protected static $defaultUserAgent		= 'CeusMedia::Mail/2.4.1';
-
 	/**
 	 *	Constructor.
 	 *	@access		public
@@ -111,13 +109,13 @@ class Message
 		$this->recipients['to']		= new AddressCollection();
 		$this->recipients['cc']		= new AddressCollection();
 		$this->recipients['bcc']	= new AddressCollection();
-		$this->evaluateUserAgent();
+		$this->setUserAgent(Library::getUserAgent());
 	}
 
 	public function __wakeup()
 	{
-		if( 0 === strlen( trim( $this->userAgent ) ) )
-			$this->evaluateUserAgent();
+		if( NULL === $this->userAgent || 0 === strlen( trim( $this->userAgent ) ) )
+			$this->setUserAgent(Library::getUserAgent());
 	}
 
 	/**
@@ -623,27 +621,5 @@ class Message
 	{
 		$this->userAgent = $userAgent;
 		return $this;
-	}
-
-	//  --  PROTECTED  --  //
-
-	/**
-	 *	...
-	 *	@access		protected
-	 *	@return		void
-	 */
-	protected function evaluateUserAgent()
-	{
-		$this->userAgent	= static::$defaultUserAgent;
-		$filePath			= dirname( __DIR__ ).'/Mail.ini';
-		if( file_exists( $filePath ) ){
-			$config		= parse_ini_file( $filePath, TRUE );
-			if( FALSE !== $config ){
-				$identifier	= $config['library']['identifier'] ?? NULL;
-				$version	= $config['library']['version'] ?? NULL;
-				if( $identifier && $version )
-					$this->setUserAgent( $identifier.'/'.$version );
-			}
-		}
 	}
 }
