@@ -26,18 +26,18 @@
     "php": ">=7.4 | ^8",
     "ext-imap": "*",
     "ext-json": "*",
-    "ceus-media/common": ">=0.8.6 | dev-master",
+    "ceus-media/common": "^0.9 | ^0.9@dev | >=0.8.6 | dev-master",
     "ceus-media/cache": ">=0.3",
     "ezyang/htmlpurifier": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "*",
-    "phpstan/phpstan": "^1",
-    "phpstan/phpstan-strict-rules": "^1",
+    "phpstan/phpstan": "*",
+    "phpstan/phpstan-strict-rules": "*",
     "squizlabs/php_codesniffer": "*",
     "phan/phan": "^v5",
-    "ceus-media/doc-creator": "dev-master",
-    "ceus-media/phan-viewer": "dev-master",
+    "ceus-media/doc-creator": "*",
+    "ceus-media/phan-viewer": "* | dev-master",
     "ceus-media/bootstrap": ">=0.5.2",
     "rector/rector": "*",
     "brianium/paratest": "*"
