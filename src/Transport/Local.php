@@ -28,6 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Transport;
 
+use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
 
@@ -42,7 +44,6 @@ use function implode;
 use function date;
 use function is_array;
 use function mail;
-use function preg_match;
 use function strlen;
 use function trim;
 
@@ -57,6 +58,8 @@ use function trim;
  */
 class Local
 {
+	use RegularStringHandling;
+
 	/**
 	 *	Constructor.
 	 *	@access		public
@@ -87,7 +90,7 @@ class Local
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new InvalidArgumentException( 'No mail sender defined' );
-		if( 0 === count( $receivers ) )
+		if( 0 === count( $receivers->filter() ) )
 			throw new InvalidArgumentException( 'No mail receiver defined' );
 		if( 0 === strlen( trim( $subject ) ) )
 			throw new InvalidArgumentException( 'No mail subject defined' );
@@ -100,7 +103,7 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-		if( 0 !== strlen( trim( $message->getUserAgent() ) ) )
+		if( self::strHasContent( $message->getUserAgent() ) )
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
 		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
 
@@ -108,9 +111,10 @@ class Local
 
 		$list	= [];
 		$buffer	= new UI_OutputBuffer();
-		foreach( $receivers as $receiver ){
+		/** @var Address $receiver */
+		foreach( $receivers->filter() as $receiver ){
 			try{
-				$this->checkForInjection( $receiver );
+				$this->checkForInjection( $receiver->get() );
 				$result	= mail(
 					$receiver->getAddress(),
 					$subject,
@@ -163,7 +167,7 @@ class Local
 	 */
 	protected function checkForInjection( $value )
 	{
-		if( 0 < preg_match( '/(\r|\n)/', $value ) )
+		if( self::regMatch( '/(\r|\n)/', $value ) )
 			throw new InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }

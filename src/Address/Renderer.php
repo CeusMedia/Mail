@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Address;
 
 use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
 
 use RuntimeException;
@@ -46,6 +47,8 @@ use RuntimeException;
  */
 class Renderer
 {
+	use RegularStringHandling;
+
 	/**
 	 *	Static constructor.
 	 *	@access			public
@@ -53,6 +56,7 @@ class Renderer
 	 *	@return			self
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create(): self
 	{
@@ -89,9 +93,9 @@ class Renderer
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
 		$name		= $address->getName( FALSE );
-		if( 0 === strlen( trim( $name ) ) )
+		if( !self::strHasContent( $name ) )
 			return $localPart.'@'.$domain;
-		if( 1 !== preg_match( '/^\w+$/', $name ) )
+		if( !self::regMatch( '/^\w+$/', $name ) )
 			$name	= '"'.$name.'"';
 		return $name.' <'.$localPart.'@'.$domain.'>';
 	}

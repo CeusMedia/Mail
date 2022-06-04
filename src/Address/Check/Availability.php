@@ -28,8 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
-use CeusMedia\Cache\AdapterInterface as CacheAdapterInterface;
-use CeusMedia\Cache\Factory as CacheFactory;
+use CeusMedia\Cache\SimpleCacheInterface as CacheInterface;
+use CeusMedia\Cache\SimpleCacheFactory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
@@ -52,7 +52,6 @@ use function fsockopen;
 use function in_array;
 use function is_string;
 use function join;
-use function preg_match;
 use function stream_socket_enable_crypto;
 use function trim;
 
@@ -78,7 +77,7 @@ class Availability
 	/** @var	SmtpResponse	$lastResponse */
 	protected $lastResponse;
 
-	/** @var	CacheAdapterInterface	$cache */
+	/** @var	CacheInterface	$cache */
 	protected $cache;
 
 	/**
@@ -100,36 +99,59 @@ class Availability
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		string|NULL			$key			Response data key (error|code|message)
-	 *	@throws		RangeException						if given key is invalid
-	 *	@return		object|string|integer|NULL
+	 *	@return		SmtpResponse
 	 *	@deprecated	use getLastResponse instead
+	 *	@codeCoverageIgnore
 	 */
-	public function getLastError( ?string $key = NULL )
+	public function getLastError(): SmtpResponse
 	{
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
 			->message(  'Use method getLastResponse instead' );
-		return $this->getLastResponse( $key );
+		return $this->getLastResponse();
 	}
 
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		string|NULL			$key			Response data key (error|request|response|code|message)
-	 *	@throws		RangeException						if given key is invalid
-	 *	@return		object|string|integer|NULL
+	 *	@param		string		$key		Response data key (error|code|message)
+	 *	@return		mixed
+	 *	@deprecated	use getLastResponse instead
+	 *	@codeCoverageIgnore
 	 */
-	public function getLastResponse( ?string $key = NULL )
+	public function getLastErrorValue( string $key )
+	{
+		Deprecation::getInstance()
+			->setErrorVersion( '2.5' )
+			->setExceptionVersion( '2.6' )
+			->message(  'Use method getLastResponseValue instead' );
+		return $this->getLastResponseValue( $key );
+	}
+
+	/**
+	 *	...
+	 *	@access		public
+	 *	@return		SmtpResponse
+	 */
+	public function getLastResponse(): SmtpResponse
+	{
+		return $this->lastResponse;
+	}
+
+	/**
+	 *	...
+	 *	@access		public
+	 *	@param		string		$key		Response data key (error|request|response|code|message)
+	 *	@throws		RangeException			if given key is invalid
+	 *	@return		mixed
+	 */
+	public function getLastResponseValue( string $key )
 	{
 		$properties = get_object_vars( $this->lastResponse );
-		if( NULL !== $key ){
-			if( array_key_exists( $key, $properties ) )
-				return $properties[$key];
+		if( !array_key_exists( $key, $properties ) )
 			throw new RangeException( 'Unknown key: '.$key );
-		}
-		return (object) $properties;
+		return $properties[$key];
 	}
 
 	/**
@@ -145,7 +167,7 @@ class Availability
 			$receiver	= new Address( $receiver );
 		if( !$force ){
 			if( $this->cache->has( 'user:'.$receiver->getAddress() ) ){
-				return $this->cache->get( 'user:'.$receiver->getAddress() );
+				return (bool) $this->cache->get( 'user:'.$receiver->getAddress() );
 			}
 		}
 
@@ -212,7 +234,7 @@ class Availability
 		}
 	}
 
-	public function setCache( CacheAdapterInterface $cache ): self
+	public function setCache( CacheInterface $cache ): self
 	{
 		$this->cache	= $cache;
 		return $this;

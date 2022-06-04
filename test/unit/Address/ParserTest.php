@@ -9,6 +9,7 @@
 namespace CeusMedia\Mail\Test\Unit\Address;
 
 use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\Mail\Address\Parser;
 
 /**
  *	Unit test for mail address parser.
@@ -20,11 +21,39 @@ use CeusMedia\Mail\Test\TestCase;
 class ParserTest extends TestCase
 {
 	/**
+	 *	@codeCoverageIgnore
+	 *	@covers		::create
+	 */
+/*	public function testCreate()
+	{
+		$this->markTestSkipped();
+		if( version_compare( $this->version, '2.6' ) >= 0 ){
+			$this->expectException();
+			$this->expectExceptionMessageMatches( '/^Deprecated/' );
+
+		}
+		else if( version_compare( $this->version, '2.5' ) >= 0 ){
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '/^Deprecated/' );
+		}
+		$parser	= Parser::create();
+	}*/
+
+	/**
+	 *	@covers		::getInstance
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Parser::getInstance();
+		$this->assertEquals( new Parser(), $instance );
+	}
+
+	/**
 	 *	@covers		::parse
 	 */
 	public function testParse()
 	{
-		$parser	= new \CeusMedia\Mail\Address\Parser();
+		$parser	= new Parser();
 
 		$expected	= 'Hans.Mustermann@muster-server.tld';
 		$address	= $parser->parse( 'Hans.Mustermann@muster-server.tld' );
@@ -50,7 +79,7 @@ class ParserTest extends TestCase
 	public function testParseException()
 	{
 		$this->expectException( 'InvalidArgumentException' );
-		$parser	= new \CeusMedia\Mail\Address\Parser();
+		$parser	= new Parser();
 		$parser->parse( 'invalid' );
 	}
 }

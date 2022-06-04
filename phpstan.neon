@@ -8,5 +8,5 @@ parameters:
 		- src
 	checkMissingIterableValueType: false
 	checkGenericClassInNonGenericObjectType: false
-	reportMaybesInPropertyPhpDocTypes: false
+#	reportMaybesInPropertyPhpDocTypes: false
 #	treatPhpDocTypesAsCertain: false

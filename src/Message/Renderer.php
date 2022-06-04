@@ -73,6 +73,7 @@ class Renderer
 	 *	@return			self
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create(): self
 	{
@@ -112,8 +113,11 @@ class Renderer
 		}
 		if( !$headers->hasField( 'Date' ) )
 			$headers->setFieldPair( 'Date', date( 'D, d M Y H:i:s O', time() ) );
-		$encodedSubject	= Encoding::encodeIfNeeded( $subject, self::$encodingSubject );
+
+		$encoder	= Encoding::getInstance();
+		$encodedSubject	= $encoder->encodeIfNeeded( $subject, self::$encodingSubject );
 		$headers->setFieldPair( 'Subject', $encodedSubject );
+
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
 		$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
 

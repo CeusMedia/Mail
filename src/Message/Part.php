@@ -65,7 +65,6 @@ use function rtrim;
  *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
 abstract class Part
 {
@@ -113,7 +112,7 @@ abstract class Part
 	protected $mimeType;
 
 	/**	@var	integer			$type			Detected type of part */
-	protected $type				= 0;
+	protected $type				= self::TYPE_UNKNOWN;
 
 	/**
 	 *	Convert content to UTF-8.
@@ -129,6 +128,7 @@ abstract class Part
 	{
 		switch( strtolower( $encoding ) ){
 			case '7bit':
+				/** @var string|FALSE $result */
 				$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
 				if( FALSE === $result )
 					throw new RuntimeException( 'Decoding 7bit content failed' );
@@ -383,22 +383,26 @@ abstract class Part
 	 *	Applies encoding to UTF-8 content.
 	 *	@access		protected
 	 *	@static
-	 *	@param		string		$content		Content to be encode
+	 *	@param		string|NULL	$content		Content to be encode
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@param		boolean		$split			Flag: ... (default: yes)
 	 *	@return		string
 	 *	@throws		InvalidArgumentException	if encoding is invalid
 	 */
-	protected static function encodeContent( string $content, string $encoding, bool $split = TRUE ): string
+	protected static function encodeContent( ?string $content, string $encoding, bool $split = TRUE ): string
 	{
+		if( NULL === $content )
+			return '';
 		$delimiter	= Message::$delimiter;
 		$lineLength	= Message::$lineLength;
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
 				$result	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
+				/** @var string|FALSE $result */
 				if( FALSE === $result )
 					$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+				/** @var string|FALSE $result */
 				if( FALSE !== $result )
 					$content	= $result;
 				if( $split && strlen( $content ) > $lineLength )

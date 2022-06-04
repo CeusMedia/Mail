@@ -23,14 +23,24 @@ use CeusMedia\Mail\Test\TestCase;
 class ParserTest extends TestCase
 {
 	/**
+	 *	@covers		::getInstance
+	 *	@todo		test giving strategies, too! (needs access to protected $strategy)
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Parser::getInstance();
+		$this->assertEquals( new Parser(), $instance );
+	}
+
+	/**
 	 *	@covers		::parse
 	 */
-	public function testParse()
+/*	public function testParse()
 	{
 		$this->markTestIncomplete( 'No test defined for Message\\Header\\Parser' );
 
 		$parser	= Parser::getInstance();
-	}
+	}*/
 
 	/**
 	 *	@covers		::parseAttributedHeaderValue

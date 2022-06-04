@@ -43,7 +43,6 @@ use function sprintf;
  *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
 class AttributedValue
 {
@@ -73,11 +72,12 @@ class AttributedValue
 	 */
 	public function __toString(): string
 	{
-		return $this->toString( TRUE );
+		return $this->toString();
 	}
 
 	/**
-	 *	Returns value of header attribute, if set. NULL otherwise.
+	 *	Returns value of header attribute as string, if set. NULL otherwise.
+	 *
 	 *	@access		public
 	 *	@param		string		$name			Name of header attribute to get
 	 *	@param		mixed		$default		Optional: Value to return if key is not set
@@ -85,7 +85,9 @@ class AttributedValue
 	 */
 	public function getAttribute( string $name, $default = NULL ): ?string
 	{
-		return $this->attributes->get( $name, $default );
+		/** @var string|NULL $value */
+		$value	= $this->attributes->get( $name, $default );
+		return $value;
 	}
 
 	/**
@@ -158,11 +160,10 @@ class AttributedValue
 	/**
 	 *	Returns a representative string of header field value.
 	 *	@access		public
-	 *	@param		boolean		$keepCase	Flag: do not use mb_convert_case or ucwords, protected uppercased acronyms
 	 *	@return		string
 	 */
-	public function toString( bool $keepCase = TRUE ): string
+	public function toString(): string
 	{
-		return MessageHeaderRenderer::renderAttributedValue( $this, $keepCase );
+		return MessageHeaderRenderer::renderAttributedValue( $this );
 	}
 }

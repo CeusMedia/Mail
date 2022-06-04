@@ -28,11 +28,11 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address;
 
+use CeusMedia\Mail\Conduct\RegularStringHandling;
+
 use function array_pop;
 use function array_reverse;
 use function join;
-use function preg_match;
-use function preg_split;
 
 /**
  *	Address name parser.
@@ -46,6 +46,8 @@ use function preg_split;
  */
 class Name
 {
+	use RegularStringHandling;
+
 	/** @var		string|NULL		$firstname */
 	protected $firstname;
 
@@ -83,22 +85,18 @@ class Name
 	public static function splitNameParts( Name $name ): Name
 	{
 		$fullname	= trim( $name->getFullname() ?? '' );
-		$fullname	= preg_replace( '/ +/', ' ', $fullname );
-		if( NULL !== $fullname ){
-			if( 1 === preg_match( "/ +/", $fullname ) ){
-				$name->setFullname( $fullname );
-				$parts	= preg_split( "/ +/", $fullname );
-				if( FALSE !== $parts && 0 !== count( $parts ) ){
-					if( $parts[0] === strtoupper( $parts[0] ) ){
-						$surname	= array_shift( $parts );
-						$name->setSurname( ucfirst( strtolower( $surname ) ) );
-						$name->setFirstname( join( ' ', $parts ) );
-					}
-					else {
-						$name->setSurname( array_pop( $parts ) );
-						$name->setFirstname( join( ' ', $parts ) );
-					}
-				}
+		$fullname	= self::regReplace( '/ +/', ' ', $fullname );
+		if( self::regMatch( "/ +/", $fullname ) ){
+			$name->setFullname( $fullname );
+			$parts	= self::regSplit( "/ +/", $fullname );
+			if( $parts[0] === strtoupper( $parts[0] ) ){
+				$surname	= array_shift( $parts );
+				$name->setSurname( ucfirst( strtolower( $surname ) ) );
+				$name->setFirstname( join( ' ', $parts ) );
+			}
+			else {
+				$name->setSurname( array_pop( $parts ) );
+				$name->setFirstname( join( ' ', $parts ) );
 			}
 		}
 		return $name;
@@ -113,10 +111,9 @@ class Name
 	 */
 	public static function swapCommaSeparatedNameParts( Name $name ): Name
 	{
-		if( 1 === preg_match( "/, +/", $name->getFullname() ?? '' ) ){
-			$parts	= preg_split( "/, +/", $name->getFullname() ?? '', 2 );
-			if( FALSE !== $parts )
-				$name->setFullname( join( ' ', array_reverse( $parts ) ) );
+		if( self::regMatch( "/, +/", $name->getFullname() ?? '' ) ){
+			$parts	= self::regSplit( "/, +/", $name->getFullname() ?? '', 2 );
+			$name->setFullname( join( ' ', array_reverse( $parts ) ) );
 		}
 		return $name;
 	}

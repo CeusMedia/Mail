@@ -96,8 +96,10 @@ class Address
 
 	/**
 	 *	Alias for getInstance.
+	 *	@static
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create( string $string = NULL ): self
 	{
@@ -115,7 +117,7 @@ class Address
 	 */
 	public function get(): string
 	{
-		return self::render( $this );
+		return $this->render();
 	}
 
 	/**
@@ -149,6 +151,7 @@ class Address
 	/**
 	 *	Static constructor.
 	 *	@access		public
+	 *	@static
 	 *	@param		string|NULL		$string		Full mail address to parse, optional
 	 *	@return		self
 	 */
@@ -192,18 +195,16 @@ class Address
 	}
 
 	/**
-	 *	Renders full mail address by given parts.
+	 *	Renders full mail address.
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
 	 *	@access		public
-	 *	@param		Address		$address	Address to render
 	 *	@return		string
 	 *	@throws		RuntimeException		If domain is empty
 	 *	@throws		RuntimeException		If local part is empty
-	 *	@todo		Check behaviour: render methods always return member data, why with argument here?
 	 */
-	public function render( Address $address ): string
+	public function render(): string
 	{
-		return AddressRenderer::getInstance()->render( $address );
+		return AddressRenderer::getInstance()->render( $this );
 	}
 
 	/**

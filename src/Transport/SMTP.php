@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Transport;
 
+use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
@@ -178,10 +179,12 @@ class SMTP
 				$this->checkResponse( [ 235 ], SmtpResponse::ERROR_LOGIN_FAILED );
 			}
 		}
+		/** @var Address $sender */
 		$sender		= $message->getSender();
 		$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
 		$this->checkResponse( [ 250 ] );
-		foreach( $message->getRecipientsByType( 'TO' ) as $receiver ){
+		/** @var Address $receiver */
+		foreach( $message->getRecipientsByType( 'TO' )->filter() as $receiver ){
 			$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
 			$this->checkResponse( [ 250 ] );
 		}

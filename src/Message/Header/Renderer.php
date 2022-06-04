@@ -44,7 +44,6 @@ use DomainException;
  *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  *	@todo			implement
  *	@todo			code doc
  */
@@ -115,6 +114,14 @@ class Renderer
 //		if( preg_match( "/^[\w\s\.-:#]+$/", $field->getValue() ) )
 //			return $field->getName( $keepCase ).": ".$field->getValue();
 //		return iconv_mime_encode( $field->getName(), $field->getValue(), self::$preferences );
+	}
+
+	public static function renderAttributedValue( AttributedValue $value ): string
+	{
+		$attr	= '';
+		foreach( $value->getAttributes() as $key => $content )
+			$attr	.= sprintf( '; %s="%s"', $key, addslashes( $content ) );
+		return $value->getValue().$attr;
 	}
 
 	/**

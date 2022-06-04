@@ -74,12 +74,41 @@ return '
 	</div>
 </div>
 <style>
-li > span.list-item-key {
+
+/*
+ul.facts-attribute-list {
+	list-item-style: none;
+	}
+ul.facts-header-list {
+	list-item-style: none;
+	}
+*/
+ul.facts-attribute-list li {
+	margin-left: 20px;
+	}
+li > span.not-list-item-key {
 	border: 1px solid #AAA;
 	background-color: #EEE;
 	border-radius: 3px;
 	padding: 0px 4px;
 	display: inline-block;
-}
+	}
+li > span.list-item-key {
+	display: inline-block;
+	margin-top: 1px;
+	padding: 1px 6px 0px 5px;
+	border-width: 0px 0px 1px 2px;
+	border-style: solid;
+	border-color: #AAA;
+	background-color: #EEE;
+	}
+
+li > span.list-item-attribute {
+	border: 1px solid #CCC;
+	background-color: #F7F7F7;
+	border-radius: 3px;
+	padding: 0px 4px;
+	display: inline-block;
+	}
 
 </style>';

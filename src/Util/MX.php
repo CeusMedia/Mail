@@ -28,7 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Util;
 
-use CeusMedia\Cache\AdapterInterface;
+use CeusMedia\Cache\SimpleCacheInterface as CacheInterface;
+use CeusMedia\Cache\SimpleCacheFactory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 
@@ -57,11 +58,11 @@ use function trim;
  */
 class MX
 {
-	/**	@var	AdapterInterface	$cache */
+	/**	@var	CacheInterface	$cache */
 	protected $cache;
 
-	/** @var	bool				$useCache */
-	protected $useCache		= FALSE;
+	/** @var	bool			$useCache */
+	protected $useCache			= FALSE;
 
 	/**
 	 *	Constructor.
@@ -78,6 +79,7 @@ class MX
 	 *	@return			self
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create(): self
 	{
@@ -128,8 +130,14 @@ class MX
 	public function fromHostname( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		$useCache	= $useCache && $this->useCache;
-		if( $useCache && $this->cache->has( 'mx:'.$hostname ) )
-			return json_decode( $this->cache->get( 'mx:'.$hostname ), TRUE, 512, JSON_THROW_ON_ERROR );
+		if( $useCache && $this->cache->has( 'mx:'.$hostname ) ){
+			/** @var string $json */
+			$json	= $this->cache->get( 'mx:'.$hostname );
+			$records	= json_decode( $json, TRUE, 512, JSON_THROW_ON_ERROR );
+			if( !is_array( $records ) )
+				throw new RuntimeException( 'Cache item "mx:'.$hostname.'" is invalid' );
+			return $records;
+		}
 		$servers	= [];
 		getmxrr( $hostname, $mxRecords, $mxWeights );
 		if( !$mxRecords && $strict )
@@ -152,10 +160,10 @@ class MX
 	/**
 	 *	Sets cache.
 	 *	@access		public
-	 *	@param		AdapterInterface	$cache
+	 *	@param		CacheInterface	$cache
 	 *	@return		self
 	 */
-	public function setCache( AdapterInterface $cache ): self
+	public function setCache( CacheInterface $cache ): self
 	{
 		$this->useCache		= (bool) $cache;
 		$this->cache		= $cache;
@@ -163,9 +171,12 @@ class MX
 	}
 }
 
-// support windows platforms
 if( !function_exists( 'getmxrr' ) )
 {
+	/**
+	 *	support windows platforms
+	 *	@codeCoverageIgnore
+	 */
 	function getmxrr( string $hostname, array &$mxhosts, array &$mxweight ): bool
 	{
 		$pattern	= "/^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$/";

@@ -28,6 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use CeusMedia\Mail\Conduct\RegularStringHandling;
+
 use ADT_List_Dictionary as Dictionary;
 
 use RangeException;
@@ -43,9 +45,6 @@ use function is_array;
 use function is_null;
 use function ltrim;
 use function mb_strlen;
-use function preg_match;
-use function preg_replace;
-use function preg_split;
 use function strtoupper;
 use function substr;
 use function trim;
@@ -59,11 +58,12 @@ use function urldecode;
  *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  *	@todo			implement IMAP parser
  */
 class Parser
 {
+	use RegularStringHandling;
+
 	public const STRATEGY_AUTO				= 0;
 	public const STRATEGY_OWN				= 3;	//  own implementation, supports DKIM key folding and RFC 2231
 	public const STRATEGY_ICONV				= 4;	//  iconv, not supporting DKIM key folding and RFC 2231
@@ -130,44 +130,35 @@ class Parser
 	 */
 	public static function parseAttributedHeaderValue( string $headerValue ): AttributedValue
 	{
-		$string	= preg_replace( "/\r?\n/", "", $headerValue );
-		if( NULL === $string )
-			throw new RuntimeException( 'Unfolding the value failed' );
-		$parts	= preg_split( '/\s*;\s*/', trim( $string ) );
-		if( FALSE === $parts || 0 === count( $parts ) )
-			throw new RuntimeException( 'Parsing the value failed' );
+		$string	= self::regReplace( "/\r?\n/", "", $headerValue, 'Unfolding the value failed' );
+		$parts	= self::regSplit( '/\s*;\s*/', trim( $string ), 0, 'Parsing the value failed' );
 		$value	= array_shift( $parts );
 		$list	= [];
 		if( 0 !== count( $parts ) ){
 			foreach( $parts as $part ){
-				$hasAssignment	= preg_match( '/=/', $part );
-				if( FALSE === $hasAssignment )
-					throw new RuntimeException( 'Parsing the value failed' );
-				if( 1 === preg_match( '/=/', $part ) ){
-					$p = preg_split( '/\s?=\s?/', $part, 2 );
-					if( FALSE === $p )
-						throw new RuntimeException( 'Parsing the value failed' );
-					if( trim( $p[1][0] ) === '"' )
-						$p[1]	= substr( trim( $p[1] ), 1, -1 );
-					$hasLabel = preg_match( '/\*\d+\*?$/', $p[0] );
-					if( FALSE === $hasLabel )
-						throw new RuntimeException( 'Parsing the value failed' );
-					if( 1 === $hasLabel ){
-						$label	= preg_replace( '/^(.+)\*\d+\*?$/', '\\1', $p[0] );
-						if( !isset( $list[$label] ) )
-							$list[$label]	= '';
-						$list[$label]	.= stripslashes( $p[1] );
-					}
-					else
-						$list[$p[0]]	= stripslashes( $p[1] );
+				$hasAssignment	= self::regMatch( '/=/', $part, 'Parsing the value failed' );
+				if( !$hasAssignment )
+					continue;
+				$p = self::regSplit( '/\s?=\s?/', $part, 2, 'Parsing the value failed' );
+				if( trim( $p[1][0] ) === '"' )
+					$p[1]	= substr( trim( $p[1] ), 1, -1 );
+				$hasLabel	= self::regMatch( '/\*\d+\*?$/', $p[0], 'Parsing the value failed' );
+				$valueLine	= stripslashes( $p[1] );
+				if( $hasLabel ){
+					$label	= self::regReplace( '/^(.+)\*\d+\*?$/', '\\1', $p[0] );
+					if( !isset( $list[$label] ) )
+						$list[$label]	= '';
+					$list[$label]	.= $valueLine;
 				}
+				else
+					$list[$p[0]]	= $valueLine;
 			}
 		}
 
 		//  Apply RFC 2231 (https://datatracker.ietf.org/doc/html/rfc2231)
 		$rfc2231	= "/^(?<charset>[A-Z0-9\-]+)(\'(?<language>[A-Z\-]{0,5})\')(?<content>.*)$/i";	//  eG. utf-8'en'Some%20content
 		array_walk( $list, function( &$value, $key ) use ( $rfc2231 ): void {						//  apply RFC expr to list
-			if( 1 === preg_match( $rfc2231, $value, $matches ) ){									//  encoding prefix found
+			if( self::regMatch( $rfc2231, $value, NULL, $matches ) ){								//  encoding prefix found
 				$m	= (object) $matches;															//  shortcut matches
 				if( strtoupper( $m->charset ) !== 'UTF-8' )											//  encoding differs from UTF-8
 					$m->content    = iconv( $m->charset, 'UTF-8', $m->content );					//  recode content to UTF-8
@@ -212,17 +203,17 @@ class Parser
 
 	public static function parseByOwnStrategy( string $content ): Section
 	{
-		$lines		= preg_split( "/\r?\n/", $content );
-		if( FALSE === $lines )
-			throw new RuntimeException( 'Splitting of header failed' );
+		$encoder	= Encoding::getInstance();
+
+		$lines		= self::regSplit( "/\r?\n/", $content, 0, 'Splitting of header failed' );
 		$fws		= '';
 		$buffer		= [];
 		$field		= NULL;
 		$section	= new Section();
 		foreach( $lines as $nr => $line ){
-			if( 1 === preg_match( '/^\S+:/', $line ) ){
+			if( self::regMatch( '/^\S+:/', $line ) ){
 				[$key, $value] = explode( ':', $line, 2 );
-				$value	= Encoding::decodeIfNeeded( ltrim( $value ) );
+				$value	= $encoder->decodeByOwnStrategy( ltrim( $value ) );
 				$field	= new Field( $key, $value );
 				$section->addField( $field );
 				$buffer	= [$value];
@@ -230,15 +221,14 @@ class Parser
 			}
 			else if( NULL !== $field ){											//  line is folded line
 				if( 0 === mb_strlen( $fws ) )									//  folding white space not detected yet
-					$fws	= preg_replace( '/^(\s+).+$/', '\\1', $line );		//  get only folding white space
-				if( NULL === $fws )
-					throw new RuntimeException( 'Unfolding the value failed' );
+					$fws	= self::regReplace( '/^(\s+).+$/', '\\1', $line,	//  get only folding white space
+						'Unfolding the value failed' );
 				$reducedLine	= substr( $line, strlen( $fws ) );				//  reduce line by folding white space
-				if( 1 === preg_match( '/^\s/', $reducedLine ) )					//  reduced line still contains leading white space
+				if( self::regMatch( '/^\s/', $reducedLine ) )					//  reduced line still contains leading white space
 					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
 				else{															//  reduced line is folding @ level 1
 					$line		= ' '.ltrim( $line );							//  reduce leading white space to one
-					$buffer[]	= Encoding::decodeIfNeeded( $line );			//  collect decoded line
+					$buffer[]	= $encoder->decodeByOwnStrategy( $line );		//  collect decoded line
 				}
 				$field->setValue( join( $buffer ) );							//  set unfolded field value
 			}
@@ -246,13 +236,13 @@ class Parser
 
 		//  iterate all fields again to detect attributed values
 		$finalSection	= new Section();
-		foreach( $section->getFields() as $field ){
-			$attributedValue = self::parseAttributedHeaderValue( $field->getValue() );
+		foreach( $section->getFields() as $foundField ){
+			$attributedValue = self::parseAttributedHeaderValue( $foundField->getValue() );
 			if( $attributedValue->hasAttributes() ){
-				$field->setValue( $attributedValue->getValue() );				//  set unfolded field value
-				$field->setAttributes( $attributedValue->getAttributes() );
+				$foundField->setValue( $attributedValue->getValue() );				//  set unfolded field value
+				$foundField->setAttributes( $attributedValue->getAttributes() );
 			}
-			$finalSection->addField( $field );
+			$finalSection->addField( $foundField );
 		}
 		return $finalSection;
 	}

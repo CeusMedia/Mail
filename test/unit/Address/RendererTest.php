@@ -21,6 +21,14 @@ use CeusMedia\Mail\Test\TestCase;
  */
 class RendererTest extends TestCase
 {
+	/**
+	 *	@covers		::getInstance
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Renderer::getInstance();
+		$this->assertEquals( new Renderer(), $instance );
+	}
 
 	/**
 	 *	@covers		::create

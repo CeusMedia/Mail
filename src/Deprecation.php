@@ -50,12 +50,16 @@ use function phpversion;
 class Deprecation extends CommonDeprecation
 {
 	/**
-	 *	Constructor.
-	 *	@access		public
+	 *	Event to handle self detection on end of static construction.
+	 *	Will detect library version.
+	 *	Will set error version to curent library version by default.
+	 *	Will not set an exception version.
+	 *	@access		protected
 	 *	@return		void
 	 */
-	public function __construct()
+	protected function onInit(): void
 	{
+		parent::__construct();
 		$iniFilePath		= dirname( __DIR__ ).'/Mail.ini';
 		if( !file_exists( $iniFilePath ) )
 			$iniFilePath		.= '.dist';
@@ -63,7 +67,6 @@ class Deprecation extends CommonDeprecation
 		if( FALSE === $iniFileData )
 			throw new RuntimeException( 'Loading library configuration failed' );
 		$this->version		= $iniFileData['library']['version'];
-		$this->phpVersion	= phpversion();
 		$this->errorVersion	= $this->version;
 	}
 }

@@ -28,7 +28,9 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message;
 
+use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
@@ -45,8 +47,6 @@ use RuntimeException;
 
 use function in_array;
 use function join;
-use function preg_match;
-use function preg_split;
 use function strlen;
 use function strtolower;
 use function strtotime;
@@ -66,6 +66,8 @@ use function trim;
  */
 class Parser
 {
+	use RegularStringHandling;
+
 	/**
 	 *	Static constructor.
 	 *	@access		public
@@ -86,9 +88,10 @@ class Parser
 	public function parse( $content ): Message
 	{
 		$message	= new Message();
-		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		if( FALSE === $parts )
-			throw new RuntimeException( 'Splitting message into parts failed' );
+
+		$parts		= self::regSplit( "/\r?\n\r?\n/", $content, 2,
+			'Splitting message into parts failed'
+		);
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 		foreach( $headers->getFields() as $field ){
 			$message->addHeader( $field );
@@ -103,7 +106,8 @@ class Parser
 				case 'cc':
 				case 'bcc':
 					$addresses	= AddressCollectionParser::getInstance()->parse( $field->getValue() );
-					foreach( $addresses as $address )
+					/** @var Address $address */
+					foreach( $addresses->filter() as $address )
 						$message->addRecipient( $address, NULL, $field->getName() );
 					break;
 			}
@@ -111,13 +115,13 @@ class Parser
 		if( $headers->hasField( 'Content-Type' ) ){
 			$mimeType	= $headers->getField( 'Content-Type' )->getValue();
 			$attributes	= $headers->getField( 'Content-Type' )->getAttributes();
-			if( 1 === preg_match( "/multipart/", $mimeType ) ){					//  is multipart message
-				self::parseMultipartBody( $message, $content );					//  parse multipart containers
+			if( self::regMatch( "/multipart/", $mimeType ) ){					//  is multipart message
+				$this->parseMultipartBody( $message, $content );					//  parse multipart containers
 				return $message;
 			}
 		}
 
-		$message->addPart( self::parseAtomicBodyPart( $content ) );			//  directly parse mail content as part
+		$message->addPart( $this->parseAtomicBodyPart( $content ) );			//  directly parse mail content as part
 		return $message;
 	}
 
@@ -162,7 +166,7 @@ class Parser
 			$value	= $disposition->getAttribute( $key );
 			if( is_null( $value ) )
 				continue;
-			if( 1 === preg_match( '/-date$/', $key ) )
+			if( self::regMatch( '/-date$/', $key ) )
 				$value	= strtotime( $value );
 			if( FALSE !== $value )
 				$methodFactory->setMethod( $method, array( $value ) )->call();
@@ -265,7 +269,7 @@ class Parser
 			$value	= $disposition->getAttribute( $key );
 			if( is_null( $value ) )
 				continue;
-			if( 1 === preg_match( '/-date$/', $key ) )
+			if( self::regMatch( '/-date$/', $key ) )
 				$value	= strtotime( $value );
 			if( FALSE !== $value )
 				$methodFactory->setMethod( $method, array( $value ) )->call();
@@ -306,15 +310,14 @@ class Parser
 	/**
 	 *	...
 	 *	@access		protected
-	 *	@static
 	 *	@param		string		$content			...
 	 *	@return		MessagePart
 	 */
-	protected static function parseAtomicBodyPart( string $content ): MessagePart
+	protected function parseAtomicBodyPart( string $content ): MessagePart
 	{
-		$parts		= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		if( FALSE === $parts )
-			throw new RuntimeException( 'Splitting multipart message body into parts failed' );
+		$parts		= self::regSplit( "/\r?\n\r?\n/", $content, 2,
+			'Splitting multipart message body into parts failed'
+		);
 		$content	= $parts[1];
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
 
@@ -351,17 +354,16 @@ class Parser
 	 *	Adds found body parts to given message object.
 	 *	Supports nested multiparts by working recursivly.
 	 *	@access		protected
-	 *	@static
 	 *	@param		Message		$message		...
 	 *	@param		string		$content		...
 	 *	@return		void
 	 */
-	protected static function parseMultipartBody( Message $message, string $content )
+	protected function parseMultipartBody( Message $message, string $content )
 	{
 		$delim		= Message::$delimiter;
-		$bodyParts	= preg_split( "/\r?\n\r?\n/", $content, 2 );
-		if( FALSE === $bodyParts )
-			throw new RuntimeException( 'Splitting multipart message body into parts failed' );
+		$bodyParts	= self::regSplit( "/\r?\n\r?\n/", $content, 2,
+			'Splitting multipart message body into parts failed'
+		);
 
 		$headers	= MessageHeaderParser::getInstance()->parse( $bodyParts[0] );
 		$body		= $bodyParts[1];
@@ -375,20 +377,20 @@ class Parser
 		if( NULL !== $mimeBoundary ){
 			$lines	= [];
 			$status	= 0;
-			$bodyLines	= preg_split( "/\r?\n/", $body );
-			if( FALSE === $bodyLines )
-				throw new RuntimeException( 'Splitting multipart message body into lines failed' );
+			$bodyLines	= self::regSplit( "/\r?\n/", $body, NULL,
+				'Splitting multipart message body into lines failed'
+			);
 			foreach( $bodyLines as $nr => $line ){
 				if( $line === '--'.$mimeBoundary ){
 					if( $status === 0 ){
 						$status	= 1;
 						continue;
 					}
-					self::parseMultipartBody( $message, join( $delim, $lines ) );
+					$this->parseMultipartBody( $message, join( $delim, $lines ) );
 					$lines	= [];
 				}
 				else if( $line === '--'.$mimeBoundary.'--' ){
-					self::parseMultipartBody( $message, join( $delim, $lines ) );
+					$this->parseMultipartBody( $message, join( $delim, $lines ) );
 					break;
 				}
 				else if( $status === 1 )
@@ -396,7 +398,7 @@ class Parser
 			}
 		}
 		else{
-			$part	= self::parseAtomicBodyPart( $content );
+			$part	= $this->parseAtomicBodyPart( $content );
 			$message->addPart( $part );
 		}
 	}

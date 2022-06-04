@@ -166,6 +166,8 @@ class Connection
 			if( !$this->connect( TRUE ) )
 				throw new RuntimeException( 'Connection failed' );
 		}
+		if( NULL === $this->resource )
+			throw new RuntimeException( 'Connection resource has gone away' );
 		return $this->resource;
 	}
 

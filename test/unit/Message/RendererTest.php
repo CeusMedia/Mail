@@ -21,12 +21,21 @@ use CeusMedia\Mail\Test\TestCase;
 class RendererTest extends TestCase
 {
 	/**
+	 *	@covers		::getInstance
+	 */
+	public function testGetInstance()
+	{
+		$instance	= Renderer::getInstance();
+		$this->assertEquals( new Renderer(), $instance );
+	}
+
+	/**
 	 *	@covers		::render
 	 */
-	public function testRender()
+/*	public function testRender()
 	{
 		$this->markTestIncomplete( 'No test defined for Message\\Renderer' );
 
 		$renderer	= Renderer::getInstance();
-	}
+	}*/
 }

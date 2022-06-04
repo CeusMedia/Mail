@@ -12,7 +12,7 @@
   "authors": [
     {
       "name": "Christian Würker",
-      "email": "cwuerker@ceusmedia.de",
+      "email": "christian.wuerker@ceusmedia.de",
       "homepage": "https://ceusmedia.de/",
       "role": "Developer"
     }
@@ -23,25 +23,24 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "php": ">=7.3 | ^8",
-    "ceus-media/common": "^0.8 | dev-master",
-    "ceus-media/cache": "*",
-    "ezyang/htmlpurifier": "dev-master",
+    "php": ">=7.4 | ^8",
     "ext-imap": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ceus-media/common": "^0.9 | ^0.9@dev | >=0.8.6 | dev-master",
+    "ceus-media/cache": ">=0.3",
+    "ezyang/htmlpurifier": "dev-master"
   },
   "require-dev": {
-    "php": ">=7.3",
     "phpunit/phpunit": "*",
-    "phpstan/phpstan": "^1",
-    "phpstan/phpstan-strict-rules": "^1",
+    "phpstan/phpstan": "*",
+    "phpstan/phpstan-strict-rules": "*",
     "squizlabs/php_codesniffer": "*",
     "phan/phan": "^v5",
-    "ceus-media/doc-creator": "dev-master",
-    "ceus-media/phan-viewer": "dev-master",
-    "ceus-media/bootstrap": "^0.5.2",
-    "rector/rector": "0.12.x-dev",
-    "brianium/paratest": "dev-master"
+    "ceus-media/doc-creator": "*",
+    "ceus-media/phan-viewer": "* | dev-master",
+    "ceus-media/bootstrap": ">=0.5.2",
+    "rector/rector": "*",
+    "brianium/paratest": "*"
   },
   "autoload": {
     "psr-4": {

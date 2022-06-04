@@ -6,7 +6,7 @@
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Address\Check;
+namespace CeusMedia\Mail\Test\Integration\Address\Check;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Check\Availability;
@@ -23,11 +23,9 @@ class AvailabilityTest extends TestCase
 {
 	/**
 	 *	@covers		::test
-	 *	@covers		::getLastError
 	 *	@covers		::getLastResponse
-	 *	@covers		::readResponse
-	 *	@covers		::sendChunk
 	 *	@covers		::getMailServers
+	 *	@covers		::request
 	 */
 	public function testTest()
 	{
@@ -44,18 +42,18 @@ class AvailabilityTest extends TestCase
 
 //		$check->setVerbose( TRUE );
 		$actual		= $check->test( $participant );
-		$this->assertTrue( $actual, $check->getLastError( 'message' ) );
+		$this->assertTrue( $actual, $check->getLastResponse( 'message' ) );
 
-		$actual		= $check->getLastError();
+		$actual		= $check->getLastResponse();
 		$expected	= (object) array(
 			'error'		=> Availability::ERROR_NONE,
 			'code'		=> 250,
 			'message'	=> '2.1.5 Ok',
 		);
 		$this->assertEquals( $expected, $actual );
-		$this->assertEquals( Availability::ERROR_NONE, $check->getLastError( 'error' ) );
-		$this->assertEquals( 250, $check->getLastError( 'code' ) );
-		$this->assertEquals( '2.1.5 Ok', $check->getLastError( 'message' ) );
+		$this->assertEquals( Availability::ERROR_NONE, $check->getLastResponse( 'error' ) );
+		$this->assertEquals( 250, $check->getLastResponse( 'code' ) );
+		$this->assertEquals( '2.1.5 Ok', $check->getLastResponse( 'message' ) );
 
 		$actual		= $check->getLastResponse();
 		$expected	= (object) array(
@@ -75,19 +73,19 @@ class AvailabilityTest extends TestCase
 //		$check->setVerbose( TRUE );
 		$participant	= new Address( '_not_existing@'.$participant->getDomain() );
 		$this->assertFalse( $check->test( $participant ) );
-		$this->assertEquals( Availability::ERROR_RECEIVER_NOT_ACCEPTED, $check->getLastError( 'error' ) );
+		$this->assertEquals( Availability::ERROR_RECEIVER_NOT_ACCEPTED, $check->getLastResponse( 'error' ) );
 
 //		$check->setVerbose( TRUE );
 		$participant	= new Address( '_not_existing@notexisting123456.org' );
 		$this->assertFalse( $check->test( $participant ) );
-		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastError( 'error' ) );
+		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastResponse( 'error' ) );
 
 //		$check->setVerbose( TRUE );
 		$this->assertFalse( $check->test( '_not_existing@notexisting123456.org' ) );
-		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastError( 'error' ) );
+		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastResponse( 'error' ) );
 
 //		$check->setVerbose( TRUE );
 		$this->assertFalse( $check->test( '_not_existing@_not_important', 'notexisting123456.org' ) );
-		$this->assertEquals( Availability::ERROR_SOCKET_FAILED, $check->getLastError( 'error' ) );
+		$this->assertEquals( Availability::ERROR_SOCKET_FAILED, $check->getLastResponse( 'error' ) );
 	}
 }

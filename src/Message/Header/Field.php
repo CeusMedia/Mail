@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
 
 use ADT_List_Dictionary as Dictionary;
@@ -35,7 +36,6 @@ use ADT_List_Dictionary as Dictionary;
 use InvalidArgumentException;
 
 use function function_exists;
-use function preg_replace;
 use function mb_convert_case;
 use function str_replace;
 use function strlen;
@@ -51,10 +51,11 @@ use function ucwords;
  *	@copyright		2007-2022 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@see			http://tools.ietf.org/html/rfc5322#section-3.3
  */
 class Field
 {
+	use RegularStringHandling;
+
 	/**	@var		Dictionary	$attributes		Dictionary of header attributes */
 	protected $attributes;
 
@@ -98,7 +99,10 @@ class Field
 	 */
 	public function getAttribute( string $name, $default = NULL ): ?string
 	{
-		return $this->attributes->get( $name, $default );
+		$value	= $this->attributes->get( $name, $default );
+		if( !is_string( $value ) )
+			return NULL;
+		return $value;
 	}
 
 	/**
@@ -176,9 +180,7 @@ class Field
 	{
 		if( 0 === strlen( trim( $name ) ) )
 			throw new InvalidArgumentException( 'Field name cannot be empty' );
-		$name	= preg_replace( "/( |-)+/", "-", trim( $name ) );
-		if( NULL !== $name )
-			$this->name	= $name;
+		$this->name	= self::regReplace( "/( |-)+/", "-", trim( $name ) );
 		return $this;
 	}
 

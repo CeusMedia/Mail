@@ -13,13 +13,13 @@ use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection;
 
 /**
-*	...
+ *	...
  *	@category			Test
  *	@package			CeusMedia_Mail_Address
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Collection
  */
-class CollectTest extends TestCase
+class CollectionTest extends TestCase
 {
 	/**
 	 *	@covers		::__construct
@@ -87,6 +87,10 @@ class CollectTest extends TestCase
 			new Address( 'name@domain.tld' ),
 			new Address( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>' )
 		];
+		$this->assertEquals( $expected, $collection->toArray( FALSE ) );
+
+		$this->assertEquals( $addresses, $collection->toArray( TRUE ) );
+
 		$this->assertEquals( $expected, $collection->toArray( FALSE ) );
 	}
 

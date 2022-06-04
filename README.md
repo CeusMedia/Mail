@@ -1,4 +1,4 @@
-# CeusMedia Mail
+# Ceus Media Mail Library
 
 Produce, send and read mails using PHP + IMAP & SMTP.
 
@@ -12,7 +12,7 @@ Produce, send and read mails using PHP + IMAP & SMTP.
 ## Features
 - Programming
   - simple, easy, clean
-  - PHP5, object-oriented style, chainable
+  - PHP 7.3+, object oriented style, chainable
   - automatic encoding
   - automatic MIME type detection
 - MIME Contents
@@ -26,6 +26,9 @@ Produce, send and read mails using PHP + IMAP & SMTP.
 - Transports
   - SMTP, with TLS support
   - local PHP mail function
+- Mailbox
+  - access via IMAP and POP3
+  - search with criteria
 - Checks
   - address validity
   - receiver reachability

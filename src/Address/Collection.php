@@ -45,7 +45,7 @@ use Iterator;
  */
 class Collection implements Countable, Iterator
 {
-	/** @var array $list */
+	/** @var Address[] $list */
 	protected $list		= [];
 
 	/** @var int $position */
@@ -82,14 +82,20 @@ class Collection implements Countable, Iterator
 	/**
 	 *	Returns current Value.
 	 *	@access		public
-	 *	@return		mixed
+	 *	@return		Address|NULL
 	 */
-	public function current()
+	public function current(): ?Address
 	{
 		if( $this->position >= $this->count() )
 			return NULL;
 		$keys	= array_keys( $this->list );
 		return $this->list[$this->position];
+	}
+
+	public function filter(): self
+	{
+		$this->list	= array_filter( $this->list );
+		return $this;
 	}
 
 	public function getAll(): array
@@ -132,14 +138,20 @@ class Collection implements Countable, Iterator
 		$this->position	= 0;
 	}
 
+	/**
+	 *	Returns array of all addresses.
+	 *	Eather as address objects or strings (rendered addresses).
+	 *	@access		public
+	 *	@param		boolean		$renderValues		Return strings (rendered addresses), default: no
+	 *	@return		array
+	 */
 	public function toArray( bool $renderValues = FALSE ): array
 	{
 		$list	= $this->list;
-		if( $renderValues ){
-			$list	= [];
-			foreach( $this->list as $address )
-				$list[]	= $address->get();
-		}
+		if( $renderValues )
+			array_walk( $list, function( Address $address ){
+				return $address->render();
+			} );
 		return $list;
 	}
 

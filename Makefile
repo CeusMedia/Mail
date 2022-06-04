@@ -45,7 +45,7 @@ dev-analyse-phpstan: composer-install-dev
 	@vendor/bin/phpstan analyse --configuration phpstan.neon --xdebug || true
 
 dev-analyse-phpstan-save-baseline: composer-install-dev composer-update-dev
-	@vendor/bin/phpstan analyse --configuration phpstan.neon --generate-baseline phpstan-baseline.neon || true
+	@vendor/bin/phpstan analyse --configuration phpstan.neon --generate-baseline phpstan-baseline.neon --allow-empty-baseline || true
 
 dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
@@ -78,3 +78,6 @@ dev-rector-apply:
 
 dev-rector-dry:
 	@vendor/bin/rector process src --dry-run
+
+dev-test-units-parallel: composer-install-dev
+	@XDEBUG_MODE=off vendor/bin/paratest -v --no-coverage --testsuite unit || true

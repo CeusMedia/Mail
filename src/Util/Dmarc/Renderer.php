@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Util\Dmarc;
 
 use CeusMedia\Mail\Address;
+use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
 
 use function count;
@@ -47,6 +48,8 @@ use function strlen;
  */
 class Renderer
 {
+	use RegularStringHandling;
+
 	/**
 	 *	Static constructor.
 	 *	@access			public
@@ -54,6 +57,7 @@ class Renderer
 	 *	@return			self
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
+	 *	@codeCoverageIgnore
 	 */
 	public static function create(): self
 	{
@@ -81,7 +85,7 @@ class Renderer
 			'v'		=> 'DMARC'.$record->version,
 			'p'		=> $record->policy,
 		];
-		if( 0 < strlen( $record->policySubdomains ) )
+		if( self::strHasContent( $record->policySubdomains ) )
 			$facts['sp']	= $record->policySubdomains;
 		$facts['adkim']	= $record->alignmentDkim;
 		$facts['aspf']	= $record->alignmentSpf;

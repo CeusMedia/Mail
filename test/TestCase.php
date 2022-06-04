@@ -33,6 +33,13 @@ class TestCase extends PhpUnitTestCase
 		$this->pathLibrary		= dirname( __DIR__ ).'/';
 		$this->pathTests		= __DIR__.'/';
 		$this->configFile		= $this->pathLibrary.'Mail.ini';
+		if( !file_exists( $this->configFile ) )
+			$this->configFile	.= '.dist';
+		$iniFileData		= parse_ini_file( $this->configFile, TRUE );
+		if( FALSE === $iniFileData )
+			throw new RuntimeException( 'Loading library configuration failed' );
+		$this->version		= $iniFileData['library']['version'];
+		$this->phpVersion	= phpversion();
 	}
 
 	//  --  PROTECTED  --  //
