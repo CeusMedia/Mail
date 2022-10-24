@@ -41,11 +41,11 @@ dev-analyse-phan-report: dev-analyse-phan-save
 dev-analyse-phan-save: composer-install-dev
 	@XDEBUG_MODE=off PHAN_DISABLE_XDEBUG_WARN=1 ./vendor/bin/phan -k=.phan -m=json -o=phan.json --allow-polyfill-parser -p || true
 
-dev-analyse-phpstan: composer-install-dev
-	@vendor/bin/phpstan analyse --configuration phpstan.neon --xdebug || true
+dev-phpstan: composer-install-dev
+	@vendor/bin/phpstan analyse --configuration util/phpstan.neon --xdebug || true
 
-dev-analyse-phpstan-save-baseline: composer-install-dev composer-update-dev
-	@vendor/bin/phpstan analyse --configuration phpstan.neon --generate-baseline phpstan-baseline.neon --allow-empty-baseline || true
+dev-phpstan-save-baseline: composer-install-dev
+	@vendor/bin/phpstan analyse --configuration util/phpstan.neon --generate-baseline util/phpstan-baseline.neon --allow-empty-baseline || true
 
 dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
@@ -72,12 +72,6 @@ dev-retest-units: composer-install-dev
 dev-test-syntax:
 	@find src -type f -print0 | xargs -0 -n1 xargs php -l
 	@find test -type f -print0 | xargs -0 -n1 xargs php -l
-
-dev-rector-apply:
-	@vendor/bin/rector process src
-
-dev-rector-dry:
-	@vendor/bin/rector process src --dry-run
 
 dev-test-units-parallel: composer-install-dev
 	@XDEBUG_MODE=off vendor/bin/paratest -v --no-coverage --testsuite unit || true

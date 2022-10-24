@@ -40,20 +40,13 @@ use CeusMedia\Mail\Util\MX;
 
 use Exception;
 use RangeException;
-use RuntimeException;
 
 use function array_key_exists;
 use function array_shift;
 use function count;
-use function fclose;
-use function fgets;
-use function fputs;
-use function fsockopen;
 use function in_array;
 use function is_string;
 use function join;
-use function stream_socket_enable_crypto;
-use function trim;
 
 /**
  *	Evaluate existence of mail receiver address.
@@ -68,17 +61,17 @@ use function trim;
  */
 class Availability
 {
-	/**	@var    Address			$sender		... */
-	protected $sender;
+	/**	@var	Address			$sender		... */
+	protected Address $sender;
 
-	/**	@var    bool			$verbose		... */
-	protected $verbose;
+	/**	@var	bool			$verbose		... */
+	protected bool $verbose;
 
 	/** @var	SmtpResponse	$lastResponse */
-	protected $lastResponse;
+	protected SmtpResponse $lastResponse;
 
 	/** @var	CacheInterface	$cache */
-	protected $cache;
+	protected CacheInterface $cache;
 
 	/**
 	 *	Availability constructor.
@@ -102,9 +95,11 @@ class Availability
 	 *	@return		SmtpResponse
 	 *	@deprecated	use getLastResponse instead
 	 *	@codeCoverageIgnore
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public function getLastError(): SmtpResponse
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
@@ -119,9 +114,11 @@ class Availability
 	 *	@return		mixed
 	 *	@deprecated	use getLastResponse instead
 	 *	@codeCoverageIgnore
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public function getLastErrorValue( string $key )
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
@@ -189,12 +186,12 @@ class Availability
 		try{
 			$this->lastResponse	= $socket->open();
 			if( SmtpResponse::ERROR_NONE !== $this->lastResponse->getError() )
-				return $this->quit( $socket, FALSE );
+				return $this->quit( $socket );
 
 			$request	= "EHLO ".$this->sender->getDomain();
 			$response	= $this->request( $socket, $request, [ 220, 250 ], SmtpResponse::ERROR_HELO_FAILED );
 			if( $response->isError() )
-				return $this->quit( $socket, FALSE );
+				return $this->quit( $socket );
 			$features	= $response->getResponse();
 			$targetHost	= array_shift( $features );
 			if( in_array( 'VRFY', $features, TRUE ) ){
@@ -207,7 +204,7 @@ class Availability
 			else{
 				$response	= $this->request( $socket, "STARTTLS", [ 220 ], SmtpResponse::ERROR_CRYPTO_FAILED );
 				if( $response->isError() )
-					return $this->quit( $socket, FALSE );
+					return $this->quit( $socket );
 				$socket->enableCrypto( TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT );
 
 //				while( $response->getCode() === 220 )									//  for telekom.de
@@ -216,12 +213,12 @@ class Availability
 				$request	= "MAIL FROM: <".$this->sender->getAddress().">";
 				$response	= $this->request( $socket, $request, [ 250 ], SmtpResponse::ERROR_SENDER_NOT_ACCEPTED );
 				if( $response->isError() )
-					return $this->quit( $socket, FALSE );
+					return $this->quit( $socket );
 				$request	= "RCPT TO: <".$receiver->getAddress().">";
 				$response	= $this->request( $socket, $request, [ 250 ], SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED );
 				if( $response->isError() ){
 					$this->cache->set( 'user:'.$receiver->getAddress(), FALSE );
-					return $this->quit( $socket, FALSE );
+					return $this->quit( $socket );
 				}
 				$this->cache->set( 'user:'.$receiver->getAddress(), TRUE );
 				return $this->quit( $socket, TRUE );
@@ -230,7 +227,7 @@ class Availability
 		catch( Exception $e ){
 			$this->lastResponse->setError( SmtpResponse::ERROR_UNSPECIFIED );
 			$this->lastResponse->setMessage( $e->getMessage() );
-			return $this->quit( $socket, FALSE );
+			return $this->quit( $socket );
 		}
 	}
 
@@ -281,6 +278,8 @@ class Availability
 	 *	Sends request message and receives response.
 	 *	@param		SmtpSocket	$socket			Connected SMTP Socket
 	 *	@param		string		$request		Request message to send
+	 *	@param		array		$acceptedCodes	...
+	 *	@param		int|NULL	$errorCode		...
 	 *	@return		SmtpResponse
 	 */
 	protected function request( SmtpSocket $socket, string $request, array $acceptedCodes = [], ?int $errorCode = NULL ): SmtpResponse
