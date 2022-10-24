@@ -2,21 +2,21 @@
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit_Util_Dmarc
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit\Util\Dmarc;
+namespace CeusMedia\MailTest\Unit\Util\Dmarc;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Util\Dmarc\Record;
 use CeusMedia\Mail\Util\Dmarc\Renderer;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit_Util_Dmarc
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Util\Dmarc\Renderer
  */

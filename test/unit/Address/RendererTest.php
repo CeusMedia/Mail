@@ -2,20 +2,20 @@
 /**
  *	Unit test for mail address parser.
  *	@category			Test
- *	@package			CeusMedia_Mail_Address
+ *	@package			CeusMedia_MailTest_Unit_Address
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit\Address;
+namespace CeusMedia\MailTest\Unit\Address;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Renderer;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address renderer.
  *	@category			Test
- *	@package			CeusMedia_Mail_Address
+ *	@package			CeusMedia_MailTest_Unit_Address
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Renderer
  */

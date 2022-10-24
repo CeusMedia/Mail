@@ -2,19 +2,19 @@
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Integration_Util
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Integration\Util;
+namespace CeusMedia\MailTest\Integration\Util;
 
 use CeusMedia\Mail\Util\MX;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Integration_Util
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Util\MX
  */

@@ -2,20 +2,20 @@
 /**
  *	Unit test for mail address.
  *	@category		Test
- *	@package		CeusMedia_Mail
+ *	@package		CeusMedia_MailTest_Unit
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit;
+namespace CeusMedia\MailTest\Unit;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Renderer as AddressRenderer;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address.
  *	@category		Test
- *	@package		CeusMedia_Mail
+ *	@package		CeusMedia_MailTest_Unit
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address
  */
@@ -207,7 +207,7 @@ class AddressTest extends TestCase
 		$participant	= new Address( 'Hans.Mustermann@muster-server.tld' );
 		$expected		= $participant->get();
 
-		$actual		= Address::getInstance()->render( $participant );
+		$actual		= Address::getInstance( $participant )->render();
 		$this->assertEquals( $expected, $actual );
 
 		$this->assertEquals( $expected, (string) $participant );

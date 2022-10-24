@@ -2,21 +2,21 @@
 /**
  *	Unit test for mail address collection parser.
  *	@category			Test
- *	@package			CeusMedia_Mail_Address_Collection
+ *	@package			CeusMedia_MailTest_Unit_Address_Collection
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit\Address\Collection;
+namespace CeusMedia\MailTest\Unit\Address\Collection;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Address\Collection\Parser;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address collection parser.
  *	@category			Test
- *	@package			CeusMedia_Mail_Address_Collection
+ *	@package			CeusMedia_MailTest_Unit_Address_Collection
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Collection\Parser
  */

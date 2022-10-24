@@ -25,8 +25,8 @@
     </testsuite>
   </testsuites>
   <logging>
-    <junit outputFile="doc/Test/junit.xml"/>
-<!--    <testdoxHtml outputFile="doc/Test/testdox.html"/>-->
-<!--    <testdoxText outputFile="doc/Test/testdox.txt"/>-->
+    <junit outputFile="../doc/Test/junit.xml"/>
+<!--    <testdoxHtml outputFile="../doc/Test/testdox.html"/>-->
+<!--    <testdoxText outputFile="../doc/Test/testdox.txt"/>-->
   </logging>
 </phpunit>

@@ -2,20 +2,20 @@
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit;
+namespace CeusMedia\MailTest\Unit;
 
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Mailbox
  */

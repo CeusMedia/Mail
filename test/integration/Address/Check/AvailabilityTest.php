@@ -2,20 +2,20 @@
 /**
  *	Unit test for mail address availability check.
  *	@category			Test
- *	@package			CeusMedia_Mail_Address_Check
+ *	@package			CeusMedia_MailTest_Integration_Address_Check
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Integration\Address\Check;
+namespace CeusMedia\MailTest\Integration\Address\Check;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Check\Availability;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address availability check.
  *	@category			Test
- *	@package			CeusMedia_Mail_Address_Check
+ *	@package			CeusMedia_MailTest_Integration_Address_Check
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Address\Check\Availability
  */
@@ -42,7 +42,7 @@ class AvailabilityTest extends TestCase
 
 //		$check->setVerbose( TRUE );
 		$actual		= $check->test( $participant );
-		$this->assertTrue( $actual, $check->getLastResponse( 'message' ) );
+		$this->assertTrue( $actual, $check->getLastResponse()->message );
 
 		$actual		= $check->getLastResponse();
 		$expected	= (object) array(

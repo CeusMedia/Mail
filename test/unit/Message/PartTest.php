@@ -2,11 +2,11 @@
 /**
  *	Unit test for mail message part.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message
+ *	@package			CeusMedia_MailTest_Unit_Message
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit\Message;
+namespace CeusMedia\MailTest\Unit\Message;
 
 use CeusMedia\Mail\Message\Part;
 use CeusMedia\Mail\Message\Part\Attachment as AttachmentPart;
@@ -15,13 +15,13 @@ use CeusMedia\Mail\Message\Part\InlineImage as InlineImagePart;
 use CeusMedia\Mail\Message\Part\Mail as MailPart;
 use CeusMedia\Mail\Message\Part\Text as TextPart;
 use CeusMedia\Mail\Message\Header\Section as HeaderSection;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 
 /**
  *	Unit test for mail message_part.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message
+ *	@package			CeusMedia_MailTest_Unit_Message
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Part
  */

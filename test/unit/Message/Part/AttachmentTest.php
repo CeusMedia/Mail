@@ -2,21 +2,21 @@
 /**
  *	Unit test for mail message part.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message_Part
+ *	@package			CeusMedia_MailTest_Unit_Message_Part
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit\Message\Part;
+namespace CeusMedia\MailTest\Unit\Message\Part;
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part;
 use CeusMedia\Mail\Message\Part\Attachment;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail message part.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message_Part
+ *	@package			CeusMedia_MailTest_Unit_Message_Part
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Part\Attachment
  */

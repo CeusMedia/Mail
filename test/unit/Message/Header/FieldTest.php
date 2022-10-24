@@ -2,19 +2,19 @@
 /**
  *	Unit test for mail header field.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message_Header
+ *	@package			CeusMedia_MailTest_Unit_Message_Header
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit\Message\Header;
+namespace CeusMedia\MailTest\Unit\Message\Header;
 
 use CeusMedia\Mail\Message\Header\Field;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail recipient address validation.
  *	@category			Test
- *	@package			CeusMedia_Mail_Message_Header
+ *	@package			CeusMedia_MailTest_Unit_Message_Header
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Header\Field
  */

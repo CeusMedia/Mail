@@ -2,20 +2,20 @@
 /**
  *	Unit test for mail message.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit_Message_Header
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit\Message\Header;
+namespace CeusMedia\MailTest\Unit\Message\Header;
 
 use CeusMedia\Mail\Message\Header\Encoding;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 use PHPUnit_Framework_TestCase as PhpUnitTestCase;
 
 /**
  *	Unit test for mail message.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit_Message_Header
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message\Header\Encoding
  */

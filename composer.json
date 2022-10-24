@@ -58,9 +58,17 @@
       "@dev:install-quiet",
       "php vendor/ceus-media/doc-creator/doc-creator.php --config-file=util/doc.xml"
     ],
-    "dev:phpunit": [
+    "dev:phpunit-unit-all": [
       "@dev:install-quiet",
-      "php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite units"
+      "php vendor/bin/phpunit --configuration util/phpunit.9.xml"
+    ],
+    "dev:phpunit-integration": [
+      "@dev:install-quiet",
+      "php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite integration"
+    ],
+    "dev:phpunit-unit": [
+      "@dev:install-quiet",
+      "php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite unit"
     ],
     "dev:phpstan": [
       "@dev:install-quiet",
@@ -85,6 +93,19 @@
     "dev:test-syntax": [
       "@dev:install-quiet",
       "vendor/bin/parallel-lint . -j 10 --colors --exclude vendor"
+    ],
+    "dev:phan": [
+      "@dev:install-quiet",
+      "XDEBUG_MODE=off ./vendor/bin/phan -k=util/.phan --color --allow-polyfill-parser || true"
+    ],
+    "dev:phan-report": [
+      "@dev:install-quiet",
+      "@dev:phan-save",
+      "php vendor/ceus-media/phan-viewer/phan-viewer generate --source=util/phan.json --target=doc/phan/"
+    ],
+    "dev:phan-save": [
+      "@dev:install-quiet",
+      "XDEBUG_MODE=off PHAN_DISABLE_XDEBUG_WARN=1 ./vendor/bin/phan -k=util/.phan -m=json -o=util/phan.json --allow-polyfill-parser -p || true"
     ]
   },
   "scripts-descriptions": {

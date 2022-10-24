@@ -2,32 +2,34 @@
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Integration_Transport
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Integration\Transport;
+namespace CeusMedia\MailTest\Integration\Transport;
 
+use CeusMedia\Common\Alg\ID;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Transport\SMTP;
+use CeusMedia\Mail\Transport\SMTP\Response;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
-use CeusMedia\Mail\Test\TestCase;
+use CeusMedia\MailTest\TestCase;
 
 /**
  *	Unit test for mail address.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Integration_Transport
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Transport\SMTP
  */
 class SMTPTest extends TestCase
 {
-	protected $receiveLoopSleep			= 1;
-	protected $receiveLoopTimeout		= 120;
+	protected int $receiveLoopSleep			= 1;
+	protected int $receiveLoopTimeout		= 120;
 
 	/**
 	 *	@covers		::send
@@ -75,7 +77,7 @@ class SMTPTest extends TestCase
 		$configSender		= $this->requireSenderConfig();
 		$configReceiver		= $this->requireReceiverConfig();
 
-		$subject	= 'Test-Automation-Message #'.\Alg_ID::uuid();
+		$subject	= 'Test-Automation-Message #'. ID::uuid();
 
 		/*  --  SENDING  --  */
 		$smtp		= new SMTP( $configSender->get( 'server.host' ) );			//  get SMTP instance
@@ -108,13 +110,16 @@ class SMTPTest extends TestCase
 		}
 
 		/*  --  RECEIVING  --  */
-		$mailbox	= Mailbox::getInstance( MailboxConnection::getInstance(
+		$connection	= MailboxConnection::getInstance(
 			$configReceiver->get( 'server.host' ),
 			$configReceiver->get( 'mailbox.address' ),
 			$configReceiver->get( 'auth.password' )
- 		)->setSecure( TRUE, FALSE ) );
-		if( !$mailbox->connect( FALSE ) )
+		)->setSecure( TRUE, FALSE );
+		;
+		if( !$connection->connect() )
 			$this->markTestSkipped( 'Reason: Receiver mailbox connection failed' );
+
+		$mailbox	= Mailbox::getInstance($connection);
 
 		$loopTime		= 0;
 		$isMailReceived	= FALSE;
@@ -211,11 +216,12 @@ class SMTPTest extends TestCase
 class SmtpSocketMock extends SmtpSocket
 {
 	protected $lastChunk;
-	protected $nextResponses	= array();
+	protected $nextResponses	= [];
 	protected $status			= 0;
-	protected $log				= array();
+	protected $log				= [];
 
-	public function __construct(){
+	public function __construct()
+	{
 		$this->setHost( 'notimportant.invalid.tld' );
 		$this->setPort( 1 );
 	}
@@ -258,10 +264,10 @@ class SmtpSocketMock extends SmtpSocket
 		return $this->log;
 	}
 
-	public function open( bool $forceReopen = FALSE ): SmtpResponse
+	public function open( bool $forceReopen = FALSE ): Response
 	{
 		$this->connection	= NULL;
-		return $this;
+		return new Response();
 	}
 
 	public function readResponse( int $length = 1024 ): SmtpResponse
@@ -270,7 +276,7 @@ class SmtpSocketMock extends SmtpSocket
 		$raw		= $response[0].' '.$response[1];
 //		print( PHP_EOL.' < '. $raw );
 		$this->log[]	= trim( ' < '. $raw );
-		$response	= new SmtpSocket( $response[0], $response[1] );
+		$response	= new SmtpResponse( $response[0], $response[1] );
 		$response->setResponse( array( $raw ) );
 		return $response;
 	}

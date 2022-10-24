@@ -2,11 +2,11 @@
 /**
  *	Unit test for mail message.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  */
 
-namespace CeusMedia\Mail\Test\Unit;
+namespace CeusMedia\MailTest\Unit;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
@@ -21,7 +21,7 @@ use PHPUnit_Framework_TestCase as PhpUnitTestCase;
 /**
  *	Unit test for mail message.
  *	@category			Test
- *	@package			CeusMedia_Mail
+ *	@package			CeusMedia_MailTest_Unit
  *	@author				Christian Würker <christian.wuerker@ceusmedia.de>
  *  @coversDefaultClass \CeusMedia\Mail\Message
  */

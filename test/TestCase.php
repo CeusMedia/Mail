@@ -1,5 +1,5 @@
 <?php
-namespace CeusMedia\Mail\Test;
+namespace CeusMedia\MailTest;
 
 use CeusMedia\Common\ADT\Collection\Dictionary;
 use CeusMedia\Common\UI\DevOutput;
@@ -12,10 +12,10 @@ use RuntimeException;
 
 class TestCase extends PhpUnitTestCase
 {
-	protected $pathLibrary;
-	protected $pathTests;
-	protected $configFile;
-	protected $configDefaultKeys	= array(
+	protected string $pathLibrary;
+	protected string $pathTests;
+	protected string $configFile;
+	protected array $configDefaultKeys	= [
 		'server.host',
 		'server.port',
 		'mailbox.name',
@@ -26,7 +26,7 @@ class TestCase extends PhpUnitTestCase
 		'security.encryption',
 		'security.certificate',
 		'security.antivirus',
-	);
+	];
 
 	public function __construct( $name = NULL )
 	{
@@ -80,7 +80,7 @@ class TestCase extends PhpUnitTestCase
 
 	//  --  PRIVATE  --  //
 
-	private function getReceiverConfig(): Dictionary
+	protected function getReceiverConfig(): Dictionary
 	{
 		$config	= array();
 		foreach( $this->configDefaultKeys as $key )
@@ -98,7 +98,7 @@ class TestCase extends PhpUnitTestCase
 		return new Dictionary( $config );
 	}
 
-	private function getSenderConfig(): Dictionary
+	protected function getSenderConfig(): Dictionary
 	{
 		$config	= array();
 		foreach( $this->configDefaultKeys as $key )
