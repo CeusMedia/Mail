@@ -1,13 +1,17 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
+use CeusMedia\Common\ADT\Collection\Dictionary;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP;
+
+new CeusMedia\Common\UI\DevOutput;
+
+/** @var Dictionary $config */
 
 $smtp		= (object) $config->getAll( 'SMTP_' );
 $sending	= (object) $config->getAll( 'sending_' );
 
-new UI_DevOutput;
 
 /*  PREPARATION  */
 $verbose		= TRUE;
@@ -70,9 +74,9 @@ try {
 	//  send message
 	$transport->send($message);													//  send message via prepared transport
 }
-catch (Exception $e) {
+catch( Exception $e ){
 	print(PHP_EOL.'Exception: '.$e->getMessage());
 }
-if ($verbose) {
+if( $verbose ) {
 	CLI::out();
 }

@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUnused */
 declare(strict_types=1);
 
 /**
@@ -28,11 +29,12 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Part;
 
+use CeusMedia\Common\Exception\IO as IoException;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
-use FS_File;
+use CeusMedia\Common\FS\File;
 use InvalidArgumentException;
 
 use function array_reverse;
@@ -74,14 +76,14 @@ class InlineImage extends MessagePart
 	protected $fileSize			= NULL;
 
 	/**	@var	string			$id */
-	protected $id;
+	protected string $id;
 
 	/**
 	 *	Constructor.
 	 *	@access		public
 	 *	@param		string		$id				Content ID of image to be used in HTML part
 	 */
-	public function __construct( $id )
+	public function __construct( string $id )
 	{
 		$this->type		= static::TYPE_INLINE_IMAGE;
 		$this->setEncoding( 'base64' );
@@ -202,13 +204,15 @@ class InlineImage extends MessagePart
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string|NULL		$encoding		Optional: Encoding of file
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
-	 *	@return		self		  	Self instance for chaining
+	 *	@return		self			Self instance for chaining
 	 *	@throws		InvalidArgumentException	if file is not existing
-	 *	@todo  		scan file for malware
+	 *	@throws		IoException					if reading from file failed
+	 *	@todo		scan file for malware
 	 */
 	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
-		$file	= new FS_File( $filePath );
+		$file	= new File( $filePath );
+		/** @noinspection PhpUnhandledExceptionInspection */
 		if( !$file->exists() )
 			throw new InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
 
@@ -216,7 +220,7 @@ class InlineImage extends MessagePart
 			$mimeType	= $this->getMimeTypeFromFile( $filePath );
 		if( NULL === $fileName || 0 === strlen( trim( $fileName ) ) )
 			$fileName	= basename( $filePath );
- 		$this->content	= $file->getContent();
+ 		$this->content	= (string) $file->getContent( TRUE );
 
 		$this->setFileName( $fileName );
 		if( FALSE !== ( $fileSize = filesize( $filePath ) ) )
@@ -237,10 +241,10 @@ class InlineImage extends MessagePart
 	/**
 	 *	Sets access time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		integer   	$timestamp		Timestamp of latest access
-	 *	@return		self  		Self instance for chaining
+	 *	@param		integer		$timestamp		Timestamp of latest access
+	 *	@return		self		Self instance for chaining
 	 */
-	public function setFileATime( $timestamp ): self
+	public function setFileATime( int $timestamp ): self
 	{
 		$this->fileATime	= $timestamp;
 		return $this;
@@ -252,7 +256,7 @@ class InlineImage extends MessagePart
 	 *	@param		integer   	$timestamp		Timestamp of creation
 	 *	@return		self  		Self instance for chaining
 	 */
-	public function setFileCTime( $timestamp ): self
+	public function setFileCTime( int $timestamp ): self
 	{
 		$this->fileCTime	= $timestamp;
 		return $this;
@@ -261,10 +265,10 @@ class InlineImage extends MessagePart
 	/**
 	 *	Sets modification time by UNIX timestamp.
 	 *	@access		public
-	 *	@param		integer  	$timestamp		Timestamp of last modification
-	 *	@return		self  		Self instance for chaining
+	 *	@param		integer		$timestamp		Timestamp of last modification
+	 *	@return		self		Self instance for chaining
 	 */
-	public function setFileMTime( $timestamp ): self
+	public function setFileMTime( int $timestamp ): self
 	{
 		$this->fileMTime	= $timestamp;
 		return $this;
@@ -273,10 +277,10 @@ class InlineImage extends MessagePart
 	/**
 	 *	Sets file name.
 	 *	@access		public
-	 *	@param		string   	$fileName		File name
-	 *	@return		self	  	Self instance for chaining
+	 *	@param		string		$fileName		File name
+	 *	@return		self		Self instance for chaining
 	 */
-	public function setFileName( $fileName ): self
+	public function setFileName( string $fileName ): self
 	{
 		$this->fileName		= basename( $fileName );
 		return $this;
@@ -285,8 +289,8 @@ class InlineImage extends MessagePart
 	/**
 	 *	Sets file size in bytes.
 	 *	@access		public
-	 *	@param		integer  	$fileSize		File size
-	 *	@return		self  		Self instance for chaining
+	 *	@param		integer|NULL	$fileSize		File size
+	 *	@return		self			Self instance for chaining
 	 */
 	public function setFileSize( ?int $fileSize = NULL ): self
 	{
@@ -297,10 +301,10 @@ class InlineImage extends MessagePart
 	/**
 	 *	Sets content ID of image to be used in HTML part.
 	 *	@access		public
-	 *	@param		string   	$id				Content ID of image to be used in HTML part
-	 *	@return		self	  	Self instance for chaining
+	 *	@param		string		$id				Content ID of image to be used in HTML part
+	 *	@return		self		Self instance for chaining
 	 */
-	public function setId( $id ): self
+	public function setId( string $id ): self
 	{
 		$this->id	= $id;
 		return $this;

@@ -1,27 +1,36 @@
 <?php
+namespace CeusMedia\MailDemo\CLI\Client;
 
+use CeusMedia\Common\Alg\Text\Trimmer as TextTrimmer;
+use CeusMedia\Common\FS\File\INI\Creator as ConfigCreator;
+use CeusMedia\Common\FS\File\INI\SectionReader as ConfigReader;
+use CeusMedia\Common\CLI\Color as CliColor;
+use CeusMedia\Common\CLI\Output as CliOutput;
+use CeusMedia\Common\CLI\Question as Question;
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP as Transport;
-use FS_File_INI_SectionReader as ConfigReader;
-use CLI_Question as Question;
 
-class MailClient
+class App
 {
-	protected $configFileName	= '.config';
-	protected $listLimit		= 20;
-	protected $listOffset		= 0;
-	protected $mailbox;
-	protected $transport;
-	protected $passwordImap;
-	protected $passwordSmtp;
+	protected string $configFileName	= '.config';
+	protected int $listLimit		= 20;
+	protected int $listOffset		= 0;
+	protected Mailbox $mailbox;
+	protected Transport $transport;
+	protected string $passwordImap;
+	protected string $passwordSmtp;
+
+	protected ConfigReader $config;
+	protected CliOutput $output;
+	protected CliColor $color;
 
 	public function __construct()
 	{
-		$this->output	= new CLI_Output();
-		$this->color	= new CLI_Color();
+		$this->output	= new CliOutput();
+		$this->color	= new CliColor();
 	}
 
 	public function __destruct()
@@ -29,7 +38,7 @@ class MailClient
 //		$this->clearScreen();
 	}
 
-	public function run()
+	public function run(): void
 	{
 		if( !file_exists( $this->configFileName ) ){
 			$this->output->newLine( $this->color->asInfo( 'No configuration saved yet' ) );
@@ -40,7 +49,7 @@ class MailClient
 
 		if( $this->config->hasProperty( 'IMAP', 'password' ) )
 			$this->passwordImap	= $this->config->getProperty( 'IMAP', 'password' );
-		if( !$this->passwordImap )
+		else
 			$this->passwordImap	= Question::getInstance( 'Passwort' )->setBreak( FALSE )->ask();
 
 		$this->passwordSmtp	= $this->passwordImap;
@@ -55,7 +64,7 @@ class MailClient
 		));
 		$this->transport	= Transport::getInstance(
 			$this->config->getProperty( 'SMTP', 'host' ),
-			$this->config->getProperty( 'SMTP', 'port' ),
+			(int) $this->config->getProperty( 'SMTP', 'port' ),
 			$this->config->getProperty( 'SMTP', 'username' ),
 			$this->passwordSmtp
 		);
@@ -69,14 +78,14 @@ class MailClient
 	}
 
 
-	protected function clearScreen()
+	protected function clearScreen(): void
 	{
 		system( "clear" );
 //		$this->createMail();
 //		$this->indexMails();
 	}
 
-	protected function indexMails()
+	protected function indexMails(): void
 	{
 		$this->clearScreen();
 		$search		= MailboxSearch::getInstance()
@@ -93,8 +102,8 @@ class MailClient
 			try{
 				$message	= $mail->getMessage();
 				$sender		= $message->getRecipientsByType( 'TO' )->current()->getAddress();
-				$sender		= Alg_Text_Trimmer::trim( $sender, 40 );
-				$subject	= Alg_Text_Trimmer::trim( $message->getSubject(), 40 );
+				$sender		= TextTrimmer::trim( $sender, 40 );
+				$subject	= TextTrimmer::trim( $message->getSubject(), 40 );
 				$lines[]	= join( '  ', array(
 					str_pad( $mail->getId(), 6, ' ', STR_PAD_LEFT ),
 					str_pad( $sender, 40, ' ' ),
@@ -132,7 +141,7 @@ class MailClient
 		}
 	}
 
-	protected function askForAction( $options, $default = NULL )
+	protected function askForAction( array $options, $default = NULL ): string
 	{
 		$this->output->newLine( str_repeat( '-', 80 ).PHP_EOL );
 		if( is_null( $default ) )
@@ -144,7 +153,7 @@ class MailClient
 			->ask();
 	}
 
-	protected function askMailId()
+	protected function askMailId(): string
 	{
 		return Question::getInstance( 'Mail-ID' )
 			->setType( Question::TYPE_INTEGER )
@@ -152,7 +161,7 @@ class MailClient
 			->ask();
 	}
 
-	protected function readMail( $mailId )
+	protected function readMail( int $mailId ): void
 	{
 		$this->clearScreen();
 		try{
@@ -188,7 +197,7 @@ class MailClient
 		}
 	}
 
-	protected function showMainMenu()
+	protected function showMainMenu(): void
 	{
 		$this->indexMails();
 //		$this->clearScreen();
@@ -196,7 +205,7 @@ class MailClient
 //		$decision	= new CLI_Decision();
 	}
 
-	protected function createMail()
+	protected function createMail(): void
 	{
 		$this->clearScreen();
 		$receiver	= Question::getInstance( 'Empfänger' )
@@ -209,7 +218,7 @@ class MailClient
 		print( 'Enter mail body and hit CTRL-D to end input:'.PHP_EOL.PHP_EOL );
 		$text	= stream_get_contents( fopen( 'php://stdin', 'r' ) );
 
-		$question	= new CLI_Question( 'Mail versenden?', CLI_Question::TYPE_BOOLEAN, 'y' );
+		$question	= new Question( 'Mail versenden?', Question::TYPE_BOOLEAN, 'y' );
 		$decision	= $question->setBreak( FALSE )->ask();
 		if( $decision === 'y' ){
 			$message	= Message::create()
@@ -233,7 +242,7 @@ class MailClient
 		}
 	}
 
-	protected function createConfig()
+	protected function createConfig(): void
 	{
 		$regexDefault	= '/^\{\{(\S+)\.(\S+)\}\}$/';
 		$pairs			= array(
@@ -306,7 +315,7 @@ class MailClient
 			}
 		}
 	//	print_m( $data );
-		$file	= new FS_File_INI_Creator( TRUE );
+		$file	= new ConfigCreator( TRUE );
 		foreach( $data as $section => $pairs ){
 			$file->addSection( $section );
 			foreach( $pairs as $key => $value ){

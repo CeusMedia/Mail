@@ -28,11 +28,12 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Part;
 
+use CeusMedia\Common\Exception\IO as IoException;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
-use FS_File;
+use CeusMedia\Common\FS\File;
 use InvalidArgumentException;
 
 use function array_reverse;
@@ -193,11 +194,12 @@ class Attachment extends MessagePart
 	 *	@param		string		$fileName		Optional: Name of file in part
 	 *	@return		self	  	Self instance for chaining
 	 *	@throws		InvalidArgumentException	if file is not existing
+	 *	@throws		IoException					if reading from file failed
 	 *	@todo  		scan file for malware
 	 */
 	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ): self
 	{
-		$file	= new FS_File( $filePath );
+		$file	= new File( $filePath );
  		if( !$file->exists() )
 			throw new InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
 
@@ -205,7 +207,7 @@ class Attachment extends MessagePart
 			$mimeType	= $this->getMimeTypeFromFile( $filePath );
 		if( NULL === $fileName || 0 == strlen( trim( $fileName ) ) )
 			$fileName	= basename( $filePath );
- 		$this->content	= $file->getContent();
+ 		$this->content	= (string) $file->getContent( TRUE );
 		$this->setFileName( $fileName );
 		if( FALSE !== ( $fileSize = filesize( $filePath ) ) )
 			$this->setFileSize( $fileSize );
@@ -264,7 +266,7 @@ class Attachment extends MessagePart
 	 *	@param		string		$fileName	File name.
 	 *	@return		self		Self instance for chaining
 	 */
-	public function setFileName( $fileName ): self
+	public function setFileName( string $fileName ): self
 	{
 		$this->fileName		= basename( $fileName );
 		return $this;

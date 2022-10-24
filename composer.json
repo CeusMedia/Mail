@@ -28,7 +28,8 @@
     "ext-json": "*",
     "ceus-media/common": "^0.9 | 0.9-dev",
     "ceus-media/cache": "^0.4 | dev-0.4-dev",
-    "ezyang/htmlpurifier": "dev-master"
+    "ezyang/htmlpurifier": "dev-master",
+    "ext-dom": "*"
   },
   "require-dev": {
     "brianium/paratest": "*",
@@ -45,7 +46,9 @@
   },
   "autoload": {
     "psr-4": {
-        "CeusMedia\\Mail\\": ["src/"]
+      "CeusMedia\\Mail\\": ["src/"],
+      "CeusMedia\\MailDemo\\": ["demo/"],
+      "CeusMedia\\MailTest\\": ["test/"]
     }
   },
   "scripts": {
@@ -57,7 +60,7 @@
     ],
     "dev:phpunit": [
       "@dev:install-quiet",
-      "php vendor/bin/phpunit --configuration util/phpunit9.xml --testsuite units"
+      "php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite units"
     ],
     "dev:phpstan": [
       "@dev:install-quiet",

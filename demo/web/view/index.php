@@ -1,8 +1,13 @@
 <?php
+namespace CeusMedia\MailDemo\Web\View;
+
+use CeusMedia\Common\UI\HTML\Exception\Page as ExceptionPage;
+use CeusMedia\Common\Loader;
+
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-use UI_HTML_Exception_Page as ExceptionPage;
-new UI_DevOutput;
+
+new CeusMedia\Common\UI\DevOutput;
 
 try{
 	Loader::registerNew( 'php', NULL, 'inc' );

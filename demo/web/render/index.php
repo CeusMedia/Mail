@@ -1,11 +1,14 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
+use CeusMedia\Common\ADT\Collection\Dictionary;
+use CeusMedia\Common\UI\HTML\PageFrame as Page;
+use CeusMedia\Common\UI\HTML\Tag as Tag;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
 use CeusMedia\Mail\Transport\SMTP;
-use UI_HTML_PageFrame as Page;
-use UI_HTML_Tag as Tag;
+
+/** @var Dictionary $config */
 
 $sendMail		= !TRUE;
 $sendVerbose	= !TRUE;

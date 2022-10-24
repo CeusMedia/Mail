@@ -1,4 +1,9 @@
 <?php
+namespace CeusMedia\MailDemo\CLI\Client;
+
+use DOMDocument;
+use DOMNode;
+
 class HtmlToPlainText
 {
 	public static function convert( $html )
@@ -14,10 +19,11 @@ class HtmlToPlainText
 		return str_repeat( $character, strlen( $node->textContent ) ).PHP_EOL;
 	}
 
-	protected static function convertNodes( $root )
+	protected static function convertNodes( DOMNode $root )
 	{
 		$text		= '';
 		$cleared	= TRUE;
+		/** @var DOMNode $node */
 		foreach( $root->childNodes as $node ){
 			$nodeName	= $node->nodeName;
 			$nodeType	= $node->nodeType;
@@ -33,11 +39,11 @@ class HtmlToPlainText
 						$prefix	= PHP_EOL;
 					$suffix		= PHP_EOL;
 					$cleared	= TRUE;
-					if( in_array( $nodeName, array( 'h1', 'h2' ) ) ){
+					if( in_array( $nodeName, ['h1', 'h2'] ) ){
 						$prefix		.= PHP_EOL;
 						$suffix		.= self::underline( $node, '=' );
 					}
-					else if( in_array( $nodeName, array( 'h3', 'h4', 'h5' ) ) ){
+					else if( in_array( $nodeName, ['h3', 'h4', 'h5'] ) ){
 						$prefix		.= PHP_EOL;
 						$suffix		.= self::underline( $node, '-' );
 					}
@@ -47,10 +53,10 @@ class HtmlToPlainText
 					else if( $nodeName == "li" ){
 						$prefix		.= '- ';
 					}
-					else if( in_array( $nodeName, array( "p" ) ) ){
+					else if( in_array( $nodeName, ["p"], TRUE ) ){
 						$prefix		.= PHP_EOL;
 					}
-					else if( in_array( $nodeName, array( "p", 'ul', 'div' ) ) ){
+					else if( in_array( $nodeName, ["p", 'ul', 'div'], TRUE ) ){
 					}
 				}
 				else{
@@ -58,15 +64,15 @@ class HtmlToPlainText
 					if( $nodeName == "a" ){
 						$suffix		= ' ('.$node->getAttribute( 'href' ).')';
 					}
-					else if( in_array( $nodeName, array( "b", "strong" ) ) ){
+					else if( in_array( $nodeName, ["b", "strong"], TRUE ) ){
 						$prefix		= '**';
 						$suffix		= '**';
 					}
-					else if( in_array( $nodeName, array( "em" ) ) ){
+					else if( in_array( $nodeName, ["em"], TRUE ) ){
 						$prefix		= '*';
 						$suffix		= '*';
 					}
-					else if( in_array( $nodeName, array( "br" ) ) ){
+					else if( in_array( $nodeName, ["br"], TRUE ) ){
 						$suffix		= PHP_EOL;
 						$cleared	= TRUE;
 					}
@@ -80,17 +86,17 @@ class HtmlToPlainText
 		return $text;
 	}
 
-	protected static function isBlockElement( $node )
+	protected static function isBlockElement( $node ): bool
 	{
 		$elements	= array_merge(
-			array( 'div', 'p', 'ul', 'li', 'hr', 'blockquote', 'pre', 'xmp' ),
-			array( 'h1', 'h2', 'h3', 'h4', 'h5' )
+			['div', 'p', 'ul', 'li', 'hr', 'blockquote', 'pre', 'xmp'],
+			['h1', 'h2', 'h3', 'h4', 'h5'],
 		);
-		return in_array( $node->nodeName, $elements );
+		return in_array( $node->nodeName, $elements, TRUE );
 	}
 
 	protected static function isInlineElement( $node )
 	{
-		return !isBlockElement( $node );
+		return !self::isBlockElement( $node );
 	}
 }

@@ -2,13 +2,13 @@
 
 use CeusMedia\Bootstrap\Icon;
 use CeusMedia\Bootstrap\Nav\Tabs;
+use CeusMedia\Common\UI\HTML\Tag as Tag;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part\HTML as HtmlPart;
 use CeusMedia\Mail\Message\Part\Text as TextPart;
 use CeusMedia\Mail\Message\Part\Attachment as AttachmentPart;
 use CeusMedia\Mail\Message\Part\InlineImage as InlineImagePart;
 use CeusMedia\Mail\Message\Part\Mail as MailPart;
-use UI_HTML_Tag as Tag;
 
 Icon::$defaultSet = 'fontawesome';
 
@@ -60,7 +60,7 @@ $content		= Tag::create( 'pre', $valueSource, array(
 $tabs->add( 'mail-source', '#', 'Source Code', $content, '' === $content );
 
 
-$optFile	= UI_HTML_Elements::Options( array_combine( array_values( $files ), array_values( $files ) ), $file );
+$optFile	= \CeusMedia\Common\UI\HTML\Elements::Options( array_combine( array_values( $files ), array_values( $files ) ), $file );
 
 return '
 <form action="./" method="GET">

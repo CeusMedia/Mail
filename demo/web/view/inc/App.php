@@ -1,14 +1,17 @@
 <?php
 
+namespace CeusMedia\MailDemo\Web\View;
+
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Parser;
-use UI_HTML_PageFrame as Page;
-new UI_DevOutput;
+use CeusMedia\Common\UI\HTML\PageFrame as Page;
+
+new CeusMedia\Common\UI\DevOutput;
 
 class App
 {
-	protected $filePath;
-	protected $files;
+	protected ?string $filePath;
+	protected array $files;
 
 	public function __construct()
 	{

@@ -1,11 +1,12 @@
 <?php
-new UI_DevOutput;
-
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection;
 use CeusMedia\Cache\Factory as CacheFactory;
-use UI_HTML_PageFrame as Page;
-use UI_HTML_Tag as Tag;
+use CeusMedia\Common\ADT\Collection\Dictionary;
+use CeusMedia\Common\Net\HTTP\Request\Receiver as HttpRequestReceiver;
+use CeusMedia\Common\Net\HTTP\Response as HttpResponse;
+use CeusMedia\Common\UI\HTML\PageFrame as Page;
+use CeusMedia\Common\UI\HTML\Tag as Tag;
 
 
 class DemoMailboxApp
@@ -17,11 +18,11 @@ class DemoMailboxApp
 	public static $urlCssLibrary	= 'https://cdn.ceusmedia.de/css/bootstrap.min.css';
 	public static $urlJsLibrary		= 'https://cdn.ceusmedia.de/js/jquery/1.10.2.min.js';
 
-	public function __construct( ADT_List_Dictionary $config )
+	public function __construct( Dictionary $config )
 	{
 		$this->config	= (object) $config->getAll( 'mailbox_' );
-		$this->request	= new Net_HTTP_Request_Receiver;
-		$this->response	= new Net_HTTP_Response;
+		$this->request	= new HttpRequestReceiver;
+		$this->response	= new HttpResponse;
 		$this->cache	= CacheFactory::createStorage('Folder', 'cache/', NULL, 3600);
 		try{
 			$this->openMailbox();

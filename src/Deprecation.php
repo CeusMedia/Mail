@@ -28,7 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail;
 
-use Deprecation as CommonDeprecation;
+use CeusMedia\Common\Deprecation as CommonDeprecation;
 
 use RuntimeException;
 
@@ -52,7 +52,7 @@ class Deprecation extends CommonDeprecation
 	/**
 	 *	Event to handle self detection on end of static construction.
 	 *	Will detect library version.
-	 *	Will set error version to curent library version by default.
+	 *	Will set error version to current library version by default.
 	 *	Will not set an exception version.
 	 *	@access		protected
 	 *	@return		void

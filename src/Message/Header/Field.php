@@ -28,10 +28,9 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
+use CeusMedia\Common\ADT\Collection\Dictionary;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
-
-use ADT_List_Dictionary as Dictionary;
 
 use InvalidArgumentException;
 

@@ -1,10 +1,10 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-new UI_DevOutput;
+new \CeusMedia\Common\UI\DevOutput;
 
 $s	= "dev@ceusmedia.de";
-$c	= new CeusMedia\Mail\Address\Check\Availability( $s, TRUE );
+$c	= new \CeusMedia\Mail\Address\Check\Availability( $s, TRUE );
 
 print( 'SMTP communication:'.PHP_EOL );
 $result	= $c->test( $s );

@@ -28,12 +28,11 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Transport;
 
+use CeusMedia\Common\UI\OutputBuffer;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
-
-use UI_OutputBuffer;
 
 use Exception;
 use InvalidArgumentException;
@@ -110,7 +109,7 @@ class Local
 		$parameters	= implode( PHP_EOL, $parameters );
 
 		$list	= [];
-		$buffer	= new UI_OutputBuffer();
+		$buffer	= new OutputBuffer();
 		/** @var Address $receiver */
 		foreach( $receivers->filter() as $receiver ){
 			try{

@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message;
 
+use CeusMedia\Common\Alg\Obj\MethodFactory as MethodFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
@@ -42,7 +43,6 @@ use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
 use CeusMedia\Mail\Message\Part\Text as MessagePartText;
 
-use Alg_Object_MethodFactory as MethodFactory;
 use RuntimeException;
 
 use function in_array;

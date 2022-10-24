@@ -5,13 +5,14 @@ $fileName	= array_keys( $files )[1];
 
 //  --------------------------------  //
 
+use CeusMedia\Common\Alg\Obj\Constant as ObjectConstant;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Parser;
 use CeusMedia\Mail\Message\Renderer;
-use UI_HTML_PageFrame as Page;
-use UI_HTML_Exception_Page as ExceptionPage;
-use UI_HTML_Tag as Tag;
-new UI_DevOutput;
+use CeusMedia\Common\UI\HTML\Exception\Page as ExceptionPage;
+use CeusMedia\Common\UI\HTML\PageFrame as Page;
+use CeusMedia\Common\UI\HTML\Tag as Tag;
+new CeusMedia\Common\UI\DevOutput;
 
 try{
 	$demo	= new ParseAndView();
@@ -58,7 +59,7 @@ class ParseAndView
 	protected function addListItem( & $list, $key, $value )
 	{
 		$value	= htmlentities( $value, ENT_QUOTES, 'UTF-8' );;
-		$list[]	= UI_HTML_Tag::create( 'li', $key.': '.$value );
+		$list[]	= Tag::create( 'li', $key.': '.$value );
 	}
 
 	protected function renderListMain( Message $object ): string
@@ -79,7 +80,7 @@ class ParseAndView
 		if( $headerReturnPath )
 			$this->addListItem( $listMain, 'Return', $headerReturnPath[0]->getValue() );
 		$this->addListItem( $listMain, 'ID', current( $object->getHeaders()->getFieldsByName( 'Message-ID' ) )->getValue() );
-		return UI_HTML_Tag::create( 'ul', $listMain );
+		return Tag::create( 'ul', $listMain );
 	}
 
 	protected function renderListParts( Message $object ): string
@@ -88,8 +89,8 @@ class ParseAndView
 		$listParts		= array();
 		foreach( $parts as $nr => $part ){
 			$list2		= array();
-			$listParts[]	= UI_HTML_Tag::create( 'h4', 'Part #'.( $nr + 1 ) );
-			$this->addListItem( $list2, 'Type', Alg_Object_Constant::staticGetKeyByValue( '\CeusMedia\Mail\Message\Part', $part->getType(), 'TYPE_' ) );
+			$listParts[]	= Tag::create( 'h4', 'Part #'.( $nr + 1 ) );
+			$this->addListItem( $list2, 'Type', ObjectConstant::staticGetKeyByValue( '\CeusMedia\Mail\Message\Part', $part->getType(), 'TYPE_' ) );
 			if( $part->getCharset() )
 				$this->addListItem( $list2, 'Charset', $part->getCharset() );
 			if( $part->getEncoding() )
@@ -105,14 +106,14 @@ class ParseAndView
 				if( $part->getFileSize() )
 					$this->addListItem( $list2, 'Filesize', $part->getFileSize() );
 			}
-			$listParts[]	= UI_HTML_Tag::create( 'ul', $list2 );
+			$listParts[]	= Tag::create( 'ul', $list2 );
 			if( $part->isText() ){
-				$listParts[]	= UI_HTML_Tag::create( 'h5', 'Content' );
-				$listParts[]	= UI_HTML_Tag::create( 'xmp', $part->getContent() );
+				$listParts[]	= Tag::create( 'h5', 'Content' );
+				$listParts[]	= Tag::create( 'xmp', $part->getContent() );
 			}
 			else if( $part->isHTML() ){
-				$listParts[]	= UI_HTML_Tag::create( 'h5', 'Content' );
-				$listParts[]	= UI_HTML_Tag::create( 'xmp', $part->getContent() );
+				$listParts[]	= Tag::create( 'h5', 'Content' );
+				$listParts[]	= Tag::create( 'xmp', $part->getContent() );
 			}
 		}
 		return join( $listParts );
@@ -120,30 +121,31 @@ class ParseAndView
 
 	protected function renderListMore( Message $object ): string
 	{
-		$listMore		= array();
+		$listMore		= [];
+		$blacklist		= ['Date', 'From', 'To', 'Subject', 'Message-ID', 'Return-Path', 'Delivered-To'];
 		foreach( $object->getHeaders()->getFields() as $header ){
-			if( in_array( $header->getName(), array( 'Date', 'From', 'To', 'Subject', 'Message-ID', 'Return-Path', 'Delivered-To' ) ) )
+			if( in_array( $header->getName(), $blacklist, TRUE ) )
 				continue;
-			if( preg_match( '/^X-/', $header->getName() ) )
+			if( FALSE !== preg_match( '/^X-/', $header->getName() ) )
 				continue;
-			if( !strlen( trim( $header->getValue() ) ) )
+			if( 0 === strlen( trim( $header->getValue() ) ) )
 				continue;
 			$this->addListItem( $listMore, $header->getName(), $header->getValue() );
 		}
-		return UI_HTML_Tag::create( 'ul', $listMore );
+		return Tag::create( 'ul', $listMore );
 	}
 
 	protected function renderListExtended( Message $object ): string
 	{
-		$listExtended	= array();
+		$listExtended	= [];
 		foreach( $object->getHeaders()->getFields() as $header ){
-			if( !preg_match( '/^X-/', $header->getName() ) )
+			if( FALSE === preg_match( '/^X-/', $header->getName() ) )
 				continue;
-			if( !strlen( trim( $header->getValue() ) ) )
+			if( 0  === strlen( trim( $header->getValue() ) ) )
 				continue;
 			$this->addListItem( $listExtended, $header->getName(), $header->getValue() );
 		}
-		return UI_HTML_Tag::create( 'ul', $listExtended );
+		return Tag::create( 'ul', $listExtended );
 	}
 
 	protected function renderPage( string $rawMail ): string

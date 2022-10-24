@@ -1,14 +1,14 @@
 <?php
 use CeusMedia\Bootstrap\Icon;
 use CeusMedia\Mail\Message;
-use Alg_UnitFormater as UnitFormater;
-use UI_HTML_Elements as HtmlElements;
-use UI_HTML_Tag as Tag;
+use CeusMedia\Common\Alg\UnitFormater as UnitFormater;
+use CeusMedia\Common\UI\HTML\Elements as HtmlElements;
+use CeusMedia\Common\UI\HTML\Tag as Tag;
 
 class MailAttachmentListRenderer
 {
-	protected $file;
-	protected $message;
+	protected string $file;
+	protected Message $message;
 
 	public function __construct( string $file, Message $message )
 	{
@@ -16,7 +16,7 @@ class MailAttachmentListRenderer
 		$this->message	= $message;
 	}
 
-	public function render()
+	public function render(): string
 	{
 		$iconDownload		= new Icon( 'download' );
 		$iconView			= new Icon( 'eye' );

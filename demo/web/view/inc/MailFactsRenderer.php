@@ -1,16 +1,16 @@
 <?php
 use CeusMedia\Bootstrap\Icon;
+use CeusMedia\Common\Alg\Obj\Constant as ObjectConstant;
+use CeusMedia\Common\UI\HTML\Tag as Tag;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Message\Header\Received as ReceivedHeader;
 use CeusMedia\Mail\Message;
 
-use Alg_Object_Constant as ObjectConstant;
-use UI_HTML_Tag as Tag;
 
 class MailFactsRenderer
 {
-	protected $file;
-	protected $message;
+	protected string $file;
+	protected Message $message;
 
 	public function __construct( string $file, Message $message )
 	{

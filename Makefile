@@ -36,10 +36,10 @@ dev-analyse-phan: composer-install-dev
 	@XDEBUG_MODE=off ./vendor/bin/phan -k=.phan --color --allow-polyfill-parser || true
 
 dev-analyse-phan-report: dev-analyse-phan-save
-	@php vendor/ceus-media/phan-viewer/phan-viewer generate --source=phan.json --target=doc/phan/
+	@php vendor/ceus-media/phan-viewer/phan-viewer generate --source=util/phan.json --target=doc/phan/
 
 dev-analyse-phan-save: composer-install-dev
-	@XDEBUG_MODE=off PHAN_DISABLE_XDEBUG_WARN=1 ./vendor/bin/phan -k=.phan -m=json -o=phan.json --allow-polyfill-parser -p || true
+	@XDEBUG_MODE=off PHAN_DISABLE_XDEBUG_WARN=1 ./vendor/bin/phan -k=util/.phan -m=json -o=util/phan.json --allow-polyfill-parser -p || true
 
 dev-phpstan: composer-install-dev
 	@vendor/bin/phpstan analyse --configuration util/phpstan.neon --xdebug || true
@@ -49,7 +49,7 @@ dev-phpstan-save-baseline: composer-install-dev
 
 dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
-	@php vendor/ceus-media/doc-creator/doc.php --config-file=doc.xml
+	@php vendor/ceus-media/doc-creator/doc.php --config-file=util/doc.xml
 
 dev-test-all-with-coverage:
 	@XDEBUG_MODE=coverage vendor/bin/phpunit -v || true

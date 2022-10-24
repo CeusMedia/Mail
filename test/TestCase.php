@@ -1,12 +1,14 @@
 <?php
 namespace CeusMedia\Mail\Test;
 
-use ADT_List_Dictionary as Dictionary;
-use PHPUnit\Framework\TestCase as PhpUnitTestCase;
+use CeusMedia\Common\ADT\Collection\Dictionary;
+use CeusMedia\Common\UI\DevOutput;
 use CeusMedia\Mail\Address;
+
+use PHPUnit\Framework\TestCase as PhpUnitTestCase;
+
 use Exception;
 use RuntimeException;
-use UI_DevOutput;
 
 class TestCase extends PhpUnitTestCase
 {
@@ -29,7 +31,7 @@ class TestCase extends PhpUnitTestCase
 	public function __construct( $name = NULL )
 	{
 		parent::__construct( $name );
-		new UI_DevOutput();
+		new DevOutput();
 		$this->pathLibrary		= dirname( __DIR__ ).'/';
 		$this->pathTests		= __DIR__.'/';
 		$this->configFile		= $this->pathLibrary.'Mail.ini';

@@ -28,10 +28,10 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Check;
 
+use CeusMedia\Common\ADT\Bitmask;
+use CeusMedia\Common\Alg\Obj\Constant as ObjectConstant;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 
-use ADT_Bitmask;
-use Alg_Object_Constant;
 use InvalidArgumentException;
 
 use function filter_var;
@@ -87,9 +87,9 @@ class Syntax
 	public function check( string $address, bool $throwException = TRUE ): int
 	{
 		$result		= 0;
-		$modes		= new ADT_Bitmask( $this->mode );
+		$modes		= new Bitmask( $this->mode );
 		$wildcard	= $modes->has( self::MODE_ALL );
-		$constants	= Alg_Object_Constant::staticGetAll( self::class, 'MODE_' );
+		$constants	= ObjectConstant::staticGetAll( self::class, 'MODE_' );
 
 		foreach( $constants as $key => $value ){
 			if( $modes->has( $value ) || $wildcard ){

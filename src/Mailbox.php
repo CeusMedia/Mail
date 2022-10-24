@@ -76,12 +76,12 @@ class Mailbox
 	/**
 	 * @var MailboxConnection $connection
 	 */
-	protected $connection;
+	protected MailboxConnection $connection;
 
 	/**
 	 * @var string|NULL $reference
 	 */
-	protected $reference;
+	protected ?string $reference;
 
 	public function __construct( MailboxConnection $connection )
 	{

@@ -28,12 +28,12 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address\Collection;
 
+use CeusMedia\Common\Alg\Obj\Constant as ObjectConstant;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
 use CeusMedia\Mail\Deprecation;
 
-use Alg_Object_Constant;
 use InvalidArgumentException;
 use RangeException;
 
@@ -94,7 +94,7 @@ class Parser
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
-			->message(  'Use method getInstance instead' );
+			->message( 'Use method getInstance instead' );
 		return new self();
 	}
 
@@ -242,8 +242,9 @@ class Parser
 	 */
 	public function setMethod( int $method ): self
 	{
-		$reflextion	= new Alg_Object_Constant( get_class( $this ) );
-		$constants	= $reflextion->getAll( 'METHOD' );
+		$reflection	= new ObjectConstant( get_class( $this ) );
+		/** @var array $constants */
+		$constants	= $reflection->getAll( 'METHOD' );
 		if( !in_array( $method, $constants, TRUE ) )
 			throw new InvalidArgumentException( 'Invalid method' );
 		$this->method	= $method;

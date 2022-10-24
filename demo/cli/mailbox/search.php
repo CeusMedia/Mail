@@ -1,6 +1,7 @@
 <?php
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
+use CeusMedia\Common\Alg\Time\Clock;
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection;
 use CeusMedia\Mail\Mailbox\Mail;
@@ -34,7 +35,7 @@ $search->setOffset( $offset );
 $search->setSubject( 'This is just a test' );
 $search->setSender( $configSended->senderAddress );
 
-$clock		= new Alg_Time_Clock();
+$clock		= new Clock();
 $verbose && println( 'Criteria: '.$search->renderCriteria() );
 $verbose && print( 'Performing search ...' );
 $mailIds	= $mailbox->performSearch( $search );
@@ -42,23 +43,28 @@ $verbose && print( PHP_EOL );
 $verbose && println( 'Found: '.count( $mailIds ).' mails' );
 $verbose && println( 'Time needed: '.$clock->stop( 3, 0 ).' ms' );
 
-$clock	= new Alg_Time_Clock();
+$clock	= new Clock();
 foreach( $mailIds as $mailId => $mail ){
 	println( str_pad( '--  #'.$mailId.'  ', '76', '-', STR_PAD_RIGHT ) );
+	/** @phpstan-ignore-next-line */
 	if( ( $mode ?? 0 ) === 0 ){
 		println( $mail->getId() );
 	}
+	/** @phpstan-ignore-next-line */
 	else if( $mode === 1 ){
 		println( $mail->getRawHeader() );
 	}
+	/** @phpstan-ignore-next-line */
 	else if( $mode === 2 ){
 		println( $mail->getHeader()->toString() );
 	}
+	/** @phpstan-ignore-next-line */
 	else if( $mode === 3 ){
 		foreach( $mail->getHeader()->toArray() as $field ){
 			println( '- '.$field );
 		}
 	}
+	/** @phpstan-ignore-next-line */
 	else if( $mode === 4 ){
 		$message	= $mail->getMessage( FALSE );
 		println( 'Subject: '.$message->getSubject() );
@@ -68,6 +74,7 @@ foreach( $mailIds as $mailId => $mail ){
 			println( '- '.$line );
 		}
 	}
+	/** @phpstan-ignore-next-line */
 	else if( $mode === 5 ){
 		$message	= $mail->getMessage( TRUE );
 		println( 'Subject: '.$message->getSubject() );

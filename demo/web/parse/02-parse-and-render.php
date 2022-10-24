@@ -3,10 +3,12 @@ require_once dirname( __DIR__ ).'/_bootstrap.php';
 
 use CeusMedia\Mail\Message\Parser;
 use CeusMedia\Mail\Message\Renderer;
-use UI_HTML_PageFrame as Page;
-use UI_HTML_Tag as Tag;
+use CeusMedia\Common\UI\HTML\PageFrame as Page;
+use CeusMedia\Common\UI\HTML\Tag as Tag;
 
-new UI_DevOutput;
+new CeusMedia\Common\UI\DevOutput;
+
+/** @var array<string> $files */
 
 $fileName	= array_keys( $files )[2];
 

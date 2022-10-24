@@ -1,11 +1,15 @@
 #!/usr/bin/env php
 <?php
+
+use CeusMedia\Common\UI\DevOutput;
+use CeusMedia\MailDemo\CLI\Client\App as CLiDemoClientApp;
+
 error_reporting( E_ALL );
 require_once __DIR__.'/../../../vendor/autoload.php';
-require_once __DIR__.'/Client.php';
+require_once __DIR__.'/App.php';
 require_once __DIR__.'/HtmlToPlainText.php';
 
-new UI_DevOutput();
-$client	= new MailClient();
+new DevOutput();
+$client	= new CLiDemoClientApp();
 $client->setConfigFile( __DIR__.'/.config' );
 $client->run();

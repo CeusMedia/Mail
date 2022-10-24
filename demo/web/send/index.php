@@ -1,9 +1,12 @@
 <?php
+
+use CeusMedia\Common\Net\HTTP\Request\Receiver as HttpRequestReceiver;
+
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
 $sending	= (object) $config->getAll( 'sending_' );
 
-$request	= new Net_HTTP_Request_Receiver;
+$request	= new HttpRequestReceiver;
 
 $result	= '- no mail triggered -';
 if( $request->has( 'send' ) && $request->get( 'receiverAddress' ) ){
@@ -77,7 +80,7 @@ $transport->send($mail);
 </div>
 ';
 
-$page	= new UI_HTML_PageFrame();
+$page	= new \CeusMedia\Common\UI\HTML\PageFrame();
 $page->addBody( $body );
 $page->addStylesheet( 'https://cdn.ceusmedia.de/css/bootstrap.min.css' );
 print $page->build();
