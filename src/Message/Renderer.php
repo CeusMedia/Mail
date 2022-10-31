@@ -102,7 +102,7 @@ class Renderer
 	 */
 	public static function render( Message $message ): string
 	{
-		if( 0 === count( $message->getParts( TRUE ) ) )
+		if( 0 === count( $message->getParts() ) )
 			throw new RuntimeException( 'No content part set' );
 		$subject	= trim( $message->getSubject() ?? '' );
 		if( 0 === strlen( $subject ) )
@@ -124,8 +124,8 @@ class Renderer
 		if( NULL !== $message->getUserAgent() )
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
 
-		if( 1 === count( $message->getParts( TRUE ) ) ){						//  no multipart message
-			$parts	= $message->getParts( TRUE );								//  get parts
+		if( 1 === count( $message->getParts() ) ){								//  no multipart message
+			$parts	= $message->getParts();										//  get parts
 			$part	= array_pop( $parts );										//  get solo part
 			return $part->render( MessagePart::SECTION_ALL, $headers );			//  render part and apply part headers as message headers
 		}
@@ -138,7 +138,7 @@ class Renderer
 		'files'		=> [],
 			'images'	=> [],
 		];
-		foreach( $message->getParts( TRUE ) as $part ){
+		foreach( $message->getParts() as $part ){
 			if( $part instanceof MessagePartHTML )
 				$parts->body->html	= $part;
 			else if( $part instanceof MessagePartText )

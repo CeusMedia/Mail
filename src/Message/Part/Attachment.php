@@ -208,7 +208,7 @@ class Attachment extends MessagePart
 			$mimeType	= $this->getMimeTypeFromFile( $filePath );
 		if( NULL === $fileName || 0 == strlen( trim( $fileName ) ) )
 			$fileName	= basename( $filePath );
- 		$this->content	= (string) $file->getContent( TRUE );
+ 		$this->content	= (string) $file->getContent();
 		$this->setFileName( $fileName );
 		if( FALSE !== ( $fileSize = filesize( $filePath ) ) )
 			$this->setFileSize( $fileSize );

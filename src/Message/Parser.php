@@ -173,7 +173,7 @@ class Parser
 			if( self::regMatch( '/-date$/', $key ) )
 				$value	= strtotime( $value );
 			if( FALSE !== $value )
-				$methodFactory->setMethod( $method, array( $value ) )->call();
+				$methodFactory->setMethod( $method, [$value] )->call();
 		}
 		return $part;
 	}
@@ -208,7 +208,7 @@ class Parser
 		}
 
 		$filename	= $disposition->getAttribute( 'filename' );
-		$couldBeAttachment	= in_array( $dispositionType, [ 'INLINE', 'ATTACHMENT' ], TRUE );
+		$couldBeAttachment	= in_array( $dispositionType, ['INLINE', 'ATTACHMENT'], TRUE );
 		if( $couldBeAttachment && NULL !== $filename ){
 			return self::createAttachmentPart(
 				$content,
@@ -278,7 +278,7 @@ class Parser
 			if( self::regMatch( '/-date$/', $key ) )
 				$value	= strtotime( $value );
 			if( FALSE !== $value )
-				$methodFactory->setMethod( $method, array( $value ) )->call();
+				$methodFactory->setMethod( $method, [$value] )->call();
 		}
 		return $part;
 	}

@@ -135,6 +135,7 @@ abstract class Part
 				$content	= $result;
 				break;
 			case '8bit':
+			case '':
 				break;
 			case 'base64':
 			case 'binary':
@@ -151,8 +152,6 @@ abstract class Part
 				if( FALSE === $result )
 					throw new RuntimeException( 'Decoding quoted-printable content failed' );
 				$content	= $result;
-				break;
-			case '':
 				break;
 			default:
 				throw new InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
@@ -460,9 +459,9 @@ abstract class Part
 	 */
 	protected static function wrapContent( string $content, ?int $length = NULL, ?string $delimiter = NULL ): string
 	{
-		$delimiter	= $delimiter ?? Message::$delimiter;
-		$lineLength	= max( 1, $length ?? Message::$lineLength );
-		$content	= chunk_split( $content, $lineLength, $delimiter );
+		$length		??= Message::$lineLength;
+		$delimiter	??= Message::$delimiter;
+		$content	= chunk_split( $content, max( 1, $length ), $delimiter );
 		return rtrim( $content, $delimiter );
 	}
 }

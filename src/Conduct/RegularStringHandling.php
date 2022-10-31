@@ -99,7 +99,7 @@ trait RegularStringHandling
 	 */
 	protected static function regSplit( string $expression, string $string, ?int $limit = 0, ?string $errorMessage = NULL ): array
 	{
-		$limit	= $limit ?? -1;
+		$limit	??= -1;
 		$parts	= preg_split( $expression, $string, $limit );
 		if( FALSE === $parts || 0 === count( $parts ) ){
 			if( NULL === $errorMessage )

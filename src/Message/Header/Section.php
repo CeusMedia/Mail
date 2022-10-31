@@ -123,7 +123,7 @@ class Section implements Countable
 	public function getFields(): array
 	{
 		$list	= [];
-		foreach( $this->fields as $name => $fields )
+		foreach( $this->fields as $fields )
 			if( 0 < count( $fields ) )
 				foreach( $fields as $field )
 					$list[]	= $field;
@@ -231,7 +231,7 @@ class Section implements Countable
 	public function toArray( bool $keepCase = FALSE ): array
 	{
 		$list	= [];
-		foreach( $this->fields as $name => $fields )
+		foreach( $this->fields as $fields )
 			foreach( $fields as $field )
 				$list[]	= $field->toString( $keepCase );
 		return $list;

@@ -103,7 +103,7 @@ class Connection
 
 	public function __construct( string $host, string $username = '', string $password = '', bool $secure = TRUE, bool $validateCertificates = TRUE )
 	{
-		Mailbox::checkExtensionInstalled( TRUE );
+		Mailbox::checkExtensionInstalled();
 		$this->setHost( $host );
 		if( 0 < strlen( trim( $username ) ) && 0 < strlen( trim( $password ) ) )
 			$this->setAuth( $username, $password );
@@ -117,7 +117,7 @@ class Connection
 
 	public function connect( bool $strict = TRUE ): bool
 	{
-		$reference	= $this->renderReference( TRUE );
+		$reference	= $this->renderReference();
 		$options	= $this->secure && $this->validateCertificates ? OP_SECURE : 0;
 		$uri		= $reference.'INBOX';
 		$resource	= @imap_open( $uri, $this->username, $this->password, $options );
@@ -135,9 +135,8 @@ class Connection
 	public function disconnect(): bool
 	{
 		if( NULL !== $this->resource ){
-			if( is_resource( $this->resource ) ){
-				$result	= imap_close( $this->resource, CL_EXPUNGE );
-			}
+			if( is_resource( $this->resource ) )
+				imap_close( $this->resource, CL_EXPUNGE );
 			$this->resource	= NULL;
 		}
 		return TRUE;
@@ -160,10 +159,10 @@ class Connection
 	 */
 	public function getResource( bool $connect = FALSE )
 	{
-		if( !$this->isOpen( TRUE ) ){
+		if( !$this->isOpen() ){
 			if( !$connect )
 				throw new RuntimeException( 'Not connected' );
-			if( !$this->connect( TRUE ) )
+			if( !$this->connect() )
 				throw new RuntimeException( 'Connection failed' );
 		}
 		if( NULL === $this->resource )
@@ -173,7 +172,7 @@ class Connection
 
 	public function isOpen( bool $ping = TRUE ): bool
 	{
-		if( NULL === $this->resource || !is_resource( $this->resource ) )
+		if( !is_resource( $this->resource ) )
 			return FALSE;
 		if( $ping && !imap_ping( $this->resource ) )
 			return FALSE;

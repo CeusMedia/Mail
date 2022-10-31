@@ -87,7 +87,7 @@ class Field
 	 */
 	public function __toString(): string
 	{
-		return $this->toString( TRUE );
+		return $this->toString();
 	}
 
 	/**

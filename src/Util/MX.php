@@ -141,6 +141,8 @@ class MX
 			return $records;
 		}
 		$servers	= [];
+		$mxRecords	= [];
+		$mxWeights	= [];
 		getmxrr( $hostname, $mxRecords, $mxWeights );
 		if( !$mxRecords && $strict )
 			throw new RuntimeException( 'No MX records found for host: '.$hostname );

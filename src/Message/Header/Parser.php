@@ -107,7 +107,7 @@ class Parser
 			case self::STRATEGY_OWN:
 				return self::parseByOwnStrategy( $content );
 			case self::STRATEGY_ICONV:
-				return self::parseByIconvStrategy( $content, 0 );
+				return self::parseByIconvStrategy( $content );
 			case self::STRATEGY_ICONV_STRICT:
 				return self::parseByIconvStrategy( $content, 1 );
 			case self::STRATEGY_ICONV_TOLERANT:
@@ -209,7 +209,7 @@ class Parser
 		$buffer		= [];
 		$field		= NULL;
 		$section	= new Section();
-		foreach( $lines as $nr => $line ){
+		foreach( $lines as $line ){
 			if( self::regMatch( '/^\S+:/', $line ) ){
 				[$key, $value] = explode( ':', $line, 2 );
 				$value	= $encoder->decodeByOwnStrategy( ltrim( $value ) );
