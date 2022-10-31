@@ -56,13 +56,13 @@ class Field
 	use RegularStringHandling;
 
 	/**	@var		Dictionary	$attributes		Dictionary of header attributes */
-	protected $attributes;
+	protected Dictionary $attributes;
 
 	/**	@var		string		$name		Name of header */
-	protected $name;
+	protected string $name;
 
 	/**	@var		string		$value		Value of header */
-	protected $value;
+	protected string $value;
 
 	/**
 	 *	Constructor.

@@ -59,23 +59,23 @@ use function trim;
  */
 class Socket
 {
-	/**	@var	string|NULL		$host */
-	protected $host;
+	/**	@var	string|NULL			$host */
+	protected ?string $host			= NULL;
 
-	/**	@var	int|NULL		$port */
-	protected $port;
+	/**	@var	int|NULL			$port */
+	protected ?int $port			= NULL;
 
-	/**	@var	integer			$errorNumber */
-	protected $errorNumber		= 0;
+	/**	@var	integer				$errorNumber */
+	protected int $errorNumber		= 0;
 
-	/**	@var	string			$errorMessage */
-	protected $errorMessage		= '';
+	/**	@var	string				$errorMessage */
+	protected string $errorMessage	= '';
 
-	/** @var	resource|NULL	$connection */
-	protected $connection;
+	/** @var	resource|NULL		$connection */
+	protected $connection			= NULL;
 
-	/**	@var	integer			$timeout */
-	protected $timeout			= 5;
+	/**	@var	integer				$timeout */
+	protected int $timeout			= 5;
 
 	/**
 	 *	Alias for getInstance.

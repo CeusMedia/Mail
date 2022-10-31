@@ -57,22 +57,22 @@ class Response
 	public const ERROR_RECEIVER_NOT_ACCEPTED	= 14;
 
 	/** @var	int[]		$acceptedCodes */
-	public $acceptedCodes	= [];
+	public array $acceptedCodes	= [];
 
-	/** @var	integer		$code */
-	public $code			= 0;
+	/** @var	integer			$code */
+	public int $code			= 0;
 
-	/** @var	string		$message */
-	public $message			= '';
+	/** @var	string			$message */
+	public string $message		= '';
 
-	/** @var	int			$error */
-	public $error			= self::ERROR_NONE;
+	/** @var	int				$error */
+	public int $error			= self::ERROR_NONE;
 
-	/** @var	string		$request */
-	public $request			= '';
+	/** @var	string			$request */
+	public string $request		= '';
 
-	/** @var	string[]	$response */
-	public $response		= [];
+	/** @var	string[]		$response */
+	public array $response		= [];
 
 	public function __construct( ?int $code = NULL, ?string $message = NULL )
 	{

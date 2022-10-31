@@ -81,7 +81,7 @@ class Mailbox
 	/**
 	 * @var string|NULL $reference
 	 */
-	protected ?string $reference;
+	protected ?string $reference		= NULL;
 
 	public function __construct( MailboxConnection $connection )
 	{

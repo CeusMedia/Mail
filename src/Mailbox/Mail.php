@@ -52,17 +52,14 @@ use function imap_fetchheader;
  */
 class Mail
 {
-	/**	@var	resource	$connection */
+	/**	@var	resource		$connection */
 	protected $connection;
 
-	/**	@var	integer		$mailId */
-	protected $mailId;
+	/**	@var	integer			$mailId */
+	protected int $mailId;
 
-	/**	@var	string		$header */
-	protected $header;
-
-	/**	@var	string		$body */
-	protected $body;
+	/**	@var	string|NULL		$header */
+	protected ?string $header	= NULL;
 
 	/**
 	 *	Constructor.

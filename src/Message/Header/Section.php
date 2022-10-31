@@ -52,7 +52,7 @@ use function strtolower;
 class Section implements Countable
 {
 	/**	@var	array<Field[]>		$fields */
-	protected $fields				= [];
+	protected array $fields			= [];
 
 	/**
 	 *	Add a header field object.

@@ -48,22 +48,22 @@ class Search
 	protected $connection;
 
 	/** @var integer $limit */
-	protected $limit			= 10;
+	protected int $limit				= 10;
 
 	/** @var integer $offset */
-	protected $offset			= 0;
+	protected int $offset				= 0;
 
 	/** @var integer $orderSort */
-	protected $orderSort		= SORTARRIVAL;
+	protected int $orderSort			= SORTARRIVAL;
 
 	/** @var bool $orderReverse */
-	protected $orderReverse		= TRUE;
+	protected bool $orderReverse		= TRUE;
 
-	/** @var string $subject */
-	protected $subject;
+	/** @var string|NULL $subject */
+	protected ?string $subject			= NULL;
 
-	/** @var string $sender */
-	protected $sender;
+	/** @var string|NULL $sender */
+	protected ?string $sender			= NULL;
 
 	public function applyConditions( array $conditions = [] ): self
 	{
@@ -139,9 +139,9 @@ class Search
 	public function getCriteria(): array
 	{
 		$criteria	= [];
-		if( 0 < strlen( $this->subject ) )
+		if( 0 !== strlen( $this->subject ?? '' ) )
 			$criteria['SUBJECT']	= $this->subject;
-		if( 0 < strlen( $this->sender ) )
+		if( 0 !== strlen( $this->sender ?? '' ) )
 			$criteria['FROM']		= $this->sender;
 		return $criteria;
 	}

@@ -46,10 +46,10 @@ use function sprintf;
 class AttributedValue
 {
 	/**	@var		Dictionary	$attributes		Dictionary of header attributes */
-	protected $attributes;
+	protected Dictionary $attributes;
 
 	/**	@var		string		$value			Value of header */
-	protected $value;
+	protected string $value;
 
 	/**
 	 *	Constructor.

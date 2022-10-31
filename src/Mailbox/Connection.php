@@ -59,22 +59,22 @@ class Connection
 	/**
 	 * @var resource|NULL $resource
 	 */
-	protected $resource;
+	protected $resource						= NULL;
 
 	/**
 	 * @var string $username
 	 */
-	protected $username;
+	protected string $username;
 
 	/**
 	 * @var string $password
 	 */
-	protected $password;
+	protected string $password;
 
 	/**
 	 * @var string $host
 	 */
-	protected $host;
+	protected string $host;
 
 	/**
 	 * @var int $port
@@ -89,17 +89,17 @@ class Connection
 	/**
 	 * @var bool $secure
 	 */
-	protected $secure					= TRUE;
+	protected bool $secure					= TRUE;
 
 	/**
 	 * @var bool $validateCertificates
 	 */
-	protected $validateCertificates		= TRUE;
+	protected bool $validateCertificates	= TRUE;
 
 	/**
-	 * @var string $error
+	 * @var string|NULL $error
 	 */
-	protected $error;
+	protected ?string $error				= NULL;
 
 	public function __construct( string $host, string $username = '', string $password = '', bool $secure = TRUE, bool $validateCertificates = TRUE )
 	{

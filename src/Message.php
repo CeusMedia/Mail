@@ -70,33 +70,29 @@ use function ucfirst;
  */
 class Message
 {
-	/**	@var		string					$delimiter		Line separator, for some reasons only \n must be possible */
-	public static $delimiter				= "\r\n";
+	/**	@var		string						$delimiter		Line separator, for some reasons only \n must be possible */
+	public static string $delimiter				= "\r\n";
 
-	/**	@var		integer					$lineLength		Maximum line length of mail content */
-	public static $lineLength				= 75;
+	/**	@var		integer						$lineLength		Maximum line length of mail content */
+	public static int $lineLength				= 75;
 
-	/**	@var		array					$parts			List of mail parts */
-	protected $parts						= [];
+	/**	@var		array						$parts			List of mail parts */
+	protected array $parts						= [];
 
-	/**	@var		MessageHeaderSection	$headers		Mail header section */
-	protected $headers;
+	/**	@var		MessageHeaderSection		$headers		Mail header section */
+	protected MessageHeaderSection $headers;
 
-	/**	@var		Address|null			$sender			Sender mail address */
-	protected $sender;
+	/**	@var		Address|null				$sender			Sender mail address */
+	protected ?Address $sender					= NULL;
 
-	/**	@var		array					$recipients		List of recipients */
-	protected $recipients	= [
-		'to'	=> [],
-		'cc'	=> [],
-		'bcc'	=> [],
-	];
+	/**	@var		array<string,AddressCollection>		$recipients		List of recipients */
+	protected array $recipients					= [];
 
-	/**	@var		string					$subject		Mail subject */
-	protected $subject;
+	/**	@var		string|NULL					$subject		Mail subject */
+	protected ?string $subject					= NULL;
 
-	/**	@var		string					$userAgent		Mailer agent aka user agent */
-	protected $userAgent;
+	/**	@var		string|NULL					$userAgent		Mailer agent aka user agent */
+	protected ?string $userAgent				= NULL;
 
 	/**
 	 *	Constructor.
@@ -489,9 +485,9 @@ class Message
 	/**
 	 *	Returns mail user agent.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
-	public function getUserAgent(): string
+	public function getUserAgent(): ?string
 	{
 		return $this->userAgent;
 	}

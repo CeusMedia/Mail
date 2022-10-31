@@ -53,33 +53,33 @@ class Record
 	public const REPORT_IF_DKIM_FAILED	= 'd';
 	public const REPORT_IF_SPF_FAILED	= 's';
 
-	/**	@var	string			$version */
-	public $version				= '1';
+	/**	@var	string				$version */
+	public string $version			= '1';
 
-	/**	@var	string			$policy */
-	public $policy				= self::POLICY_NONE;
+	/**	@var	string				$policy */
+	public string $policy			= self::POLICY_NONE;
 
-	/**	@var	string			$policySubdomains */
-	public $policySubdomains	= self::POLICY_UNKNOWN;
+	/**	@var	string				$policySubdomains */
+	public string $policySubdomains	= self::POLICY_UNKNOWN;
 
-	/**	@var	integer			$interval */
-	public $interval			= 86400;
+	/**	@var	integer				$interval */
+	public int $interval			= 86400;
 
-	/**	@var	array			$reportAggregate */
-	public $reportAggregate		= [];
+	/**	@var	array				$reportAggregate */
+	public array $reportAggregate	= [];
 
-	/**	@var	array			$reportForensic */
-	public $reportForensic		= [];
+	/**	@var	array				$reportForensic */
+	public array $reportForensic	= [];
 
-	/**	@var	string			$alignmentDkim */
-	public $alignmentDkim		= self::ALIGNMENT_RELAXED;
+	/**	@var	string				$alignmentDkim */
+	public string $alignmentDkim	= self::ALIGNMENT_RELAXED;
 
-	/**	@var	string			$alignmentSpf */
-	public $alignmentSpf		= self::ALIGNMENT_RELAXED;
+	/**	@var	string				$alignmentSpf */
+	public string $alignmentSpf		= self::ALIGNMENT_RELAXED;
 
-	/**	@var	integer			$percent */
-	public $percent				= 100;
+	/**	@var	integer				$percent */
+	public int $percent				= 100;
 
-	/**	@var	string			$failureOption */
-	public $failureOption		= self::REPORT_IF_ALL_FAILED;
+	/**	@var	string				$failureOption */
+	public string $failureOption	= self::REPORT_IF_ALL_FAILED;
 }

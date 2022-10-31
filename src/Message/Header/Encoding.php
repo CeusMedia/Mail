@@ -97,20 +97,20 @@ class Encoding
 		self::ENCODE_STRATEGY_MB,
 	];
 
-	/** @var		integer			$decodeStrategy				Decode strategy to use */
-	public $decodeStrategy			= self::DECODE_STRATEGY_ICONV;
+	/** @var		integer				$decodeStrategy				Decode strategy to use */
+	public int $decodeStrategy			= self::DECODE_STRATEGY_ICONV;
 
-	/** @var		integer			$decodeStrategyFallback		Fallback decode strategy to use */
-	public $decodeStrategyFallback	= self::DECODE_STRATEGY_IMPL;
+	/** @var		integer				$decodeStrategyFallback		Fallback decode strategy to use */
+	public int $decodeStrategyFallback	= self::DECODE_STRATEGY_IMPL;
 
-	/** @var		integer			$encodeStrategy				Decode strategy to use */
-	public $encodeStrategy			= self::ENCODE_STRATEGY_MB;
+	/** @var		integer				$encodeStrategy				Decode strategy to use */
+	public int $encodeStrategy			= self::ENCODE_STRATEGY_MB;
 
-	/** @var		integer			$encodeStrategyFallback		Decode strategy to use */
-	public $encodeStrategyFallback	= self::DECODE_STRATEGY_IMPL;
+	/** @var		integer				$encodeStrategyFallback		Decode strategy to use */
+	public int $encodeStrategyFallback	= self::DECODE_STRATEGY_IMPL;
 
-	/** @var		string			$charset					Target character set */
-	public $charset					= 'UTF-8';
+	/** @var		string				$charset					Target character set */
+	public string $charset				= 'UTF-8';
 
 	/**
 	 *	Static constructor.

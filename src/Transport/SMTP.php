@@ -58,32 +58,32 @@ use function strlen;
  */
 class SMTP
 {
-	/**	@var	string			$host		SMTP server host name */
-	protected $host;
+	/**	@var	string				$host		SMTP server host name */
+	protected string $host;
 
-	/**	@var	integer			$port		SMTP server port */
-	protected $port				= 25;
+	/**	@var	integer				$port		SMTP server port */
+	protected int $port				= 25;
 
-	/**	@var	string			$username	SMTP auth username */
-	protected $username			= '';
+	/**	@var	string				$username	SMTP auth username */
+	protected string $username		= '';
 
-	/**	@var	string			$password	SMTP auth password */
-	protected $password			= '';
+	/**	@var	string				$password	SMTP auth password */
+	protected string $password		= '';
 
-	/**	@var	boolean			$isSecure */
-	protected $isSecure			= FALSE;
+	/**	@var	boolean				$isSecure */
+	protected bool $isSecure		= FALSE;
 
-	/**	@var	boolean			$verbose */
-	protected $verbose			= FALSE;
+	/**	@var	boolean				$verbose */
+	protected bool $verbose			= FALSE;
 
-	/**	@var	SmtpSocket		$socket */
-	protected $socket;
+	/**	@var	SmtpSocket|NULL		$socket */
+	protected ?SmtpSocket $socket	= NULL;
 
 	/**
-	 * 	@var	integer			$cryptoMode		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT
+	 * 	@var	integer				$cryptoMode		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT
 	 *	@see	https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 */
-	protected $cryptoMode		= STREAM_CRYPTO_METHOD_ANY_CLIENT;
+	protected int $cryptoMode		= STREAM_CRYPTO_METHOD_ANY_CLIENT;
 
 	/**
 	 *	Constructor.

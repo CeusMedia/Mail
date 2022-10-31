@@ -59,20 +59,20 @@ use function trim;
  */
 class Attachment extends MessagePart
 {
-	/**	@var	string|NULL		$fileName */
-	protected $fileName;
+	/**	@var	string|NULL			$fileName */
+	protected ?string $fileName		= NULL;
 
-	/**	@var	int|NULL		$fileATime */
-	protected $fileATime		= NULL;
+	/**	@var	int|NULL			$fileATime */
+	protected ?int $fileATime		= NULL;
 
-	/**	@var	int|NULL		$fileCTime */
-	protected $fileCTime		= NULL;
+	/**	@var	int|NULL			$fileCTime */
+	protected ?int $fileCTime		= NULL;
 
-	/**	@var	int|NULL		$fileMTime */
-	protected $fileMTime		= NULL;
+	/**	@var	int|NULL			$fileMTime */
+	protected ?int $fileMTime		= NULL;
 
-	/**	@var	int|NULL		$fileSize */
-	protected $fileSize			= NULL;
+	/**	@var	int|NULL			$fileSize */
+	protected ?int $fileSize		= NULL;
 
 	/**
 	 *	Constructor.

@@ -64,7 +64,7 @@ use function trim;
 class Renderer
 {
 	/**	@var	string		$encodingSubject */
-	public static $encodingSubject	= 'quoted-printable';
+	public static string $encodingSubject	= 'quoted-printable';
 
 	/**
 	 *	Static constructor.

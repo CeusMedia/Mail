@@ -45,11 +45,11 @@ use RuntimeException;
  */
 class Client
 {
-	/**	@var	Mailbox			$mailbox */
-	protected $mailbox;
+	/**	@var	Mailbox|NULL				$mailbox */
+	protected ?Mailbox $mailbox				= NULL;
 
-	/**	@var	SmtpTransport	$transport */
-	protected $transport;
+	/**	@var	SmtpTransport|NULL			$transport */
+	protected ?SmtpTransport $transport		= NULL;
 
 	public function createAddress(): Address
 	{

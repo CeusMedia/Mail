@@ -43,6 +43,6 @@ namespace CeusMedia\Mail\Mailbox\Mail;
  */
 class Numbers
 {
-	protected $list		= [];
+	protected array $list		= [];
 
 }

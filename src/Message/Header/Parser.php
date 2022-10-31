@@ -77,11 +77,11 @@ class Parser
 		self::STRATEGY_ICONV_TOLERANT,
 	];
 
-	/** @var		integer		$defaultStategy			Strategy to use in auto mode */
-	protected $defaultStategy	= self::STRATEGY_OWN;
+	/** @var		integer		$defaultStrategy			Strategy to use in auto mode */
+	protected int $defaultStrategy	= self::STRATEGY_OWN;
 
 	/** @var		integer		$strategy				Strategy to use */
-	protected $strategy			= self::STRATEGY_AUTO;
+	protected int $strategy			= self::STRATEGY_AUTO;
 
 	/**
 	 *	Static constructor.
@@ -101,7 +101,7 @@ class Parser
 	{
 		$strategy	= $this->strategy;
 		if( $this->strategy === self::STRATEGY_AUTO )
-			$strategy	= $this->defaultStategy;
+			$strategy	= $this->defaultStrategy;
 
 		switch( $strategy ){
 			case self::STRATEGY_OWN:

@@ -46,8 +46,8 @@ use function array_key_exists;
  */
 class Code
 {
-	/**	@var	array		$codes */
-	protected static $codes	= [
+	/**	@var	array<int,array<string,string>>		$codes */
+	protected static array $codes	= [
 		101		=> [
 			'label'		=> 'Cannot open connection',
 			'message'	=> 'The server is unable to connect.',

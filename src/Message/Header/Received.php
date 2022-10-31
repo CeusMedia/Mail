@@ -37,25 +37,25 @@ use function call_user_func;
 class Received
 {
 	/** @var		string|NULL					$from */
-	protected $from;
+	protected ?string $from						= NULL;
 
 	/** @var		string|NULL					$by */
-	protected $by;
+	protected ?string $by						= NULL;
 
 	/** @var		string|NULL					$with */
-	protected $with;
+	protected ?string $with						= NULL;
 
 	/** @var		string|NULL					$id */
-	protected $id;
+	protected ?string $id						= NULL;
 
 	/** @var		string|NULL					$via */
-	protected $via;
+	protected ?string $via						= NULL;
 
 	/** @var		Address|NULL				$for */
-	protected $for;
+	protected ?Address $for						= NULL;
 
 	/** @var		DateTimeInterface|NULL		$date */
-	protected $date;
+	protected ?DateTimeInterface $date			= NULL;
 
 	public function getFrom(): ?string
 	{

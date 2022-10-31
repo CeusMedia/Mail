@@ -42,8 +42,8 @@ use RuntimeException;
  */
 class Exception extends RuntimeException
 {
-	/** @var Response|NULL $response */
-	protected $response;
+	/** @var	Response|NULL			$response */
+	protected ?Response $response		= NULL;
 
 	/**
 	 *	@access		public

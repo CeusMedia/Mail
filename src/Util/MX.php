@@ -62,7 +62,7 @@ class MX
 	protected $cache;
 
 	/** @var	bool			$useCache */
-	protected $useCache			= FALSE;
+	protected bool $useCache			= FALSE;
 
 	/**
 	 *	Constructor.

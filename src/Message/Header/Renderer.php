@@ -53,7 +53,7 @@ class Renderer
 	 *	@var		array		$encodeOptionKeys		List of available encoding option keys
 	 *	@static
 	 */
-	protected static $encodeOptionKeys	= [
+	protected static array $encodeOptionKeys	= [
 		'scheme',
 		'input-charset',
 		'output-charset',
@@ -65,7 +65,7 @@ class Renderer
 	 *	@var		array		$preferences			Map of encoding options
 	 *	@static
 	 */
-	protected static $preferences = [
+	protected static array $preferences = [
 	];
 
 	/**

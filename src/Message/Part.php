@@ -97,22 +97,22 @@ abstract class Part
 	];
 
 	/**	@var	string			$charset		Character set */
-	protected $charset;
+	protected string $charset;
 
 	/**	@var	string|NULL		$content		Content */
-	protected $content;
+	protected ?string $content	= NULL;
 
 	/**	@var	string			$encoding		Encoding */
-	protected $encoding;
+	protected string $encoding;
 
 	/**	@var	string			$format			Format */
-	protected $format;
+	protected string $format;
 
 	/**	@var	string			$mimeType		MIME type */
-	protected $mimeType;
+	protected string $mimeType;
 
 	/**	@var	integer			$type			Detected type of part */
-	protected $type				= self::TYPE_UNKNOWN;
+	protected int $type			= self::TYPE_UNKNOWN;
 
 	/**
 	 *	Convert content to UTF-8.

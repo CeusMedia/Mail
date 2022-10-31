@@ -44,14 +44,14 @@ use function parse_ini_file;
  */
 class Library
 {
-	/**	@var		string			$identifier		User agent identifier */
-	protected static $identifier;
+	/**	@var		string				$identifier		User agent identifier */
+	protected static string $identifier;
 
-	/**	@var		string			$version		User agent version */
-	protected static $version;
+	/**	@var		string				$version		User agent version */
+	protected static string $version;
 
-	/**	@var		bool			$detected		internal flag: detection is done */
-	protected static $detected		= FALSE;
+	/**	@var		bool				$detected		internal flag: detection is done */
+	protected static bool $detected		= FALSE;
 
 	/**
 	 *	Returns identifier used for mail user agent.

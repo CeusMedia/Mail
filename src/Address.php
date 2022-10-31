@@ -61,14 +61,14 @@ use function trim;
  */
 class Address
 {
-	/**	@var	string		$domain			Domain of mail address */
-	protected $domain;
+	/**	@var	string|NULL			$domain			Domain of mail address */
+	protected ?string $domain		= NULL;
 
-	/**	@var	string		$localPart		Local part of mail address */
-	protected $localPart;
+	/**	@var	string|NULL			$localPart		Local part of mail address */
+	protected ?string $localPart	= NULL;
 
-	/**	@var	string		$name			Name of mail address */
-	protected $name;
+	/**	@var	string|NULL			$name			Name of mail address */
+	protected ?string $name			= NULL;
 
 	/**
 	 *	Constructor.
