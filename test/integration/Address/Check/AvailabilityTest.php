@@ -10,6 +10,7 @@ namespace CeusMedia\MailTest\Integration\Address\Check;
 
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Check\Availability;
+use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\MailTest\TestCase;
 
 /**
@@ -27,7 +28,7 @@ class AvailabilityTest extends TestCase
 	 *	@covers		::getMailServers
 	 *	@covers		::request
 	 */
-	public function testTest()
+	public function testTest(): void
 	{
 		$configSender	= $this->requireSenderConfig();
 		$configReceiver	= $this->requireReceiverConfig();
@@ -36,56 +37,56 @@ class AvailabilityTest extends TestCase
 //		if( $this->getAddressIP( $sender ) !== $this->getCurrentIP() )
 //			$this->markTestSkipped( 'Sending server IP mismatches sender host.' );
 
-		$check			= new Availability( $sender, !TRUE );
+		$check			= new Availability( $sender, FALSE );
 
 		$participant	= new Address( $configReceiver->get( 'mailbox.address' ) );
 
 //		$check->setVerbose( TRUE );
 		$actual		= $check->test( $participant );
-		$this->assertTrue( $actual, $check->getLastResponse()->message );
+		self::assertTrue( $actual, $check->getLastResponse()->message );
 
 		$actual		= $check->getLastResponse();
 		$expected	= (object) array(
-			'error'		=> Availability::ERROR_NONE,
+			'error'		=> SmtpResponse::ERROR_NONE,
 			'code'		=> 250,
 			'message'	=> '2.1.5 Ok',
 		);
-		$this->assertEquals( $expected, $actual );
-		$this->assertEquals( Availability::ERROR_NONE, $check->getLastResponse( 'error' ) );
-		$this->assertEquals( 250, $check->getLastResponse( 'code' ) );
-		$this->assertEquals( '2.1.5 Ok', $check->getLastResponse( 'message' ) );
+		self::assertEquals( $expected, $actual );
+		self::assertEquals( SmtpResponse::ERROR_NONE, $check->getLastResponseValue( 'error' ) );
+		self::assertEquals( 250, $check->getLastResponseValue( 'code' ) );
+		self::assertEquals( '2.1.5 Ok', $check->getLastResponseValue( 'message' ) );
 
 		$actual		= $check->getLastResponse();
 		$expected	= (object) array(
-			'error'		=> Availability::ERROR_NONE,
+			'error'		=> SmtpResponse::ERROR_NONE,
 			'code'		=> 250,
 			'request'	=> 'QUIT',
 			'message'	=> '2.1.5 Ok',
 			'response'	=> "250 2.1.5 Ok\r\n",
 		);
-		$this->assertEquals( $expected, $actual );
-		$this->assertEquals( Availability::ERROR_NONE, $check->getLastResponse( 'error' ) );
-		$this->assertEquals( 250, $check->getLastResponse( 'code' ) );
-		$this->assertEquals( '2.1.5 Ok', $check->getLastResponse( 'message' ) );
-		$this->assertEquals( "250 2.1.5 Ok\r\n", $check->getLastResponse( 'response' ) );
-		$this->assertEquals( 'QUIT', $check->getLastResponse( 'request' ) );
+		self::assertEquals( $expected, $actual );
+		self::assertEquals( SmtpResponse::ERROR_NONE, $check->getLastResponseValue( 'error' ) );
+		self::assertEquals( 250, $check->getLastResponseValue( 'code' ) );
+		self::assertEquals( '2.1.5 Ok', $check->getLastResponseValue( 'message' ) );
+		self::assertEquals( "250 2.1.5 Ok\r\n", $check->getLastResponseValue( 'response' ) );
+		self::assertEquals( 'QUIT', $check->getLastResponseValue( 'request' ) );
 
 //		$check->setVerbose( TRUE );
 		$participant	= new Address( '_not_existing@'.$participant->getDomain() );
-		$this->assertFalse( $check->test( $participant ) );
-		$this->assertEquals( Availability::ERROR_RECEIVER_NOT_ACCEPTED, $check->getLastResponse( 'error' ) );
+		self::assertFalse( $check->test( $participant ) );
+		self::assertEquals( SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED, $check->getLastResponseValue( 'error' ) );
 
 //		$check->setVerbose( TRUE );
 		$participant	= new Address( '_not_existing@notexisting123456.org' );
-		$this->assertFalse( $check->test( $participant ) );
-		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastResponse( 'error' ) );
+		self::assertFalse( $check->test( $participant ) );
+		self::assertEquals( SmtpResponse::ERROR_MX_RESOLUTION_FAILED, $check->getLastResponseValue( 'error' ) );
 
 //		$check->setVerbose( TRUE );
-		$this->assertFalse( $check->test( '_not_existing@notexisting123456.org' ) );
-		$this->assertEquals( Availability::ERROR_MX_RESOLUTION_FAILED, $check->getLastResponse( 'error' ) );
+		self::assertFalse( $check->test( '_not_existing@notexisting123456.org' ) );
+		self::assertEquals( SmtpResponse::ERROR_MX_RESOLUTION_FAILED, $check->getLastResponseValue( 'error' ) );
 
 //		$check->setVerbose( TRUE );
-		$this->assertFalse( $check->test( '_not_existing@_not_important', 'notexisting123456.org' ) );
-		$this->assertEquals( Availability::ERROR_SOCKET_FAILED, $check->getLastResponse( 'error' ) );
+		self::assertFalse( $check->test( '_not_existing@_not_important', 'notexisting123456.org' ) );
+		self::assertEquals( SmtpResponse::ERROR_SOCKET_FAILED, $check->getLastResponseValue( 'error' ) );
 	}
 }

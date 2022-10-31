@@ -24,10 +24,10 @@ class RendererTest extends TestCase
 	/**
 	 *	@covers		::getInstance
 	 */
-	public function testGetInstance()
+	public function testGetInstance(): void
 	{
 		$instance	= Renderer::getInstance();
-		$this->assertEquals( new Renderer(), $instance );
+		self::assertEquals( new Renderer(), $instance );
 	}
 
 	/**
@@ -35,32 +35,32 @@ class RendererTest extends TestCase
 	 *	@covers		::getInstance
 	 *	@covers		::render
 	 */
-	public function testRender()
+	public function testRender(): void
 	{
 		$renderer	= new Renderer();
 		$address	= Address::getInstance()
 			->setDomain( 'muster-server.tld' )
 			->setLocalPart( 'Hans.Mustermann' );
 		$expected	= 'Hans.Mustermann@muster-server.tld';
-		$this->assertEquals( $expected, $renderer->render( $address ) );
+		self::assertEquals( $expected, $renderer->render( $address ) );
 
 		$address->setName( 'Hans Mustermann' );
 		$expected	= '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
-		$this->assertEquals( $expected, $renderer->render( $address ) );
+		self::assertEquals( $expected, $renderer->render( $address ) );
 
 		$address->setName( 'Hans_Mustermann' );
 		$expected	= 'Hans_Mustermann <Hans.Mustermann@muster-server.tld>';
-		$this->assertEquals( $expected, $renderer->render( $address ) );
+		self::assertEquals( $expected, $renderer->render( $address ) );
 
 		$address	= new Address( '<Hans.Mustermann@muster-server.tld>' );
 		$expected	= 'Hans.Mustermann@muster-server.tld';
-		$this->assertEquals( $expected, $renderer->render( $address ) );
+		self::assertEquals( $expected, $renderer->render( $address ) );
 	}
 
 	/**
 	 *	@covers		::render
 	 */
-	public function testRenderExceptionNoDomain()
+	public function testRenderExceptionNoDomain(): void
 	{
 		$this->expectException( 'RuntimeException' );
 		$renderer	= new Renderer();
@@ -71,7 +71,7 @@ class RendererTest extends TestCase
 	/**
 	 *	@covers		::render
 	 */
-	public function testRenderExceptionNoLocalPart()
+	public function testRenderExceptionNoLocalPart(): void
 	{
 		$this->expectException( 'RuntimeException' );
 		$renderer	= new Renderer();

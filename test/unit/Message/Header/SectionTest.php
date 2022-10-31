@@ -24,186 +24,186 @@ class SectionTest extends TestCase
 	/**
 	 *	@covers		::addField
 	 */
-	public function testAddField()
+	public function testAddField(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addField( $field );
-		$this->assertEquals( array( $field ), $section->getFields() );
+		self::assertEquals( array( $field ), $section->getFields() );
 		$section->addField( $field );
-		$this->assertEquals( array( $field, $field ), $section->getFields() );
+		self::assertEquals( array( $field, $field ), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::addFieldPair
 	 */
-	public function testAddFieldPair()
+	public function testAddFieldPair(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addFieldPair( "key", "value" );
-		$this->assertEquals( array( $field ), $section->getFields() );
+		self::assertEquals( array( $field ), $section->getFields() );
 		$section->addFieldPair( "key", "value" );
-		$this->assertEquals( array( $field, $field ), $section->getFields() );
+		self::assertEquals( array( $field, $field ), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::addFields
 	 */
-	public function testAddFields()
+	public function testAddFields(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addFields( array( $field, $field ) );
-		$this->assertEquals( array( $field, $field ), $section->getFields() );
+		self::assertEquals( array( $field, $field ), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::getField
 	 */
-	public function testGetField()
+	public function testGetField(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->addField( $field );
-		$this->assertEquals( $field, $section->getField( "key" ) );
-		$this->assertEquals( $field, $section->getField( "KEY" ) );
+		self::assertEquals( $field, $section->getField( "key" ) );
+		self::assertEquals( $field, $section->getField( "KEY" ) );
 	}
 
 	/**
 	 *	@covers		::getField
 	 */
-	public function testGetFieldException()
+	public function testGetFieldException(): void
 	{
 		$section	= new Section();
 		$this->expectException( 'RangeException' );
-		$this->assertEquals( NULL, $section->getField( "invalid" ) );
+		self::assertEquals( NULL, $section->getField( "invalid" ) );
 	}
 
 	/**
 	 *	@covers		::getFields
 	 */
-	public function testGetFields()
+	public function testGetFields(): void
 	{
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "value" );
 		$section	= new Section();
-		$this->assertEquals( array(), $section->getFields() );
+		self::assertEquals( array(), $section->getFields() );
 		$section->addFields( array( $field1, $field1, $field2, $field2 ) );
-		$this->assertEquals( array( $field1, $field1, $field2, $field2 ), $section->getFields() );
+		self::assertEquals( array( $field1, $field1, $field2, $field2 ), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::getFieldsByName
 	 */
-	public function testGetFieldsByName()
+	public function testGetFieldsByName(): void
 	{
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "value" );
 		$field3		= new Field( "ABC", "DEF" );
 		$section	= new Section();
 		$section->addFields( array( $field1, $field1, $field2, $field2, $field3 ) );
-		$this->assertEquals( array( $field1, $field1, $field2, $field2 ), $section->getFieldsByName( "key" ) );
-		$this->assertEquals( array( $field1, $field1, $field2, $field2 ), $section->getFieldsByName( "KEY" ) );
-		$this->assertEquals( array(), $section->getFieldsByName( "invalid" ) );
+		self::assertEquals( array( $field1, $field1, $field2, $field2 ), $section->getFieldsByName( "key" ) );
+		self::assertEquals( array( $field1, $field1, $field2, $field2 ), $section->getFieldsByName( "KEY" ) );
+		self::assertEquals( array(), $section->getFieldsByName( "invalid" ) );
 	}
 
 	/**
 	 *	@covers		::hasField
 	 */
-	public function testHasField()
+	public function testHasField(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
-		$this->assertEquals( FALSE, $section->hasField( "key" ) );
+		self::assertEquals( FALSE, $section->hasField( "key" ) );
 		$section->addField( $field );
-		$this->assertEquals( TRUE, $section->hasField( "key" ) );
-		$this->assertEquals( TRUE, $section->hasField( "KEY" ) );
+		self::assertEquals( TRUE, $section->hasField( "key" ) );
+		self::assertEquals( TRUE, $section->hasField( "KEY" ) );
 		$section->removeFieldByName( "key" );
-		$this->assertEquals( FALSE, $section->hasField( "key" ) );
+		self::assertEquals( FALSE, $section->hasField( "key" ) );
 	}
 
 	/**
 	 *	@covers		::removeFieldByName
 	 */
-	public function testRemoveFieldByName()
+	public function testRemoveFieldByName(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 
 		$section->addField( $field );
 		$section->removeFieldByName( "key" );
-		$this->assertEquals( array(), $section->getFields() );
+		self::assertEquals( array(), $section->getFields() );
 
 		$section->addField( $field );
 		$section->removeFieldByName( "KEY" );
-		$this->assertEquals( array(), $section->getFields() );
+		self::assertEquals( array(), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::setField
 	 */
-	public function testSetField()
+	public function testSetField(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->setField( $field );
-		$this->assertEquals( array( $field ), $section->getFields() );
+		self::assertEquals( array( $field ), $section->getFields() );
 		$section->setField( $field );
-		$this->assertEquals( array( $field ), $section->getFields() );
+		self::assertEquals( array( $field ), $section->getFields() );
 		$section->setField( $field, FALSE );
-		$this->assertEquals( array( $field, $field ), $section->getFields() );
+		self::assertEquals( array( $field, $field ), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::setFieldPair
 	 */
-	public function testSetFieldPair()
+	public function testSetFieldPair(): void
 	{
 		$field		= new Field( "key", "value" );
 		$section	= new Section();
 		$section->setFieldPair( "key", "value" );
-		$this->assertEquals( array( $field ), $section->getFields() );
+		self::assertEquals( array( $field ), $section->getFields() );
 		$section->setFieldPair( "key", "value" );
-		$this->assertEquals( array( $field ), $section->getFields() );
+		self::assertEquals( array( $field ), $section->getFields() );
 		$section->setFieldPair( "key", "value", FALSE );
-		$this->assertEquals( array( $field, $field ), $section->getFields() );
+		self::assertEquals( array( $field, $field ), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::setFields
 	 */
-	public function testSetFields()
+	public function testSetFields(): void
 	{
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "vALUE" );
 		$section	= new Section();
 		$section->setFields( array( $field1, $field1, $field2 ) );
-		$this->assertEquals( array( $field2 ), $section->getFields() );
+		self::assertEquals( array( $field2 ), $section->getFields() );
 		$section->setFields( array( $field1, $field1, $field2 ) );
-		$this->assertEquals( array( $field2 ), $section->getFields() );
+		self::assertEquals( array( $field2 ), $section->getFields() );
 
 		$section->setFields( array( $field1, $field2 ), FALSE );
-		$this->assertEquals( array( $field2, $field1, $field2 ), $section->getFields() );
+		self::assertEquals( array( $field2, $field1, $field2 ), $section->getFields() );
 	}
 
 	/**
 	 *	@covers		::toString
 	 */
-	public function testToString()
+	public function testToString(): void
 	{
 		$delimiter	= \CeusMedia\Mail\Message::$delimiter;
 		$field1		= new Field( "key", "value" );
 		$field2		= new Field( "kEY", "vALUE" );
 		$section	= new Section();
-		$this->assertEquals( '', $section->toString() );
+		self::assertEquals( '', $section->toString() );
 
 		$section->addFields( array( $field1, $field1, $field2 ) );
 		$expected	= "Key: value".$delimiter."Key: value".$delimiter."Key: vALUE";
-		$this->assertEquals( $expected, $section->toString() );
+		self::assertEquals( $expected, $section->toString() );
 
 		$section->setFields( array( $field1, $field1, $field2 ) );
 		$expected	= "Key: vALUE";
-		$this->assertEquals( $expected, $section->toString() );
+		self::assertEquals( $expected, $section->toString() );
 	}
 }

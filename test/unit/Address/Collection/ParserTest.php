@@ -27,12 +27,12 @@ class ParserTest extends TestCase
 	 *	@covers		::getInstance
 	 *	@todo		remove coverage of create after removing method
 	 */
-	public function testGetInstance()
+	public function testGetInstance(): void
 	{
 		$parser		= new Parser();
 		$instance	= Parser::getInstance();
 
-		$this->assertEquals( $parser, $instance );
+		self::assertEquals( $parser, $instance );
 	}
 
 	/**
@@ -41,7 +41,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parseUsingOwn
 	 *	@covers		::realizeParserMethod
 	 */
-	public function testParse()
+	public function testParse(): void
 	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer <dev@ceusmedia.de>' ),
@@ -61,11 +61,9 @@ class ParserTest extends TestCase
 	 *	@covers		::parseUsingOwn
 	 *	@covers		::realizeParserMethod
 	 */
-	public function testParseNameless()
+	public function testParseNameless(): void
 	{
-		$expected	= new AddressCollection( array(
-			new Address( 'dev@ceusmedia.de' ),
-		) );
+		$expected	= new AddressCollection( [new Address( 'dev@ceusmedia.de' )] );
 		$string		= 'dev@ceusmedia.de';
 		$this->assertEqualsForAllMethods( $expected, $string );
 
@@ -85,7 +83,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parseUsingOwn
 	 *	@covers		::realizeParserMethod
 	 */
-	public function testParseWithName()
+	public function testParseWithName(): void
 	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer <dev@ceusmedia.de>' ),
@@ -103,7 +101,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parseUsingOwn
 	 *	@covers		::realizeParserMethod
 	 */
-	public function testParseWithNameHavingComma()
+	public function testParseWithNameHavingComma(): void
 	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer, Tester <dev@ceusmedia.de>' ),
@@ -118,7 +116,7 @@ class ParserTest extends TestCase
 	 *	@covers		::parseUsingOwn
 	 *	@covers		::realizeParserMethod
 	 */
-	public function testParseWithNameHavingSymbols()
+	public function testParseWithNameHavingSymbols(): void
 	{
 		$expected	= new AddressCollection( array(
 			new Address( 'Developer (Dev-Crew) <dev.dev-crew@ceusmedia.de>' ),
@@ -127,7 +125,7 @@ class ParserTest extends TestCase
 		$this->assertEqualsForAllMethods( $expected, $string );
 	}
 
-	public function testParseUsingOwn()
+	public function testParseUsingOwn(): void
 	{
 		$parser		= Parser::getInstance();
 		$actual		= $parser->parseUsingOwn( '', ',' );
@@ -135,13 +133,13 @@ class ParserTest extends TestCase
 		$this->assertEqualsForAllMethods( $expected, $actual );
 	}
 
-	public function testParseUsingOwnException1()
+	public function testParseUsingOwnException1(): void
 	{
 		$this->expectException( 'InvalidArgumentException' );
 		$parser		= Parser::getInstance()->parseUsingOwn( 'a', '' );
 	}
 
-	public function testParseUsingOwnException2()
+	public function testParseUsingOwnException2(): void
 	{
 		$this->expectException( 'InvalidArgumentException' );
 		$parser		= Parser::getInstance()->parseUsingOwn( 'a', ' ' );
@@ -151,7 +149,7 @@ class ParserTest extends TestCase
 	 *	@covers		::setMethod
 	 *	@covers		::getMethod
 	 */
-	public function testSetMethod()
+	public function testSetMethod(): void
 	{
 		$parser		= Parser::getInstance();
 		$methods	= [
@@ -162,28 +160,28 @@ class ParserTest extends TestCase
 		];
 		foreach( $methods as $method ){
 			$parser->setMethod( $method );
-			$this->assertEquals( $method, $parser->getMethod() );
+			self::assertEquals( $method, $parser->getMethod() );
 		}
 	}
 
 	/**
 	 *	@covers		::setMethod
 	 */
-	public function testSetMethodException()
+	public function testSetMethodException(): void
 	{
 		$this->expectException( 'InvalidArgumentException' );
 		$parser	= Parser::getInstance()->setMethod( -1 );
 	}
 
 	//  --  PROTECTED  --  //
-	protected function assertEqualsForAllMethods( $expected, $string )
+	protected function assertEqualsForAllMethods( Address\Collection $expected, string $string ): void
 	{
 		$parser	= Parser::getInstance();
 		$parser->setMethod( Parser::METHOD_OWN );
-		$this->assertEquals( $expected, $parser->parse( $string ) );
+		self::assertEquals( $expected, $parser->parse( $string ) );
 		$parser->setMethod( Parser::METHOD_IMAP );
-		$this->assertEquals( $expected, $parser->parse( $string ) );
+		self::assertEquals( $expected, $parser->parse( $string ) );
 		$parser->setMethod( Parser::METHOD_IMAP_PLUS_OWN );
-		$this->assertEquals( $expected, $parser->parse( $string ) );
+		self::assertEquals( $expected, $parser->parse( $string ) );
 	}
 }

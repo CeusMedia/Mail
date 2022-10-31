@@ -65,7 +65,7 @@ class NameTest extends TestCase
 			(new Name( 'invalid' )),
 		];
 		foreach( $names as $nr => $name )
-			$this->assertEquals( $expected[$nr], Name::splitNameParts( $names[$nr] ) );
+			$this->assertEquals( $expected[$nr], Name::splitNameParts( $name ) );
 	}
 
 	/**
