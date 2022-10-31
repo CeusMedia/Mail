@@ -32,8 +32,6 @@ namespace CeusMedia\Mail;
 use CeusMedia\Common\Exception\IO;
 use CeusMedia\Mail\Address as Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
-use CeusMedia\Mail\Deprecation;
-use CeusMedia\Mail\Library;
 use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
@@ -49,12 +47,9 @@ use InvalidArgumentException;
 use RangeException;
 
 use function array_reverse;
-use function dirname;
-use function file_exists;
 use function in_array;
 use function is_a;
 use function is_string;
-use function parse_ini_file;
 use function strlen;
 use function strtoupper;
 use function trim;
@@ -211,7 +206,7 @@ class Message
 	}
 
 	/**
-	 *	Add forwared mail part by plain content.
+	 *	Add forwarded mail part by plain content.
 	 *	@access		public
 	 *	@param		string			$content		Nested mail content to add as message part
 	 *	@param		string			$charset		Optional: Character set (default: UTF-8)
@@ -356,7 +351,7 @@ class Message
 	}
 
 	/**
-	 *	Returns list inline images to be embeded with HTML.
+	 *	Returns list inline images to be embedded with HTML.
 	 *	@access		public
 	 *	@return		array
 	 */

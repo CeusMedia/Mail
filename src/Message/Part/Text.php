@@ -68,7 +68,7 @@ class Text extends MessagePart
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
 	 *	@param		integer						$sections				Section(s) to render, default: all
-	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render as well
 	 *	@return		string
 	 */
 	public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string

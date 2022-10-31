@@ -232,7 +232,7 @@ class Socket
 	}
 
 	/**
-	 *	Indicates whether a socker connection has been established.
+	 *	Indicates whether a socket connection has been established.
 	 *	@access		public
 	 *	@return		boolean
 	 */

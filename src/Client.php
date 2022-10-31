@@ -28,7 +28,6 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail;
 
-use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP as SmtpTransport;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 use RuntimeException;

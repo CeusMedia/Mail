@@ -30,8 +30,6 @@ namespace CeusMedia\Mail;
 
 use CeusMedia\Mail\Address\Parser as AddressParser;
 use CeusMedia\Mail\Address\Renderer as AddressRenderer;
-use CeusMedia\Mail\Deprecation;
-use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 
 use InvalidArgumentException;
 use RuntimeException;
@@ -209,10 +207,10 @@ class Address
 	}
 
 	/**
-	 *	Sets an full mail address.
+	 *	Sets a full mail address.
 	 *	@access		public
 	 *	@param		string		$string			Full mail address to set
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 *	@throws		InvalidArgumentException	if given string is empty
 	 */
 	public function set( string $string ): self
@@ -231,7 +229,7 @@ class Address
 	 *	Sets domain of mail address.
 	 *	@access		public
 	 *	@param		string		$domain			Domain of mail address.
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 */
 	public function setDomain( string $domain ): self
 	{
@@ -240,10 +238,10 @@ class Address
 	}
 
 	/**
-	 *	Sets local part of of mail address.
+	 *	Sets local part of a mail address.
 	 *	@access		public
-	 *	@param		string		$localPart		Local part of of mail address
-	 *	@return		self		Own instance for chainability
+	 *	@param		string		$localPart		Local part of a mail address
+	 *	@return		self		Own instance for method chaining
 	 */
 	public function setLocalPart( string $localPart ): self
 	{
@@ -255,7 +253,7 @@ class Address
 	 *	Sets name of mail address.
 	 *	@access		public
 	 *	@param		string		$name			Name of mail address
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 */
 	public function setName( string $name ): self
 	{

@@ -28,7 +28,6 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Mailbox;
 
-use CeusMedia\Mail\Mailbox\Mail;
 use RuntimeException;
 
 /**

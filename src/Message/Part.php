@@ -299,11 +299,11 @@ abstract class Part
 	}
 
 	/**
-	 *	Return string represenation of this mail path, so with headers and content.
+	 *	Return string representation of this mail path, so with headers and content.
 	 *	Every part implements this abstract method.
 	 *	@abstract
 	 *	@param		integer						$sections				Section(s) to render, default: all
-	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render aswell
+	 *	@param		MessageHeaderSection|NULL	$additionalHeaders		Section with header fields to render as well
 	 *	@return		string
 	 */
 	abstract public function render( int $sections = self::SECTION_ALL, ?MessageHeaderSection $additionalHeaders = NULL ): string;
@@ -337,7 +337,7 @@ abstract class Part
 	 *	@access		public
 	 *	@param		string		$encoding		Encoding (7bit,8bit,base64,quoted-printable,binary)
 	 *	@return		self
-	 *	@throws		InvalidArgumentException	if encodfgets(ing is invalid
+	 *	@throws		InvalidArgumentException	if encoding is invalid
 	 */
 	public function setEncoding( string $encoding ): self
 	{
@@ -431,7 +431,7 @@ abstract class Part
 	}
 
 	/**
-	 *	Get MIME type of a file by its file path.
+	 *	Get MIME type of file by its file path.
 	 *	@access		protected
 	 *	@param		string		$filePath		Path of file to get MIME type of
 	 *	@return		string|NULL

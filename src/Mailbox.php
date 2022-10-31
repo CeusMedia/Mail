@@ -232,7 +232,7 @@ class Mailbox
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 *	@todo		code doc
 	 */
 	public function setMailFlag( string $mailId, string $flag ): self
@@ -249,7 +249,7 @@ class Mailbox
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 *	@todo		code doc
 	 */
 	public function unsetMailFlag( string $mailId, string $flag ): self

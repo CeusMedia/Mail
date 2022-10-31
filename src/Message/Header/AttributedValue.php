@@ -33,7 +33,6 @@ use CeusMedia\Common\ADT\Collection\Dictionary;
 use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
 
 use function count;
-use function sprintf;
 
 /**
  *	Mail message header field data object supporting attributes.

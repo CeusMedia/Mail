@@ -359,7 +359,7 @@ class Parser
 	/**
 	 *	Parses complete body of a multipart message.
 	 *	Adds found body parts to given message object.
-	 *	Supports nested multiparts by working recursivly.
+	 *	Supports nested multiparts by working recursively.
 	 *	@access		protected
 	 *	@param		Message		$message		...
 	 *	@param		string		$content		...

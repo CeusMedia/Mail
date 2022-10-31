@@ -230,7 +230,7 @@ class Connection
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 *	@todo		code doc
 	 */
 	public function setSecure( bool $secure = TRUE, bool $validateCertificates = TRUE ): self

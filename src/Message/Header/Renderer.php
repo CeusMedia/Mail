@@ -30,8 +30,6 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Message\Header;
 
 use CeusMedia\Mail\Message;
-use CeusMedia\Mail\Message\Header\Field;
-use CeusMedia\Mail\Message\Header\Section;
 
 use DomainException;
 

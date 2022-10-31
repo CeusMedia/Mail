@@ -36,7 +36,6 @@ use RuntimeException;
 use function dirname;
 use function file_exists;
 use function parse_ini_file;
-use function phpversion;
 
 /**
  *	...

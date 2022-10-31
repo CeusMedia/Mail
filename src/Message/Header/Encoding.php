@@ -296,7 +296,7 @@ class Encoding
 		$pattern	= "/^(.*)=\?(\S+)\?(\S)\?(.+)\?=(.*)$/sU";
 		if( !self::regMatch( $pattern, $string ) )
 			return $string;
-		$matches	= [];
+
 		$list		= [];
 		$lines		= self::regSplit( "@\r?\n\s*@", $string, 0, 'Splitting of header failed' );
 		foreach( $lines as $line ){

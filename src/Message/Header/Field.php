@@ -117,10 +117,10 @@ class Field
 
 	/**
 	 *	Returns set header name.
-	 *	By default all letters will be lowercased, before the first word letter is uppercased.
-	 *	If available mb_convert_case is used. Otherwise ucwords will do the trick.
+	 *	By default, all letters will be lowercased, before the first word letter is uppercased.
+	 *	If available mb_convert_case is used. Otherwise, ucwords will do the trick.
 	 *	This will lowercase acronyms, too.
-	 *	You can protected uppercased acronyms by keeping the letter case, using the first argument.
+	 *	You can protect uppercased acronyms by keeping the letter case, using the first argument.
 	 *	@access		public
 	 *	@param		boolean		$keepCase				Flag: do not use mb_convert_case or ucwords, protected uppercased acronyms
 	 *	@param		boolean		$ignoreMbConvertCase	Flag: do not use mb_convert_case even if it is available (needed to testing)

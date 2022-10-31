@@ -38,7 +38,6 @@ use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 use InvalidArgumentException;
 use RangeException;
 use RuntimeException;
-use Throwable;
 
 use function count;
 use function in_array;
@@ -106,7 +105,7 @@ class SMTP
 
 	/**
 	 *	Returns last connection error message, if connecting failed.
-	 *	Otherwise NULL.
+	 *	Otherwise, NULL.
 	 *	@access		public
 	 *	@return		string|NULL
 	 */

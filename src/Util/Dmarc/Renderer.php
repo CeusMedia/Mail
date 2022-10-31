@@ -34,7 +34,6 @@ use CeusMedia\Mail\Deprecation;
 
 use function count;
 use function join;
-use function strlen;
 
 /**
  *	Renderer for DMARC records.

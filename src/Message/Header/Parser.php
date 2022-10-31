@@ -28,7 +28,6 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use CeusMedia\Common\ADT\Collection\Dictionary;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 
 use RangeException;
@@ -41,7 +40,6 @@ use function explode;
 use function iconv;
 use function iconv_mime_decode_headers;
 use function is_array;
-use function is_null;
 use function ltrim;
 use function mb_strlen;
 use function strtoupper;
@@ -119,7 +117,7 @@ class Parser
 
 	/**
 	 *	Splits up header values with attributes, like: text/csv; filename="test.csv"
-	 *	Applies RFC 2231 to support attribute encoding, (language) and containments (=attribute value folding).
+	 *	Applies RFC 2231 to support attribute encoding, (language) and containment (=attribute value folding).
 	 *	Return a map object with pure header value and attributes dictionary.
 	 *	@access		public
 	 *	@static

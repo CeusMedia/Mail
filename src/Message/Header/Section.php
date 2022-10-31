@@ -28,7 +28,6 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
 
@@ -173,7 +172,7 @@ class Section implements Countable
 	}
 
 	/**
-	 *	Sets an header field object.
+	 *	Sets a header field object.
 	 *	Headers with already noted name will be replaced.
 	 *	To avoid this, disable emptyBefore.
 	 *	@access		public
@@ -191,7 +190,7 @@ class Section implements Countable
 	}
 
 	/**
-	 *	Sets an header field by name and value.
+	 *	Sets a header field by name and value.
 	 *	Headers with already noted name will be replaced.
 	 *	To avoid this, disable emptyBefore.
 	 *	@access		public

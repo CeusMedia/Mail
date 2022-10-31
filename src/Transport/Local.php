@@ -42,7 +42,6 @@ use RuntimeException;
 use function base64_encode;
 use function implode;
 use function date;
-use function is_array;
 use function mail;
 use function strlen;
 use function trim;
