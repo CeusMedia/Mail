@@ -34,6 +34,7 @@ use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
+use ReflectionException;
 use RuntimeException;
 
 use function imap_body;
@@ -111,6 +112,7 @@ class Mail
 	 *	@public
 	 *	@param		boolean		$withBodyParts
 	 *	@return		Message
+	 *	@throws		ReflectionException
 	 */
 	public function getMessage( bool $withBodyParts = FALSE ): Message
 	{

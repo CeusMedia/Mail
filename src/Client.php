@@ -74,9 +74,11 @@ class Client
 	 *	@deprecated		use search with mailbox search instance instead
 	 *	@todo			to be removed in 2.6
 	 *	@codeCoverageIgnore
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public function find( array $conditions, ?int $limit = NULL, ?int $offset = NULL ): array
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )

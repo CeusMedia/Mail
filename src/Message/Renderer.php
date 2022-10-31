@@ -74,9 +74,11 @@ class Renderer
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 *	@codeCoverageIgnore
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public static function create(): self
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )

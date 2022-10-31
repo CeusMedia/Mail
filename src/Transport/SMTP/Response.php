@@ -48,7 +48,7 @@ class Response
 	public const ERROR_SOCKET_FAILED			= 5;
 	public const ERROR_SOCKET_EXCEPTION			= 6;
 	public const ERROR_CONNECTION_FAILED		= 7;
-	public const ERROR_RESPONSE_NOT_UNTERSTOOD	= 8;
+	public const ERROR_RESPONSE_NOT_UNDERSTOOD	= 8;
 	public const ERROR_CODE_NOT_ACCEPTED		= 9;
 	public const ERROR_HELO_FAILED				= 10;
 	public const ERROR_CRYPTO_FAILED			= 11;

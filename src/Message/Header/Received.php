@@ -97,7 +97,7 @@ class Received
 		$object	= new self();
 		$parts	= explode( '; ', $value );
 		if( 2 === count( $parts ) ){
-			/** @var DateTimeImmutable $datetime */
+			/** @noinspection PhpUnhandledExceptionInspection */
 			$datetime	= new DateTimeImmutable( array_pop( $parts ) );
 			$object->setDate( $datetime );
 			$value	= join( '; ', $parts );

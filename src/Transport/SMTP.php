@@ -331,7 +331,7 @@ class SMTP
 			if( $strict ){
 				/** @phpstan-ignore-next-line */
 				$this->socket->close();
-				$message	= vsprintf( 'Unexcepted SMTP response (%s): %s', [
+				$message	= vsprintf( 'Unexpected SMTP response (%s): %s', [
 					$response->getCode(),
 					$response->getMessage(),
 				] );

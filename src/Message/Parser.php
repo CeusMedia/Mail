@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMultipleClassDeclarationsInspection */
 declare(strict_types=1);
 
 /**
@@ -43,6 +44,7 @@ use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
 use CeusMedia\Mail\Message\Part\Text as MessagePartText;
 
+use ReflectionException;
 use RuntimeException;
 
 use function in_array;
@@ -84,6 +86,7 @@ class Parser
 	 *	@access		public
 	 *	@param		string		$content		Content to parse
 	 *	@return		Message
+	 *	@throws		ReflectionException
 	 */
 	public function parse( string $content ): Message
 	{
@@ -138,6 +141,7 @@ class Parser
 	 *	@param		string|NULL				$encoding
 	 *	@param		string|NULL				$format
 	 *	@return		MessagePartAttachment
+	 *	@throws		ReflectionException
 	 */
 	protected static function createAttachmentPart( string $content, MessageHeaderField $contentType, MessageHeaderField $disposition, string $mimeType, ?string $encoding = NULL, ?string $format = NULL ): MessagePartAttachment
 	{
@@ -185,6 +189,7 @@ class Parser
 	 *	@param		string|NULL				$encoding
 	 *	@param		string|NULL				$format
 	 *	@return		MessagePart|NULL		Instance of MessagePartAttachment or MessagePartInlineImage
+	 *	@throws		ReflectionException
 	 */
 	protected static function createDispositionPart( MessageHeaderSection $headers, string $content, MessageHeaderField $contentType, string $mimeType, ?string $encoding = NULL, ?string $format = NULL ): ?MessagePart
 	{
@@ -239,6 +244,7 @@ class Parser
 	 *	@param		string|NULL				$encoding
 	 *	@param		string|NULL				$format
 	 *	@return		MessagePartInlineImage
+	 *	@throws		ReflectionException
 	 */
 	protected static function createInlineImagePart( MessageHeaderSection $headers, string $content, MessageHeaderField $contentType, MessageHeaderField $disposition, string $mimeType, ?string $encoding = NULL, ?string $format = NULL ): MessagePartInlineImage
 	{
@@ -312,6 +318,7 @@ class Parser
 	 *	@access		protected
 	 *	@param		string		$content			...
 	 *	@return		MessagePart
+	 *	@throws		ReflectionException
 	 */
 	protected function parseAtomicBodyPart( string $content ): MessagePart
 	{
@@ -357,6 +364,7 @@ class Parser
 	 *	@param		Message		$message		...
 	 *	@param		string		$content		...
 	 *	@return		void
+	 *	@throws		ReflectionException
 	 */
 	protected function parseMultipartBody( Message $message, string $content )
 	{

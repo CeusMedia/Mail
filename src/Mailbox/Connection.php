@@ -206,7 +206,7 @@ class Connection
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 *	@todo		code doc
 	 */
 	public function setAuth( string $username, string $password ): self
@@ -219,7 +219,7 @@ class Connection
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 *	@todo		code doc
 	 */
 	public function setHost( string $host ): self
@@ -244,7 +244,7 @@ class Connection
 	/**
 	 *	...
 	 *	@access		public
-	 *	@return		self		Own instance for chainability
+	 *	@return		self		Own instance for method chaining
 	 *	@todo		code doc
 	 */
 	public function setTimeout( int $type, int $seconds ): self

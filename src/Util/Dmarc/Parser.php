@@ -31,9 +31,6 @@ namespace CeusMedia\Mail\Util\Dmarc;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
-use CeusMedia\Mail\Util\Dmarc\Record;
-
-use RuntimeException;
 
 use function abs;
 use function in_array;
@@ -66,9 +63,11 @@ class Parser
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 *	@codeCoverageIgnore
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public static function create(): self
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )

@@ -88,9 +88,11 @@ class Socket
 	 *	@deprecated	use getInstance instead
 	 *	@todo		to be removed
 	 *	@codeCoverageIgnore
+	 *	@noinspection PhpDocMissingThrowsInspection
 	 */
 	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
@@ -312,7 +314,7 @@ class Socket
 				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $chunk ), $matches );
 				if( !$matches ){
 					$response = new Response();
-					$response->setError( Response::ERROR_RESPONSE_NOT_UNTERSTOOD );
+					$response->setError( Response::ERROR_RESPONSE_NOT_UNDERSTOOD );
 					$response->setMessage( 'SMTP response not understood: '.trim( $chunk ) );
 					return $response;
 				}

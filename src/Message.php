@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMultipleClassDeclarationsInspection */
 declare(strict_types=1);
 
 /**
@@ -28,6 +29,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail;
 
+use CeusMedia\Common\Exception\IO;
 use CeusMedia\Mail\Address as Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Deprecation;
@@ -122,9 +124,11 @@ class Message
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 *	@codeCoverageIgnore
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public static function create(): self
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
@@ -140,6 +144,8 @@ class Message
 	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Message object for chaining
+	 *	@throws		IO
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public function addAttachment( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
@@ -195,6 +201,7 @@ class Message
 	 *	@param		string|NULL		$encoding		Optional: Encoding to apply
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Message object for chaining
+	 *	@throws		IO
 	 */
 	public function addInlineImage( string $id, string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
