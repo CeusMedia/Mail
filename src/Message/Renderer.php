@@ -119,7 +119,8 @@ class Renderer
 		$headers->setFieldPair( 'Subject', $encodedSubject );
 
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
-		$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
+		if( NULL !== $message->getUserAgent() )
+			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
 
 		if( 1 === count( $message->getParts( TRUE ) ) ){						//  no multipart message
 			$parts	= $message->getParts( TRUE );								//  get parts

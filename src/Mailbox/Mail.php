@@ -99,9 +99,10 @@ class Mail
 	 *	@param		boolean			$force			Flag: force reading of raw header if already fetched
 	 *	@return		MessageHeaderSection			Mail ID of this mail instance
 	 */
-	public function getHeader( $force = FALSE ): MessageHeaderSection
+	public function getHeader( bool $force = FALSE ): MessageHeaderSection
 	{
 		$this->getRawHeader( $force );
+		/** @phpstan-ignore-next-line */
 		return MessageHeaderParser::getInstance()->parse( $this->header );
 	}
 
@@ -128,7 +129,7 @@ class Mail
 	 *	@param		boolean			$force			Flag: force reading of raw header if already fetched
 	 *	@return		string			Raw mail header as string
 	 */
-	public function getRawHeader( $force = FALSE ): string
+	public function getRawHeader( bool $force = FALSE ): string
 	{
 		if( NULL === $this->connection )
 			throw new RuntimeException( 'No connection set' );

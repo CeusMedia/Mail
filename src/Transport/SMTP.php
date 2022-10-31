@@ -314,7 +314,8 @@ class SMTP
 		if( 0 === count( $acceptedCodes ) )
 			throw new RangeException( 'No accepted codes set' );
 
-		$response	= $this->socket->readResponse( 1024 );
+		/** @phpstan-ignore-next-line */
+		$response	= $this->socket->readResponse();
 		if( $response->isError() ){
 			$exception	= new SmtpException( $response->getMessage(), $response->getError() );
 			$exception->setResponse( $response );
@@ -328,6 +329,7 @@ class SMTP
 			if( NULL !== $errorCode )
 				$response->setError( $errorCode );
 			if( $strict ){
+				/** @phpstan-ignore-next-line */
 				$this->socket->close();
 				$message	= vsprintf( 'Unexcepted SMTP response (%s): %s', [
 					$response->getCode(),
@@ -345,6 +347,7 @@ class SMTP
 	{
 		if( $this->verbose )
 			print PHP_EOL . ' > '.$message . PHP_EOL;
+		/** @phpstan-ignore-next-line */
 		return $this->socket->sendChunk( $message.Message::$delimiter );
 	}
 }

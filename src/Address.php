@@ -181,15 +181,15 @@ class Address
 	 *	Returns name of mail address.
 	 *	@access		public
 	 *	@param		boolean			$strict		Flag: throw exception if no name set
-	 *	@return		string			Name of mail address
+	 *	@return		string|NULL		Name of mail address
 	 *	@throws		RuntimeException			if no name has been set, yet
 	 */
-	public function getName( bool $strict = TRUE ): string
+	public function getName( bool $strict = TRUE ): ?string
 	{
 		if( NULL === $this->name || strlen( trim( $this->name ) ) === 0 ){
 			if( $strict )
 				throw new RuntimeException( 'No name set' );
-			return '';
+			return NULL;
 		}
 		return $this->name;
 	}
@@ -219,10 +219,10 @@ class Address
 		if( 0 === strlen( trim( $string ) ) )
 			throw new InvalidArgumentException( 'No address given' );
 
-		$address	= AddressParser::getInstance()->parse( $string );
+		$address		= AddressParser::getInstance()->parse( $string );
+		$this->name		= $address->getName( FALSE );
 		$this->setDomain( $address->getDomain() );
 		$this->setLocalPart( $address->getLocalPart() );
-		$this->setName( $address->getName( FALSE ) );
 		return $this;
 	}
 

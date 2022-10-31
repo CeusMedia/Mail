@@ -46,10 +46,10 @@ trait RegularStringHandling
 	 *	...
 	 *	@access		protected
 	 *	@static
-	 *	@param		string		$expression
-	 *	@param		string		$replacement
-	 *	@param		string		$string
-	 *	@param		string		$errorMessage
+	 *	@param		string			$expression
+	 *	@param		string			$replacement
+	 *	@param		string			$string
+	 *	@param		string|NULL		$errorMessage
 	 *	@return		string
 	 *	@throws		RuntimeException
 	 */

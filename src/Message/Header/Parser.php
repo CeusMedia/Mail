@@ -173,11 +173,11 @@ class Parser
 	 *	@access		public
 	 *	@static
 	 *	@param		string		$content		Header fields block to parse
-	 *	@param		integer		$mode			iconv mode (0-normal, 1-strict, 2-tolerant), default:
+	 *	@param		integer		$mode			iconv mode (0-normal, 1-strict, 2-tolerant), default: 0
 	 *	@return		Section
 	 *	@throws		RuntimeException			if decoding of header failed
  	 */
-	public static function parseByIconvStrategy( $content, $mode = 0 ): Section
+	public static function parseByIconvStrategy( string $content, int $mode = 0 ): Section
 	{
 		$headers	= iconv_mime_decode_headers( $content, $mode, 'UTF-8' );
 		if( FALSE === $headers )

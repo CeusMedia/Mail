@@ -106,7 +106,7 @@ class Socket
 	 *	@param		integer|NULL	$timeout		Timeout (in seconds) on opening connection
 	 *	@return		void
 	 */
-	public function __construct( string $host = NULL, int $port = NULL, $timeout = NULL )
+	public function __construct( string $host = NULL, int $port = NULL, ?int $timeout = NULL )
 	{
 		if( !is_null( $host ) && strlen( trim( $host ) ) > 0 )
 			$this->setHost( $host );

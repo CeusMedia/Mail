@@ -126,7 +126,7 @@ class AttributedValue
 	 *	@param		string		$value			Value of header attribute
 	 *	@return		self
 	 */
-	public function setAttribute( $name, $value ): self
+	public function setAttribute( string $name, string $value ): self
 	{
 		$this->attributes->set( $name, $value );
 		return $this;

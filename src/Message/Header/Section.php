@@ -184,7 +184,7 @@ class Section implements Countable
 	public function setField( Field $field, ?bool $emptyBefore = TRUE ): self
 	{
 		$name	= strtolower( $field->getName() );
-		if( (bool) $emptyBefore || !array_key_exists( $name, $this->fields ) )
+		if( TRUE === $emptyBefore || !array_key_exists( $name, $this->fields ) )
 			$this->fields[$name]	= [];
 		$this->fields[$name][]	= $field;
 		return $this;

@@ -188,16 +188,16 @@ class Attachment extends MessagePart
 	 *	Sets attachment by existing file.
 	 *	Will gather file size, file dates (access, creation, modification).
 	 *	@access		public
-	 *	@param		string		$filePath		Path of file to attach
-	 *	@param		string		$mimeType		Optional: MIME type of file (will be detected if not given)
-	 *	@param		string		$encoding		Optional: Encoding of file
-	 *	@param		string		$fileName		Optional: Name of file in part
-	 *	@return		self	  	Self instance for chaining
-	 *	@throws		InvalidArgumentException	if file is not existing
-	 *	@throws		IoException					if reading from file failed
-	 *	@todo  		scan file for malware
+	 *	@param		string			$filePath		Path of file to attach
+	 *	@param		string|NULL		$mimeType		Optional: MIME type of file (will be detected if not given)
+	 *	@param		string|NULL		$encoding		Optional: Encoding of file
+	 *	@param		string|NULL		$fileName		Optional: Name of file in part
+	 *	@return		self			Self instance for chaining
+	 *	@throws		InvalidArgumentException		if file is not existing
+	 *	@throws		IoException						if reading from file failed
+	 *	@todo		scan file for malware
 	 */
-	public function setFile( $filePath, $mimeType = NULL, $encoding = NULL, $fileName = NULL ): self
+	public function setFile( string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL, ?string $fileName = NULL ): self
 	{
 		$file	= new File( $filePath );
  		if( !$file->exists() )

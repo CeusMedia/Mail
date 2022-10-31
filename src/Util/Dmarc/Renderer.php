@@ -115,7 +115,7 @@ class Renderer
 
 		$list	= [];
 		foreach( $facts as $key => $value )
-			$list[]	= $key.'='.(string) $value;
+			$list[]	= $key.'='.$value;
 		return join( '; ', $list );
 	}
 }

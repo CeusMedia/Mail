@@ -85,7 +85,7 @@ class Parser
 	 *	@param		string		$content		Content to parse
 	 *	@return		Message
 	 */
-	public function parse( $content ): Message
+	public function parse( string $content ): Message
 	{
 		$message	= new Message();
 

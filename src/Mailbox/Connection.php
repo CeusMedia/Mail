@@ -79,12 +79,12 @@ class Connection
 	/**
 	 * @var int $port
 	 */
-	protected $port						= 143;
+	protected int $port						= 143;
 
 	/**
 	 * @var string|NULL $reference
 	 */
-	protected $reference;
+	protected ?string $reference			= NULL;
 
 	/**
 	 * @var bool $secure

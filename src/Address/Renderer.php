@@ -93,7 +93,7 @@ class Renderer
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
 		$name		= $address->getName( FALSE );
-		if( !self::strHasContent( $name ) )
+		if( NULL === $name || !self::strHasContent( $name ) )
 			return $localPart.'@'.$domain;
 		if( !self::regMatch( '/^\w+$/', $name ) )
 			$name	= '"'.$name.'"';

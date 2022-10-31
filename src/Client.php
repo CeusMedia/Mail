@@ -75,7 +75,7 @@ class Client
 	 *	@todo			to be removed in 2.6
 	 *	@codeCoverageIgnore
 	 */
-	public function find( array $conditions, $limit = NULL, $offset = NULL ): array
+	public function find( array $conditions, ?int $limit = NULL, ?int $offset = NULL ): array
 	{
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )

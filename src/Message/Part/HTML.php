@@ -49,7 +49,7 @@ class HTML extends MessagePartText
 	 *	@param		string		$charset		Character set to set, default: UTF-8
 	 *	@param		string		$encoding		Encoding to set, default: base64, values: 7bit,8bit,base64,quoted-printable,binary
 	 */
-	public function __construct( $content, $charset = 'UTF-8', $encoding = 'base64' )
+	public function __construct( string $content, string $charset = 'UTF-8', string $encoding = 'base64' )
 	{
 		parent::__construct( $content, $charset, $encoding );
 		$this->type		= static::TYPE_HTML;

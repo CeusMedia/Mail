@@ -78,7 +78,7 @@ class Local
 	 *	@throws		InvalidArgumentException	if receiver is not set
 	 *	@throws		InvalidArgumentException	if subject is not set
 	 */
-	public function send( Message $message, array $parameters = [] )
+	public function send( Message $message, array $parameters = [] ): array
 	{
 		$headers	= $message->getHeaders();
 		$receivers	= $message->getRecipientsByType( 'to' );
@@ -102,9 +102,9 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-		if( self::strHasContent( $message->getUserAgent() ) )
-			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent(), TRUE );
-		$headers->setFieldPair( 'Date', date( 'r' ), TRUE );
+		if( self::strHasContent( (string) $message->getUserAgent() ) )
+			$headers->setFieldPair( 'X-Mailer', (string) $message->getUserAgent() );
+		$headers->setFieldPair( 'Date', date( 'r' ) );
 
 		$parameters	= implode( PHP_EOL, $parameters );
 
@@ -147,12 +147,12 @@ class Local
 	 *	@static
 	 *	@param		Message		$message		Mail Object
 	 *	@param		array		$parameters		Additional mail parameters
-	 *	@return		void
+	 *	@return		array
 	 */
-	public static function sendMail( Message $message, $parameters = [] )
+	public static function sendMail( Message $message, array $parameters = [] ): array
 	{
 		$transport	= new self();
-		$transport->send( $message, $parameters );
+		return $transport->send( $message, $parameters );
 	}
 
 	//  --  PROTECTED  --  //
@@ -164,7 +164,7 @@ class Local
 	 *	@return		void
 	 *	@throws		InvalidArgumentException
 	 */
-	protected function checkForInjection( $value )
+	protected function checkForInjection( string $value ): void
 	{
 		if( self::regMatch( '/(\r|\n)/', $value ) )
 			throw new InvalidArgumentException( 'Mail injection attempt detected' );

@@ -315,7 +315,7 @@ abstract class Part
 	 *	@param		string		$charset			Character set to set
 	 *	@return		self
 	 */
-	public function setCharset( $charset ): self
+	public function setCharset( string $charset ): self
 	{
 		$this->charset	= $charset;
 		return $this;
@@ -327,7 +327,7 @@ abstract class Part
 	 *	@param		string		$content			Content to set
 	 *	@return		self
 	 */
-	public function setContent( $content ): self
+	public function setContent( string $content ): self
 	{
 		$this->content	= $content;
 		return $this;
@@ -340,7 +340,7 @@ abstract class Part
 	 *	@return		self
 	 *	@throws		InvalidArgumentException	if encodfgets(ing is invalid
 	 */
-	public function setEncoding( $encoding ): self
+	public function setEncoding( string $encoding ): self
 	{
 		$encodings	= [ '', '7bit', '8bit', 'base64', 'quoted-printable', 'binary' ];
 		if( !in_array( $encoding, $encodings, TRUE ) )
@@ -356,7 +356,7 @@ abstract class Part
 	 *	@return		self
 	 *	@throws		InvalidArgumentException	if format is invalid
 	 */
-	public function setFormat( $format ): self
+	public function setFormat( string $format ): self
 	{
 		$formats	= [ 'fixed', 'flowed' ];
 		if( !in_array( $format, $formats, TRUE ) )
@@ -371,7 +371,7 @@ abstract class Part
 	 *	@param		string		$mimeType			MIME type to set
 	 *	@return		self
 	 */
-	public function setMimeType( $mimeType ): self
+	public function setMimeType( string $mimeType ): self
 	{
 		$this->mimeType	= $mimeType;
 		return $this;
