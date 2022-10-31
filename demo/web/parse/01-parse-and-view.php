@@ -26,22 +26,22 @@ catch( Exception $e ){
 
 class ParseAndView
 {
-	protected $filePath;
+	protected string $filePath;
 
 	public function __construct( string $filePath = NULL )
 	{
-		if( !getEnv( 'HTTP_HOST' ) )
+		if( FALSE === getenv( 'HTTP_HOST' ) )
 			die( "This demo is for browser, only" );
 		if( !is_null( $filePath ) )
 			$this->setFilePath( $filePath );
 	}
 
-	public function run()
+	public function run(): void
 	{
-		if( !$this->filePath )
+		if( 0 === strlen( $this->filePath ) )
 			die( 'No file selected' );
 
-		$rawMail	= file_get_contents( $this->filePath );
+		$rawMail	= (string) file_get_contents( $this->filePath );
 		$html		= $this->renderPage( $rawMail );
  		print( $html);
 	}
@@ -56,9 +56,15 @@ class ParseAndView
 
 	//  --  PROTECTED  --  //
 
-	protected function addListItem( & $list, $key, $value )
+	/**
+	 *	@param		array			$list
+	 *	@param		string			$key
+	 *	@param		string|NULL		$value
+	 *	@return		void
+	 */
+	protected function addListItem( array & $list, string $key, ?string $value ): void
 	{
-		$value	= htmlentities( $value, ENT_QUOTES, 'UTF-8' );;
+		$value	= htmlentities( (string) $value, ENT_QUOTES, 'UTF-8' );
 		$list[]	= Tag::create( 'li', $key.': '.$value );
 	}
 
@@ -67,7 +73,7 @@ class ParseAndView
 		$listMain	= array();
 		$this->addListItem( $listMain, 'Subject', $object->getSubject() );
 		$this->addListItem( $listMain, 'Date', current( $object->getHeaders()->getFieldsByName( 'Date' ) )->getValue() );
-		$this->addListItem( $listMain, 'From', $object->getSender()->get() );
+		$this->addListItem( $listMain, 'From', NULL !== $object->getSender() ? $object->getSender()->get() : '-' );
 		foreach( $object->getRecipients() as $type => $recipients ){
 			foreach( $recipients as $recipient ){
 				$this->addListItem( $listMain, ucfirst( $type ), $recipient->get() );
@@ -75,9 +81,9 @@ class ParseAndView
 		}
 		$headerReturnPath	= $object->getHeaders()->getFieldsByName( 'Return-Path' );
 		$headerDeliveredTo	= $object->getHeaders()->getFieldsByName( 'Delivered-To' );
-		if( $headerDeliveredTo )
+		if( 0 !== count( $headerDeliveredTo ) )
 			$this->addListItem( $listMain, 'Delivered-To', $headerDeliveredTo[0]->getValue() );
-		if( $headerReturnPath )
+		if( 0 !== count( $headerReturnPath ) )
 			$this->addListItem( $listMain, 'Return', $headerReturnPath[0]->getValue() );
 		$this->addListItem( $listMain, 'ID', current( $object->getHeaders()->getFieldsByName( 'Message-ID' ) )->getValue() );
 		return Tag::create( 'ul', $listMain );
@@ -97,7 +103,7 @@ class ParseAndView
 				$this->addListItem( $list2, 'Encoding', $part->getEncoding() );
 			if( $part->getFormat() )
 				$this->addListItem( $list2, 'Format', $part->getFormat() );
-			$this->addListItem( $list2, 'Class', get_class( $part ) );
+			$this->addListItem( $list2, 'Class', (string) get_class( $part ) );
 			if( $part->isInlineImage() )
 				$this->addListItem( $list2, 'Content-ID', $part->getId() );
 			if( $part->isAttachment() ){

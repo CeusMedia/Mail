@@ -12,7 +12,7 @@ Produce, send and read mails using PHP + IMAP & SMTP.
 ## Features
 - Programming
   - simple, easy, clean
-  - PHP 7.3+, object oriented style, chainable
+  - PHP 7.4+, object oriented style, chainable
   - automatic encoding
   - automatic MIME type detection
 - MIME Contents
@@ -20,7 +20,7 @@ Produce, send and read mails using PHP + IMAP & SMTP.
   - plain text
   - file attachments
   - inline images
-- Partipicants
+- Participants
   - To, Cc, Bcc
   - sender and receiver names
 - Transports
@@ -37,7 +37,7 @@ Produce, send and read mails using PHP + IMAP & SMTP.
 
 ### Short version
 
-This example shows how to send a text mail using chainability.
+This example shows how to send a text mail using method chaining.
 
 ```php
 \CeusMedia\Mail\Transport\SMTP::getInstance("example.com", 587)
@@ -111,10 +111,10 @@ function handleMailException( $e ){
 - Sending mail with this short code will be using SMTP, only.
 - The SMTP server will be determined by fetching MX records of the user's domain.
 - Setting the SMTP server port is still needed.
-- Assigned receivers will be checked for existance automatically.
+- Assigned receivers will be checked for existence automatically.
 - If the auth method is receiving only one parameter, it will be understood as password.
 - The auth username will be taken from sender address.
-- Thrown exceptions can be catched by a defined error handler.
+- Thrown exceptions can be caught by a defined error handler.
 - If everything is set the mail can be sent.
 
 
@@ -125,7 +125,7 @@ function handleMailException( $e ){
 Google tried to protect its SMTP access by several measures.
 If you are [having problems](https://support.google.com/accounts/answer/6009563) sending mails using Google SMTP, tried [these steps](https://serverfault.com/a/745666):
 
-1. Open a browser an log into Google using a Google account.
+1. Open a browser and log into Google using a Google account.
 2. [Allow "less secure apps"](https://www.google.com/settings/security/lesssecureapps) to have access.
 3. [Allow app](https://accounts.google.com/DisplayUnlockCaptcha) to have access.
 4. Try again!

@@ -32,46 +32,7 @@ dev-configure:
 	@read -p 'Receiver Auth Username: ' input && sed -i "s*{{phpunit.receiver.auth.username}}*$$input*" Mail.ini
 	@read -p 'Receiver Auth Password: ' input && sed -i "s {{phpunit.receiver.auth.password}} $$input " Mail.ini
 
-dev-analyse-phan: composer-install-dev
-	@XDEBUG_MODE=off ./vendor/bin/phan -k=.phan --color --allow-polyfill-parser || true
-
-dev-analyse-phan-report: dev-analyse-phan-save
-	@php vendor/ceus-media/phan-viewer/phan-viewer generate --source=util/phan.json --target=doc/phan/
-
-dev-analyse-phan-save: composer-install-dev
-	@XDEBUG_MODE=off PHAN_DISABLE_XDEBUG_WARN=1 ./vendor/bin/phan -k=util/.phan -m=json -o=util/phan.json --allow-polyfill-parser -p || true
-
-dev-phpstan: composer-install-dev
-	@vendor/bin/phpstan analyse --configuration util/phpstan.neon --xdebug || true
-
-dev-phpstan-save-baseline: composer-install-dev
-	@vendor/bin/phpstan analyse --configuration util/phpstan.neon --generate-baseline util/phpstan-baseline.neon --allow-empty-baseline || true
-
 dev-doc: composer-install-dev
 	@test -f doc/API/search.html && rm -Rf doc/API || true
 	@php vendor/ceus-media/doc-creator/doc.php --config-file=util/doc.xml
 
-dev-test-all-with-coverage:
-	@XDEBUG_MODE=coverage vendor/bin/phpunit -v || true
-
-dev-test-integration: composer-install-dev
-	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite integration || true
-
-dev-test-units: composer-install-dev
-	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite unit || true
-
-dev-test-units-with-coverage: composer-install-dev
-	@XDEBUG_MODE=coverage vendor/bin/phpunit -v --testsuite unit || true
-
-dev-retest-integration: composer-install-dev
-	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite integration --order-by=defects --stop-on-defect || true
-
-dev-retest-units: composer-install-dev
-	@XDEBUG_MODE=off vendor/bin/phpunit -v --no-coverage --testsuite unit --order-by=defects --stop-on-defect || true
-
-dev-test-syntax:
-	@find src -type f -print0 | xargs -0 -n1 xargs php -l
-	@find test -type f -print0 | xargs -0 -n1 xargs php -l
-
-dev-test-units-parallel: composer-install-dev
-	@XDEBUG_MODE=off vendor/bin/paratest -v --no-coverage --testsuite unit || true

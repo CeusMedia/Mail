@@ -440,11 +440,11 @@ abstract class Part
 	{
 		if( !file_exists( $filePath ) )
 			throw new InvalidArgumentException( 'File "'.$filePath.'" is not existing' );
-		$finfo	= finfo_open( FILEINFO_MIME_TYPE );
-		if( FALSE === $finfo )
+		$fileInfo	= finfo_open( FILEINFO_MIME_TYPE );
+		if( FALSE === $fileInfo )
 			throw new RuntimeException( 'fileinfo is not available' );
-		$type	= finfo_file( $finfo, $filePath );
-		finfo_close( $finfo );
+		$type	= finfo_file( $fileInfo, $filePath );
+		finfo_close( $fileInfo );
 		return FALSE !== $type ? $type : NULL;
 	}
 

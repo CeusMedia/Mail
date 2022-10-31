@@ -196,6 +196,7 @@ class Encoding
 							case static::ENCODE_STRATEGY_IMPL:
 								return "=?UTF-8?B?".base64_encode( $string )."?=";
 						}
+						break;
 					case 'q':
 					case 'quoted-printable':
 						switch( $strategy ){
@@ -208,6 +209,7 @@ class Encoding
 								$string   	= str_replace( '='.Message::$delimiter, $replace, $string );
 								return		"=?UTF-8?Q?".$string."?=";
 						}
+						break;
 					default:
 						throw new RangeException( 'Unsupported encoding: '.$encoding );
 				}

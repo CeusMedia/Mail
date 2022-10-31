@@ -23,13 +23,15 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "php": ">=7.4 | ^8",
+    "php": "^7.4 | ^8",
+    "ext-dom": "*",
+    "ext-fileinfo": "*",
+    "ext-iconv": "*",
     "ext-imap": "*",
     "ext-json": "*",
     "ceus-media/common": "^0.9 | 0.9-dev",
     "ceus-media/cache": "^0.4 | dev-0.4-dev",
-    "ezyang/htmlpurifier": "dev-master",
-    "ext-dom": "*"
+    "ezyang/htmlpurifier": "dev-master"
   },
   "require-dev": {
     "brianium/paratest": "*",
@@ -58,37 +60,41 @@
       "@dev:install-quiet",
       "php vendor/ceus-media/doc-creator/doc-creator.php --config-file=util/doc.xml"
     ],
-    "dev:phpunit-unit-all": [
+    "dev:phpunit-all": [
       "@dev:install-quiet",
-      "php vendor/bin/phpunit --configuration util/phpunit.9.xml"
+      "XDEBUG_MODE=off php vendor/bin/phpunit --configuration util/phpunit.9.xml"
+    ],
+    "dev:phpunit-all-coverage": [
+      "@dev:install-quiet",
+      "XDEBUG_MODE=coverage php vendor/bin/phpunit --configuration util/phpunit.9.xml"
     ],
     "dev:phpunit-integration": [
       "@dev:install-quiet",
-      "php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite integration"
+      "XDEBUG_MODE=off php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite integration"
     ],
     "dev:phpunit-unit": [
       "@dev:install-quiet",
-      "php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite unit"
+      "XDEBUG_MODE=on php vendor/bin/phpunit --configuration util/phpunit.9.xml --testsuite unit"
     ],
     "dev:phpstan": [
       "@dev:install-quiet",
-      "vendor/bin/phpstan analyze --configuration=util/phpstan.neon --memory-limit=1G --xdebug --verbose"
+      "XDEBUG_MODE=off vendor/bin/phpstan analyze --configuration=util/phpstan.neon --memory-limit=1G --xdebug --verbose"
     ],
     "dev:phpstan-clear": [
       "@dev:install-quiet",
-      "vendor/bin/phpstan clear-result-cache --verbose"
+      "XDEBUG_MODE=off vendor/bin/phpstan clear-result-cache --verbose"
     ],
     "dev:phpstan-save": [
       "@dev:instal-quietl",
-      "vendor/bin/phpstan analyse --configuration util/phpstan.neon --generate-baseline util/phpstan-baseline.neon --verbose"
+      "XDEBUG_MODE=off vendor/bin/phpstan analyse --configuration util/phpstan.neon --generate-baseline util/phpstan-baseline.neon --verbose"
     ],
     "dev:rector": [
       "@dev:install-quiet",
-      "vendor/bin/rector process --config=util/rector.php --dry-run"
+      "vendor/bin/rector --config=util/rector.php --clear-cache --dry-run"
     ],
     "dev:rector-fix": [
       "@dev:install-quiet",
-      "vendor/bin/rector process --config=util/rector.php"
+      "vendor/bin/rector --config=util/rector.php --clear-cache "
     ],
     "dev:test-syntax": [
       "@dev:install-quiet",
