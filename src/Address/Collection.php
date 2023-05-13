@@ -46,10 +46,10 @@ use Iterator;
 class Collection implements Countable, Iterator
 {
 	/** @var Address[] $list */
-	protected $list		= [];
+	protected array $list		= [];
 
 	/** @var int $position */
-	protected $position	= 0;
+	protected int $position		= 0;
 
 	public function __construct( ?array $addresses = NULL )
 	{
@@ -88,7 +88,6 @@ class Collection implements Countable, Iterator
 	{
 		if( $this->position >= $this->count() )
 			return NULL;
-		$keys	= array_keys( $this->list );
 		return $this->list[$this->position];
 	}
 
@@ -106,9 +105,9 @@ class Collection implements Countable, Iterator
 	/**
 	 *	Returns current Key.
 	 *	@access		public
-	 *	@return		mixed|NULL
+	 *	@return		int
 	 */
-	public function key()
+	public function key(): int
 	{
 		return $this->position;
 	}
@@ -118,7 +117,7 @@ class Collection implements Countable, Iterator
 	 *	@access		public
 	 *	@return		void
 	 */
-	public function next()
+	public function next(): void
 	{
 		$this->position++;
 	}
@@ -133,14 +132,14 @@ class Collection implements Countable, Iterator
 	 *	@access		public
 	 *	@return		void
 	 */
-	public function rewind()
+	public function rewind(): void
 	{
 		$this->position	= 0;
 	}
 
 	/**
 	 *	Returns array of all addresses.
-	 *	Eather as address objects or strings (rendered addresses).
+	 *	Either as address objects or strings (rendered addresses).
 	 *	@access		public
 	 *	@param		boolean		$renderValues		Return strings (rendered addresses), default: no
 	 *	@return		array

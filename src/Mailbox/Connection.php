@@ -30,6 +30,7 @@ namespace CeusMedia\Mail\Mailbox;
 
 use CeusMedia\Mail\Mailbox;
 
+use IMAP\Connection as ImapConnection;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -39,7 +40,6 @@ use function imap_open;
 use function imap_ping;
 use function imap_timeout;
 use function in_array;
-use function is_resource;
 use function join;
 use function strlen;
 use function trim;
@@ -57,9 +57,9 @@ use function trim;
 class Connection
 {
 	/**
-	 * @var resource|NULL $resource
+	 * @var ImapConnection|NULL $resource
 	 */
-	protected $resource						= NULL;
+	protected ?ImapConnection $resource		= NULL;
 
 	/**
 	 * @var string $username
@@ -134,11 +134,9 @@ class Connection
 
 	public function disconnect(): bool
 	{
-		if( NULL !== $this->resource ){
-			if( is_resource( $this->resource ) )
-				imap_close( $this->resource, CL_EXPUNGE );
-			$this->resource	= NULL;
-		}
+		if( is_object( $this->resource ) )
+			imap_close( $this->resource, CL_EXPUNGE );
+		$this->resource	= NULL;
 		return TRUE;
 	}
 
@@ -155,9 +153,9 @@ class Connection
 	/**
 	 *	...
 	 *	@param		bool		$connect
-	 *	@return		resource
+	 *	@return		ImapConnection
 	 */
-	public function getResource( bool $connect = FALSE )
+	public function getResource( bool $connect = FALSE ): ImapConnection
 	{
 		if( !$this->isOpen() ){
 			if( !$connect )
@@ -172,7 +170,7 @@ class Connection
 
 	public function isOpen( bool $ping = TRUE ): bool
 	{
-		if( !is_resource( $this->resource ) )
+		if( !is_object( $this->resource ) )
 			return FALSE;
 		if( $ping && !imap_ping( $this->resource ) )
 			return FALSE;

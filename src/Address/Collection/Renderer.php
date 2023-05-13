@@ -49,7 +49,7 @@ use function strlen;
 class Renderer
 {
 	/** @var string $delimiter */
-	protected $delimiter		= ', ';
+	protected string $delimiter		= ', ';
 
 	/**
 	 *	Static constructor.

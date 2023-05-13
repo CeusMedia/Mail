@@ -34,6 +34,7 @@ use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
+use IMAP\Connection as ImapConnection;
 use ReflectionException;
 use RuntimeException;
 
@@ -53,14 +54,14 @@ use function imap_fetchheader;
  */
 class Mail
 {
-	/**	@var	resource		$connection */
-	protected $connection;
+	/**	@var	ImapConnection|NULL		$connection */
+	protected ?ImapConnection $connection;
 
-	/**	@var	integer			$mailId */
+	/**	@var	integer					$mailId */
 	protected int $mailId;
 
-	/**	@var	string|NULL		$header */
-	protected ?string $header	= NULL;
+	/**	@var	string|NULL				$header */
+	protected ?string $header			= NULL;
 
 	/**
 	 *	Constructor.
@@ -147,10 +148,10 @@ class Mail
 	/**
 	 *	Set mailbox connection.
 	 *	@access		public
-	 *	@param		resource		$connection
+	 *	@param		ImapConnection		$connection
 	 *	@return		self
 	 */
-	public function setConnection( $connection ): self
+	public function setConnection( ImapConnection $connection ): self
 	{
 		$this->connection	= $connection;
 		return $this;

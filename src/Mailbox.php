@@ -162,7 +162,7 @@ class Mailbox
 	public function index( array $criteria = [], int $sort = SORTARRIVAL, bool $reverse = TRUE ): array
 	{
 		$resource	= $this->connection->getResource( TRUE );
-		$result		= imap_sort( $resource, $sort, (int) $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
+		$result		= imap_sort( $resource, $sort, $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
 		if( $result === FALSE )
 			$result	= [];
 		return $result;

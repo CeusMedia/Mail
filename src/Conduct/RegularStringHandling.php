@@ -68,15 +68,15 @@ trait RegularStringHandling
 	 *	...
 	 *	@access		protected
 	 *	@static
-	 *	@param		string		$expression
-	 *	@param		string		$string
-	 *	@param		string|NULL	$errorMessage
-	 *	@param		array|NULL	$matches
-	 *	@param		integer		$flags
-	 *	@param		integer		$offset
+	 *	@param		string			$expression
+	 *	@param		string			$string
+	 *	@param		string|NULL		$errorMessage
+	 *	@param		array|NULL		$matches
+	 *	@param		0|256|512|768	$flags
+	 *	@param		integer			$offset
 	 *	@return		bool
 	 */
-	protected static function regMatch( string $expression, string $string, ?string $errorMessage = NULL, ?array &$matches = NULL, int $flags = 0, int $offset = 0 ): bool
+	protected static function regMatch( string $expression, string $string, ?string $errorMessage = NULL, ?array &$matches = NULL, $flags = 0, int $offset = 0 ): bool
 	{
 		$result	= preg_match( $expression, $string, $matches, $flags, $offset );
 		if( FALSE === $result ){

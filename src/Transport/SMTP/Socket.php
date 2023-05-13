@@ -312,7 +312,7 @@ class Socket
 				$raw[]		= rtrim( $chunk, "\r\n" );
 				$matches	= [];
 				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $chunk ), $matches );
-				if( !$matches ){
+				if( 0 === count( $matches ) ){
 					$response = new Response();
 					$response->setError( Response::ERROR_RESPONSE_NOT_UNDERSTOOD );
 					$response->setMessage( 'SMTP response not understood: '.trim( $chunk ) );

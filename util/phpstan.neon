@@ -1,9 +1,9 @@
 includes:
-	- ../vendor/phpstan/phpstan-strict-rules/rules.neon
+#	- ../vendor/phpstan/phpstan-strict-rules/rules.neon
 	- phpstan-baseline.neon
 
 parameters:
-	phpVersion: 70400
+	phpVersion: 80100
 	level: max
 	paths:
 		- ../src

@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMultipleClassDeclarationsInspection */
 declare(strict_types=1);
 
 /**
@@ -34,6 +35,7 @@ use CeusMedia\Mail\Conduct\RegularStringHandling;
 
 use InvalidArgumentException;
 
+use ReflectionException;
 use function filter_var;
 
 /**
@@ -57,13 +59,13 @@ class Syntax
 	public const MODE_EXTENDED_REGEX	= 8;
 
 	/**	@var int $mode */
-	protected $mode				= self::MODE_FILTER;
+	protected int $mode					= self::MODE_FILTER;
 
 	/**	@var string $regexSimple */
-	protected $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
+	protected string $regexSimple		= "@^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$@";
 
 	/**	@var string $regexExtended */
-	protected $regexExtended	= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
+	protected string $regexExtended		= "@^[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*\@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,})$@";
 
 	/**
 	 *	Constructor. Sets mode if given.
@@ -77,12 +79,13 @@ class Syntax
 	}
 
 	/**
-	 *	Validate an mail address against set mode and returns bitmask of successfully applied test modes.
+	 *	Validate an email address against set mode and returns bitmask of successfully applied test modes.
 	 *	@access		public
 	 *	@param		string			$address		Mail address to validate
 	 *	@param		boolean			$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer							Bitmask of successfully applied test modes
 	 *	@throws		InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
+	 *	@throws		ReflectionException
 	 */
 	public function check( string $address, bool $throwException = TRUE ): int
 	{
@@ -113,7 +116,7 @@ class Syntax
 	}
 
 	/**
-	 *	Tries to validate an mail address and returns found type.
+	 *	Tries to validate an email address and returns found type.
 	 *	Types:
 	 *		0 - not valid
 	 *		1 - filter
@@ -156,6 +159,7 @@ class Syntax
 	 *	@access		public
 	 *	@param		string		$address		Mail address to validate
 	 *	@return		boolean
+	 *	@throws		ReflectionException
 	 */
 	public function isValid( string $address ): bool
 	{

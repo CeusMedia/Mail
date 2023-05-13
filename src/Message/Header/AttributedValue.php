@@ -82,7 +82,7 @@ class AttributedValue
 	 *	@param		mixed		$default		Optional: Value to return if key is not set
 	 *	@return		string|NULL	Value of header attribute (if set) or NULL otherwise
 	 */
-	public function getAttribute( string $name, $default = NULL ): ?string
+	public function getAttribute( string $name, mixed $default = NULL ): ?string
 	{
 		/** @var string|NULL $value */
 		$value	= $this->attributes->get( $name, $default );

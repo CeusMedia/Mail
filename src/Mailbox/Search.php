@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Mailbox;
 
+use IMAP\Connection as ImapConnection;
 use RuntimeException;
 
 /**
@@ -43,26 +44,26 @@ use RuntimeException;
  */
 class Search
 {
-	/** @var resource $connection */
-	protected $connection;
+	/** @var ImapConnection|NULL $connection */
+	protected ?ImapConnection $connection	= NULL;
 
 	/** @var integer $limit */
-	protected int $limit				= 10;
+	protected int $limit					= 10;
 
 	/** @var integer $offset */
-	protected int $offset				= 0;
+	protected int $offset					= 0;
 
 	/** @var integer $orderSort */
-	protected int $orderSort			= SORTARRIVAL;
+	protected int $orderSort				= SORTARRIVAL;
 
 	/** @var bool $orderReverse */
-	protected bool $orderReverse		= TRUE;
+	protected bool $orderReverse			= TRUE;
 
 	/** @var string|NULL $subject */
-	protected ?string $subject			= NULL;
+	protected ?string $subject				= NULL;
 
 	/** @var string|NULL $sender */
-	protected ?string $sender			= NULL;
+	protected ?string $sender				= NULL;
 
 	public function applyConditions( array $conditions = [] ): self
 	{
@@ -87,6 +88,8 @@ class Search
 	 */
 	public function getAll(): array
 	{
+		if( NULL === $this->connection )
+			throw new RuntimeException( 'No connection set' );
 		$mails		= [];
 		foreach( $this->getAllMailIds() as $mailId ){
 			$mail	= Mail::getInstance( $mailId )->setConnection( $this->connection );
@@ -109,7 +112,7 @@ class Search
 		$mailIds	= imap_sort(
 			$this->connection,
 			$this->orderSort,
-			$this->orderReverse ? 1 : 0,
+			$this->orderReverse,
 			SE_UID,
 			$criteria,
 			'UTF-8'
@@ -163,10 +166,10 @@ class Search
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		resource	$connection
+	 *	@param		ImapConnection	$connection
 	 *	@return		self
 	 */
-	public function setConnection( $connection ): self
+	public function setConnection( ImapConnection $connection ): self
 	{
 		$this->connection	= $connection;
 		return $this;

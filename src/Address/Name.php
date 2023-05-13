@@ -49,13 +49,13 @@ class Name
 	use RegularStringHandling;
 
 	/** @var		string|NULL		$firstname */
-	protected $firstname;
+	protected ?string $firstname	= NULL;
 
 	/** @var		string|NULL		$fullname */
-	protected $fullname;
+	protected ?string $fullname		= NULL;
 
 	/** @var		string|NULL		$surname */
-	protected $surname;
+	protected ?string $surname		= NULL;
 
 	/**
 	 *	Constructor.

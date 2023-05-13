@@ -56,7 +56,7 @@ class Parser
 	use RegularStringHandling;
 
 	/**	@var	array		$patterns		Map of understandable patterns (regular expressions) */
-	protected static $patterns	= [												//  define name patterns
+	protected static array $patterns	= [												//  define name patterns
 		'name <local-part@domain>'	=> "/^(.*)\s(<((\S+)@(\S+))>)$/U",			//  full address: name and local-part at domain with (maybe in brackets)
 		'<local-part@domain>'		=> "/^<((\S+)@(\S+))>$/U",					//  short address: local-part at domain without name (and no brackets)
 		'local-part@domain'			=> "/^((\S+)@(\S+))$/U",					//  short address: local-part at domain without name (and no brackets)

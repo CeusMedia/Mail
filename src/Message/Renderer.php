@@ -31,6 +31,7 @@ namespace CeusMedia\Mail\Message;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Encoding;
+use CeusMedia\Mail\Message\Header\Field as HeaderField;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
@@ -130,51 +131,55 @@ class Renderer
 			return $part->render( MessagePart::SECTION_ALL, $headers );			//  render part and apply part headers as message headers
 		}
 
-		$parts	= (object) [
-			'body'	=> (object) [
-				'html'	=> NULL,
-				'text'	=> NULL,
-			],
-		'files'		=> [],
-			'images'	=> [],
+		$bodyParts		= (object) [
+			'html'	=> NULL,
+			'text'	=> NULL,
 		];
+		$imageParts		= [];
+		$fileParts		= [];
+		
 		foreach( $message->getParts() as $part ){
 			if( $part instanceof MessagePartHTML )
-				$parts->body->html	= $part;
+				$bodyParts->html	= $part;
 			else if( $part instanceof MessagePartText )
-				$parts->body->text	= $part;
+				$bodyParts->text	= $part;
 			else if( $part instanceof MessagePartInlineImage )
-				$parts->images[]	= $part;
+				$imageParts[]	= $part;
 			else if( $part instanceof MessagePartAttachment )
-				$parts->files[]		= $part;
+				$fileParts[]		= $part;
 			else if( $part instanceof MessagePartMail )
-				$parts->files[]		= $part;
+				$fileParts[]		= $part;
 		}
 
-		$delim			= Message::$delimiter;
-		$mimeBoundary	= '------'.md5( (string) ( microtime( TRUE ) + 0 ) );	//  mixed multipart boundary
-		$mimeBoundary1	= '------'.md5( (string) ( microtime( TRUE ) + 1 ) );	//  related multipart boundary
-		$mimeBoundary2	= '------'.md5( (string) ( microtime( TRUE ) + 2 ) );	//  alternative multipart boundary
-		$headers->setFieldPair( 'Content-Type', 'multipart/related;'.$delim.' boundary="'.$mimeBoundary.'"' );
+		$delim		= Message::$delimiter;
+		$microTime	= (string) microtime( TRUE );
+		$mimeBoundaryOuter	= '------'.md5( $microTime );						//  mixed multipart boundary
+		$mimeBoundaryInner	= '------'.md5( $microTime . '_related' );	//  related multipart boundary
+		$headers->setField( new HeaderField(
+			'Content-Type',
+			'multipart/related;'.$delim.' boundary="'.$mimeBoundaryOuter.'"'
+		) );
 		$contents		= [ 'This is a multi-part message in MIME format.' ];
 		$bodyParts		= $message->getParts( FALSE, FALSE );
-		if( count( $bodyParts ) > 1 ){							//  alternative content parts
-			$contents[]	= '--'.$mimeBoundary;
-			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundary1.'"';
+		if( count( $bodyParts ) > 1 ){											//  alternative content parts
+			$contents[]	= '--'.$mimeBoundaryOuter;
+			$contents[]	= 'Content-Type: multipart/alternative; boundary="'.$mimeBoundaryInner.'"';
 			$contents[]	= '';
 			foreach( $bodyParts as $part )
-				$contents[]	= '--'.$mimeBoundary1.$delim.rtrim( $part->render() ).$delim;
-			$contents[]	= '--'.$mimeBoundary1.'--'.$delim;
+				$contents[]	= '--'.$mimeBoundaryInner.$delim.rtrim( $part->render() ).$delim;
+			$contents[]	= '--'.$mimeBoundaryInner.'--'.$delim;
 		}
 		else{
 			foreach( $bodyParts as $part )
-				$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+				$contents[]	= '--'.$mimeBoundaryOuter.$delim.rtrim( $part->render() ).$delim;
 		}
-		foreach( $parts->images as $part )
-			$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
-		foreach( $parts->files as $part )
-			$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
-		$contents[]	= '--'.$mimeBoundary.'--'.$delim;
+		/** @var MessagePartInlineImage $imagePart */
+		foreach( $imageParts as $imagePart )
+			$contents[]	= '--'.$mimeBoundaryOuter.$delim.rtrim( $imagePart->render() ).$delim;
+		/** @var MessagePart $filePart */
+		foreach( $fileParts as $filePart )
+			$contents[]	= '--'.$mimeBoundaryOuter.$delim.rtrim( $filePart->render() ).$delim;
+		$contents[]	= '--'.$mimeBoundaryOuter.'--'.$delim;
 		return $headers->toString( TRUE ).$delim.$delim.join( $delim, $contents );
 	}
 }

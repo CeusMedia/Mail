@@ -78,7 +78,7 @@ class Parser
 	protected const STATE_READING_ADDRESS		= 4;
 
 	/** @var int $method */
-	protected $method							= 0;
+	protected int $method						= 0;
 
 	/**
 	 *	Static constructor.
