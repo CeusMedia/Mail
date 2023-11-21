@@ -3,14 +3,13 @@
 ![Branch](https://img.shields.io/badge/Branch-2.6.x-blue?style=flat-square)
 ![Release](https://img.shields.io/badge/Release-2.6.0-blue?style=flat-square)
 ![PHP version](https://img.shields.io/badge/PHP-%5E8.1-blue?style=flat-square&color=777BB4)
-![PHPStan level](https://img.shields.io/badge/PHPStan_level-max-darkgreen?style=flat-square)
+![PHPStan level](https://img.shields.io/badge/PHPStan_level-max+strict-darkgreen?style=flat-square)
 
 Produce, send and read mails using PHP + IMAP & SMTP.
 
 [![Latest Stable Version](https://poser.pugx.org/ceus-media/mail/v)](//packagist.org/packages/ceus-media/mail)
 [![Total Downloads](https://poser.pugx.org/ceus-media/mail/downloads)](//packagist.org/packages/ceus-media/mail)
 [![License](https://poser.pugx.org/ceus-media/mail/license)](//packagist.org/packages/ceus-media/mail)
-<a href="https://phpstan.org/"><img src="https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat" alt="PHPStan Enabled"></a>
 
 ----
 
