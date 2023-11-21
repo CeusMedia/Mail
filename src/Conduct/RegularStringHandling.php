@@ -30,6 +30,9 @@ namespace CeusMedia\Mail\Conduct;
 
 use RuntimeException;
 
+use const PREG_OFFSET_CAPTURE;
+use const PREG_UNMATCHED_AS_NULL;
+
 /**
  *	Trait for regular string handling.
  *
@@ -72,7 +75,7 @@ trait RegularStringHandling
 	 *	@param		string		$string
 	 *	@param		string|NULL	$errorMessage
 	 *	@param		array|NULL	$matches
-	 *	@param		integer		$flags
+	 *	@param		PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL|0	$flags
 	 *	@param		integer		$offset
 	 *	@return		bool
 	 */

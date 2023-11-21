@@ -3,7 +3,7 @@
 ![Branch](https://img.shields.io/badge/Branch-2.x-blue?style=flat-square)
 ![Release](https://img.shields.io/badge/Release-2.5.3-blue?style=flat-square)
 ![PHP version](https://img.shields.io/badge/PHP-%5E7.4|%5E8-blue?style=flat-square&color=777BB4)
-![PHPStan level](https://img.shields.io/badge/PHPStan_level-1-darkgreen?style=flat-square)
+![PHPStan level](https://img.shields.io/badge/PHPStan_level-max+strict-darkgreen?style=flat-square)
 
 Produce, send and read mails using PHP + IMAP & SMTP.
 

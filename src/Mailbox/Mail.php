@@ -103,8 +103,7 @@ class Mail
 	public function getHeader( bool $force = FALSE ): MessageHeaderSection
 	{
 		$this->getRawHeader( $force );
-		/** @phpstan-ignore-next-line */
-		return MessageHeaderParser::getInstance()->parse( $this->header );
+		return MessageHeaderParser::getInstance()->parse( $this->header ?? '' );
 	}
 
 	/**

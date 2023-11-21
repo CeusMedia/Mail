@@ -135,7 +135,7 @@ class Renderer
 				'html'	=> NULL,
 				'text'	=> NULL,
 			],
-		'files'		=> [],
+			'files'		=> [],
 			'images'	=> [],
 		];
 		foreach( $message->getParts() as $part ){
@@ -170,8 +170,10 @@ class Renderer
 			foreach( $bodyParts as $part )
 				$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
 		}
+		/** @phpstan-ignore-next-line */
 		foreach( $parts->images as $part )
 			$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
+		/** @phpstan-ignore-next-line */
 		foreach( $parts->files as $part )
 			$contents[]	= '--'.$mimeBoundary.$delim.rtrim( $part->render() ).$delim;
 		$contents[]	= '--'.$mimeBoundary.'--'.$delim;
