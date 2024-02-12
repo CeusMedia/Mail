@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  *	Trait for regular string handling.
  *
- *	Copyright (c) 2022 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2022-2024 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2022 Christian Würker
+ *	@copyright		2022-2024 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -36,7 +36,7 @@ use RuntimeException;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2022 Christian Würker
+ *	@copyright		2022-2024 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
