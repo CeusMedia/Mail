@@ -109,6 +109,13 @@ trait RegularStringHandling
 		return $parts;
 	}
 
+	/**
+	 *	...
+	 *	@access		protected
+	 *	@static
+	 *	@param		string		$string
+	 *	@return		bool
+	 */
 	protected static function strHasContent( string $string ): bool
 	{
 		return 0 !== strlen( trim( $string ) );

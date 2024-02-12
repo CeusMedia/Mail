@@ -212,7 +212,6 @@ class InlineImage extends MessagePart
 	public function setFile( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
 		$file	= new File( $filePath );
-		/** @noinspection PhpUnhandledExceptionInspection */
 		if( !$file->exists() )
 			throw new InvalidArgumentException( 'Inline file "'.$filePath.'" is not existing' );
 

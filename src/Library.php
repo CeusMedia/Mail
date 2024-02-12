@@ -56,7 +56,7 @@ class Library
 	/**
 	 *	Returns identifier used for mail user agent.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
 	public static function getIdentifier(): ?string
 	{
@@ -78,7 +78,7 @@ class Library
 	/**
 	 *	Returns version used for mail user agent.
 	 *	@access		public
-	 *	@return		string
+	 *	@return		string|NULL
 	 */
 	public static function getVersion(): ?string
 	{
@@ -93,7 +93,7 @@ class Library
 	 *	@access		protected
 	 *	@return		void
 	 */
-	protected static function detect()
+	protected static function detect(): void
 	{
 		if( self::$detected )
 			return;

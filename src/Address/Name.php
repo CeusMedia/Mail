@@ -92,12 +92,11 @@ class Name
 			if( $parts[0] === strtoupper( $parts[0] ) ){
 				$surname	= array_shift( $parts );
 				$name->setSurname( ucfirst( strtolower( $surname ) ) );
-				$name->setFirstname( join( ' ', $parts ) );
 			}
 			else {
 				$name->setSurname( array_pop( $parts ) );
-				$name->setFirstname( join( ' ', $parts ) );
 			}
+			$name->setFirstname( join( ' ', $parts ) );
 		}
 		return $name;
 	}

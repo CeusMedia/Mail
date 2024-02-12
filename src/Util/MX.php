@@ -1,10 +1,11 @@
-<?php
+<?php /** @noinspection SpellCheckingInspection */
+/** @noinspection PhpMultipleClassDeclarationsInspection */
 declare(strict_types=1);
 
 /**
  *	Resolver for DNS MX records related to hostname or mail address.
  *
- *	Copyright (c) 2017-2022 Christian Würker (ceusmedia.de)
+ *	Copyright (c) 2017-2024 Christian Würker (ceusmedia.de)
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,17 +23,18 @@ declare(strict_types=1);
  *	@category		Library
  *	@package		CeusMedia_Mail_Util
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2022 Christian Würker
+ *	@copyright		2017-2024 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Util;
 
 use CeusMedia\Cache\SimpleCacheInterface as CacheInterface;
-use CeusMedia\Cache\SimpleCacheFactory as CacheFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Deprecation;
 
+use JsonException;
+use Psr\SimpleCache\InvalidArgumentException as SimpleCacheInvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
@@ -52,17 +54,17 @@ use function trim;
  *	@category		Library
  *	@package		CeusMedia_Mail_Util
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2017-2022 Christian Würker
+ *	@copyright		2017-2024 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class MX
 {
-	/**	@var	CacheInterface	$cache */
-	protected $cache;
+	/**	@var	CacheInterface		$cache */
+	protected CacheInterface		$cache;
 
-	/** @var	bool			$useCache */
-	protected bool $useCache			= FALSE;
+	/** @var	bool				$useCache */
+	protected bool $useCache		= FALSE;
 
 	/**
 	 *	Constructor.
@@ -80,11 +82,9 @@ class MX
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 *	@codeCoverageIgnore
-	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public static function create(): self
 	{
-		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
@@ -111,8 +111,10 @@ class MX
 	 *	@param		boolean			$useCache
 	 *	@param		boolean			$strict
 	 *	@return		array
+	 *	@throws		JsonException
+	 *	@throws		SimpleCacheInvalidArgumentException
 	 */
-	public function fromAddress( $address, bool $useCache = TRUE, bool $strict = TRUE ): array
+	public function fromAddress( Address|string $address, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
@@ -128,6 +130,8 @@ class MX
 	 *	@return		array
 	 *	@throws		RuntimeException	if no MX records found in strict mode
 	 *	@throws		RuntimeException	if saving found MX records to cache failed
+	 *	@throws		JsonException
+	 *	@throws		SimpleCacheInvalidArgumentException
 	 */
 	public function fromHostname( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{
@@ -150,7 +154,7 @@ class MX
 			if( array_key_exists( $nr, $mxWeights) )
 				$servers[$mxWeights[$nr]]	= $server;
 		ksort( $servers );
-		if( $useCache && NULL !== $this->cache ){
+		if( $useCache ){
 			try{
 				$this->cache->set( 'mx:'.$hostname, json_encode( $servers, JSON_THROW_ON_ERROR ) );
 			}

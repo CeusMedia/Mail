@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMultipleClassDeclarationsInspection */
 declare(strict_types=1);
 
 /**
@@ -36,6 +37,7 @@ use CeusMedia\Mail\Deprecation;
 
 use InvalidArgumentException;
 use RangeException;
+use ReflectionException;
 
 use function array_shift;
 use function extension_loaded;
@@ -127,7 +129,7 @@ class Parser
 	 *	@return		AddressCollection
 	 *	@throws		RangeException			if parser method is not supported
 	 */
-	public function parse( string $string, string $delimiter = "," ): AddressCollection
+	public function parse( string $string, string $delimiter = ',' ): AddressCollection
 	{
 		$method		= $this->realizeParserMethod();
 		switch( $method ){
@@ -138,7 +140,7 @@ class Parser
 			case static::METHOD_IMAP:
 				return $this->parseUsingImap( $string );											//  get collection using IMAP functions
 			case static::METHOD_OWN;
-				return $this->parseUsingOwn( $string );												//  get collection using own implementation
+				return $this->parseUsingOwn( $string, $delimiter );									//  get collection using own implementation
 			default:
 				throw new RangeException( 'No supported parser set' );
 		}
@@ -239,6 +241,7 @@ class Parser
 	 *	@param		integer		$method		Parser method to set, see METHOD_* constants
 	 *	@return		self
 	 *	@throws		InvalidArgumentException	if given method is unknown
+	 *	@throws		ReflectionException
 	 */
 	public function setMethod( int $method ): self
 	{

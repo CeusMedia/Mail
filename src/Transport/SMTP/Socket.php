@@ -88,11 +88,9 @@ class Socket
 	 *	@deprecated	use getInstance instead
 	 *	@todo		to be removed
 	 *	@codeCoverageIgnore
-	 *	@noinspection PhpDocMissingThrowsInspection
 	 */
 	public static function create( string $host = NULL, int $port = NULL, int $timeout = NULL ): self
 	{
-		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
@@ -311,7 +309,7 @@ class Socket
 			if( FALSE !== $chunk ){
 				$raw[]		= rtrim( $chunk, "\r\n" );
 				$matches	= [];
-				preg_match( '/^([0-9]{3})( |-)(.+)$/', trim( $chunk ), $matches );
+				preg_match( '/^([0-9]{3})([ \-])(.+)$/', trim( $chunk ), $matches );
 				if( 0 === count( $matches ) ){
 					$response = new Response();
 					$response->setError( Response::ERROR_RESPONSE_NOT_UNDERSTOOD );

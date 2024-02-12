@@ -68,7 +68,7 @@ class Parser
 	 *	@static
 	 *	@return			self
 	 *	@deprecated		use getInstance instead
-	 *	@todo			to be removed
+	 *	@todo			to be removed in version 2.7
 	 *	@codeCoverageIgnore
 	 */
 	public static function create(): self

@@ -43,7 +43,6 @@ use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
 use CeusMedia\Mail\Message\Part\Text as MessagePartText;
 
 use DomainException;
-use InvalidArgumentException;
 use RangeException;
 
 use function array_reverse;
@@ -119,11 +118,9 @@ class Message
 	 *	@deprecated		use getInstance instead
 	 *	@todo			to be removed
 	 *	@codeCoverageIgnore
-	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public static function create(): self
 	{
-		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )
@@ -140,7 +137,6 @@ class Message
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Message object for chaining
 	 *	@throws		IO
-	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
 	public function addAttachment( string $filePath, string $mimeType = NULL, string $encoding = NULL, string $fileName = NULL ): self
 	{
@@ -237,15 +233,13 @@ class Message
 	 *	@access		public
 	 *	@param		Address|string	$address		Address string or object to add as receiver
 	 *	@param		string|NULL		$name			Additional name of the address
-	 *	@param		string			$type			Type of receiver (TO, CC, BCC), case insensitive, default: TO
+	 *	@param		string			$type			Type of receiver (TO, CC, BCC), case-insensitive, default: TO
 	 *	@return		self			Message object for chaining
 	 */
-	public function addRecipient( $address, string $name = NULL, string $type = "TO" ): self
+	public function addRecipient( Address|string $address, string $name = NULL, string $type = "TO" ): self
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( !is_a( $address, Address::class ) )
-			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( !in_array( strtoupper( $type ), [ "TO", "CC", "BCC" ], TRUE ) )
 			throw new DomainException( 'Invalid recipient type' );
 
@@ -258,7 +252,8 @@ class Message
 		$recipient	= '<'.$address->getAddress().'>';
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$recipient	= $encoder->encodeIfNeeded( $name ).' '.$recipient;
-		$recipient	= $address->get();
+		else
+			$recipient	= $address->get();
 
 		if( 'BCC' !== strtoupper( $type ) ){
 			$fields	= $this->headers->getFieldsByName( $type );
@@ -277,12 +272,10 @@ class Message
 	 *	@param		string|NULL		$name			Additional name of address
 	 *	@return		self
 	 */
-	public function addReplyTo( $address, string $name = NULL ): self
+	public function addReplyTo( Address|string $address, string $name = NULL ): self
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( !is_a( $address, Address::class ) )
-			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
 		$this->addHeaderPair( 'Reply-To', $address->get() );
@@ -565,7 +558,7 @@ class Message
 	 *	@param		Address|string	$address		Address to send notification to
 	 *	@param		string|NULL		$name			Additional name of address
 	 */
-	public function setReadNotificationRecipient( $address, string $name = NULL ): self
+	public function setReadNotificationRecipient( Address|string $address, string $name = NULL ): self
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
@@ -581,14 +574,11 @@ class Message
 	 *	@param		Address|string	$address		Address object or string
 	 *	@param		string|NULL		$name			Optional: Mail sender name
 	 *	@return		self			Message object for chaining
-	 *	@throws		InvalidArgumentException		if given address is neither string nor instance of \CeusMedia\Mail\Address
 	 */
-	public function setSender( $address, string $name = NULL ): self
+	public function setSender( Address|string $address, string $name = NULL ): self
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( !is_a( $address, "\CeusMedia\Mail\Address" ) )
-			throw new InvalidArgumentException( 'Invalid value of first argument' );
 		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
 			$address->setName( $name );
 		$this->sender	= $address;

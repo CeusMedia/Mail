@@ -35,11 +35,10 @@ use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 
-use InvalidArgumentException;
 use RangeException;
+use ReflectionException;
 use RuntimeException;
 
-use function count;
 use function extension_loaded;
 use function imap_body;
 use function imap_clearflag_full;
@@ -51,12 +50,9 @@ use function imap_mail_move;
 use function imap_setflag_full;
 use function imap_sort;
 use function in_array;
-use function is_resource;
 use function join;
 use function preg_quote;
-use function strlen;
 use function strtolower;
-use function trim;
 use function ucfirst;
 
 /**
@@ -85,7 +81,7 @@ class Mailbox
 
 	public function __construct( MailboxConnection $connection )
 	{
-		self::checkExtensionInstalled( TRUE );
+		self::checkExtensionInstalled();
 		$this->connection	= $connection;
 	}
 
@@ -108,11 +104,16 @@ class Mailbox
 		return new self( $connection );
 	}
 
+	/**
+	 *	@param		bool		$recursive
+	 *	@param		bool		$fullReference
+	 *	@return		array
+	 */
 	public function getFolders( bool $recursive = FALSE, bool $fullReference = FALSE ): array
 	{
 		$pattern	= $recursive ? '*' : '%';
 		$resource	= $this->connection->getResource( TRUE );
-		$reference	= $this->connection->renderReference( TRUE );
+		$reference	= $this->connection->renderReference();
 		$folders	= imap_list( $resource, $reference, $pattern );
 		if( FALSE === $folders ){
 			if( FALSE !== imap_last_error() )
@@ -140,6 +141,11 @@ class Mailbox
 		return $header.PHP_EOL.PHP_EOL.$body;
 	}
 
+	/**
+	 *	@param		int			$mailId
+	 *	@return		Message
+	 *	@throws		ReflectionException
+	 */
 	public function getMailAsMessage( int $mailId ): Message
 	{
 		$resource	= $this->connection->getResource( TRUE );
@@ -150,6 +156,10 @@ class Mailbox
 		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
 	}
 
+	/**
+	 *	@param		int			$mailId
+	 *	@return		MessageHeaderSection
+	 */
 	public function getMailHeaders( int $mailId ): MessageHeaderSection
 	{
 		$resource	= $this->connection->getResource( TRUE );
@@ -199,6 +209,10 @@ class Mailbox
 		return $result;
 	}
 
+	/**
+	 *	@param		MailboxSearch		$search
+	 *	@return		array
+	 */
 	public function performSearch( MailboxSearch $search ): array
 	{
 		$resource	= $this->connection->getResource( TRUE );
@@ -206,11 +220,21 @@ class Mailbox
 		return $search->getAll();
 	}
 
+	/**
+	 *	@param		int			$mailId
+	 *	@param		bool		$expunge
+	 *	@return		bool
+	 */
 	public function removeMail( int $mailId, bool $expunge = FALSE ): bool
 	{
 		return $this->removeMailsBySequence( (string) $mailId, $expunge );
 	}
 
+	/**
+	 *	@param		string		$sequence
+	 *	@param		bool		$expunge
+	 *	@return		bool
+	 */
 	public function removeMailsBySequence( string $sequence, bool $expunge = FALSE ): bool
 	{
 		$resource	= $this->connection->getResource( TRUE );

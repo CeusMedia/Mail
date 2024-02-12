@@ -69,7 +69,7 @@ use function str_replace;
  *	@category		Library
  *	@package		CeusMedia_Mail_Message_Header
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
- *	@copyright		2007-2022 Christian Würker
+ *	@copyright		2007-2024 Christian Würker
  *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
@@ -162,9 +162,9 @@ class Encoding
 				}
 			}
 			catch( Exception $e ){
+				throw new RuntimeException( 'Decoding failed: '.$e->getMessage(), 0, $e );
 			}
 		}
-		throw new RuntimeException( 'Decoding failed: no strategy could be applied with success' );
 	}
 
 	/**
@@ -215,9 +215,10 @@ class Encoding
 				}
 			}
 			catch( Exception $e ){
+				throw new RuntimeException( 'Encoding failed: '.$e->getMessage(), 0, $e );
 			}
-			throw new RuntimeException( 'Encoding failed: no strategy could be applied with success' );
 		}
+		return $string;
 	}
 
 	/**
@@ -225,14 +226,15 @@ class Encoding
 	 *	@static
 	 *	@access		public
 	 *	@param		integer		$strategy		Decoding strategy, see ::DECODE_STRATEGIES
-	 *	@return		void
+	 *	@return		self
 	 *	@throws		RangeException				if given strategy is not supported
 	 */
-	public function setDecodeStrategy( int $strategy )
+	public function setDecodeStrategy( int $strategy ): self
 	{
 		if( !in_array( $strategy, static::DECODE_STRATEGIES, TRUE ) )
 			throw new RangeException( 'Invalid decoding strategy' );
 		$this->decodeStrategy	= $strategy;
+		return $this;
 	}
 
 	/**
@@ -240,14 +242,15 @@ class Encoding
 	 *	@static
 	 *	@access		public
 	 *	@param		integer		$strategy		Decoding strategy, see ::DECODE_STRATEGIES
-	 *	@return		void
+	 *	@return		self
 	 *	@throws		RangeException				if given strategy is not supported
 	 */
-	public function setDecodeStrategyFallback( int $strategy )
+	public function setDecodeStrategyFallback( int $strategy ): self
 	{
 		if( !in_array( $strategy, static::DECODE_STRATEGIES, TRUE ) )
 			throw new RangeException( 'Invalid decoding strategy' );
 		$this->decodeStrategyFallback	= $strategy;
+		return $this;
 	}
 
 	/**
@@ -255,14 +258,15 @@ class Encoding
 	 *	@static
 	 *	@access		public
 	 *	@param		integer		$strategy		Encoding strategy, see ::ENCODE_STRATEGIES
-	 *	@return		void
+	 *	@return		self
 	 *	@throws		RangeException				if given strategy is not supported
 	 */
-	public function setEncodeStrategy( int $strategy )
+	public function setEncodeStrategy( int $strategy ): self
 	{
 		if( !in_array( $strategy, static::ENCODE_STRATEGIES, TRUE ) )
 			throw new RangeException( 'Invalid encoding strategy' );
 		$this->encodeStrategy	= $strategy;
+		return $this;
 	}
 
 	/**
@@ -270,14 +274,15 @@ class Encoding
 	 *	@static
 	 *	@access		public
 	 *	@param		integer		$strategy		Encoding strategy, see ::ENCODE_STRATEGIES
-	 *	@return		void
+	 *	@return		self
 	 *	@throws		RangeException				if given strategy is not supported
 	 */
-	public function setEncodeStrategyFallback( int $strategy )
+	public function setEncodeStrategyFallback( int $strategy ): self
 	{
 		if( !in_array( $strategy, static::ENCODE_STRATEGIES, TRUE ) )
 			throw new RangeException( 'Invalid encoding strategy' );
 		$this->encodeStrategyFallback	= $strategy;
+		return $this;
 	}
 
 	/*  --  PROTECTED  --  */

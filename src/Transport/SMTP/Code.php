@@ -81,7 +81,7 @@ class Code
 		250		=> [
 			'label'		=> 'Requested mail action okay, completed',
 			'message'	=> 'Its typical side message is "Requested mail action okay completed": meaning that the server has transmitted a message.',
-			'comment'	=> 'The oppsite of an error: everything has worked and your email has been delivered.',
+			'comment'	=> 'The opposite of an error: everything has worked and your email has been delivered.',
 		],
 		251		=> [
 			'label'		=> 'User not local; will forward to <forward-path>',
@@ -211,7 +211,7 @@ class Code
 		513		=> [
 			'label'		=> 'Address type is incorrect',
 			'message'	=> 'Another problem concerning address misspelling. In few cases, however, it is related to an authentication issue.',
-			'comment'	=> 'Doublecheck your recipient\'s addresses and correct any mistake. If everything is ok and the error persists, then it is caused by a configuration issue (simply, the server needs an authentication).',
+			'comment'	=> 'Double check your recipient\'s addresses and correct any mistake. If everything is ok and the error persists, then it is caused by a configuration issue (simply, the server needs an authentication).',
 		],
 		523		=> [
 			'label'		=> 'The total size of your mailing exceeds the recipient server\'s limits',
@@ -265,9 +265,9 @@ class Code
 	public static function explain( int $code ): object
 	{
 		$explained	= FALSE;
-		$label		= 'Unknown STMP status code: '.$code;
-		$message	= 'Unknown STMP status code: '.$code;
-		$comment	= 'There is no explaination for this code since it is not supported by this library.';
+		$label		= 'Unknown SMTP status code: '.$code;
+		$message	= 'Unknown SMTP status code: '.$code;
+		$comment	= 'There is no explanation for this code since it is not supported by this library.';
 
 		if( array_key_exists( $code, self::$codes ) ){
 			$explained	= TRUE;
@@ -295,7 +295,7 @@ class Code
 	public static function getText( int $code ): string
 	{
 		if( !array_key_exists( $code, self::$codes ) )
-			throw new RangeException( 'Unknown STMP status code: '.$code );
+			throw new RangeException( 'Unknown SMTP status code: '.$code );
 		return self::$codes[$code]['label'];
 	}
 }

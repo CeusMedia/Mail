@@ -131,7 +131,7 @@ class Renderer
 	 *	@return		void
 	 *	@see		https://www.php.net/manual/en/function.iconv-mime-encode.php
 	 */
-	public static function setEncodeOption( string $key, string $value )
+	public static function setEncodeOption( string $key, string $value ): void
 	{
 		if( !in_array( $key, static::$encodeOptionKeys, TRUE ) )
 			throw new DomainException( 'Invalid encoding option key: '.$key );

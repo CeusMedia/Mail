@@ -97,7 +97,7 @@ class Field
 	 *	@param		mixed		$default		Optional: Value to return if key is not set
 	 *	@return		string|NULL	Value of header attribute (if set) or NULL otherwise
 	 */
-	public function getAttribute( string $name, $default = NULL ): ?string
+	public function getAttribute( string $name, mixed $default = NULL ): ?string
 	{
 		$value	= $this->attributes->get( $name, $default );
 		if( !is_string( $value ) )
@@ -180,7 +180,7 @@ class Field
 	{
 		if( 0 === strlen( trim( $name ) ) )
 			throw new InvalidArgumentException( 'Field name cannot be empty' );
-		$this->name	= self::regReplace( "/( |-)+/", "-", trim( $name ) );
+		$this->name	= self::regReplace( "/([ \-])+/", "-", trim( $name ) );
 		return $this;
 	}
 

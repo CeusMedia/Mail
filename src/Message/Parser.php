@@ -117,9 +117,9 @@ class Parser
 		}
 		if( $headers->hasField( 'Content-Type' ) ){
 			$mimeType	= $headers->getField( 'Content-Type' )->getValue();
-			$attributes	= $headers->getField( 'Content-Type' )->getAttributes();
-			if( self::regMatch( "/multipart/", $mimeType ) ){					//  is multipart message
-				$this->parseMultipartBody( $message, $content );					//  parse multipart containers
+//			$attributes	= $headers->getField( 'Content-Type' )->getAttributes();
+			if( self::regMatch( '/multipart/', $mimeType ) ){					//  is multipart message
+				$this->parseMultipartBody( $message, $content );				//  parse multipart containers
 				return $message;
 			}
 		}
@@ -342,18 +342,15 @@ class Parser
 			return self::createMailPart( $content, $charset, $encoding, $format );
 
 		if( $headers->hasField( 'Content-Disposition' ) ){
-			$field = $headers->getField( 'Content-Disposition' );
+//			$field = $headers->getField( 'Content-Disposition' );
 			$part	= self::createDispositionPart( $headers, $content, $contentType, $mimeType, $encoding, $format );
 			if( NULL !== $part )
 				return $part;
 		}
-		switch( strtolower( $mimeType ) ){
-			case 'text/html':
-				return self::createHTMLPart( $content, $charset, $encoding, $format );
-			case 'text/plain':
-			default:
-				return self::createTextPart( $content, $charset, $encoding, $format );
-		}
+		return match( strtolower( $mimeType ) ){
+			'text/html'	=> self::createHTMLPart( $content, $charset, $encoding, $format ),
+			default		=> self::createTextPart( $content, $charset, $encoding, $format ),
+		};
 	}
 
 	/**
@@ -366,7 +363,7 @@ class Parser
 	 *	@return		void
 	 *	@throws		ReflectionException
 	 */
-	protected function parseMultipartBody( Message $message, string $content )
+	protected function parseMultipartBody( Message $message, string $content ): void
 	{
 		$delim		= Message::$delimiter;
 		$bodyParts	= self::regSplit( "/\r?\n\r?\n/", $content, 2,
@@ -388,7 +385,7 @@ class Parser
 			$bodyLines	= self::regSplit( "/\r?\n/", $body, NULL,
 				'Splitting multipart message body into lines failed'
 			);
-			foreach( $bodyLines as $nr => $line ){
+			foreach( $bodyLines as $line ){
 				if( $line === '--'.$mimeBoundary ){
 					if( $status === 0 ){
 						$status	= 1;

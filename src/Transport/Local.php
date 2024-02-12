@@ -166,7 +166,7 @@ class Local
 	 */
 	protected function checkForInjection( string $value ): void
 	{
-		if( self::regMatch( '/(\r|\n)/', $value ) )
+		if( self::regMatch( '/([\r\n])/', $value ) )
 			throw new InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }

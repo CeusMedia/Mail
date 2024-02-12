@@ -101,7 +101,6 @@ class Address
 	 */
 	public static function create( string $string = NULL ): self
 	{
-		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
 			->setErrorVersion( '2.5' )
 			->setExceptionVersion( '2.6' )

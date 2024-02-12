@@ -191,16 +191,6 @@ class MessageTest extends PhpUnitTestCase
 	}
 
 	/**
-	 *	@covers		::addReplyTo
-	 */
-	public function testAddReplyToException()
-	{
-		$this->expectException( 'InvalidArgumentException' );
-		$message	= Message::getInstance();
-		$message->addReplyTo( new Message() );
-	}
-
-	/**
 	 *	@covers		::addRecipient
 	 *	@covers		::getRecipients
 	 *	@covers		::getRecipientsByType
@@ -249,16 +239,6 @@ class MessageTest extends PhpUnitTestCase
 		$this->assertEquals( $expected['cc'], $message->getRecipientsByType( 'Cc' ) );
 		$this->assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcc' ) );
 		$this->assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcC' ) );
-	}
-
-	/**
-	 *	@covers		::addRecipient
-	 */
-	public function testAddRecipientException()
-	{
-		$this->expectException( 'InvalidArgumentException' );
-		$message	= Message::getInstance();
-		$message->addRecipient( new Message() );
 	}
 
 	/**
@@ -357,16 +337,6 @@ class MessageTest extends PhpUnitTestCase
 		$this->expectException( 'RangeException' );
 		$message	= Message::getInstance();
 		$message->getText();
-	}
-
-	/**
-	 *	@covers		::setSender
-	 */
-	public function testSetSenderException()
-	{
-		$this->expectException( 'InvalidArgumentException' );
-		$message	= Message::getInstance();
-		$message->setSender( (object) array( 'invalid' ) );
 	}
 
 	/**

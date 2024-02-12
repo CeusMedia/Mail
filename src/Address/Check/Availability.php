@@ -39,6 +39,7 @@ use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 use CeusMedia\Mail\Util\MX;
 
 use Exception;
+use Psr\SimpleCache\InvalidArgumentException;
 use RangeException;
 
 use function array_key_exists;
@@ -77,14 +78,16 @@ class Availability
 	 *	Availability constructor.
 	 *	@param		Address|string		$sender
 	 *	@param		bool				$verbose
+	 *	@noinspection	PhpDocMissingThrowsInspection
 	 */
-	public function __construct( $sender, bool $verbose = FALSE )
+	public function __construct( Address|string $sender, bool $verbose = FALSE )
 	{
 		if( is_string( $sender ) )
 			$sender		= new Address( $sender );
 		$this->sender	= $sender;
 		$this->setVerbose( $verbose );
 
+		/** @noinspection PhpUnhandledExceptionInspection */
 		$this->cache		= CacheFactory::createStorage( 'Noop' );
 		$this->lastResponse	= new SmtpResponse();
 	}
@@ -112,11 +115,13 @@ class Availability
 	 *	@access		public
 	 *	@param		string		$key		Response data key (error|code|message)
 	 *	@return		mixed
-	 *	@deprecated	use getLastResponse instead
-	 *	@codeCoverageIgnore
+	 *	@deprecated		use getLastResponse instead
+	 *	@todo			remove in version 2.7
 	 *	@noinspection	PhpDocMissingThrowsInspection
+	 *	@noinspection	PhpUnused
+	 *	@codeCoverageIgnore
 	 */
-	public function getLastErrorValue( string $key )
+	public function getLastErrorValue( string $key ): mixed
 	{
 		/** @noinspection PhpUnhandledExceptionInspection */
 		Deprecation::getInstance()
@@ -143,7 +148,7 @@ class Availability
 	 *	@throws		RangeException			if given key is invalid
 	 *	@return		mixed
 	 */
-	public function getLastResponseValue( string $key )
+	public function getLastResponseValue( string $key ): mixed
 	{
 		$properties = get_object_vars( $this->lastResponse );
 		if( !array_key_exists( $key, $properties ) )
@@ -152,13 +157,16 @@ class Availability
 	}
 
 	/**
-	 * @param Address|string $receiver
-	 * @param string|null $host
-	 * @param int $port
-	 * @param bool $force
-	 * @return bool
+	 *	...
+	 *	@access		public
+	 *	@param		Address|string	$receiver
+	 *	@param		string|null		$host
+	 *	@param		int				$port
+	 *	@param		bool			$force
+	 *	@return		bool
+	 *	@throws		InvalidArgumentException
 	 */
-	public function test( $receiver, string $host = NULL, int $port = 587, bool $force = FALSE ): bool
+	public function test( Address|string $receiver, string $host = NULL, int $port = 587, bool $force = FALSE ): bool
 	{
 		if( is_string( $receiver ) )
 			$receiver	= new Address( $receiver );
@@ -172,7 +180,7 @@ class Availability
 
 		if( NULL === $host || 0 === strlen( $host ) ){
 			try{
-				$servers	= $this->getMailServers( $receiver->getDomain(), !$force, TRUE );
+				$servers	= $this->getMailServers( $receiver->getDomain(), !$force );
 				$host		= array_shift( $servers );
 			}
 			catch( Exception $e ){

@@ -101,18 +101,13 @@ class Parser
 		if( $this->strategy === self::STRATEGY_AUTO )
 			$strategy	= $this->defaultStrategy;
 
-		switch( $strategy ){
-			case self::STRATEGY_OWN:
-				return self::parseByOwnStrategy( $content );
-			case self::STRATEGY_ICONV:
-				return self::parseByIconvStrategy( $content );
-			case self::STRATEGY_ICONV_STRICT:
-				return self::parseByIconvStrategy( $content, 1 );
-			case self::STRATEGY_ICONV_TOLERANT:
-				return self::parseByIconvStrategy( $content, 2 );
-			default:
-				throw new RuntimeException( 'Unsupported strategy' );
-		}
+		return match( $strategy ){
+			self::STRATEGY_OWN				=> self::parseByOwnStrategy( $content ),
+			self::STRATEGY_ICONV			=> self::parseByIconvStrategy( $content ),
+			self::STRATEGY_ICONV_STRICT		=> self::parseByIconvStrategy( $content, 1 ),
+			self::STRATEGY_ICONV_TOLERANT	=> self::parseByIconvStrategy( $content, 2 ),
+			default		=> throw new RuntimeException( 'Unsupported strategy' ),
+		};
 	}
 
 	/**

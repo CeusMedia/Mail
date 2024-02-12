@@ -223,7 +223,7 @@ class Received
 	 *	@param		string		$value
 	 *	@return		void
 	 */
-	protected static function storeRetrievedData( self $object, string $key, string $value )
+	protected static function storeRetrievedData( self $object, string $key, string $value ): void
 	{
 		$method		= 'set'.ucfirst( $key );
 		$callable	= [$object, $method];
