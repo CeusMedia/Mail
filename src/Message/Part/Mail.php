@@ -92,7 +92,7 @@ class Mail extends MessagePart
 		if( $doHeader || $doAll ){
 			$section->setFieldPair( 'Content-Type', join( '; ', [
 				$this->mimeType,
-				'charset="'.strtolower( trim( $this->charset ) ).'"',
+				'charset="'.strtolower( trim( $this->charset ?? '' ) ).'"',
 				'format='.$this->format
 			] ) );
 			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
