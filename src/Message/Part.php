@@ -96,8 +96,8 @@ abstract class Part
 		self::SECTION_CONTENT,
 	];
 
-	/**	@var	string			$charset		Character set */
-	protected string $charset;
+	/**	@var	string|NULL		$charset		Character set */
+	protected ?string $charset	= NULL;
 
 	/**	@var	string|NULL		$content		Content */
 	protected ?string $content	= NULL;

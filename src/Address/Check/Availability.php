@@ -39,7 +39,9 @@ use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 use CeusMedia\Mail\Util\MX;
 
 use Exception;
+use JsonException;
 use Psr\SimpleCache\InvalidArgumentException;
+use Psr\SimpleCache\InvalidArgumentException as SimpleCacheInvalidArgumentException;
 use RangeException;
 
 use function array_key_exists;
@@ -264,6 +266,8 @@ class Availability
 	 *	@param		boolean		$useCache
 	 *	@param		boolean		$strict
 	 *	@return		array
+	 *	@throws		JsonException
+	 *	@throws		SimpleCacheInvalidArgumentException
 	 */
 	protected function getMailServers( string $hostname, bool $useCache = TRUE, bool $strict = TRUE ): array
 	{

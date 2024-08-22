@@ -18,13 +18,13 @@ declare(strict_types=1);
  *	GNU General Public License for more details.
  *
  *	You should have received a copy of the GNU General Public License
- *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2024 Christian Würker
- *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
+ *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail;
@@ -47,7 +47,6 @@ use RangeException;
 
 use function array_reverse;
 use function in_array;
-use function is_a;
 use function is_string;
 use function strlen;
 use function strtoupper;
@@ -61,18 +60,18 @@ use function ucfirst;
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2024 Christian Würker
- *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
+ *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Message
 {
-	/**	@var		string						$delimiter		Line separator, for some reasons only \n must be possible */
+	/**	@var		string						$delimiter		Line separator, for some reason only \n must be possible */
 	public static string $delimiter				= "\r\n";
 
 	/**	@var		integer						$lineLength		Maximum line length of mail content */
 	public static int $lineLength				= 75;
 
-	/**	@var		array						$parts			List of mail parts */
+	/**	@var		MessagePart[]				$parts			List of mail parts */
 	protected array $parts						= [];
 
 	/**	@var		MessageHeaderSection		$headers		Mail header section */
@@ -299,17 +298,21 @@ class Message
 	/**
 	 *	Returns list of set attachment parts.
 	 *	@access		public
-	 *	@return		array
+	 *	@return		MessagePartAttachment[]
 	 */
 	public function getAttachments(): array
 	{
 		$list	= [];
 		foreach( $this->parts as $part )
 			if( $part->isAttachment() )
+				/** @var MessagePartAttachment $part */
 				$list[]	= $part;
 		return $list;
 	}
 
+	/**
+	 *	@return		Address[]
+	 */
 	public function getDeliveryChain(): array
 	{
 		$list	= [];
@@ -339,6 +342,7 @@ class Message
 	{
 		foreach( $this->parts as $part )
 			if( $part->isHTML() )
+				/** @var MessagePartHTML $part */
 				return $part;
 		throw new RangeException( 'No HTML part assigned' );
 	}
@@ -346,13 +350,14 @@ class Message
 	/**
 	 *	Returns list inline images to be embedded with HTML.
 	 *	@access		public
-	 *	@return		array
+	 *	@return		MessagePartInlineImage[]
 	 */
 	public function getInlineImages(): array
 	{
 		$list	= [];
 		foreach( $this->parts as $part )
 			if( $part->isInlineImage() )
+				/** @var MessagePartInlineImage $part */
 				$list[]	= $part;
 		return $list;
 	}
@@ -371,13 +376,14 @@ class Message
 	/**
 	 *	Returns list of attached mails.
 	 *	@access		public
-	 *	@return		array
+	 *	@return		MessagePartMail[]
 	 */
 	public function getMails(): array
 	{
 		$list	= [];
 		foreach( $this->parts as $part )
 			if( $part->isMail() )
+				/** @var MessagePartMail $part */
 				$list[]	= $part;
 		return $list;
 	}
@@ -473,6 +479,7 @@ class Message
 	{
 		foreach( $this->parts as $part )
 			if( $part->isText() )
+				/** @var MessagePartText $part */
 				return $part;
 		throw new RangeException( 'No text part assigned' );
 	}
