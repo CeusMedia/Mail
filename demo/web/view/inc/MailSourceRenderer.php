@@ -1,4 +1,7 @@
 <?php
+
+namespace CeusMedia\MailDemo\Web\View;
+
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
 

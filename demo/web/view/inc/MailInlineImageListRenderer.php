@@ -1,4 +1,7 @@
 <?php
+
+namespace CeusMedia\MailDemo\Web\View;
+
 use CeusMedia\Bootstrap\Icon;
 use CeusMedia\Mail\Message;
 use CeusMedia\Common\Alg\UnitFormater as UnitFormater;
@@ -47,7 +50,7 @@ class MailInlineImageListRenderer
 			$list[]	= Tag::create( 'tr', [
 				Tag::create( 'td', $link ),
 				Tag::create( 'td', $image->getMimeType() ),
-				Tag::create( 'td', UnitFormater::formatBytes( $image->getFileSize() ) ),
+				Tag::create( 'td', UnitFormater::formatBytes( $image->getFileSize() ?? 0 ) ),
 				Tag::create( 'td', $date ),
 				Tag::create( 'td', $buttons, [ 'style' => 'text-align: right' ] ),
 			] );

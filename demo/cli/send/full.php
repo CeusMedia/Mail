@@ -2,6 +2,7 @@
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
 use CeusMedia\Common\ADT\Collection\Dictionary;
+use CeusMedia\Common\CLI;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP;
 
@@ -9,7 +10,10 @@ new CeusMedia\Common\UI\DevOutput;
 
 /** @var Dictionary $config */
 
+/** @var object{host: ?string, port: ?int, username: ?string, password: ?string} $smtp */
 $smtp		= (object) $config->getAll( 'SMTP_' );
+
+/** @var object{senderAddress: ?string, senderName: ?string, receiverAddress: ?string, receiverName: ?string, subject: ?string, body: ?string} $sending */
 $sending	= (object) $config->getAll( 'sending_' );
 
 
@@ -43,9 +47,9 @@ $bodyHtml		= '<html>
 /*  EXECUTION  */
 try {
 	//  prepare SMTP transport
-	$transport	= new SMTP($smtp->host, $smtp->port);							//  create SMTP transport
-	$transport->setUsername($smtp->username);									//  set SMTP auth username
-	$transport->setPassword($smtp->password);									//  set SMTP auth password
+	$transport	= new SMTP($smtp->host ?? '', $smtp->port ?? 25);		//  create SMTP transport
+	$transport->setUsername($smtp->username ?? '');					//  set SMTP auth username
+	$transport->setPassword($smtp->password ?? '');					//  set SMTP auth password
 	$transport->setVerbose($verbose);											//  toggle verbosity - you can remove this line
 
 /*	//  check if receiver exists on server

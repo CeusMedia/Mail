@@ -6,8 +6,6 @@ use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Parser;
 use CeusMedia\Common\UI\HTML\PageFrame as Page;
 
-new CeusMedia\Common\UI\DevOutput;
-
 class App
 {
 	protected ?string $filePath;
@@ -19,7 +17,7 @@ class App
 			die( "This demo is for browser, only" );
 		$this->files	= $this->indexFiles();
 		if( 0 === count( $this->files ) )
-			throw new RuntimeException( 'No mail files found' );
+			throw new \RuntimeException( 'No mail files found' );
 	}
 
 	public function run()
@@ -65,7 +63,7 @@ class App
 	public function setFilePath( string $filePath ): self
 	{
 		if( !file_exists( $filePath ) )
-			throw new DomainException( 'Given demo mail file is not existing' );
+			throw new \DomainException( 'Given demo mail file is not existing' );
 		$this->filePath	= $filePath;
 		return $this;
 	}
@@ -93,14 +91,14 @@ class App
 	{
 		$attachments	= $message->getAttachments();
 		$attachment		= $attachments[$part];
-		Net_HTTP_Download::sendString( $attachment->getContent(), $attachment->getFileName() );
+		\CeusMedia\Common\Net\HTTP\Download::sendString( $attachment->getContent(), $attachment->getFileName() );
 	}
 
 	public function downloadImage( string $file, Message $message, $part = 0 )
 	{
 		$parts	= $message->getInlineImages();
 		$image	= $parts[$part];
-		Net_HTTP_Download::sendString( $image->getContent(), $image->getFileName() );
+		\CeusMedia\Common\Net\HTTP\Download::sendString( $image->getContent(), $image->getFileName() );
 	}
 
 	public function viewHtml( string $file, Message $message )
@@ -120,7 +118,7 @@ class App
 	protected function indexFiles(): array
 	{
 		$files	= [];
-		foreach( new DirectoryIterator( __DIR__.'/../../../mails' ) as $entry ){
+		foreach( new \DirectoryIterator( __DIR__.'/../../../mails' ) as $entry ){
 			if( $entry->isDir() || $entry->isDot() )
 				continue;
 			$files[$entry->getPathname()]	= $entry->getFilename();
@@ -129,7 +127,7 @@ class App
 		return $files;
 	}
 
-	protected function loadMessageFromFilename( $fileName ): Message
+	protected function loadMessageFromFilename( string $fileName ): Message
 	{
 		$filePath	= array_search( $fileName, $this->files );
 		$rawMail	= file_get_contents( $filePath );

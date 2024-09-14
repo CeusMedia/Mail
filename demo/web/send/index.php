@@ -35,7 +35,7 @@ $body	= '
 				<label>Receiver Name</label>
 				<input type="text" class="span12" readonly="readonly" value="'.htmlentities( $sending->receiverName, ENT_QUOTES, 'UTF-8' ).'"/>
 				<label for="input_receiverAddress">Receiver Address</label>
-				<input type="text" name="receiverAddress" class="span12" value="'.htmlentities( $request->get( 'receiverAddress' ), ENT_QUOTES, 'UTF-8' ).'"/>
+				<input type="text" name="receiverAddress" class="span12" value="'.htmlentities( $request->get( 'receiverAddress', '' ), ENT_QUOTES, 'UTF-8' ).'"/>
 				<button type="submit" name="send" class="btn btn-primary btn-large">send Mail</button>
 			</form>
 		</div>

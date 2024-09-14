@@ -1,4 +1,7 @@
 <?php
+
+namespace CeusMedia\MailDemo\Web\View;
+
 use CeusMedia\Bootstrap\Icon;
 use CeusMedia\Common\Alg\Obj\Constant as ObjectConstant;
 use CeusMedia\Common\UI\HTML\Tag as Tag;
@@ -65,9 +68,9 @@ class MailFactsRenderer
 			foreach( $received->toArray() as $attrKey => $attrValue ){
 				if( $attrValue instanceof Address )
 					$attrValue	= $attrValue->get();
-				else if( $attrValue instanceof DateTimeImmutable )
+				else if( $attrValue instanceof \DateTimeImmutable )
 					continue;
-				if( 0 === strlen( trim( $attrValue ) ) )
+				if( 0 === strlen( trim( $attrValue ?? '' ) ) )
 					continue;
 				$attrKey	= Tag::create( 'span', $attrKey, ['class' => 'list-item-attribute'] );
 				$attr[]		= Tag::create( 'li', $attrKey.' '.$attrValue );

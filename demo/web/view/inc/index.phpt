@@ -1,5 +1,7 @@
 <?php
 
+namespace CeusMedia\MailDemo\Web\View;
+
 use CeusMedia\Bootstrap\Icon;
 use CeusMedia\Bootstrap\Nav\Tabs;
 use CeusMedia\Common\UI\HTML\Tag as Tag;

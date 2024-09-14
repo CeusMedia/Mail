@@ -18,7 +18,7 @@ $fileName	= array_keys( $files )[$fileNr];
 remark( 'File: '.array_reduce( preg_split( '@/@', $fileName ), function( $carry, $item ){return $item;} ) );
 remark();
 
-$content	= \FS_File_Reader::load( $fileName );
+$content	= \CeusMedia\Common\FS\File\Reader::load( $fileName );
 $message	= Parser::getInstance()->parse( $content );
 
 if( $showParts ){

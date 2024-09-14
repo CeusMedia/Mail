@@ -1,92 +1,121 @@
-<?php
-use CeusMedia\Mail\Mailbox;
-use CeusMedia\Mail\Mailbox\Connection;
-use CeusMedia\Cache\Factory as CacheFactory;
+<?php /** @noinspection PhpMultipleClassDeclarationsInspection */
+
+use CeusMedia\Cache\Adapter\Folder as FolderCache;
+use CeusMedia\Cache\Encoder\Serial as CacheEncoder;
+use CeusMedia\Cache\SimpleCacheFactory as CacheFactory;
 use CeusMedia\Common\ADT\Collection\Dictionary;
 use CeusMedia\Common\Net\HTTP\Request\Receiver as HttpRequestReceiver;
 use CeusMedia\Common\Net\HTTP\Response as HttpResponse;
+use CeusMedia\Common\UI\HTML\Exception\Page as ExceptionPage;
 use CeusMedia\Common\UI\HTML\PageFrame as Page;
 use CeusMedia\Common\UI\HTML\Tag as Tag;
+use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Mailbox\Connection;
+use CeusMedia\Mail\Message;
 
 
 class DemoMailboxApp
 {
-	protected $mailbox;
-	protected $request;
-	protected $response;
+	/** @var object{host: ?string, port: ?int, address: ?string, username: ?string, password: ?string} $config */
+	protected object $config;
+	protected FolderCache $cache;
+	protected HttpRequestReceiver $request;
+	protected HttpResponse $response;
+	protected Mailbox $mailbox;
 
-	public static $urlCssLibrary	= 'https://cdn.ceusmedia.de/css/bootstrap.min.css';
-	public static $urlJsLibrary		= 'https://cdn.ceusmedia.de/js/jquery/1.10.2.min.js';
+	public static string $urlCssLibrary		= 'https://cdn.ceusmedia.de/css/bootstrap.min.css';
+	public static string $urlJsLibrary		= 'https://cdn.ceusmedia.de/js/jquery/1.10.2.min.js';
 
+	/**
+	 * @param Dictionary $config
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function __construct( Dictionary $config )
 	{
-		$this->config	= (object) $config->getAll( 'mailbox_' );
-		$this->request	= new HttpRequestReceiver;
-		$this->response	= new HttpResponse;
-		$this->cache	= CacheFactory::createStorage('Folder', 'cache/', NULL, 3600);
+		set_error_handler( [$this, 'handleError'] );
+
 		try{
+			$this->config	= (object) $config->getAll();
+			$this->request	= new HttpRequestReceiver;
+			$this->response	= new HttpResponse;
+			/** @noinspection PhpFieldAssignmentTypeMismatchInspection */
+			$this->cache	= CacheFactory::createStorage( 'Folder', 'cache/', NULL, 3600 );
+			$this->cache->setEncoder( CacheEncoder::class );
 			$this->openMailbox();
 			$this->dispatch();
 		}
-		catch( \Exception $e ){
-			UI_HTML_Exception_Page::display( $e );
+		catch( Exception|Error $e ){
+			ExceptionPage::display( $e );
 		}
 	}
 
-	protected function getMailAsMessage( string $mailId )
+	/**
+	 * @param string $mailId
+	 * @return Message
+	 * @throws ReflectionException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	protected function getMailAsMessage( string $mailId ): Message
 	{
 		$cacheKey	= 'mail.'.$mailId;
 		if( $this->cache->has( $cacheKey ) ){
-			$message	= unserialize( $this->cache->get( $cacheKey ) );
+			/** @var string $data */
+			$data		= $this->cache->get( $cacheKey );
+			/** @var Message $message */
+			$message	= $data;
 		}
 		else{
 			$message	= $this->mailbox->getMailAsMessage( (int) $mailId );
-			$this->cache->set($cacheKey, serialize( $message ) );
+			$this->cache->set( $cacheKey, $message );
 		}
 		return $message;
 	}
 
+	/**
+	 * @return string|void
+	 * @throws ReflectionException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	protected function dispatch()
 	{
 		$action	= $this->request->get( 'action' );
-		$mailId	= $this->request->get( 'mailId' );
+		$mailId	= trim( $this->request->get( 'mailId' ) ?? '' );
 		switch( $action ){
 			case 'remove':
-				if( !$mailId )
+				if( '' === $mailId )
 					return Tag::create( 'div', 'Keine Mail-ID übergeben.', array( 'class' => 'alert alert-error' ) );
-				$this->mailbox->removeMail( $mailId, TRUE );
-				$this->cache->remove( 'mail.'.$mailId );
-				$this->cache->remove( 'mail.'.$mailId.'.body' );
-				$this->cache->remove( 'mail.'.$mailId.'.body.pure' );
+				$this->mailbox->removeMail( (int) $mailId, TRUE );
+				$this->cache->delete( 'mail.'.$mailId );
+				$this->cache->delete( 'mail.'.$mailId.'.body' );
+				$this->cache->delete( 'mail.'.$mailId.'.body.pure' );
 				$this->request->remove( 'action' );
-				return $this->dispatch();
+				$this->dispatch();
+				break;
 			case 'viewTextContent':
-				if( !$mailId )
+				if( '' === $mailId )
 					return Tag::create( 'div', 'Keine Mail-ID übergeben.', array( 'class' => 'alert alert-error' ) );
 				$message	= $this->getMailAsMessage( $mailId );
 				$content	= Tag::create( 'xmp', $message->getText()->getContent() );
 				print( $content );
 				exit;
 			case 'viewHtmlContent':
-				if( !$mailId )
+				if( '' === $mailId )
 					return Tag::create( 'div', 'Keine Mail-ID übergeben.', array( 'class' => 'alert alert-error' ) );
 				$message	= $this->getMailAsMessage( $mailId );
-				$pure		= !TRUE;
+				$pure		= (bool) $this->request->get( 'pure', FALSE );
 				$cacheKey	= 'mail.'.$mailId.'.body'.( $pure ? '.pure' : '' );
 				if( $this->cache->has( $cacheKey ) )
 					$content	= $this->cache->get( $cacheKey );
 				else{
-					if( $pure ){
-						$content	= $message->getHtml()->getContent();
-						$content	= $this->purifyHtmlContent( $content );
-					}
+					$content	= $message->getHTML()->getContent();
+					if( $pure )
+						$content	= $this->purifyHtmlContent( $content ?? '' );
 					else{
-						$content	= $message->getHtml()->getContent();
 						foreach( $message->getInlineImages() as $image ){
 							$content	= preg_replace(
 								'/'.preg_quote( 'cid:'.substr( $image->getId(), 1, -1 ), '/' ).'/i',
-								'data:image/jpg;base64,'.base64_encode( $image->getContent() ),
-								$content
+								'data:image/jpg;base64,'.base64_encode( $image->getContent() ?? '' ),
+								$content ?? ''
 							);
 						}
 					}
@@ -95,20 +124,52 @@ class DemoMailboxApp
 				print( $content );
 				exit;
 			default:
-				$content	= $this->renderIndex();
+				$this->respondWithPage();
+				exit;
 		}
-		$page	= new Page();
+	}
+
+	/**
+	 * @param int $number
+	 * @param string $message
+	 * @param string $file
+	 * @param int $line
+	 * @param array|null $context
+	 * @return bool
+	 * @throws ErrorException
+	 */
+	protected function handleError( int $number, string $message, string $file, int $line, ?array $context = NULL ): bool
+	{
+		if( 0 === error_reporting() )											// error was suppressed with the @-operator
+			return FALSE;
+		throw new ErrorException( $message, 0, $number, $file, $line );
+	}
+
+	/**
+	 * @return void
+	 * @throws ReflectionException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	protected function respondWithPage(): void
+	{
+		$page		= new Page();
 		$page->addStylesheet( static::$urlCssLibrary  );
 		$page->addStylesheet( 'style.css' );
 		$page->addJavaScript( static::$urlJsLibrary );
 		$page->addJavaScript( 'https://cdn.ceusmedia.de/js/bootstrap.min.js' );
 		$page->addStylesheet( 'https://cdn.ceusmedia.de/fonts/FontAwesome/4.7.0/css/font-awesome.min.css' );
 		$page->addJavaScript( 'script.js' );
-		$page->addBody( $content );
+		$page->addBody( $this->renderIndex() );
 		$this->response->setBody( $page->build() );
-		Net_HTTP_Response_Sender::sendResponse( $this->response );
+		$this->response->send();
+//		ResponseSender::sendResponse( $this->response );
 	}
 
+	/**
+	 * @return string
+	 * @throws ReflectionException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	protected function renderIndex(): string
 	{
 		$this->openMailbox();
@@ -125,31 +186,37 @@ class DemoMailboxApp
 			Tag::create( 'div', array(
 				Tag::create( 'iframe', '', array(
 					'id'		=> 'mail-ui-preview-iframe',
-					'style'		=> 'border: 0px; width: 100%; height: 100%; overflow: auto; position: fixed',
+					'style'		=> 'border: 0px; width: 69%; height: 100%; overflow: auto; position: fixed',
 				) ),
 			), array( 'id' => 'mail-ui-layout-preview' ) ),
 		), array( 'id' => 'mail-ui-layout' ) );
-		return (string) $content;
+		return $content;
 	}
 
+	/**
+	 * @param array $mailIndex
+	 * @return string
+	 * @throws ReflectionException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	protected function renderIndexListAsTable( array $mailIndex ): string
 	{
-		$contacts	= array(
-			'kriss@ceusmedia.de'	=> array(
+		$contacts	= [
+			'kriss@ceusmedia.de'	=> [
 				'icon'	=> 'https://office.ceusmedia.de/contents/avatars/2___348F47B2-2F18-4FDA-AE1D-017BBE0DB7AC.jpg',
-			)
-		);
-		$icons		= array(
+			]
+		];
+		$icons		= [
 			'ceusmedia.de'	=> 'https://%s/images/favicon.png',
-		);
-		$rows		= array();
+		];
+		$rows		= [];
 		foreach( $mailIndex as $item ){
 			$message		= $this->getMailAsMessage( $item );
-			$senderName		= htmlentities( $message->getSender()->getName( FALSE ), ENT_QUOTES, 'UTF-8' );
-			$senderAddress	= htmlentities( $message->getSender()->getAddress(), ENT_QUOTES, 'UTF-8' );
-			$senderDomain	= $message->getSender()->getDomain();
+			$senderName		= htmlentities( $message->getSender()?->getName( FALSE ) ?? '', ENT_QUOTES, 'UTF-8' );
+			$senderAddress	= htmlentities( $message->getSender()?->getAddress() ?? '', ENT_QUOTES, 'UTF-8' );
+			$senderDomain	= $message->getSender()?->getDomain() ?? '';
 			$sender			= $senderAddress;
-			if( $senderName ){
+			if( '' !== $senderName ){
 				$sender	= $senderName.'&nbsp;'.Tag::create( 'span', '&lt;'.$senderAddress.'&gt;', array( 'class' => 'muted' ) );
 			}
 			$buttonRemove	= Tag::create( 'a', 'remove', array( 'href' => './?mailId='.$item.'&action=remove', 'class' => 'btn btn-mini btn-inverse' ) );
@@ -173,54 +240,60 @@ class DemoMailboxApp
 				Tag::create( 'td', $buttons, array( 'class' => 'mail-list-item-cell-buttons' ) ),
 			), array( 'class' => 'mail-list-item-row' ) );
 		}
-		$table		= Tag::create( 'table', array( $rows ), array( 'class' => 'table' ) );
-		return $table;
+		return Tag::create( 'table', array( $rows ), array( 'class' => 'table' ) );
 	}
 
+	/**
+	 * @param array $mailIndex
+	 * @return string
+	 * @throws ReflectionException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	protected function renderIndexListAsFlexList( array $mailIndex ): string
 	{
 		$rows		= array();
 		foreach( $mailIndex as $item ){
 			$message		= $this->getMailAsMessage( $item );
-			$senderName		= htmlentities( $message->getSender()->getName(), ENT_QUOTES, 'UTF-8' );
-			$senderAddress	= htmlentities( $message->getSender()->getAddress(), ENT_QUOTES, 'UTF-8' );
+
+			$senderName		= htmlentities( $message->getSender()?->getName( FALSE ) ?? '', ENT_QUOTES, 'UTF-8' );
+			$senderAddress	= htmlentities( $message->getSender()?->getAddress() ?? '', ENT_QUOTES, 'UTF-8' );
 			$sender			= $senderAddress;
-			if( $senderName ){
+			if( '' !== trim( $senderName ) )
 				$sender	= Tag::create( 'abbr', $senderName, array( 'title' => $senderAddress ) );
-			}
+
 			$buttonRemove	= Tag::create( 'a', 'remove', array( 'href' => './?mailId='.$item.'&action=remove', 'class' => 'btn btn-mini btn-inverse' ) );
 			$buttons	= Tag::create( 'div', array( $buttonRemove ), array( 'class' => 'btn-group' ) );
 			$subject	= Tag::create( 'div', $message->getSubject() );
-			$rows[]		= Tag::create( 'div', array(
+			$rows[]		= Tag::create( 'div', [
 				Tag::create( 'div', '<i class="fa fa-circle-thin fa-3x fa-bordered"></i>', array( 'class' => 'mail-list-item-icon' ) ),
-				Tag::create( 'div', array(
-					Tag::create( 'div', $subject, array( 'class' => 'mail-list-item-subject' ) ),
-					Tag::create( 'div', $sender, array( 'class' => 'mail-list-item-sender' ) ),
-				), array( 'class' => 'mail-list-item-main' ) ),
+				Tag::create( 'div', [
+					Tag::create( 'div', $subject, ['class' => 'mail-list-item-subject'] ),
+					Tag::create( 'div', $sender, ['class' => 'mail-list-item-sender'] ),
+				], ['class' => 'mail-list-item-main'] ),
 				Tag::create( 'div', $buttons, array( 'class' => 'mail-list-item-buttons' ) ),
-			), array( 'class' => 'mail-list-item mail-list-preview-trigger' ), array( 'id' => $item, 'html' => $message->hasHTML(), 'text' => $message->hasText() ) );
+			], ['class' => 'mail-list-item mail-list-preview-trigger'], [
+				'id'	=> $item,
+				'html'	=> $message->hasHTML(),
+				'text'	=> $message->hasText()
+			] );
 		}
-
-		$list	= Tag::create( 'div', $rows );
-		return $list;
+		return Tag::create( 'div', $rows );
 	}
 
-	protected function openMailbox( bool $force = FALSE, bool $secure = TRUE )
+	protected function openMailbox( bool $secure = TRUE ): void
 	{
-		if( $this->mailbox && !$force ){
-			return;
-		}
-		if( !$this->config->address ){
-			throw new \RuntimeException( 'Error: No mailbox address defined.' );
-		}
-		if( !$this->config->username ){
-			throw new \RuntimeException( 'Error: No mailbox user name defined.' );
-		}
-		if( !$this->config->password ){
-			throw new \RuntimeException( 'Error: No mailbox user password defined.' );
-		}
+		$host		= $this->config->host ?? '';
+		$address	= $this->config->address ?? '';
+		$username	= $this->config->username ?? '';
+		$password	= $this->config->password ?? '';
+		if( '' === $address )
+			throw new RuntimeException( 'Error: No mailbox address defined.' );
+		if( '' === $username )
+			throw new RuntimeException( 'Error: No mailbox user name defined.' );
+		if( '' === $password )
+			throw new RuntimeException( 'Error: No mailbox user password defined.' );
 
-		$connection		= new Connection($this->config->host, $this->config->username, $this->config->password );
+		$connection		= new Connection( $host, $username, $password );
 		$connection->setSecure( $secure, $secure );
 		$this->mailbox	= new Mailbox( $connection );
 	}
@@ -230,11 +303,11 @@ class DemoMailboxApp
 		$purifierConfig	= HTMLPurifier_Config::createDefault();
 		$purifierConfig->set( 'Cache.SerializerPath', 'cache/' );
 		$purifierConfig->set( 'Cache.SerializerPermissions', NULL );
-		$purifier	= new HTMLPurifier( $purifierConfig );
+
+		$purifier		= new HTMLPurifier( $purifierConfig );
 		$contentPure	= $purifier->purify( $content );
-		$bodyContainer	= Tag::create( 'div', $contentPure, array(
-			'class' => 'container-fluid'
-		) );
+		$bodyContainer	= Tag::create( 'div', $contentPure, ['class' => 'container-fluid'] );
+
 		$page	= new Page();
 		$page->addStylesheet( static::$urlCssLibrary );
 		$page->addBody( $bodyContainer );
