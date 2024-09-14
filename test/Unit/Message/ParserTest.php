@@ -32,7 +32,7 @@ class ParserTest extends TestCase
 	 */
 	public function testParse()
 	{
-		$raw		= file_get_contents( __DIR__.'/parserMailMultipart-plain,html.eml' );
+		$raw		= file_get_contents(__DIR__ . '/parserMailMultipart-plain,html.eml');
 		$parser		= Parser::getInstance();
 		$message	= $parser->parse( $raw );
 
@@ -60,7 +60,7 @@ class ParserTest extends TestCase
 	 */
 	public function testParseWithAttachment()
 	{
-		$raw		= file_get_contents( __DIR__.'/parserMailMultipart-plain,html,attachment.eml' );
+		$raw		= file_get_contents(__DIR__ . '/parserMailMultipart-plain,html,attachment.eml');
 		$message	= Parser::getInstance()->parse( $raw );
 
 		$this->assertEquals( TRUE, $message->hasHTML() );
