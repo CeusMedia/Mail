@@ -1,7 +1,7 @@
 # Ceus Media Mail Library
 
 ![Branch](https://img.shields.io/badge/Branch-2.6.x-blue?style=flat-square)
-![Release](https://img.shields.io/badge/Release-2.6.0-blue?style=flat-square)
+![Release](https://img.shields.io/badge/Release-2.6.2-blue?style=flat-square)
 ![PHP version](https://img.shields.io/badge/PHP-%5E8.1-blue?style=flat-square&color=777BB4)
 ![PHPStan level](https://img.shields.io/badge/PHPStan_level-max+strict-darkgreen?style=flat-square)
 
@@ -33,6 +33,7 @@ Produce, send and read mails using PHP + IMAP & SMTP.
 - Mailbox
   - access via IMAP and POP3
   - search with criteria
+  - **upload mail to mailbox)** *(new)* 
 - Checks
   - address validity
   - receiver reachability
@@ -89,7 +90,7 @@ $transport->send( $message );
 ### Future version
 
 Sending a mail should be as easy as possible.
-This is an outlook how the interface could look like in future.
+This is an outlook how the interface could look like in the future.
 
 **Attention:** This is pseudo code. The used classes are not implemented yet.
 
@@ -133,3 +134,4 @@ If you are [having problems](https://support.google.com/accounts/answer/6009563)
 2. [Allow "less secure apps"](https://www.google.com/settings/security/lesssecureapps) to have access.
 3. [Allow app](https://accounts.google.com/DisplayUnlockCaptcha) to have access.
 4. Try again!
+5. This guide may be outdated. Please look up for a current manual somewhere else!

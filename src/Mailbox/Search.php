@@ -93,7 +93,7 @@ class Search
 			throw new RuntimeException( 'No connection set' );
 		$mails		= [];
 		foreach( $this->getAllMailIds() as $mailId ){
-			$mail	= Mail::getInstance( $mailId )->setConnection( $this->connection );
+			$mail	= Mail::getInstance( (int) $mailId )->setConnection( $this->connection );
 			$mails[$mailId]	= $mail;
 		}
 		return $mails;
