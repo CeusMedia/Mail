@@ -45,8 +45,11 @@ use RuntimeException;
  */
 class Search
 {
-	/** @var ImapConnection|NULL $connection */
-	protected ?ImapConnection $connection	= NULL;
+	/** @var Connection|NULL $connection */
+	protected ?Connection $connection			= NULL;
+
+	/** @var ImapConnection|NULL $rawConnection */
+	protected ?ImapConnection $rawConnection	= NULL;
 
 	/** @var integer $limit */
 	protected int $limit					= 10;
@@ -107,11 +110,11 @@ class Search
 	 */
 	public function getAllMailIds(): array
 	{
-		if( NULL === $this->connection )
+		if( NULL === $this->rawConnection )
 			throw new RuntimeException( 'No connection set' );
 		$criteria	= $this->renderCriteria();
 		$mailIds	= imap_sort(
-			$this->connection,
+			$this->rawConnection,
 			$this->orderSort,
 			$this->orderReverse,
 			SE_UID,
@@ -167,12 +170,13 @@ class Search
 	/**
 	 *	...
 	 *	@access		public
-	 *	@param		ImapConnection	$connection
+	 *	@param		Connection	$connection
 	 *	@return		self
 	 */
-	public function setConnection( ImapConnection $connection ): self
+	public function setConnection( Connection $connection ): self
 	{
-		$this->connection	= $connection;
+		$this->connection		= $connection;
+		$this->rawConnection	= $connection->getResource( TRUE );
 		return $this;
 	}
 
