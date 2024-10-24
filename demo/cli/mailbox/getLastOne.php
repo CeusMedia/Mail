@@ -25,5 +25,10 @@ $connection->setSecure( TRUE, TRUE );
 
 $mailbox	= new Mailbox( $connection );
 $mailIndex	= array_slice( $mailbox->index(), 1, 1 );
-foreach( $mailIndex as $item )
-	print_r( $mailbox->getMail( $item ) );
+foreach( $mailIndex as $item ){
+	$message	= $mailbox->getMailAsMessage( $item );
+	if( $message->hasText() )
+		print_m( $message->getText()->getContent() );
+	else
+		print( 'Latest mail has no text part.' );
+}

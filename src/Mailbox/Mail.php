@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- *	...
+ *	Mailbox Mail Item Container.
  *
  *	Copyright (c) 2007-2024 Christian Würker (ceusmedia.de)
  *
@@ -42,7 +42,7 @@ use function imap_body;
 use function imap_fetchheader;
 
 /**
- *	...
+ *	Mailbox Mail Item Container.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Mailbox

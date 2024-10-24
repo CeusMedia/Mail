@@ -59,7 +59,6 @@ class Deprecation extends CommonDeprecation
 	 */
 	protected function onInit(): void
 	{
-		parent::__construct();
 		$iniFilePath		= dirname( __DIR__ ).'/Mail.ini';
 		if( !file_exists( $iniFilePath ) )
 			$iniFilePath		.= '.dist';

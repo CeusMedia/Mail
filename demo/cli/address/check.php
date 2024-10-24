@@ -1,20 +1,29 @@
 <?php
+
+use CeusMedia\Common\UI\DevOutput;
+use CeusMedia\Mail\Address\Check\Availability as AvailabilityCheck;
+
 require_once dirname( __DIR__ ).'/_bootstrap.php';
 
-new \CeusMedia\Common\UI\DevOutput;
+new DevOutput;
 
 $s	= "dev@ceusmedia.de";
-$c	= new \CeusMedia\Mail\Address\Check\Availability( $s, TRUE );
+$c	= new AvailabilityCheck( $s, TRUE );
 
 print( 'SMTP communication:'.PHP_EOL );
-$result	= $c->test( $s );
+try{
+	$result	= $c->test( $s );
+}
+catch( Throwable|Exception ){
+	$result	= FALSE;
+}
 print( PHP_EOL );
 print( 'Result: '.( $result ? 'Success' : 'Fail' ).PHP_EOL );
 
-$error	= $c->getLastError();
-if( $error->error ){
+$response	= $c->getLastResponse();
+if( 0 !== $response->error ){
 	print( PHP_EOL );
 	print( 'Error:'.PHP_EOL );
-	print( '- Code:    '.$error->code.PHP_EOL );
-	print( '- Message: '.$error->message.PHP_EOL );
+	print( '- Code:    '.$response->code.PHP_EOL );
+	print( '- Message: '.$response->message.PHP_EOL );
 }

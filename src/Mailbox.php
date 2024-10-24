@@ -173,7 +173,7 @@ class Mailbox
 	{
 		$resource	= $this->connection->getResource( TRUE );
 		$result		= imap_sort( $resource, $sort, $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
-		if( $result === FALSE )
+		if( FALSE === $result )
 			$result	= [];
 		return $result;
 	}

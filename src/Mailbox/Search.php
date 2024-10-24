@@ -102,8 +102,8 @@ class Search
 	/**
 	 *	Returns list of mail IDs for defined search criteria.
 	 *	@access		public
-	 *	@return		array				List of mail IDs
-	 *	@throws		RuntimeException	if no connection is set
+	 *	@return		array<int|string>		List of mail IDs
+	 *	@throws		RuntimeException		if no connection is set
 	 */
 	public function getAllMailIds(): array
 	{

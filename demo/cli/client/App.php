@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpMultipleClassDeclarationsInspection */
+
 namespace CeusMedia\MailDemo\CLI\Client;
 
 use CeusMedia\Common\Alg\Text\Trimmer as TextTrimmer;
@@ -6,12 +7,13 @@ use CeusMedia\Common\FS\File\INI\Creator as ConfigCreator;
 use CeusMedia\Common\FS\File\INI\SectionReader as ConfigReader;
 use CeusMedia\Common\CLI\Color as CliColor;
 use CeusMedia\Common\CLI\Output as CliOutput;
-use CeusMedia\Common\CLI\Question as Question;
+use CeusMedia\Common\CLI\Question;
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Transport\SMTP as Transport;
+use Exception;
 
 class App
 {
@@ -130,10 +132,11 @@ class App
 				$this->indexMails();
 				break;
 			case 'read':
-				$this->readMail( $this->askMailId() );
+				$this->readMail( (int) $this->askMailId() );
 				break;
 			case 'delete':
-				$this->deleteMail( $this->askMailId() );
+				$this->deleteMail( (int) $this->askMailId() );
+				$this->indexMails();
 				break;
 			case 'create':
 				$this->createMail();
@@ -141,7 +144,12 @@ class App
 		}
 	}
 
-	protected function askForAction( array $options, $default = NULL ): string
+	/**
+	 *	@param		array						$options
+	 *	@param		int|float|string|NULL		$default
+	 *	@return		string
+	 */
+	protected function askForAction( array $options, int|float|string $default = NULL ): string
 	{
 		$this->output->newLine( str_repeat( '-', 80 ).PHP_EOL );
 		if( is_null( $default ) )
@@ -161,23 +169,32 @@ class App
 			->ask();
 	}
 
+	protected function deleteMail( int $mailId ): void
+	{
+		$this->mailbox->removeMail( $mailId );
+	}
+
 	protected function readMail( int $mailId ): void
 	{
 		$this->clearScreen();
+		$sender		= 'unbekannt';
+		$subject	= 'unbekannt';
 		try{
 			$message	= $this->mailbox->getMailAsMessage( $mailId );
-			$sender		= $message->getSender()->get();
-			$subject	= $message->getSubject();
+			if( NULL !== $message->getSender() )
+				$sender		= $message->getSender()->get();
+			if( NULL !== $message->getSubject() )
+				$subject	= $message->getSubject();
 			if( $message->hasText() ){
 				$body	= $message->getText()->getContent();
 			} else if( $message->hasHTML() ){
 	//			$body	= strip_tags( $message->getHTML()->getContent() );
 				$body	= HtmlToPlainText::convert( $message->getHTML()->getContent() );
+			} else {
+				$body	= 'No body found.';
 			}
 		}
 		catch( Exception $e ){
-			$sender		= 'unbekannt';
-			$subject	= 'unbekannt';
 			$body		= $e->getMessage();
 		}
 		print( "  Absender: ".$sender." | Betreff: ".$subject );
@@ -193,6 +210,7 @@ class App
 				break;
 			case 'delete':
 				$this->deleteMail( $mailId );
+				$this->indexMails();
 				break;
 		}
 	}
@@ -221,7 +239,7 @@ class App
 		$question	= new Question( 'Mail versenden?', Question::TYPE_BOOLEAN, 'y' );
 		$decision	= $question->setBreak( FALSE )->ask();
 		if( $decision === 'y' ){
-			$message	= Message::create()
+			$message	= Message::getInstance()
 				->setSender( $this->config->getProperty( 'IMAP', 'username' ) )
 				->addRecipient( $receiver )
 				->setSubject( $subject )
@@ -295,21 +313,19 @@ class App
 		foreach( $pairs as $sectionKey => $sectionData ){
 			foreach( $sectionData as $questionKey => $questionData ){
 				$question	= new Question( $questionData['label'] );
-				if( !empty( $questionData['type'] ) )
-					$question->setType( $questionData['type'] );
-				if( !empty( $questionData['default'] ) ){
-					$default	= $questionData['default'];
-					if( preg_match( $regexDefault, $default ) ){
+				$question->setType( $questionData['type'] ?? Question::TYPE_STRING );
+				$default	= trim( (string) ( $questionData['default'] ?? '' ) );
+				if( '' !== $default ){
+					if( 0 !== preg_match( $regexDefault, $default ) ){
 						$matches	= array();
 						preg_match_all( $regexDefault, $default, $matches );
 						$default	= $data[$matches[1][0]][$matches[2][0]];
 					}
 					$question->setDefault( $default );
 				}
-				if( !empty( $questionData['options'] ) )
-					$question->setOptions( $questionData['options'] );
-	//			if( !empty( $questionData['options'] ) )
-	//				$question->setOptions( $questionData['options'] );
+				$options	= $questionData['options'] ?? [];
+				if( [] !== $options )
+					$question->setOptions( $options );
 				$question->setBreak( FALSE );
 				$data[$sectionKey][$questionKey]	= $question->ask();
 			}

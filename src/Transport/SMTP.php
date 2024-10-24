@@ -85,6 +85,22 @@ class SMTP
 	protected int $cryptoMode		= STREAM_CRYPTO_METHOD_ANY_CLIENT;
 
 	/**
+	 *	Get instance of SMTP transport.
+	 *	Receives connection parameters (host, port, username, password) if given.
+	 *	@static
+	 *	@access		public
+	 *	@param		string		$host		SMTP server host name
+	 *	@param		integer		$port		SMTP server port
+	 *	@param		string		$username	SMTP auth username
+	 *	@param		string		$password	SMTP auth password
+	 *	@return		self
+	 */
+	public static function getInstance( string $host, int $port = 25, string $username = '', string $password = '' ): self
+	{
+		return new self( $host, $port, $username, $password );
+	}
+
+	/**
 	 *	Constructor.
 	 *	Receives connection parameters (host, port, username, password) if given.
 	 *
@@ -117,22 +133,6 @@ class SMTP
 				return $socketError;
 		}
 		return NULL;
-	}
-
-	/**
-	 *	Get instance of SMTP transport.
-	 *	Receives connection parameters (host, port, username, password) if given.
-	 *	@static
-	 *	@access		public
-	 *	@param		string		$host		SMTP server host name
-	 *	@param		integer		$port		SMTP server port
-	 *	@param		string		$username	SMTP auth username
-	 *	@param		string		$password	SMTP auth password
-	 *	@return		self
-	 */
-	public static function getInstance( string $host, int $port = 25, string $username = '', string $password = '' ): self
-	{
-		return new self( $host, $port, $username, $password );
 	}
 
 	/**
