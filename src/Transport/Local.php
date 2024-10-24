@@ -73,7 +73,7 @@ class Local
 	 *	@access		public
 	 *	@param		Message		$message		Mail message object
 	 *	@param		array						$parameters	Additional mail parameters
-	 *	@return		array
+	 *	@return		array<Result>				List of transport results
 	 *	@throws		InvalidArgumentException	if sender is not set
 	 *	@throws		InvalidArgumentException	if receiver is not set
 	 *	@throws		InvalidArgumentException	if subject is not set
@@ -112,29 +112,28 @@ class Local
 		$buffer	= new OutputBuffer();
 		/** @var Address $receiver */
 		foreach( $receivers->filter() as $receiver ){
+			$result	= new Result();
+			$result->setReceiver( $receiver );
 			try{
 				$this->checkForInjection( $receiver->get() );
-				$result	= mail(
+				$returns	= mail(
 					$receiver->getAddress(),
 					$subject,
 					$body,
 					$headers->toString(),
 					$parameters
 				);
-				if( !$result ){
+				if( !$returns ){
 					throw new RuntimeException( $buffer->get() );
 				}
-				$list[]	= [
-					'status'		=> 'ok',
-					'message'		=> 'mail sent to '.$receiver->getAddress(),
-				];
+				$result->setStatus( Result::STATUS_SUCCESS );
+				$result->setMessage( 'mail sent to '.$receiver->getAddress() );
 			}
 			catch( Exception $e ){
-				$list[]	= [
-					'status'		=> 'failed',
-					'message'		=> $e->getMessage(),
-				];
+				$result->setStatus( Result::STATUS_ERROR );
+				$result->setMessage( $e->getMessage() );
 			}
+			$list[]	= $result;
 		}
 		$buffer->close();
 		return $list;
