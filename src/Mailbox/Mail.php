@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- *	...
+ *	Mailbox Mail Item Container.
  *
  *	Copyright (c) 2007-2024 Christian Würker (ceusmedia.de)
  *
@@ -42,7 +42,7 @@ use function imap_body;
 use function imap_fetchheader;
 
 /**
- *	...
+ *	Mailbox Mail Item Container.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Mailbox
@@ -54,14 +54,20 @@ use function imap_fetchheader;
  */
 class Mail
 {
-	/**	@var	ImapConnection|NULL		$connection */
-	protected ?ImapConnection $connection;
+	/**	@var	Connection|NULL				$connection */
+	protected ?Connection $connection;
 
-	/**	@var	integer					$mailId */
+	/**	@var	ImapConnection|NULL				$rawConnection */
+	protected ?ImapConnection $rawConnection;
+
+	/**	@var	integer							$mailId */
 	protected int $mailId;
 
-	/**	@var	string|NULL				$header */
-	protected ?string $header			= NULL;
+	/**	@var	string|NULL						$rawHeader */
+	protected ?string $rawHeader				= NULL;
+
+	/**	@var	MessageHeaderSection|NULL		$header */
+	protected ?MessageHeaderSection $header		= NULL;
 
 	/**
 	 *	Constructor.
@@ -103,9 +109,12 @@ class Mail
 	 */
 	public function getHeader( bool $force = FALSE ): MessageHeaderSection
 	{
-		$this->getRawHeader( $force );
-		/** @phpstan-ignore-next-line */
-		return MessageHeaderParser::getInstance()->parse( $this->header );
+		if( NULL === $this->header || $force ){
+			$this->header	= MessageHeaderParser::getInstance()->parse(
+				$this->getRawHeader( $force )
+			);
+		}
+		return $this->header;
 	}
 
 	/**
@@ -117,13 +126,13 @@ class Mail
 	 */
 	public function getMessage( bool $withBodyParts = FALSE ): Message
 	{
-		if( NULL === $this->connection )
+		if( NULL === $this->rawConnection )
 			throw new RuntimeException( 'No connection set' );
-		$header	= $this->getRawHeader();
-		$body	= '';
+		$rawHeader	= $this->getRawHeader();
+		$rawBody	= '';
 		if( $withBodyParts )
-			$body	= imap_body( $this->connection, $this->mailId, FT_UID | FT_PEEK );
-		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
+			$rawBody	= imap_body( $this->rawConnection, $this->mailId, FT_UID | FT_PEEK );
+		return MessageParser::getInstance()->parse( $rawHeader.PHP_EOL.PHP_EOL.$rawBody );
 	}
 
 	/**
@@ -134,26 +143,27 @@ class Mail
 	 */
 	public function getRawHeader( bool $force = FALSE ): string
 	{
-		if( NULL === $this->connection )
+		if( NULL === $this->rawConnection )
 			throw new RuntimeException( 'No connection set' );
-		if( NULL === $this->header || 0 === strlen( $this->header ) || $force ){
-			$header	= imap_fetchheader( $this->connection, $this->mailId, FT_UID );
-			if( FALSE === $header )
-				throw new RuntimeException( 'Invalid mail ID' );
-			$this->header	= $header;
+		if( NULL === $this->rawHeader || '' === trim( $this->rawHeader ) || $force ){
+			$rawHeader	= imap_fetchheader( $this->rawConnection, $this->mailId, FT_UID );
+			if( FALSE === $rawHeader )
+				throw new RuntimeException( 'Invalid mail ID or fetching mail header failed' );
+			$this->rawHeader	= $rawHeader;
 		}
-		return $this->header;
+		return $this->rawHeader;
 	}
 
 	/**
 	 *	Set mailbox connection.
 	 *	@access		public
-	 *	@param		ImapConnection		$connection
+	 *	@param		Connection		$connection
 	 *	@return		self
 	 */
-	public function setConnection( ImapConnection $connection ): self
+	public function setConnection( Connection $connection ): self
 	{
-		$this->connection	= $connection;
+		$this->connection		= $connection;
+		$this->rawConnection	= $connection->getResource( TRUE );
 		return $this;
 	}
 }
