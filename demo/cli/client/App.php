@@ -3,6 +3,7 @@
 namespace CeusMedia\MailDemo\CLI\Client;
 
 use CeusMedia\Common\Alg\Text\Trimmer as TextTrimmer;
+use CeusMedia\Common\CLI\Password;
 use CeusMedia\Common\FS\File\INI\Creator as ConfigCreator;
 use CeusMedia\Common\FS\File\INI\SectionReader as ConfigReader;
 use CeusMedia\Common\CLI\Color as CliColor;
@@ -52,7 +53,7 @@ class App
 		if( $this->config->hasProperty( 'IMAP', 'password' ) )
 			$this->passwordImap	= $this->config->getProperty( 'IMAP', 'password' );
 		else
-			$this->passwordImap	= Question::getInstance( 'Passwort' )->setBreak( FALSE )->ask();
+			$this->passwordImap	= Password::getInstance( 'Passwort: ' )->ask();
 
 		$this->passwordSmtp	= $this->passwordImap;
 		if( $this->config->hasProperty( 'SMTP', 'password' ) )
