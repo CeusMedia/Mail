@@ -86,9 +86,10 @@ class Search
 
 	/**
 	 *	Returns list of mail objects, holding a mail ID and a connection.
+	 *	A mail object is a container to lazy load parts of the original mail from server.
 	 *	@access		public
-	 *	@return		array				List of mail IDs
-	 *	@throws		RuntimeException	if no connection is set
+	 *	@return		array<int|string,Mail>		List of mail IDs and objects
+	 *	@throws		RuntimeException			if no connection is set
 	 */
 	public function getAll(): array
 	{
@@ -96,7 +97,7 @@ class Search
 			throw new RuntimeException( 'No connection set' );
 		$mails		= [];
 		foreach( $this->getAllMailIds() as $mailId ){
-			$mail	= Mail::getInstance( $mailId )->setConnection( $this->connection );
+			$mail	= Mail::getInstance( (int) $mailId )->setConnection( $this->connection );
 			$mails[$mailId]	= $mail;
 		}
 		return $mails;
@@ -105,8 +106,8 @@ class Search
 	/**
 	 *	Returns list of mail IDs for defined search criteria.
 	 *	@access		public
-	 *	@return		array				List of mail IDs
-	 *	@throws		RuntimeException	if no connection is set
+	 *	@return		array<int|string>		List of mail IDs
+	 *	@throws		RuntimeException		if no connection is set
 	 */
 	public function getAllMailIds(): array
 	{
