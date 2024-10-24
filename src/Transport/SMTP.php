@@ -31,6 +31,7 @@ namespace CeusMedia\Mail\Transport;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
+use CeusMedia\Mail\Transport\SMTP\Response;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
 use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
@@ -39,6 +40,7 @@ use InvalidArgumentException;
 use RangeException;
 use RuntimeException;
 
+use Throwable;
 use function count;
 use function in_array;
 use function join;
@@ -85,6 +87,22 @@ class SMTP
 	protected int $cryptoMode		= STREAM_CRYPTO_METHOD_ANY_CLIENT;
 
 	/**
+	 *	Get instance of SMTP transport.
+	 *	Receives connection parameters (host, port, username, password) if given.
+	 *	@static
+	 *	@access		public
+	 *	@param		string		$host		SMTP server host name
+	 *	@param		integer		$port		SMTP server port
+	 *	@param		string		$username	SMTP auth username
+	 *	@param		string		$password	SMTP auth password
+	 *	@return		self
+	 */
+	public static function getInstance( string $host, int $port = 25, string $username = '', string $password = '' ): self
+	{
+		return new self( $host, $port, $username, $password );
+	}
+
+	/**
 	 *	Constructor.
 	 *	Receives connection parameters (host, port, username, password) if given.
 	 *
@@ -120,22 +138,6 @@ class SMTP
 	}
 
 	/**
-	 *	Get instance of SMTP transport.
-	 *	Receives connection parameters (host, port, username, password) if given.
-	 *	@static
-	 *	@access		public
-	 *	@param		string		$host		SMTP server host name
-	 *	@param		integer		$port		SMTP server port
-	 *	@param		string		$username	SMTP auth username
-	 *	@param		string		$password	SMTP auth password
-	 *	@return		self
-	 */
-	public static function getInstance( string $host, int $port = 25, string $username = '', string $password = '' ): self
-	{
-		return new self( $host, $port, $username, $password );
-	}
-
-	/**
 	 *	Sends mail using a socket connection to a remote SMTP server.
 	 *	@access		public
 	 *	@param		Message		$message		Mail message object
@@ -144,9 +146,9 @@ class SMTP
 	 *	@throws		RuntimeException			if message has no mail body parts
 	 *	@throws		RuntimeException			if connection to SMTP server failed
 	 *	@throws		RuntimeException			if sending mail failed
-	 *	@return		self					  	This instance for chaining.
+	 *	@return		array<Result>				List of transport results
 	 */
-	public function send( Message $message ): self
+	public function send( Message $message ): array
 	{
 		if( NULL === $this->socket )
 			$this->socket	= new SmtpSocket( $this->host, $this->port );
@@ -178,23 +180,52 @@ class SMTP
 				$this->checkResponse( [ 235 ], SmtpResponse::ERROR_LOGIN_FAILED );
 			}
 		}
+
+		$list	= [];
+
 		/** @var Address $sender */
 		$sender		= $message->getSender();
 		$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
 		$this->checkResponse( [ 250 ] );
 		/** @var Address $receiver */
 		foreach( $message->getRecipientsByType( 'TO' )->filter() as $receiver ){
+			$result	= new Result();
+			$result->setReceiver( $receiver );
 			$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
 			$this->checkResponse( [ 250 ] );
+			$list[]	= $result;
 		}
 		$this->sendChunk( 'DATA' );
 		$this->checkResponse( [ 354 ] );
 		$this->sendChunk( $content );
 		$this->sendChunk( '.' );
-		$this->checkResponse( [ 250 ] );
+		try{
+			$response	= $this->checkResponse( [ 250 ] );
+			foreach( $list as $result ){
+				$result->setStatus( Result::STATUS_SUCCESS );
+				$result->setCode( $response->getCode() );
+				$result->setMessage( $response->getMessage() );
+			}
+		}
+		catch( SmtpException $e ){
+			/** @var Response $response */
+			$response	= $e->getResponse();
+			foreach( $list as $result ){
+				$result->setStatus( Result::STATUS_ERROR );
+				$result->setCode( $response->getCode() );
+				$result->setMessage( $response->getMessage() );
+			}
+		}
+		catch( Throwable $t ){
+			foreach( $list as $result ){
+				$result->setStatus( Result::STATUS_FAILURE );
+				$result->setCode( $t->getCode() );
+				$result->setMessage( $t->getMessage() );
+			}
+		}
 		$this->socket->close();
 
-		return $this;
+		return $list;
 	}
 
 	/**
