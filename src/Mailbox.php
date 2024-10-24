@@ -29,8 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail;
 
 use CeusMedia\Mail\Conduct\RegularStringHandling;
-use CeusMedia\Mail\Message\Parser as MessageParser;
-use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
+use CeusMedia\Mail\Mailbox\Mail;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
@@ -40,11 +39,9 @@ use ReflectionException;
 use RuntimeException;
 
 use function extension_loaded;
-use function imap_body;
 use function imap_clearflag_full;
 use function imap_delete;
 use function imap_expunge;
-use function imap_fetchheader;
 use function imap_last_error;
 use function imap_mail_move;
 use function imap_setflag_full;
@@ -131,14 +128,9 @@ class Mailbox
 		return $folders;
 	}
 
-	public function getMail( int $mailId ): string
+	public function getMail( int $mailId ): Mail
 	{
-		$resource	= $this->connection->getResource( TRUE );
-		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
-		if( FALSE === $header )
-			throw new RuntimeException( 'Invalid mail ID' );
-		$body		= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
-		return $header.PHP_EOL.PHP_EOL.$body;
+		return Mail::getInstance( $mailId )->setConnection( $this->connection );
 	}
 
 	/**
@@ -148,12 +140,7 @@ class Mailbox
 	 */
 	public function getMailAsMessage( int $mailId ): Message
 	{
-		$resource	= $this->connection->getResource( TRUE );
-		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
-		if( FALSE === $header )
-			throw new RuntimeException( 'Invalid mail ID' );
-		$body		= imap_body( $resource, $mailId, FT_UID | FT_PEEK );
-		return MessageParser::getInstance()->parse( $header.PHP_EOL.PHP_EOL.$body );
+		return $this->getMail( $mailId )->getMessage( TRUE );
 	}
 
 	/**
@@ -162,18 +149,14 @@ class Mailbox
 	 */
 	public function getMailHeaders( int $mailId ): MessageHeaderSection
 	{
-		$resource	= $this->connection->getResource( TRUE );
-		$header		= imap_fetchheader( $resource, $mailId, FT_UID );
-		if( FALSE === $header )
-			throw new RuntimeException( 'Invalid mail ID' );
-		return MessageHeaderParser::getInstance()->parse( $header );
+		return $this->getMail( $mailId )->getHeader();
 	}
 
 	public function index( array $criteria = [], int $sort = SORTARRIVAL, bool $reverse = TRUE ): array
 	{
 		$resource	= $this->connection->getResource( TRUE );
 		$result		= imap_sort( $resource, $sort, $reverse, SE_UID, join( ' ', $criteria ), 'UTF-8' );
-		if( $result === FALSE )
+		if( FALSE === $result )
 			$result	= [];
 		return $result;
 	}
@@ -211,13 +194,11 @@ class Mailbox
 
 	/**
 	 *	@param		MailboxSearch		$search
-	 *	@return		array
+	 *	@return		array<int|string,Mail>
 	 */
 	public function performSearch( MailboxSearch $search ): array
 	{
-		$resource	= $this->connection->getResource( TRUE );
-		$search->setConnection( $resource );
-		return $search->getAll();
+		return $search->setConnection( $this->connection )->getAll();
 	}
 
 	/**
@@ -244,11 +225,14 @@ class Mailbox
 		return $result;
 	}
 
+	/**
+	 *	@param		array		$conditions
+	 *	@return		array<int|string,Mail>
+	 */
 	public function search( array $conditions ): array
 	{
-		$resource	= $this->connection->getResource( TRUE );
 		return MailboxSearch::getInstance()
-			->setConnection( $resource )
+			->setConnection( $this->connection )
 			->applyConditions( $conditions )
 			->getAll();
 	}
