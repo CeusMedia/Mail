@@ -7,7 +7,12 @@ parameters:
 	level: max
 	paths:
 		- ../src
-	checkMissingIterableValueType: false
-	checkGenericClassInNonGenericObjectType: false
+	excludePaths:
+		- ../src/Transport/Mailgun.php
 #	reportMaybesInPropertyPhpDocTypes: false
 #	treatPhpDocTypesAsCertain: false
+	ignoreErrors:
+		-
+			identifier: missingType.generics
+		-
+			identifier: missingType.iterableValue
