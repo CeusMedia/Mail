@@ -36,13 +36,13 @@ class ParserTest extends TestCase
 		$parser		= Parser::getInstance();
 		$message	= $parser->parse( $raw );
 
-		$this->assertEquals( TRUE, $message->hasHTML() );
-		$this->assertEquals( TRUE, $message->hasText() );
-		$this->assertEquals( FALSE, $message->hasAttachments() );
-		$this->assertEquals( FALSE, $message->hasInlineImages() );
-		$this->assertEquals( FALSE, $message->hasMails() );
+		self::assertEquals( TRUE, $message->hasHTML() );
+		self::assertEquals( TRUE, $message->hasText() );
+		self::assertEquals( FALSE, $message->hasAttachments() );
+		self::assertEquals( FALSE, $message->hasInlineImages() );
+		self::assertEquals( FALSE, $message->hasMails() );
 
-		$this->assertEquals( 'Test', $message->getSubject() );
+		self::assertEquals( 'Test', $message->getSubject() );
 
 		$headers	= $message->getHeaders();
 
@@ -63,25 +63,25 @@ class ParserTest extends TestCase
 		$raw		= file_get_contents(__DIR__ . '/parserMailMultipart-plain,html,attachment.eml');
 		$message	= Parser::getInstance()->parse( $raw );
 
-		$this->assertEquals( TRUE, $message->hasHTML() );
-		$this->assertEquals( TRUE, $message->hasText() );
-		$this->assertEquals( TRUE, $message->hasAttachments() );
-		$this->assertEquals( FALSE, $message->hasInlineImages() );
-		$this->assertEquals( FALSE, $message->hasMails() );
+		self::assertEquals( TRUE, $message->hasHTML() );
+		self::assertEquals( TRUE, $message->hasText() );
+		self::assertEquals( TRUE, $message->hasAttachments() );
+		self::assertEquals( FALSE, $message->hasInlineImages() );
+		self::assertEquals( FALSE, $message->hasMails() );
 
 		$address	= '"Christian Würker" <christian.wuerker@ceusmedia.de>';
 		$recipient	= new Address( $address );
 
 		$collectionCc = $message->getRecipientsByType( 'cc' );
-		$this->assertEquals( 1, count( $collectionCc ) );
-		$this->assertEquals( $recipient, $collectionCc->getAll()[0] );
-		$this->assertEquals( $recipient->get(), $collectionCc->getAll()[0]->get() );
-		$this->assertEquals( $address, $collectionCc->getAll()[0]->get() );
+		self::assertEquals( 1, count( $collectionCc ) );
+		self::assertEquals( $recipient, $collectionCc->getAll()[0] );
+		self::assertEquals( $recipient->get(), $collectionCc->getAll()[0]->get() );
+		self::assertEquals( $address, $collectionCc->getAll()[0]->get() );
 
 /*		$collection	= new AddressCollection( [$recipient] );
 		print_m($message->getRecipientsByType( 'cc' )->getAll()[0]->get());die;
 		print($message->getRecipientsByType( 'cc' )[0]->render());die;
-		$this->assertEquals( $collection,  );
-		$this->assertEquals( $collection, $message->getRecipientsByType( 'bcc' ) );*/
+		self::assertEquals( $collection,  );
+		self::assertEquals( $collection, $message->getRecipientsByType( 'bcc' ) );*/
 	}
 }

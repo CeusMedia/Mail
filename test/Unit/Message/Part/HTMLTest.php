@@ -22,8 +22,8 @@ use CeusMedia\MailTest\TestCase;
  */
 class HTMLTest extends TestCase
 {
-	protected $delimiter;
-	protected $lineLength;
+	protected string $delimiter;
+	protected int $lineLength;
 
 	public function setup(): void
 	{
@@ -38,16 +38,16 @@ class HTMLTest extends TestCase
 	{
 		$content	= "<b>This is the content.</b>";
 		$part		= new HTML( $content );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( "UTF-8", $part->getCharset() );
-		$this->assertEquals( "text/html", $part->getMimeType() );
-		$this->assertEquals( "base64", $part->getEncoding() );
-		$this->assertEquals( "fixed", $part->getFormat() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( "UTF-8", $part->getCharset() );
+		self::assertEquals( "text/html", $part->getMimeType() );
+		self::assertEquals( "base64", $part->getEncoding() );
+		self::assertEquals( "fixed", $part->getFormat() );
 
 		$part		= new HTML( $content, 'latin1', 'base64' );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( "latin1", $part->getCharset() );
-		$this->assertEquals( "base64", $part->getEncoding() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( "latin1", $part->getCharset() );
+		self::assertEquals( "base64", $part->getEncoding() );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class HTMLTest extends TestCase
 			'',
 			$this->wrapContent( quoted_printable_encode( $content ) ),
 		) );
-		$this->assertEquals( $expected, $part->render() );
+		self::assertEquals( $expected, $part->render() );
 
 		$part		= new HTML( $content, 'utf-8', 'base64' );
 		$part->setMimeType( "text/xhtml" );
@@ -74,7 +74,7 @@ class HTMLTest extends TestCase
 			'',
 			$this->wrapContent( base64_encode( $content ) ),
 		) );
-		$this->assertEquals( $expected, $part->render() );
+		self::assertEquals( $expected, $part->render() );
 	}
 
 	protected function wrapContent( string $content ): string

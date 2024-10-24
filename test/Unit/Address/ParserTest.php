@@ -45,7 +45,7 @@ class ParserTest extends TestCase
 	public function testGetInstance()
 	{
 		$instance	= Parser::getInstance();
-		$this->assertEquals( new Parser(), $instance );
+		self::assertEquals( new Parser(), $instance );
 	}
 
 	/**
@@ -57,20 +57,20 @@ class ParserTest extends TestCase
 
 		$expected	= 'Hans.Mustermann@muster-server.tld';
 		$address	= $parser->parse( 'Hans.Mustermann@muster-server.tld' );
-		$this->assertEquals( $expected, $address->get() );
+		self::assertEquals( $expected, $address->get() );
 		$address	= $parser->parse( '<Hans.Mustermann@muster-server.tld>' );
-		$this->assertEquals( $expected, $address->get() );
+		self::assertEquals( $expected, $address->get() );
 
 		$expected	= '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
 		$address	= $parser->parse( 'Hans Mustermann <Hans.Mustermann@muster-server.tld>' );
-		$this->assertEquals( $expected, $address->get() );
+		self::assertEquals( $expected, $address->get() );
 
 		$address	= $parser->parse( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>' );
-		$this->assertEquals( $expected, $address->get() );
+		self::assertEquals( $expected, $address->get() );
 
 		$expected	= 'Hans_Mustermann <Hans_Mustermann@muster-server.tld>';
 		$address	= $parser->parse( 'Hans_Mustermann <Hans_Mustermann@muster-server.tld>' );
-		$this->assertEquals( $expected, $address->get() );
+		self::assertEquals( $expected, $address->get() );
 	}
 
 	/**

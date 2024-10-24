@@ -16,18 +16,18 @@ namespace CeusMedia\MailTest;
  */
 class ConfigTest extends TestCase
 {
-	public function testSenderConfig()
+	public function testSenderConfig(): void
 	{
 		$configSender	= $this->requireSenderConfig();
-		$this->assertTrue( true );
+		self::assertTrue( true );
 #		remark( 'Config: Sender' );
 #		print_m( $configSender->getAll() );
 	}
 
-	public function testReceiverConfig()
+	public function testReceiverConfig(): void
 	{
 		$configReceiver	= $this->requireReceiverConfig();
-		$this->assertTrue( true );
+		self::assertTrue( true );
 #		remark( 'Config: Receiver' );
 #		print_m( $configReceiver->getAll() );
 	}

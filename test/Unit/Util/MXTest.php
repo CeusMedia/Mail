@@ -27,6 +27,6 @@ class MXTest extends TestCase
 	public function testGetInstance()
 	{
 		$instance	= MX::getInstance();
-		$this->assertEquals( new MX(), $instance );
+		self::assertEquals( new MX(), $instance );
 	}
 }

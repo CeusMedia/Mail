@@ -39,7 +39,7 @@ class RendererTest extends TestCase
 	{
 		$instance	= Renderer::getInstance();
 
-		$this->assertEquals( $this->renderer, $instance );
+		self::assertEquals( $this->renderer, $instance );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class RendererTest extends TestCase
 	{
 		foreach( $delimiters = ['-', '#'] as $delimiter ){
 			$this->renderer->setDelimiter( $delimiter );
-			$this->assertEquals( $delimiter, $this->renderer->getDelimiter() );
+			self::assertEquals( $delimiter, $this->renderer->getDelimiter() );
 		}
 	}
 
@@ -63,7 +63,7 @@ class RendererTest extends TestCase
 			new Address( 'dev@ceusmedia.de' ),
 		) );
 		$expected	= 'dev@ceusmedia.de';
-		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
+		self::assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -76,7 +76,7 @@ class RendererTest extends TestCase
 		) );
 
 		$expected	= 'dev@ceusmedia.de';
-		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
+		self::assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -89,7 +89,7 @@ class RendererTest extends TestCase
 		) );
 
 		$expected	= 'Developer <dev@ceusmedia.de>';
-		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
+		self::assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -102,7 +102,7 @@ class RendererTest extends TestCase
 		) );
 
 		$expected	= 'Developer <dev@ceusmedia.de>';
-		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
+		self::assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -114,7 +114,7 @@ class RendererTest extends TestCase
 			new Address( '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>' ),
 		) );
 		$expected	= '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>';
-		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
+		self::assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -127,7 +127,7 @@ class RendererTest extends TestCase
 			new Address( 'Alpha Tester <test@ceusmedia.de>' ),
 		) );
 		$expected	= 'Developer <dev@ceusmedia.de>, "Alpha Tester" <test@ceusmedia.de>';
-		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
+		self::assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**
@@ -137,7 +137,7 @@ class RendererTest extends TestCase
 	{
 		$collection		= new AddressCollection( array() );
 		$expected	= '';
-		$this->assertEquals( $expected, $this->renderer->render( $collection ) );
+		self::assertEquals( $expected, $this->renderer->render( $collection ) );
 	}
 
 	/**

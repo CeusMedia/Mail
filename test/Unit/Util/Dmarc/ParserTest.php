@@ -28,9 +28,9 @@ class ParserTest extends TestCase
 	public function testCreate()
 	{
 		$instance	= Parser::getInstance();
-		$this->assertTrue( is_object( $instance ) );
-		$this->assertTrue( $instance instanceof Parser );
-		$this->assertTrue( get_class( $instance ) === 'CeusMedia\Mail\Util\Dmarc\Parser' );
+		self::assertTrue( is_object( $instance ) );
+		self::assertTrue( $instance instanceof Parser );
+		self::assertTrue( get_class( $instance ) === 'CeusMedia\Mail\Util\Dmarc\Parser' );
 	}
 
 	/**
@@ -51,6 +51,6 @@ class ParserTest extends TestCase
 
 		$dmarc	= "v=DMARC1;p=quarantine;sp=reject;pct=90;rua=mailto:postmaster1@ceusmedia.de;ruf=mailto:postmaster2@ceusmedia.de;adkim=s;aspf=s;fo=1;ri=3600";
 		$parsed	= Parser::getInstance()->parse( $dmarc );
-		$this->assertEquals( $record, $parsed );
+		self::assertEquals( $record, $parsed );
 	}
 }

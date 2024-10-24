@@ -37,9 +37,9 @@ class AttachmentTest extends TestCase
 	public function testConstruct()
 	{
 		$part	= new Attachment();
-		$this->assertEquals( 'fixed', $part->getFormat() );
-		$this->assertEquals( 'base64', $part->getEncoding() );
-		$this->assertEquals( 'application/octet-stream', $part->getMimeType() );
+		self::assertEquals( 'fixed', $part->getFormat() );
+		self::assertEquals( 'base64', $part->getEncoding() );
+		self::assertEquals( 'application/octet-stream', $part->getMimeType() );
 	}
 
 	/**
@@ -51,7 +51,7 @@ class AttachmentTest extends TestCase
 		$time	= time() - 30;
 		$part	= new Attachment();
 		$part->setFileATime( $time );
-		$this->assertEquals( $time, $part->getFileATime() );
+		self::assertEquals( $time, $part->getFileATime() );
 	}
 
 	/**
@@ -63,7 +63,7 @@ class AttachmentTest extends TestCase
 		$time	= time() - 30;
 		$part	= new Attachment();
 		$part->setFileCTime( $time );
-		$this->assertEquals( $time, $part->getFileCTime() );
+		self::assertEquals( $time, $part->getFileCTime() );
 	}
 
 	/**
@@ -75,7 +75,7 @@ class AttachmentTest extends TestCase
 		$time	= time() - 30;
 		$part	= new Attachment();
 		$part->setFileMTime( $time );
-		$this->assertEquals( $time, $part->getFileMTime() );
+		self::assertEquals( $time, $part->getFileMTime() );
 	}
 
 	/**
@@ -87,7 +87,7 @@ class AttachmentTest extends TestCase
 		$size	= 1234;
 		$part	= new Attachment();
 		$part->setFileSize( $size );
-		$this->assertEquals( $size, $part->getFileSize() );
+		self::assertEquals( $size, $part->getFileSize() );
 	}
 
 	/**
@@ -100,16 +100,16 @@ class AttachmentTest extends TestCase
 		$part		= new Attachment();
 
 		$part->setContent( $content );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( 'application/octet-stream', $part->getMimeType() );
-		$this->assertEquals( 'base64', $part->getEncoding() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( 'application/octet-stream', $part->getMimeType() );
+		self::assertEquals( 'base64', $part->getEncoding() );
 
 		$part->setContent( $content );
 		$part->setMimeType( 'x-zip' );
 		$part->setEncoding( 'binary' );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( 'x-zip', $part->getMimeType() );
-		$this->assertEquals( 'binary', $part->getEncoding() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( 'x-zip', $part->getMimeType() );
+		self::assertEquals( 'binary', $part->getEncoding() );
 	}
 
 	/**
@@ -126,18 +126,18 @@ class AttachmentTest extends TestCase
 
 		$part		= new Attachment();
 		$part->setFile( $file );
-		$this->assertEquals( basename( __FILE__ ), $part->getFileName() );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( $fileATime, $part->getFileATime() );
-		$this->assertEquals( $fileCTime, $part->getFileCTime() );
-		$this->assertEquals( $fileMTime, $part->getFileMTime() );
-		$this->assertEquals( $fileSize, $part->getFileSize() );
+		self::assertEquals( basename( __FILE__ ), $part->getFileName() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( $fileATime, $part->getFileATime() );
+		self::assertEquals( $fileCTime, $part->getFileCTime() );
+		self::assertEquals( $fileMTime, $part->getFileMTime() );
+		self::assertEquals( $fileSize, $part->getFileSize() );
 
 		$part->setFile( $file, 'x-zip', 'binary' );
-		$this->assertEquals( basename( __FILE__ ), $part->getFileName() );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( 'x-zip', $part->getMimeType() );
-		$this->assertEquals( 'binary', $part->getEncoding() );
+		self::assertEquals( basename( __FILE__ ), $part->getFileName() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( 'x-zip', $part->getMimeType() );
+		self::assertEquals( 'binary', $part->getEncoding() );
 	}
 
 	/**
@@ -157,11 +157,11 @@ class AttachmentTest extends TestCase
 	public function testFileName()
 	{
 		$part	= new Attachment();
-		$this->assertEquals( NULL, $part->getFileName() );
+		self::assertEquals( NULL, $part->getFileName() );
 		$part->setFileName( "test.file" );
-		$this->assertEquals( "test.file", $part->getFileName() );
+		self::assertEquals( "test.file", $part->getFileName() );
 		$part->setFileName( "path/test.file" );
-		$this->assertEquals( "test.file", $part->getFileName() );
+		self::assertEquals( "test.file", $part->getFileName() );
 
 		$file		= __FILE__;
 		$content	= file_get_contents( $file );
@@ -171,20 +171,20 @@ class AttachmentTest extends TestCase
 		$fileSize	= filesize( $file );
 
 		$part->setFile( $file );
-		$this->assertEquals( basename( __FILE__ ), $part->getFileName() );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( $fileATime, $part->getFileATime() );
-		$this->assertEquals( $fileCTime, $part->getFileCTime() );
-		$this->assertEquals( $fileMTime, $part->getFileMTime() );
-		$this->assertEquals( $fileSize, $part->getFileSize() );
+		self::assertEquals( basename( __FILE__ ), $part->getFileName() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( $fileATime, $part->getFileATime() );
+		self::assertEquals( $fileCTime, $part->getFileCTime() );
+		self::assertEquals( $fileMTime, $part->getFileMTime() );
+		self::assertEquals( $fileSize, $part->getFileSize() );
 
 		$part->setFileName( "test.file" );
-		$this->assertEquals( "test.file", $part->getFileName() );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( $fileATime, $part->getFileATime() );
-		$this->assertEquals( $fileCTime, $part->getFileCTime() );
-		$this->assertEquals( $fileMTime, $part->getFileMTime() );
-		$this->assertEquals( $fileSize, $part->getFileSize() );
+		self::assertEquals( "test.file", $part->getFileName() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( $fileATime, $part->getFileATime() );
+		self::assertEquals( $fileCTime, $part->getFileCTime() );
+		self::assertEquals( $fileMTime, $part->getFileMTime() );
+		self::assertEquals( $fileSize, $part->getFileSize() );
 	}
 
 	/**
@@ -223,7 +223,7 @@ class AttachmentTest extends TestCase
 		$headers	= join( $delimiter, $headers );
 		$content	= $this->wrapContent( base64_encode( $content ) );
 		$expected	= $headers.$delimiter.$delimiter.$content;
-		$this->assertEquals( $expected, $part->render() );
+		self::assertEquals( $expected, $part->render() );
 
 		$part->setEncoding( "binary" );
 		$part->setMimeType( "application/octet-stream" );
@@ -236,7 +236,7 @@ class AttachmentTest extends TestCase
 		);
 		$headers	= join( $delimiter, $headers );
 		$expected	= $headers.$delimiter.$delimiter.$content;
-		$this->assertEquals( $expected, $part->render() );
+		self::assertEquals( $expected, $part->render() );
 	}
 
 	protected function wrapContent( string $content ): string

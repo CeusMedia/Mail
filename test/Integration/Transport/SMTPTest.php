@@ -13,6 +13,7 @@ use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
+use CeusMedia\Mail\Transport\Result;
 use CeusMedia\Mail\Transport\SMTP;
 use CeusMedia\Mail\Transport\SMTP\Response;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
@@ -52,15 +53,16 @@ class SMTPTest extends TestCase
 
 		try{
 			$returned	= $smtp->send( $message );								//  try to send mail
-			$this->assertTrue( is_object( $returned ) );
-
-			$actual	= $returned instanceof SMTP;
-			$this->assertTrue( $actual );
 		}
 		catch( \Exception $e ){
 //			print_r( $socket->getLog() );
 			$this->fail( $e->getMessage() );
 		}
+		self::assertTrue( is_array( $returned ) );
+		self::assertTrue( is_object( current( $returned ) ) );
+
+		$first	= current( $returned );
+		self::assertTrue( $first instanceof Result );
 	}
 
 	/**
@@ -137,7 +139,7 @@ class SMTPTest extends TestCase
 				$loopTime	+= $this->receiveLoopSleep;
 			}
 		} while( $loopTime < $this->receiveLoopTimeout );
-		$this->assertTrue( $isMailReceived );
+		self::assertTrue( $isMailReceived );
 	}
 
 	public function _testSend_Virus()
@@ -209,7 +211,7 @@ class SMTPTest extends TestCase
 				$loopTime	+= $receiveLoopSleep;
 			}
 		} while( $loopTime < $receiveLoopTimeout );
-		$this->assertTrue( !$isMailReceived );
+		self::assertTrue( !$isMailReceived );
 	}
 }
 

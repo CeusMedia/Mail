@@ -36,7 +36,7 @@ class PartTest extends TestCase
 		$charset	= "whatYouWant";
 		$part		= new Message_Part();
 		$part->setCharset( $charset );
-		$this->assertEquals( $charset, $part->getCharset() );
+		self::assertEquals( $charset, $part->getCharset() );
 	}
 
 	/**
@@ -48,7 +48,7 @@ class PartTest extends TestCase
 		$content	= "whatYouWant";
 		$part		= new Message_Part();
 		$part->setContent( $content );
-		$this->assertEquals( $content, $part->getContent() );
+		self::assertEquals( $content, $part->getContent() );
 	}
 
 	/**
@@ -61,7 +61,7 @@ class PartTest extends TestCase
 		foreach( $encodings as $encoding ){
 			$part		= new Message_Part();
 			$part->setEncoding( $encoding );
-			$this->assertEquals( $encoding, $part->getEncoding() );
+			self::assertEquals( $encoding, $part->getEncoding() );
 		}
 	}
 
@@ -85,7 +85,7 @@ class PartTest extends TestCase
 		foreach( $formats as $format ){
 			$part		= new Message_Part();
 			$part->setFormat( $format );
-			$this->assertEquals( $format, $part->getFormat() );
+			self::assertEquals( $format, $part->getFormat() );
 		}
 	}
 
@@ -108,7 +108,7 @@ class PartTest extends TestCase
 		$mimeType	= "whatYouWant";
 		$part		= new Message_Part();
 		$part->setMimeType( $mimeType );
-		$this->assertEquals( $mimeType, $part->getMimeType() );
+		self::assertEquals( $mimeType, $part->getMimeType() );
 	}
 
 	/**
@@ -124,8 +124,8 @@ class PartTest extends TestCase
 			Part::TYPE_MAIL			=> new MailPart( 'test' ),
 		];
 		foreach( $parts as $type => $part ){
-			$this->assertEquals( $type, $part->getType() );
-			$this->assertEquals( $type, $part->getType( TRUE ) );
+			self::assertEquals( $type, $part->getType() );
+			self::assertEquals( $type, $part->getType( TRUE ) );
 		}
 	}
 
@@ -142,7 +142,7 @@ class PartTest extends TestCase
 			Part::TYPE_MAIL			=> new MailPart( 'test' ),
 		];
 		foreach( $parts as $type => $part ){
-			$this->assertTrue( $part->isOfType( $type ) );
+			self::assertTrue( $part->isOfType( $type ) );
 		}
 	}
 
@@ -152,7 +152,7 @@ class PartTest extends TestCase
 	public function testIsAttachment()
 	{
 		$part	= new AttachmentPart();
-		$this->assertTrue( $part->isAttachment( $part ) );
+		self::assertTrue( $part->isAttachment( $part ) );
 
 		$parts	= [
 			new HtmlPart( 'test' ),
@@ -161,7 +161,7 @@ class PartTest extends TestCase
 			new MailPart( 'test' ),
 		];
 		foreach( $parts as $part ){
-			$this->assertFalse( $part->isAttachment( $part ) );
+			self::assertFalse( $part->isAttachment( $part ) );
 		}
 	}
 
@@ -171,7 +171,7 @@ class PartTest extends TestCase
 	public function testIsInlineImage()
 	{
 		$part	= new InlineImagePart( 'test' );
-		$this->assertTrue( $part->isInlineImage( $part ) );
+		self::assertTrue( $part->isInlineImage( $part ) );
 
 		$parts	= [
 			new AttachmentPart(),
@@ -180,7 +180,7 @@ class PartTest extends TestCase
 			new MailPart( 'test' ),
 		];
 		foreach( $parts as $part ){
-			$this->assertFalse( $part->isInlineImage( $part ) );
+			self::assertFalse( $part->isInlineImage( $part ) );
 		}
 	}
 
@@ -190,7 +190,7 @@ class PartTest extends TestCase
 	public function testIsHTML()
 	{
 		$part	= new HtmlPart( 'test' );
-		$this->assertTrue( $part->isHTML( $part ) );
+		self::assertTrue( $part->isHTML( $part ) );
 
 		$parts	= [
 			new AttachmentPart(),
@@ -199,7 +199,7 @@ class PartTest extends TestCase
 			new MailPart( 'test' ),
 		];
 		foreach( $parts as $part ){
-			$this->assertFalse( $part->isHTML( $part ) );
+			self::assertFalse( $part->isHTML( $part ) );
 		}
 	}
 
@@ -209,7 +209,7 @@ class PartTest extends TestCase
 	public function testIsMail()
 	{
 		$part	= new MailPart( 'test' );
-		$this->assertTrue( $part->isMail( $part ) );
+		self::assertTrue( $part->isMail( $part ) );
 
 		$parts	= [
 			new AttachmentPart(),
@@ -218,7 +218,7 @@ class PartTest extends TestCase
 			new TextPart( 'test' ),
 		];
 		foreach( $parts as $part ){
-			$this->assertFalse( $part->isMail( $part ) );
+			self::assertFalse( $part->isMail( $part ) );
 		}
 	}
 
@@ -228,7 +228,7 @@ class PartTest extends TestCase
 	public function testIsText()
 	{
 		$part	= new TextPart( 'test' );
-		$this->assertTrue( $part->isText( $part ) );
+		self::assertTrue( $part->isText( $part ) );
 
 		$parts	= [
 			new AttachmentPart(),
@@ -237,7 +237,7 @@ class PartTest extends TestCase
 			new MailPart( 'test' ),
 		];
 		foreach( $parts as $part ){
-			$this->assertFalse( $part->isText( $part ) );
+			self::assertFalse( $part->isText( $part ) );
 		}
 	}
 }

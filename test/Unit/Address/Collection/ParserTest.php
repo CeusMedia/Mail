@@ -49,10 +49,10 @@ class ParserTest extends TestCase
 		) );
 
 		$string		= 'Developer <dev@ceusmedia.de>, Tester <test@ceusmedia.de>';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 
 		$string		= ',Developer <dev@ceusmedia.de>,  "Tester"  <test@ceusmedia.de>, ';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 	}
 
 	/**
@@ -65,16 +65,16 @@ class ParserTest extends TestCase
 	{
 		$expected	= new AddressCollection( [new Address( 'dev@ceusmedia.de' )] );
 		$string		= 'dev@ceusmedia.de';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 
 		$string		= ' dev@ceusmedia.de, ';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 
 		$string		= '<dev@ceusmedia.de>';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 
 		$string		= ', <dev@ceusmedia.de> ,';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 	}
 
 	/**
@@ -89,10 +89,10 @@ class ParserTest extends TestCase
 			new Address( 'Developer <dev@ceusmedia.de>' ),
 		) );
 		$string		= 'Developer <dev@ceusmedia.de>';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 
 		$string		= '"Developer" <dev@ceusmedia.de>';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 	}
 
 	/**
@@ -107,7 +107,7 @@ class ParserTest extends TestCase
 			new Address( 'Developer, Tester <dev@ceusmedia.de>' ),
 		) );
 		$string		= '"Developer, Tester" <dev@ceusmedia.de>';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 	}
 
 	/**
@@ -122,7 +122,7 @@ class ParserTest extends TestCase
 			new Address( 'Developer (Dev-Crew) <dev.dev-crew@ceusmedia.de>' ),
 		) );
 		$string		= '"Developer (Dev-Crew)" <dev.dev-crew@ceusmedia.de>';
-		$this->assertEqualsForAllMethods( $expected, $string );
+		self::assertEqualsForAllMethods( $expected, $string );
 	}
 
 	public function testParseUsingOwn(): void
@@ -130,7 +130,7 @@ class ParserTest extends TestCase
 		$parser		= Parser::getInstance();
 		$actual		= $parser->parseUsingOwn( '', ',' );
 		$expected	= new AddressCollection();
-		$this->assertEqualsForAllMethods( $expected, $actual );
+		self::assertEqualsForAllMethods( $expected, $actual );
 	}
 
 	public function testParseUsingOwnException1(): void

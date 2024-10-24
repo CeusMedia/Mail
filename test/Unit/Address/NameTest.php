@@ -30,19 +30,19 @@ class NameTest extends TestCase
 		$fullname	= $surname.' '.$firstname;
 
 		$name	= new Name();
-		$this->assertNull( $name->getFullname() );
-		$this->assertNull( $name->getFirstname() );
-		$this->assertNull( $name->getSurname() );
+		self::assertNull( $name->getFullname() );
+		self::assertNull( $name->getFirstname() );
+		self::assertNull( $name->getSurname() );
 
 		$name	= new Name( $fullname );
-		$this->assertEquals( $fullname, $name->getFullname() );
-		$this->assertNull( $name->getFirstname() );
-		$this->assertNull( $name->getSurname() );
+		self::assertEquals( $fullname, $name->getFullname() );
+		self::assertNull( $name->getFirstname() );
+		self::assertNull( $name->getSurname() );
 
 		$name	= new Name( $fullname, $surname, $firstname );
-		$this->assertEquals( $fullname, $name->getFullname() );
-		$this->assertEquals( $firstname, $name->getFirstname() );
-		$this->assertEquals( $surname, $name->getSurname() );
+		self::assertEquals( $fullname, $name->getFullname() );
+		self::assertEquals( $firstname, $name->getFirstname() );
+		self::assertEquals( $surname, $name->getSurname() );
 	}
 
 	/**
@@ -65,7 +65,7 @@ class NameTest extends TestCase
 			(new Name( 'invalid' )),
 		];
 		foreach( $names as $nr => $name )
-			$this->assertEquals( $expected[$nr], Name::splitNameParts( $name ) );
+			self::assertEquals( $expected[$nr], Name::splitNameParts( $name ) );
 	}
 
 	/**
@@ -82,7 +82,7 @@ class NameTest extends TestCase
 			new Name( 'invalid' ),
 		];
 		foreach( $names as $nr => $name )
-			$this->assertEquals( $expected[$nr], Name::swapCommaSeparatedNameParts( $name ) );
+			self::assertEquals( $expected[$nr], Name::swapCommaSeparatedNameParts( $name ) );
 	}
 
 	/**
@@ -92,11 +92,11 @@ class NameTest extends TestCase
 	public function testGetSetFirstname()
 	{
 		$name	= new Name();
-		$this->assertNull( $name->getFirstname() );
+		self::assertNull( $name->getFirstname() );
 
 		$firstname	= 'Hans Dieter';
 		$name->setFirstname( $firstname );
-		$this->assertEquals( $firstname, $name->getFirstname() );
+		self::assertEquals( $firstname, $name->getFirstname() );
 	}
 
 	/**
@@ -106,11 +106,11 @@ class NameTest extends TestCase
 	public function testGetSetFullname()
 	{
 		$name	= new Name();
-		$this->assertNull( $name->getFullname() );
+		self::assertNull( $name->getFullname() );
 
 		$fullname	= 'Hans Testmann';
 		$name->setFullname( $fullname );
-		$this->assertEquals( $fullname, $name->getFullname() );
+		self::assertEquals( $fullname, $name->getFullname() );
 	}
 
 	/**
@@ -120,10 +120,10 @@ class NameTest extends TestCase
 	public function testGetSetSurname()
 	{
 		$name	= new Name();
-		$this->assertNull( $name->getSurname() );
+		self::assertNull( $name->getSurname() );
 
 		$surname	= 'Testmann';
 		$name->setSurname( $surname );
-		$this->assertEquals( $surname, $name->getSurname() );
+		self::assertEquals( $surname, $name->getSurname() );
 	}
 }

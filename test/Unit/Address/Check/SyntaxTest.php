@@ -26,20 +26,20 @@ class SyntaxTest extends TestCase
 	public function testConstruct()
 	{
 		$checker	= new Syntax();
-		$this->assertTrue( $checker->isMode( Syntax::MODE_AUTO ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_AUTO ) );
 
 		$checker	= new Syntax( Syntax::MODE_FILTER );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_FILTER ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_FILTER ) );
 
 		$checker->setMode( Syntax::MODE_SIMPLE_REGEX );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
 
 		$checker->setMode( Syntax::MODE_EXTENDED_REGEX );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
 
 		$checker->setMode( Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
 	}
 
 	public function testEvaluate()
@@ -47,15 +47,15 @@ class SyntaxTest extends TestCase
 		$checker	= new Syntax();
 		$expected	= Syntax::MODE_FILTER | Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX;
 		$actual		= $checker->evaluate( "foo.bar@example.com" );
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 
 		$expected	= Syntax::MODE_FILTER | Syntax::MODE_EXTENDED_REGEX;
 		$actual		= $checker->evaluate( "foo+bar!@example.com" );
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 
 		$expected	= 0;
 		$actual		= $checker->evaluate( "foo.bar.@example.com" );
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -67,7 +67,7 @@ class SyntaxTest extends TestCase
 		$checker	= new Syntax( $mode );
 		$expected	= Syntax::MODE_ALL | Syntax::MODE_FILTER | Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX;
 		$actual		= $checker->check( "foo+bar!@example.com" );
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -78,7 +78,7 @@ class SyntaxTest extends TestCase
 		$mode		= Syntax::MODE_FILTER;
 		$checker	= new Syntax( $mode );
 		$actual		= $checker->check( "foo.bar@example.com" );
-		$this->assertEquals( $mode, $actual );
+		self::assertEquals( $mode, $actual );
 	}
 
 	/**
@@ -89,7 +89,7 @@ class SyntaxTest extends TestCase
 		$mode		= Syntax::MODE_SIMPLE_REGEX;
 		$checker	= new Syntax( $mode );
 		$actual		= $checker->check( "foo.bar@example.com" );
-		$this->assertEquals( $mode, $actual );
+		self::assertEquals( $mode, $actual );
 	}
 
 	/**
@@ -100,7 +100,7 @@ class SyntaxTest extends TestCase
 		$mode		= Syntax::MODE_EXTENDED_REGEX;
 		$checker	= new Syntax( $mode );
 		$actual		= $checker->check( "foo+bar!@example.com" );
-		$this->assertEquals( $mode, $actual );
+		self::assertEquals( $mode, $actual );
 	}
 
 	/**
@@ -109,10 +109,10 @@ class SyntaxTest extends TestCase
 	public function testCheckInvalid()
 	{
 		$checker	= new Syntax( Syntax::MODE_ALL );
-		$this->assertEquals( 0, $checker->check( "foo.bar.@example.com", FALSE ) );
-		$this->assertEquals( 0, $checker->check( "@example.com", FALSE ) );
-		$this->assertEquals( 0, $checker->check( "test", FALSE ) );
-		$this->assertEquals( 0, $checker->check( "_____@####.++", FALSE ) );
+		self::assertEquals( 0, $checker->check( "foo.bar.@example.com", FALSE ) );
+		self::assertEquals( 0, $checker->check( "@example.com", FALSE ) );
+		self::assertEquals( 0, $checker->check( "test", FALSE ) );
+		self::assertEquals( 0, $checker->check( "_____@####.++", FALSE ) );
 	}
 
 	/**
@@ -141,7 +141,7 @@ class SyntaxTest extends TestCase
 	public function testIsValidValidSimple()
 	{
 		$checker	= new Syntax( Syntax::MODE_SIMPLE_REGEX );
-		$this->assertTrue( $checker->isValid( "foo.bar@example.com" ) );
+		self::assertTrue( $checker->isValid( "foo.bar@example.com" ) );
 	}
 
 	/**
@@ -150,7 +150,7 @@ class SyntaxTest extends TestCase
 	public function testIsValidValidExtended()
 	{
 		$checker	= new Syntax( Syntax::MODE_EXTENDED_REGEX );
-		$this->assertTrue( $checker->isValid( "foo+bar!@example.com" ) );
+		self::assertTrue( $checker->isValid( "foo+bar!@example.com" ) );
 	}
 
 	/**
@@ -159,10 +159,10 @@ class SyntaxTest extends TestCase
 	public function testIsValidInvalid()
 	{
 		$checker	= new Syntax();
-		$this->assertFalse( $checker->isValid( "foo.bar.@example.com" ) );
-		$this->assertFalse( $checker->isValid( "@example.com" ) );
-		$this->assertFalse( $checker->isValid( "test" ) );
-		$this->assertFalse( $checker->isValid( "_____@####.++" ) );
+		self::assertFalse( $checker->isValid( "foo.bar.@example.com" ) );
+		self::assertFalse( $checker->isValid( "@example.com" ) );
+		self::assertFalse( $checker->isValid( "test" ) );
+		self::assertFalse( $checker->isValid( "_____@####.++" ) );
 	}
 
 	/**
@@ -173,16 +173,16 @@ class SyntaxTest extends TestCase
 	{
 		$checker	= new Syntax();
 		$checker->setMode( Syntax::MODE_FILTER );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_FILTER ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_FILTER ) );
 
 		$checker->setMode( Syntax::MODE_SIMPLE_REGEX );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
 
 		$checker->setMode( Syntax::MODE_EXTENDED_REGEX );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
 
 		$checker->setMode( Syntax::MODE_SIMPLE_REGEX | Syntax::MODE_EXTENDED_REGEX );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
-		$this->assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_SIMPLE_REGEX ) );
+		self::assertTrue( $checker->isMode( Syntax::MODE_EXTENDED_REGEX ) );
 	}
 }

@@ -28,6 +28,6 @@ class MailboxTest extends TestCase
 	{
 		$connection	= new Connection( 'host.server.tld' );
 		$instance	= Mailbox::getInstance( $connection );
-		$this->assertEquals( new Mailbox( $connection ), $instance );
+		self::assertEquals( new Mailbox( $connection ), $instance );
 	}
 }

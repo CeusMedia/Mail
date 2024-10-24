@@ -29,7 +29,7 @@ class ParserTest extends TestCase
 	public function testGetInstance()
 	{
 		$instance	= Parser::getInstance();
-		$this->assertEquals( new Parser(), $instance );
+		self::assertEquals( new Parser(), $instance );
 	}
 
 	/**
@@ -49,26 +49,26 @@ class ParserTest extends TestCase
 	{
 		$string		= 'value; key1="value1"; key2="value2"';
 		$object		= Parser::parseAttributedHeaderValue( $string );
-		$this->assertEquals( 'value', $object->getValue() );
+		self::assertEquals( 'value', $object->getValue() );
 		$expected	= ['key1' => 'value1', 'key2' => 'value2'];
-		$this->assertEquals( $expected, $object->getAttributes() );
+		self::assertEquals( $expected, $object->getAttributes() );
 
 		$string		= 'form-data; name="field2"; filename="example.txt"';
 		$object		= Parser::parseAttributedHeaderValue( $string );
-		$this->assertEquals( 'form-data', $object->getValue() );
+		self::assertEquals( 'form-data', $object->getValue() );
 		$expected	= ['name' => 'field2', 'filename' => 'example.txt'];
-		$this->assertEquals( $expected, $object->getAttributes() );
+		self::assertEquals( $expected, $object->getAttributes() );
 
 		$string		= 'A custom value; first-attribute="Umlauts-Test #1 äöüÄÖÜß"; second-attribute="Quotes-Test \"a_b\""';
 		$object		= Parser::parseAttributedHeaderValue( $string );
-		$this->assertEquals( 'A custom value', $object->getValue() );
+		self::assertEquals( 'A custom value', $object->getValue() );
 		$expected	= ['first-attribute' => 'Umlauts-Test #1 äöüÄÖÜß', 'second-attribute' => 'Quotes-Test "a_b"'];
-		$this->assertEquals( $expected, $object->getAttributes() );
+		self::assertEquals( $expected, $object->getAttributes() );
 
 		$string		= 'value; complex-key.1="Project Name \"Vanitas 2.0\""';
 		$object		= Parser::parseAttributedHeaderValue( $string );
-		$this->assertEquals( 'value', $object->getValue() );
+		self::assertEquals( 'value', $object->getValue() );
 		$expected	= ['complex-key.1' => 'Project Name "Vanitas 2.0"'];
-		$this->assertEquals( $expected, $object->getAttributes() );
+		self::assertEquals( $expected, $object->getAttributes() );
 	}
 }

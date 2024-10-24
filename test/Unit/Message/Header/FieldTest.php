@@ -28,7 +28,7 @@ class FieldTest extends TestCase
 		$header	= new Field( 'key', 'value' );
 		$expected	= true;
 		$actual	= (bool) strlen( $header->toString() );
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -39,19 +39,19 @@ class FieldTest extends TestCase
 	{
 		$header		= new Field( 'Key-with-Value', 'Value with Space' );
 		$expected	= 'Key-with-Value';
-		$this->assertEquals( $expected, $header->getName() );
+		self::assertEquals( $expected, $header->getName() );
 
 		$header		= new Field( 'as-HTML', 'Value with Space' );
 		$expected	= 'as-HTML';
-		$this->assertEquals( $expected, $header->getName() );
+		self::assertEquals( $expected, $header->getName() );
 
 		$header		= new Field( 'as HTML', 'Value with Space' );
 		$expected	= 'as-HTML';
-		$this->assertEquals( $expected, $header->getName() );
+		self::assertEquals( $expected, $header->getName() );
 
 		$header->setName( 'key with spaces' );
 		$expected	= 'key-with-spaces';
-		$this->assertEquals( $expected, $header->getName() );
+		self::assertEquals( $expected, $header->getName() );
 	}
 
 	/**
@@ -81,11 +81,11 @@ class FieldTest extends TestCase
 	{
 		$header		= new Field( 'Key-with-Value', 'Value with Space' );
 		$expected	= 'Key-With-Value';
-		$this->assertEquals( $expected, $header->getName( FALSE ) );
+		self::assertEquals( $expected, $header->getName( FALSE ) );
 
 		$header		= new Field( 'as-HTML', 'Value with Space' );
 		$expected	= 'As-Html';
-		$this->assertEquals( $expected, $header->getName( FALSE ) );
+		self::assertEquals( $expected, $header->getName( FALSE ) );
 	}
 
 	/**
@@ -95,10 +95,10 @@ class FieldTest extends TestCase
 	{
 		$header		= new Field( 'as-HTML', 'Value with Space' );
 		$expected	= 'As-Html';
-		$this->assertEquals( $expected, $header->getName( FALSE, TRUE ) );
+		self::assertEquals( $expected, $header->getName( FALSE, TRUE ) );
 
 		$expected	= 'as-HTML';
-		$this->assertEquals( $expected, $header->getName( TRUE, TRUE ) );
+		self::assertEquals( $expected, $header->getName( TRUE, TRUE ) );
 	}
 
 	/**
@@ -109,11 +109,11 @@ class FieldTest extends TestCase
 	{
 		$header		= new Field( 'Key-with-Value', 'Value with Space' );
 		$expected	= 'Value with Space';
-		$this->assertEquals( $expected, $header->getValue() );
+		self::assertEquals( $expected, $header->getValue() );
 
 		$expected	= 'New Value, with space and "quote"';
 		$header->setValue( $expected );
-		$this->assertEquals( $expected, $header->getValue() );
+		self::assertEquals( $expected, $header->getValue() );
 	}
 
 	/**
@@ -124,13 +124,13 @@ class FieldTest extends TestCase
 	{
 		$header		= new Field( 'key', 'value' );
 		$expected	= 'key: value';
-		$this->assertEquals( $expected, $header->toString() );
+		self::assertEquals( $expected, $header->toString() );
 
 		$header		= new Field( 'key-with-more-words', 'value' );
 		$expected	= 'key-with-more-words: value';
-		$this->assertEquals( $expected, $header->toString() );
+		self::assertEquals( $expected, $header->toString() );
 
-		$this->assertEquals( $expected, (string) $header );
+		self::assertEquals( $expected, (string) $header );
 	}
 
 	/**
@@ -141,6 +141,6 @@ class FieldTest extends TestCase
 		$header		= new Field( 'key', 'value' );
 		$expected	= 'key: value';
 		$actual	= (string) $header;
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 	}
 }

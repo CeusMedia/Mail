@@ -38,16 +38,16 @@ class TextTest extends TestCase
 	{
 		$content	= "This is the content.";
 		$part		= new Text( $content );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( "UTF-8", $part->getCharset() );
-		$this->assertEquals( "text/plain", $part->getMimeType() );
-		$this->assertEquals( "base64", $part->getEncoding() );
-		$this->assertEquals( "fixed", $part->getFormat() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( "UTF-8", $part->getCharset() );
+		self::assertEquals( "text/plain", $part->getMimeType() );
+		self::assertEquals( "base64", $part->getEncoding() );
+		self::assertEquals( "fixed", $part->getFormat() );
 
 		$part		= new Text( $content, 'latin1', 'base64' );
-		$this->assertEquals( $content, $part->getContent() );
-		$this->assertEquals( "latin1", $part->getCharset() );
-		$this->assertEquals( "base64", $part->getEncoding() );
+		self::assertEquals( $content, $part->getContent() );
+		self::assertEquals( "latin1", $part->getCharset() );
+		self::assertEquals( "base64", $part->getEncoding() );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class TextTest extends TestCase
 			'',
 			$this->wrapContent( base64_encode( $content ) ),
 		) );
-		$this->assertEquals( $expected, $part->render() );
+		self::assertEquals( $expected, $part->render() );
 
 		$part		= new Text( $content, 'utf-8', 'quoted-printable' );
 		$expected	= join( $this->delimiter, array(
@@ -73,7 +73,7 @@ class TextTest extends TestCase
 			'',
 			$this->wrapContent( quoted_printable_encode( $content ) ),
 		) );
-		$this->assertEquals( $expected, $part->render() );
+		self::assertEquals( $expected, $part->render() );
 
 		$part		= new Text( $content );
 		$part->setMimeType( "text/PLAIN" );
@@ -83,7 +83,7 @@ class TextTest extends TestCase
 			'',
 			$this->wrapContent( base64_encode( $content ) ),
 		) );
-		$this->assertEquals( $expected, $part->render() );
+		self::assertEquals( $expected, $part->render() );
 	}
 
 	protected function wrapContent( string $content ): string

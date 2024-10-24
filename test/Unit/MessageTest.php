@@ -42,19 +42,19 @@ class MessageTest extends PhpUnitTestCase
 		$subject2->setFile( __FILE__ );
 
 		$message	= Message::getInstance();
-		$this->assertFalse( $message->hasAttachments() );
+		self::assertFalse( $message->hasAttachments() );
 
 		$actual	= $message->addPart( $subject1 );
-		$this->assertEquals( $message, $actual );
-		$this->assertTrue( $message->hasAttachments() );
+		self::assertEquals( $message, $actual );
+		self::assertTrue( $message->hasAttachments() );
 
 		$actual	= $message->addAttachment( __FILE__ );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$actual	= array( $subject1, $subject2 );
-		$this->assertEquals( $actual, $message->getAttachments() );
-		$this->assertEquals( $actual, $message->getParts() );
-		$this->assertEquals( array(), $message->getParts( FALSE ) );
+		self::assertEquals( $actual, $message->getAttachments() );
+		self::assertEquals( $actual, $message->getParts() );
+		self::assertEquals( array(), $message->getParts( FALSE ) );
 	}
 
 	/**
@@ -68,15 +68,15 @@ class MessageTest extends PhpUnitTestCase
 		$text		= "TestText123 ÄÖÜäöüß";
 		$part		= new Text( $text );
 		$message	= Message::getInstance();
-		$this->assertFalse( $message->hasText() );
+		self::assertFalse( $message->hasText() );
 
 		$actual	= $message->addText( $text );
-		$this->assertEquals( $message, $actual );
-		$this->assertTrue( $message->hasText() );
+		self::assertEquals( $message, $actual );
+		self::assertTrue( $message->hasText() );
 
-		$this->assertEquals( $part, $message->getText() );
-		$this->assertEquals( $text, $message->getText()->getContent() );
-		$this->assertEquals( $part, $message->getParts()[0] );
+		self::assertEquals( $part, $message->getText() );
+		self::assertEquals( $text, $message->getText()->getContent() );
+		self::assertEquals( $part, $message->getParts()[0] );
 	}
 
 	/**
@@ -90,15 +90,15 @@ class MessageTest extends PhpUnitTestCase
 		$text		= "<div><b>TestText123</b> <em>ÄÖÜäöüß</em></div>";
 		$part		= new HTML( $text );
 		$message	= Message::getInstance();
-		$this->assertFalse( $message->hasHTML() );
+		self::assertFalse( $message->hasHTML() );
 
 		$actual	= $message->addHTML( $text );
-		$this->assertEquals( $message, $actual );
-		$this->assertTrue( $message->hasHTML() );
+		self::assertEquals( $message, $actual );
+		self::assertTrue( $message->hasHTML() );
 
-		$this->assertEquals( $part, $message->getHTML() );
-		$this->assertEquals( $text, $message->getHTML()->getContent() );
-		$this->assertEquals( $part, $message->getParts()[0] );
+		self::assertEquals( $part, $message->getHTML() );
+		self::assertEquals( $text, $message->getHTML()->getContent() );
+		self::assertEquals( $part, $message->getParts()[0] );
 	}
 
 	/**
@@ -114,15 +114,15 @@ class MessageTest extends PhpUnitTestCase
 		$part->setFile($filePath);
 
 		$message	= Message::getInstance();
-		$this->assertFalse( $message->hasInlineImages() );
+		self::assertFalse( $message->hasInlineImages() );
 
 		$actual		= $message->addInlineImage( 'id', $filePath );
-		$this->assertEquals( $message, $actual );
-		$this->assertTrue( $message->hasInlineImages() );
+		self::assertEquals( $message, $actual );
+		self::assertTrue( $message->hasInlineImages() );
 
-		$this->assertEquals( $part, $message->getInlineImages()[0] );
-		$this->assertEquals( $part, $message->getParts()[0] );
-		$this->assertEquals( array(), $message->getParts( TRUE, FALSE ) );
+		self::assertEquals( $part, $message->getInlineImages()[0] );
+		self::assertEquals( $part, $message->getParts()[0] );
+		self::assertEquals( array(), $message->getParts( TRUE, FALSE ) );
 	}
 
 	/**
@@ -138,18 +138,18 @@ class MessageTest extends PhpUnitTestCase
 		$subject2	= new Mail( 'Mail Content 2' );
 
 		$message	= Message::getInstance();
-		$this->assertFalse( $message->hasMails() );
+		self::assertFalse( $message->hasMails() );
 
 		$actual	= $message->addPart( $subject1 );
-		$this->assertEquals( $message, $actual );
-		$this->assertTrue( $message->hasMails() );
+		self::assertEquals( $message, $actual );
+		self::assertTrue( $message->hasMails() );
 
 		$actual	= $message->addMail( 'Mail Content 2' );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$actual	= array( $subject1, $subject2 );
-		$this->assertEquals( $actual, $message->getMails() );
-		$this->assertEquals( array(), $message->getParts( TRUE, TRUE, FALSE ) );
+		self::assertEquals( $actual, $message->getMails() );
+		self::assertEquals( array(), $message->getParts( TRUE, TRUE, FALSE ) );
 	}
 
 	/**
@@ -161,33 +161,33 @@ class MessageTest extends PhpUnitTestCase
 		$string		= 'test1@example.com';
 		$message	= Message::getInstance();
 		$actual		= $message->addReplyTo( $string );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$header		= $message->getHeaders()->getField( 'Reply-To' );
-		$this->assertEquals( $string, $header->getValue( $string ) );
+		self::assertEquals( $string, $header->getValue( $string ) );
 
 		$expected	= [new Address( $string )];
-		$this->assertEquals( $expected, $message->getReplyTo() );
+		self::assertEquals( $expected, $message->getReplyTo() );
 
 		$address1	= (new Address( 'test2@example.com' ))->setName( 'Test 2' );
 		$actual		= $message->addReplyTo( $address1 );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$header		= $message->getHeaders()->getFieldsByName( 'Reply-To' );
-		$this->assertEquals( 2, count( $header ) );
+		self::assertEquals( 2, count( $header ) );
 
 		$expected	= [new Address( $string ), $address1];
-		$this->assertEquals( $expected, $message->getReplyTo() );
+		self::assertEquals( $expected, $message->getReplyTo() );
 
 		$address2	= new Address( 'test2@example.com' );
 		$actual		= $message->addReplyTo( $address2, 'Test 3' );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$header		= $message->getHeaders()->getFieldsByName( 'Reply-To' );
-		$this->assertEquals( 3, count( $header ) );
+		self::assertEquals( 3, count( $header ) );
 
 		$expected	= [new Address( $string ), $address1, $address2->setName( 'Test 3' )];
-		$this->assertEquals( $expected, $message->getReplyTo() );
+		self::assertEquals( $expected, $message->getReplyTo() );
 	}
 
 	/**
@@ -208,15 +208,15 @@ class MessageTest extends PhpUnitTestCase
 		$receiverBcc2->setName( "Test Name 2" );
 
 		$actual	= $message->addRecipient( $receiverTo );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 		$actual	= $message->addRecipient( $receiverCc1, NULL, 'cc' );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 		$actual	= $message->addRecipient( $receiverCc2, "Test Name 1", 'cc' );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 		$actual	= $message->addRecipient( $receiverBcc1, NULL, 'bcc' );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 		$actual	= $message->addRecipient( $receiverBcc2, "Test Name 2", 'bcc' );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$expected	= array(
 			'to'	=> new AddressCollection( array(
@@ -231,14 +231,14 @@ class MessageTest extends PhpUnitTestCase
 				new Address( 'Test Name 2 <receiver_bcc2@example.com>' ),
 			) ),
 		);
-		$this->assertEquals( $expected, $message->getRecipients() );
+		self::assertEquals( $expected, $message->getRecipients() );
 
-		$this->assertEquals( $expected['to'], $message->getRecipientsByType( 'to' ) );
-		$this->assertEquals( $expected['to'], $message->getRecipientsByType( 'TO' ) );
-		$this->assertEquals( $expected['cc'], $message->getRecipientsByType( 'cc' ) );
-		$this->assertEquals( $expected['cc'], $message->getRecipientsByType( 'Cc' ) );
-		$this->assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcc' ) );
-		$this->assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcC' ) );
+		self::assertEquals( $expected['to'], $message->getRecipientsByType( 'to' ) );
+		self::assertEquals( $expected['to'], $message->getRecipientsByType( 'TO' ) );
+		self::assertEquals( $expected['cc'], $message->getRecipientsByType( 'cc' ) );
+		self::assertEquals( $expected['cc'], $message->getRecipientsByType( 'Cc' ) );
+		self::assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcc' ) );
+		self::assertEquals( $expected['bcc'], $message->getRecipientsByType( 'bcC' ) );
 	}
 
 	/**
@@ -269,27 +269,27 @@ class MessageTest extends PhpUnitTestCase
 	{
 		$message	= Message::getInstance();
 		$actual		= $message->setSender( "test@example.com" );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$expected	= new Address( "test@example.com" );
-		$this->assertEquals( $expected, $message->getSender() );
+		self::assertEquals( $expected, $message->getSender() );
 
 		$message	= Message::getInstance();
 		$message->setSender( new Address( "test@example.com" ) );
 		$expected	= new Address( "test@example.com" );
-		$this->assertEquals( $expected, $message->getSender() );
+		self::assertEquals( $expected, $message->getSender() );
 
 		$message	= Message::getInstance();
 		$message->setSender( "test@example.com", "Test Name" );
 		$expected	= new Address( "test@example.com" );
 		$expected->setName( "Test Name" );
-		$this->assertEquals( $expected, $message->getSender() );
+		self::assertEquals( $expected, $message->getSender() );
 
 		$message	= Message::getInstance();
 		$message->setSender( new Address( "test@example.com" ), "Test Name" );
 		$expected	= new Address( "test@example.com" );
 		$expected->setName( "Test Name" );
-		$this->assertEquals( $expected, $message->getSender() );
+		self::assertEquals( $expected, $message->getSender() );
 	}
 
 	/**
@@ -301,8 +301,8 @@ class MessageTest extends PhpUnitTestCase
 		$subject	= "Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject - Test Subject";
 		$message	= Message::getInstance();
 		$actual		= $message->setSubject( $subject );
-		$this->assertEquals( $message, $actual );
-		$this->assertEquals( $subject, $message->getSubject() );
+		self::assertEquals( $message, $actual );
+		self::assertEquals( $subject, $message->getSubject() );
 	}
 
 	/**
@@ -314,9 +314,9 @@ class MessageTest extends PhpUnitTestCase
 		$agent		= "Test User Agent";
 		$message	= Message::getInstance();
 		$actual	= $message->setUserAgent( $agent );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
-		$this->assertEquals( $agent, $message->getUserAgent() );
+		self::assertEquals( $agent, $message->getUserAgent() );
 	}
 
 	/**
@@ -348,34 +348,34 @@ class MessageTest extends PhpUnitTestCase
 		$string		= 'Observer <observer@example.net>';
 		$address	= new Address( $string );
 		$actual		= $message->setReadNotificationRecipient( $address );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$fields		= $message->getHeaders()->getFieldsByName( 'Disposition-Notification-To' );
-		$this->assertEquals( 1, count( $fields ) );
+		self::assertEquals( 1, count( $fields ) );
 
 		$field		= $message->getHeaders()->getField( 'Disposition-Notification-To' );
-		$this->assertEquals( $string, $field->getValue() );
+		self::assertEquals( $string, $field->getValue() );
 
 
 		$actual		= $message->setReadNotificationRecipient( $string );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$fields		= $message->getHeaders()->getFieldsByName( 'Disposition-Notification-To' );
-		$this->assertEquals( 2, count( $fields ) );
+		self::assertEquals( 2, count( $fields ) );
 
-		$this->assertEquals( $string, $fields[1]->getValue() );
+		self::assertEquals( $string, $fields[1]->getValue() );
 
 
 		$message	= Message::getInstance();
 		$address	= new Address( 'observer@example.net' );
 
 		$actual		= $message->setReadNotificationRecipient( $string, 'Observer' );
-		$this->assertEquals( $message, $actual );
+		self::assertEquals( $message, $actual );
 
 		$fields		= $message->getHeaders()->getFieldsByName( 'Disposition-Notification-To' );
-		$this->assertEquals( 1, count( $fields ) );
+		self::assertEquals( 1, count( $fields ) );
 
 		$expected	= 'Observer <observer@example.net>';
-		$this->assertEquals( $expected, $fields[0]->getValue() );
+		self::assertEquals( $expected, $fields[0]->getValue() );
 	}
 }

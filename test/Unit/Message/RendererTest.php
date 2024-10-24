@@ -26,7 +26,7 @@ class RendererTest extends TestCase
 	public function testGetInstance()
 	{
 		$instance	= Renderer::getInstance();
-		$this->assertEquals( new Renderer(), $instance );
+		self::assertEquals( new Renderer(), $instance );
 	}
 
 	/**

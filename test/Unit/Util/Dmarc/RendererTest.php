@@ -28,9 +28,9 @@ class RendererTest extends TestCase
 	public function testCreate()
 	{
 		$instance	= Renderer::getInstance();
-		$this->assertTrue( is_object( $instance ) );
-		$this->assertTrue( $instance instanceof Renderer );
-		$this->assertTrue( get_class( $instance ) === 'CeusMedia\Mail\Util\Dmarc\Renderer' );
+		self::assertTrue( is_object( $instance ) );
+		self::assertTrue( $instance instanceof Renderer );
+		self::assertTrue( get_class( $instance ) === 'CeusMedia\Mail\Util\Dmarc\Renderer' );
 	}
 
 	/**
@@ -56,7 +56,7 @@ class RendererTest extends TestCase
 		$dmarc		= preg_split( '/; /', $dmarc );
  		sort( $rendered );
  		sort( $dmarc );
-		$this->assertEquals( $dmarc, $rendered );
+		self::assertEquals( $dmarc, $rendered );
 
 	}
 }

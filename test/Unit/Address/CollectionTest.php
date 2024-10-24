@@ -30,19 +30,19 @@ class CollectionTest extends TestCase
 	{
 		$collection	= new Collection();
 		$expected	= [];
-		$this->assertEquals( $expected, $collection->getAll() );
+		self::assertEquals( $expected, $collection->getAll() );
 
 		$expected	= [new Address( 'name@domain.tld' )];
 		$collection	= new Collection( $expected );
-		$this->assertEquals( $expected, $collection->getAll() );
-		$this->assertEquals( ['name@domain.tld'], $collection->toArray() );
+		self::assertEquals( $expected, $collection->getAll() );
+		self::assertEquals( ['name@domain.tld'], $collection->toArray() );
 
 		$expected	= [
 			new Address( 'name@domain.tld' ),
 			new Address( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>' )
 		];
 		$collection	= new Collection( $expected );
-		$this->assertEquals( $expected, $collection->getAll() );
+		self::assertEquals( $expected, $collection->getAll() );
 
 		$expected	= [
 			'name@domain.tld',
@@ -60,12 +60,12 @@ class CollectionTest extends TestCase
 			new Address( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>' )
 		];
 		$collection	= new Collection( $expected );
-		$this->assertEquals( 2, $collection->count() );
-		$this->assertEquals( 2, count( $collection ) );
+		self::assertEquals( 2, $collection->count() );
+		self::assertEquals( 2, count( $collection ) );
 
 		$collection->add( new Address( 'new@domain.tld' ) );
-		$this->assertEquals( 3, $collection->count() );
-		$this->assertEquals( 3, count( $collection ) );
+		self::assertEquals( 3, $collection->count() );
+		self::assertEquals( 3, count( $collection ) );
 	}
 
 	/**
@@ -81,17 +81,17 @@ class CollectionTest extends TestCase
 		foreach( $addresses as $item )
 			$collection->add( new Address( $item ) );
 
-		$this->assertEquals( $addresses, $collection->toArray( TRUE ) );
+		self::assertEquals( $addresses, $collection->toArray( TRUE ) );
 
 		$expected	= [
 			new Address( 'name@domain.tld' ),
 			new Address( '"Hans Mustermann" <Hans.Mustermann@muster-server.tld>' )
 		];
-		$this->assertEquals( $expected, $collection->toArray( FALSE ) );
+		self::assertEquals( $expected, $collection->toArray( FALSE ) );
 
-		$this->assertEquals( $addresses, $collection->toArray( TRUE ) );
+		self::assertEquals( $addresses, $collection->toArray( TRUE ) );
 
-		$this->assertEquals( $expected, $collection->toArray( FALSE ) );
+		self::assertEquals( $expected, $collection->toArray( FALSE ) );
 	}
 
 	/**
@@ -108,8 +108,8 @@ class CollectionTest extends TestCase
 		foreach( $collection as $nr => $address ){
 			$foundSomething = TRUE;
 		}
-		$this->assertFalse( $foundSomething );
-		$this->assertNull( $collection->current() );
+		self::assertFalse( $foundSomething );
+		self::assertNull( $collection->current() );
 
 		$addresses	= [
 			new Address( 'name@domain.tld' ),
@@ -119,12 +119,12 @@ class CollectionTest extends TestCase
 
 		foreach( $collection as $nr => $address ){
 			if( $nr === 0 )
-				$this->assertEquals( $addresses[$nr], $address );
+				self::assertEquals( $addresses[$nr], $address );
 		}
 
 		foreach( $collection as $nr => $address ){
 			if( $nr === 0 )
-				$this->assertEquals( $addresses[$nr], $address );
+				self::assertEquals( $addresses[$nr], $address );
 		}
 	}
 
@@ -140,7 +140,7 @@ class CollectionTest extends TestCase
 		];
 		$collection	= new Collection( $addresses );
 		$expected	= 'name@domain.tld, "Hans Mustermann" <Hans.Mustermann@muster-server.tld>';
-		$this->assertEquals( $expected, $collection->render() );
-		$this->assertEquals( $expected, (string) $collection );
+		self::assertEquals( $expected, $collection->render() );
+		self::assertEquals( $expected, (string) $collection );
 	}
 }

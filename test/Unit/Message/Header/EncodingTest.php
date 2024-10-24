@@ -27,7 +27,7 @@ class EncodingTest extends PhpUnitTestCase
 	public function testGetInstance()
 	{
 		$instance	= Encoding::getInstance();
-		$this->assertEquals( new Encoding(), $instance );
+		self::assertEquals( new Encoding(), $instance );
 	}
 
 	/**
@@ -46,11 +46,11 @@ class EncodingTest extends PhpUnitTestCase
 		=?UTF-8?Q?=C3=B6tigt_Freigabe?=';
 			$actual		= $encoder->decodeIfNeeded( $string );
 			$expected	= '[Gruppenpost] Gruppe "Deli 124": Mike ist beigetreten und benötigt Freigabe';
-			$this->assertEquals( $expected, $actual );
+			self::assertEquals( $expected, $actual );
 
 			$string		= '=?UTF-8?B?W0dydXBwZW5wb3N0XSBHcnVwcGUgIkRlbGkgMTI0IjogTWlrZSBpc3QgYmVpZ2V0cmV0ZW4gdW5kIGJlbsO2dGlndCBGcmVpZ2FiZQ==?=';
 			$actual		= $encoder->decodeIfNeeded( $string );
-			$this->assertEquals( $expected, $actual );
+			self::assertEquals( $expected, $actual );
 		}
 	}
 
@@ -62,25 +62,25 @@ class EncodingTest extends PhpUnitTestCase
 		$encoder	= Encoding::getInstance();
 
 		$expected	= 'no_need_to_encode';
-		$this->assertEquals( $expected, $encoder->encodeIfNeeded( $expected ) );
+		self::assertEquals( $expected, $encoder->encodeIfNeeded( $expected ) );
 
 		$encoder->setEncodeStrategy( Encoding::ENCODE_STRATEGY_MB );
 		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ" );
 		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 
 		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
 		$expected	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 
 		$encoder->setEncodeStrategy( Encoding::ENCODE_STRATEGY_IMPL );
 		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ" );
 		$expected	= "=?UTF-8?B?".base64_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 
 		$actual	= $encoder->encodeIfNeeded( "ÄÖÜ", "quoted-printable" );
 		$expected	= "=?UTF-8?Q?".quoted_printable_encode( "ÄÖÜ" )."?=";
-		$this->assertEquals( $expected, $actual );
+		self::assertEquals( $expected, $actual );
 	}
 
 	/**
@@ -103,7 +103,7 @@ class EncodingTest extends PhpUnitTestCase
 
 		foreach( Encoding::DECODE_STRATEGIES as $strategy ){
 			$encoder->setDecodeStrategy( $strategy );
-			$this->assertEquals( $strategy, $encoder->decodeStrategy );
+			self::assertEquals( $strategy, $encoder->decodeStrategy );
 		}
 	}
 
@@ -127,7 +127,7 @@ class EncodingTest extends PhpUnitTestCase
 
 		foreach( Encoding::DECODE_STRATEGIES as $strategy ){
 			$encoder->setDecodeStrategyFallback( $strategy );
-			$this->assertEquals( $strategy, $encoder->decodeStrategyFallback );
+			self::assertEquals( $strategy, $encoder->decodeStrategyFallback );
 		}
 	}
 
@@ -151,7 +151,7 @@ class EncodingTest extends PhpUnitTestCase
 
 		foreach( Encoding::ENCODE_STRATEGIES as $strategy ){
 			$encoder->setEncodeStrategy( $strategy );
-			$this->assertEquals( $strategy, $encoder->encodeStrategy );
+			self::assertEquals( $strategy, $encoder->encodeStrategy );
 		}
 	}
 
@@ -175,7 +175,7 @@ class EncodingTest extends PhpUnitTestCase
 
 		foreach( Encoding::ENCODE_STRATEGIES as $strategy ){
 			$encoder->setEncodeStrategyFallback( $strategy );
-			$this->assertEquals( $strategy, $encoder->encodeStrategyFallback );
+			self::assertEquals( $strategy, $encoder->encodeStrategyFallback );
 		}
 	}
 
