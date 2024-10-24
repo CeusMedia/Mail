@@ -71,6 +71,9 @@ class Message
 	/**	@var		integer						$lineLength		Maximum line length of mail content */
 	public static int $lineLength				= 75;
 
+	/** @var		string|NULL					$version		Version of mail library when mail object has been created */
+	public ?string $version						= NULL;
+
 	/**	@var		MessagePart[]				$parts			List of mail parts */
 	protected array $parts						= [];
 
@@ -100,13 +103,21 @@ class Message
 		$this->recipients['to']		= new AddressCollection();
 		$this->recipients['cc']		= new AddressCollection();
 		$this->recipients['bcc']	= new AddressCollection();
-		$this->setUserAgent(Library::getUserAgent());
+		$this->userAgent	= Library::getUserAgent();
+		$this->version		= Library::getVersion();
 	}
 
+	/**
+	 *	Set user agent and version on wake up, if available and not set in object.
+	 *	@return		void
+	 */
 	public function __wakeup()
 	{
-		if( NULL === $this->userAgent || 0 === strlen( trim( $this->userAgent ) ) )
-			$this->setUserAgent(Library::getUserAgent());
+		if( NULL === $this->userAgent || '' === trim( $this->userAgent ) )
+			$this->setUserAgent( Library::getUserAgent() );
+		if( NULL === $this->version || '' === trim( $this->version ) )
+			if( NULL !== Library::getVersion() )
+				$this->setVersion( Library::getVersion() );
 	}
 
 	/**
@@ -495,6 +506,16 @@ class Message
 	}
 
 	/**
+	 *	Returns mail library version.
+	 *	@access		public
+	 *	@return		string|NULL
+	 */
+	public function getVersion(): ?string
+	{
+		return $this->version;
+	}
+
+	/**
 	 *	Indicates whether attachments are set.
 	 *	@access		public
 	 *	@return		boolean
@@ -615,6 +636,16 @@ class Message
 	public function setUserAgent( string $userAgent ): self
 	{
 		$this->userAgent = $userAgent;
+		return $this;
+	}
+
+	/**
+	 *	@param		string		$version
+	 *	@return		self
+	 */
+	public function setVersion( string $version ): self
+	{
+		$this->version	= $version;
 		return $this;
 	}
 }
