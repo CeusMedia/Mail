@@ -117,17 +117,32 @@ class Upload
 	 */
 	public function storeMessage( Message $message, Bitmask|int $additionalFlags = 0, bool $strict = TRUE ): bool
 	{
+		return $this->storeRawMessage( Message\Renderer::render( $message ), $additionalFlags, $strict );
+	}
+
+	/**
+	 *	Stores a mail onto set mailbox folder by its (complete) raw message.
+	 *	Given additional flags (if given) will extend set basic flags (if set).
+	 *	Returns boolean result, handling errors depending on strict mode.
+	 *	- Will lead to exceptions or errors if strict mode is on.
+	 *	- Otherwise, will store errors internally.
+	 *
+	 *	@param		string			$rawMessage
+	 *	@param		Bitmask|int		$additionalFlags
+	 *	@param		bool			$strict				Flag: strict mode (default: yes)
+	 *	@return		bool
+	 *	@throws		RuntimeException	if upload failed with strict mode enabled
+	 */
+	public function storeRawMessage( string $rawMessage, Bitmask|int $additionalFlags = 0, bool $strict = TRUE ): bool
+	{
 		$additionalFlagsInt	= !is_int( $additionalFlags ) ? $additionalFlags->get() : $additionalFlags;
 		$combinedFlags		= ( clone $this->basicFlags )->add( $additionalFlagsInt );
 
 		$reference	= $this->connection->renderReference( FALSE );
-		$folder		= mb_convert_encoding( $this->folder, 'UTF-8', 'UTF7-IMAP' );
-		$result		= @imap_append(
-			$this->connection->getResource( TRUE ),
-			$reference.$folder,
-			Message\Renderer::render( $message ),
-			$this->renderFlags( $combinedFlags )
-		);
+		$folder		= $reference.mb_convert_encoding( $this->folder, 'UTF-8', 'UTF7-IMAP' );
+		$handle		= $this->connection->getResource( TRUE );
+		$flags		= $this->renderFlags( $combinedFlags );
+		$result		= @imap_append( $handle, $folder, $rawMessage, $flags );
 		if( FALSE !== imap_last_error() ){
 			$this->error	= imap_last_error();
 			if( $strict )
@@ -136,11 +151,6 @@ class Upload
 		return $result;
 	}
 
-	/**
-	 *	Realizes flags as chain of strings, like '\Seen\Answered'
-	 *	@param		Bitmask		$flags
-	 *	@return		string
-	 */
 	protected function renderFlags( Bitmask $flags ): string
 	{
 		$options	= [];

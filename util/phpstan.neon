@@ -9,10 +9,8 @@ parameters:
 		- ../src
 	excludePaths:
 		- ../src/Transport/Mailgun.php
-#	reportMaybesInPropertyPhpDocTypes: false
-#	treatPhpDocTypesAsCertain: false
+	reportMaybesInPropertyPhpDocTypes: true
+	treatPhpDocTypesAsCertain: true
 	ignoreErrors:
-		-
-			identifier: missingType.generics
-		-
-			identifier: missingType.iterableValue
+		- identifier: missingType.generics
+		- identifier: missingType.iterableValue

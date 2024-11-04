@@ -51,6 +51,9 @@ class Collection implements Countable, Iterator
 	/** @var int $position */
 	protected int $position		= 0;
 
+	/**
+	 * @param array<Address>|NULL $addresses
+	 */
 	public function __construct( ?array $addresses = NULL )
 	{
 		if( NULL !== $addresses )
@@ -97,6 +100,9 @@ class Collection implements Countable, Iterator
 		return $this;
 	}
 
+	/**
+	 * @return Address[]
+	 */
 	public function getAll(): array
 	{
 		return $this->list;
@@ -142,7 +148,7 @@ class Collection implements Countable, Iterator
 	 *	Either as address objects or strings (rendered addresses).
 	 *	@access		public
 	 *	@param		boolean		$renderValues		Return strings (rendered addresses), default: no
-	 *	@return		array
+	 *	@return		array<Address|string>
 	 */
 	public function toArray( bool $renderValues = FALSE ): array
 	{
