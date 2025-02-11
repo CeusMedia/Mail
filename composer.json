@@ -23,20 +23,20 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "php": "^8.1",
+    "php": "^8.3",
     "ext-dom": "*",
     "ext-fileinfo": "*",
     "ext-iconv": "*",
     "ext-imap": "*",
     "ext-json": "*",
-    "ceus-media/common": "1.0.* | 1.0.x-dev",
-    "ceus-media/cache": "0.6.* | 0.6.x-dev",
+    "ceus-media/common": "1.1.* | 1.1.x-dev",
+    "ceus-media/cache": "0.7.* | 0.7.x-dev",
     "ezyang/htmlpurifier": "dev-master"
   },
   "require-dev": {
     "brianium/paratest": "*",
-    "ceus-media/bootstrap": "0.6.* | 0.6.x-dev",
-    "ceus-media/doc-creator": "1.0.* | 1.0.x-dev",
+    "ceus-media/bootstrap": "0.7.* | 0.7.x-dev",
+    "ceus-media/doc-creator": "1.1.* | 1.1.x-dev",
     "phpunit/phpunit": "10.*",
     "phpstan/phpstan": "1.*",
     "phpstan/phpstan-strict-rules": "1.*",
@@ -62,19 +62,6 @@
     "incomplete:dev:create-docs": [
       "@dev:install-quiet",
       "php vendor/ceus-media/doc-creator/doc-creator.php --config-file=util/doc.xml"
-    ],
-    "dev:phan": [
-      "@dev:install-quiet",
-      "XDEBUG_MODE=off ./vendor/bin/phan -k=util/.phan --color --allow-polyfill-parser || true"
-    ],
-    "dev:phan-report": [
-      "@dev:install-quiet",
-      "@dev:phan-save",
-      "php vendor/ceus-media/phan-viewer/phan-viewer generate --source=util/phan.json --target=doc/phan/"
-    ],
-    "dev:phan-save": [
-      "@dev:install-quiet",
-      "XDEBUG_MODE=off PHAN_DISABLE_XDEBUG_WARN=1 ./vendor/bin/phan -k=util/.phan -m=json -o=util/phan.json --allow-polyfill-parser -p || true"
     ],
     "dev:phpstan": [
       "@dev:install-quiet",

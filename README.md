@@ -1,8 +1,8 @@
 # Ceus Media Mail Library
 
-![Branch](https://img.shields.io/badge/Branch-2.7.x-blue?style=flat-square)
-![Release](https://img.shields.io/badge/Release-2.7.0-blue?style=flat-square)
-![PHP version](https://img.shields.io/badge/PHP-%5E8.1-blue?style=flat-square&color=777BB4)
+![Branch](https://img.shields.io/badge/Branch-2.8.x-blue?style=flat-square)
+![Release](https://img.shields.io/badge/Release-2.8.0-blue?style=flat-square)
+![PHP version](https://img.shields.io/badge/PHP-%5E8.3-blue?style=flat-square&color=777BB4)
 ![PHPStan level](https://img.shields.io/badge/PHPStan_level-max+strict-darkgreen?style=flat-square)
 
 Produce, send and read mails using PHP + IMAP & SMTP.
