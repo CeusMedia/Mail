@@ -29,22 +29,20 @@
     "ext-iconv": "*",
     "ext-imap": "*",
     "ext-json": "*",
-    "ceus-media/common": "^1.0 | 1.0.x-dev",
-    "ceus-media/cache": "^0.6 | 0.6.x-dev",
+    "ceus-media/common": "1.0.* | 1.0.x-dev",
+    "ceus-media/cache": "0.6.* | 0.6.x-dev",
     "ezyang/htmlpurifier": "dev-master"
   },
   "require-dev": {
     "brianium/paratest": "*",
-    "ceus-media/bootstrap": "^0.6 | 0.6.x-dev",
-    "ceus-media/doc-creator": "^1.0 | 1.0.x-dev",
-    "ceus-media/phan-viewer": "* | dev-master",
-    "phan/phan": "^v5",
-    "phpunit/phpunit": "^9.5 | ^10.1",
-    "phpstan/phpstan": "^1",
-    "phpstan/phpstan-strict-rules": "^1",
+    "ceus-media/bootstrap": "0.6.* | 0.6.x-dev",
+    "ceus-media/doc-creator": "1.0.* | 1.0.x-dev",
+    "phpunit/phpunit": "10.*",
+    "phpstan/phpstan": "1.*",
+    "phpstan/phpstan-strict-rules": "1.*",
     "rector/rector": "*",
     "squizlabs/php_codesniffer": "*",
-    "php-parallel-lint/php-parallel-lint": "^1.3 | dev-master"
+    "php-parallel-lint/php-parallel-lint": "1.*"
   },
   "autoload": {
     "psr-4": {
