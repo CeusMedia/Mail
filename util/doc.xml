@@ -35,7 +35,7 @@
 		<path type="documents">doc/</path>
 		<title version="0.2">CeusMedia::Mail</title>
 		<author email="christian.wuerker@ceusmedia.de">Christian Würker</author>
-		<company url="http://ceusmedia.de/">CeuS Media</company>
+		<company url="https://ceusmedia.de/">CeuS Media</company>
 <!--		<logo href="https://github.com/CeusMedia/Common" title="CeusMedia/Common @ GitHub">logo/construction.png</logo>-->
 		<language timezone="Europe/Berlin">en</language>
 		<option name="showSourceCode">1</option>

@@ -18,13 +18,13 @@ declare(strict_types=1);
  *	GNU General Public License for more details.
  *
  *	You should have received a copy of the GNU General Public License
- *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2021-2025 Christian Würker
- *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
+ *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail;
@@ -44,7 +44,7 @@ use function parse_ini_file;
  *	@package		CeusMedia_Mail
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2021-2025 Christian Würker
- *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
+ *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 class Deprecation extends CommonDeprecation
