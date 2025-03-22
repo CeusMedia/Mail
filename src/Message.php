@@ -581,6 +581,19 @@ class Message
 	}
 
 	/**
+	 *	Removes a part by its index.
+	 *	Attention: The index is based on call to getParts, not getAttachments etc.
+	 *	@param		int		$nr		Index of part to remove
+	 *	@return		static
+	 */
+	public function removePart( int $nr ): static
+	{
+		if( array_key_exists( $nr, $this->parts ) )
+			unset( $this->parts[ $nr ] );
+		return $this;
+	}
+
+	/**
 	 *	...
 	 *	@access		public
 	 *	@param		Address|string	$address		Address to send notification to
