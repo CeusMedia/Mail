@@ -17,13 +17,13 @@ declare(strict_types=1);
  *	GNU General Public License for more details.
  *
  *	You should have received a copy of the GNU General Public License
- *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2025 Christian Würker
- *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
+ *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  */
 namespace CeusMedia\Mail\Transport\SMTP;
@@ -39,10 +39,10 @@ use function array_key_exists;
  *	@package		CeusMedia_Mail_Transport_SMTP
  *	@author			Christian Würker <christian.wuerker@ceusmedia.de>
  *	@copyright		2007-2025 Christian Würker
- *	@license		http://www.gnu.org/licenses/gpl-3.0.txt GPL 3
+ *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			https://www.knownhost.com/wiki/email/troubleshooting/error-numbers
- *	@see			http://www.serversmtp.com/en/smtp-error
+ *	@see			https://www.serversmtp.com/en/smtp-error
  */
 class Code
 {
