@@ -31,17 +31,17 @@
     "ext-json": "*",
     "ceus-media/common": "1.0.* | 1.0.x-dev",
     "ceus-media/cache": "0.6.* | 0.6.x-dev",
-    "ezyang/htmlpurifier": "dev-master"
+    "ezyang/htmlpurifier": "^4.19"
   },
   "require-dev": {
-    "brianium/paratest": "*",
+    "brianium/paratest": "7.*",
     "ceus-media/bootstrap": "0.6.* | 0.6.x-dev",
     "ceus-media/doc-creator": "1.0.* | 1.0.x-dev",
     "phpunit/phpunit": "10.*",
-    "phpstan/phpstan": "1.*",
-    "phpstan/phpstan-strict-rules": "1.*",
-    "rector/rector": "*",
-    "squizlabs/php_codesniffer": "*",
+    "phpstan/phpstan": "2.*",
+    "phpstan/phpstan-strict-rules": "2.*",
+    "rector/rector": "2.*",
+    "squizlabs/php_codesniffer": "4.*",
     "php-parallel-lint/php-parallel-lint": "1.*"
   },
   "autoload": {

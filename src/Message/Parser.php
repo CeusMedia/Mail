@@ -110,7 +110,7 @@ class Parser
 				case 'bcc':
 					$addresses	= AddressCollectionParser::getInstance()->parse( $field->getValue() );
 					/** @var Address $address */
-					foreach( $addresses->filter() as $address )
+					foreach( $addresses as $address )
 						$message->addRecipient( $address, NULL, $field->getName() );
 					break;
 			}
@@ -379,32 +379,39 @@ class Parser
 		$contentType	= $headers->getField( 'Content-Type' );
 		$mimeBoundary	= $contentType->getAttribute( 'boundary' );
 
-		if( NULL !== $mimeBoundary ){
-			$lines	= [];
-			$status	= 0;
-			$bodyLines	= self::regSplit( "/\r?\n/", $body, NULL,
-				'Splitting multipart message body into lines failed'
-			);
-			foreach( $bodyLines as $line ){
-				if( $line === '--'.$mimeBoundary ){
-					if( $status === 0 ){
-						$status	= 1;
-						continue;
-					}
+		if( NULL === $mimeBoundary ){
+			$part	= $this->parseAtomicBodyPart( $content );
+			$message->addPart( $part );
+			return;
+		}
+
+		$lines	= [];
+		$status	= 0;
+		$bodyLines	= self::regSplit( "/\r?\n/", $body, NULL,
+			'Splitting multipart message body into lines failed'
+		);
+		foreach( $bodyLines as $line ){
+			if( $line === '--'.$mimeBoundary ){
+				if( $status === 0 ){
+					$status	= 1;
+				}
+				else if( [] !== $lines ){
 					$this->parseMultipartBody( $message, join( $delim, $lines ) );
 					$lines	= [];
 				}
-				else if( $line === '--'.$mimeBoundary.'--' ){
-					$this->parseMultipartBody( $message, join( $delim, $lines ) );
-					break;
-				}
-				else if( $status === 1 )
-					$lines[]	= $line;
+				continue;
 			}
-		}
-		else{
-			$part	= $this->parseAtomicBodyPart( $content );
-			$message->addPart( $part );
+
+			if( $line === '--'.$mimeBoundary.'--' ){
+				if( [] !== $lines )
+					$this->parseMultipartBody( $message, join( $delim, $lines ) );
+				$status	= 0;
+				$lines	= [];
+				continue;
+			}
+
+			if( $status === 1 && !( '' === $line && [] === $lines ) )
+				$lines[]	= $line;
 		}
 	}
 }
