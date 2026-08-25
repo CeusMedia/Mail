@@ -94,10 +94,16 @@ class Collection implements Countable, Iterator
 		return $this->list[$this->position];
 	}
 
-	public function filter(): self
+	/**
+	 *	Filters current list by callback and returns cloned collection.
+	 *	@param		callable $callback
+	 *	@return		static
+	 */
+	public function filter( callable $callback ): self
 	{
-		$this->list	= array_filter( $this->list );
-		return $this;
+		$that	= clone( $this );
+		$that->list = array_filter( $this->list, $callback );
+		return $that;
 	}
 
 	/**

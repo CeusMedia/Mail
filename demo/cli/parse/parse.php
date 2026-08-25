@@ -12,6 +12,8 @@ $showDeliveryChain	= TRUE;
 
 //  --  NO CHANGES NEEDED BELOW  -------------------------------------------------------  //
 
+/** @var array<string,string> $files */
+
 $fileNr		= $argv[1] ?? 0;
 $fileName	= array_keys( $files )[$fileNr];
 

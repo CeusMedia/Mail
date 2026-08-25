@@ -188,7 +188,7 @@ class SMTP
 		$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
 		$this->checkResponse( [ 250 ] );
 		/** @var Address $receiver */
-		foreach( $message->getRecipientsByType( 'TO' )->filter() as $receiver ){
+		foreach( $message->getRecipientsByType( 'TO' ) as $receiver ){
 			$result	= new Result();
 			$result->setReceiver( $receiver );
 			$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
@@ -344,7 +344,6 @@ class SMTP
 		if( 0 === count( $acceptedCodes ) )
 			throw new RangeException( 'No accepted codes set' );
 
-		/** @phpstan-ignore-next-line */
 		$response	= $this->socket->readResponse();
 		if( $response->isError() ){
 			$exception	= new SmtpException( $response->getMessage(), $response->getError() );
@@ -359,7 +358,6 @@ class SMTP
 			if( NULL !== $errorCode )
 				$response->setError( $errorCode );
 			if( $strict ){
-				/** @phpstan-ignore-next-line */
 				$this->socket->close();
 				$message	= vsprintf( 'Unexpected SMTP response (%s): %s', [
 					$response->getCode(),
@@ -377,7 +375,6 @@ class SMTP
 	{
 		if( $this->verbose )
 			print PHP_EOL . ' > '.$message . PHP_EOL;
-		/** @phpstan-ignore-next-line */
 		return $this->socket->sendChunk( $message.Message::$delimiter );
 	}
 }

@@ -20,6 +20,7 @@ $connection	= new Connection(
 	$mailboxAccess->username,
 	$mailboxAccess->password
 );
+
 $connection->setSecure( TRUE, TRUE );
 //$mailbox->connect();
 
