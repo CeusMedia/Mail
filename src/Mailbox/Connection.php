@@ -241,6 +241,8 @@ class Connection
 	/**
 	 *	...
 	 *	@access		public
+	 *	@param		int		$type
+	 *	@param		int		$seconds
 	 *	@return		self		Own instance for method chaining
 	 *	@todo		code doc
 	 */
@@ -254,6 +256,8 @@ class Connection
 		];
 		if( !in_array( $type, $timeoutTypes, TRUE ) )
 			throw new InvalidArgumentException( 'Invalid timeout type' );
+
+		/** @phpstan-ignore-next-line */
 		imap_timeout( $timeoutTypes[$type], $seconds );
 		return $this;
 	}

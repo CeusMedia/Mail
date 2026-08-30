@@ -89,7 +89,7 @@ class Local
 		$this->checkForInjection( $subject );
 		if( !$headers->hasField( 'From' ) )
 			throw new InvalidArgumentException( 'No mail sender defined' );
-		if( 0 === count( $receivers->filter() ) )
+		if( 0 === count( $receivers ) )
 			throw new InvalidArgumentException( 'No mail receiver defined' );
 		if( 0 === strlen( trim( $subject ) ) )
 			throw new InvalidArgumentException( 'No mail subject defined' );
@@ -111,7 +111,7 @@ class Local
 		$list	= [];
 		$buffer	= new OutputBuffer();
 		/** @var Address $receiver */
-		foreach( $receivers->filter() as $receiver ){
+		foreach( $receivers as $receiver ){
 			$result	= new Result();
 			$result->setReceiver( $receiver );
 			try{

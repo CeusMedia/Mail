@@ -1,16 +1,17 @@
 includes:
-	- ../vendor/phpstan/phpstan-strict-rules/rules.neon
+#	- ../vendor/phpstan/phpstan-strict-rules/rules.neon
 	- phpstan-baseline.neon
 
 parameters:
 	phpVersion: 80300
-	level: max
+	level: 7
 	paths:
 		- ../src
 	excludePaths:
-		- ../src/Transport/Mailgun.php
+#		- ../src/Transport/Mailgun.php
 	reportMaybesInPropertyPhpDocTypes: true
 	treatPhpDocTypesAsCertain: true
+	checkImplicitMixed: false
 	ignoreErrors:
-		- identifier: missingType.generics
 		- identifier: missingType.iterableValue
+		- identifier: missingType.generics

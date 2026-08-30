@@ -132,7 +132,7 @@ class Parser
 				if( !$hasAssignment )
 					continue;
 				$p = self::regSplit( '/\s?=\s?/', $part, 2, 'Parsing the value failed' );
-				if( trim( $p[1][0] ) === '"' )
+				if( trim( $p[1][0] ?? '' ) === '"' )
 					$p[1]	= substr( trim( $p[1] ), 1, -1 );
 				$hasLabel	= self::regMatch( '/\*\d+\*?$/', $p[0], 'Parsing the value failed' );
 				$valueLine	= stripslashes( $p[1] );

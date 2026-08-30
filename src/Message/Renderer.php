@@ -174,7 +174,7 @@ class Renderer
 		/** @var MessagePartInlineImage $imagePart */
 		foreach( $imageParts as $imagePart )
 			$contents[]	= '--'.$mimeBoundaryOuter.$delim.rtrim( $imagePart->render() ).$delim;
-		/** @var MessagePart $filePart */
+		/** @var MessagePartAttachment|MessagePartMail $filePart */
 		foreach( $fileParts as $filePart )
 			$contents[]	= '--'.$mimeBoundaryOuter.$delim.rtrim( $filePart->render() ).$delim;
 		$contents[]	= '--'.$mimeBoundaryOuter.'--'.$delim;
