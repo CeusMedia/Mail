@@ -111,6 +111,7 @@ class Mailbox
 		$pattern	= $recursive ? '*' : '%';
 		$resource	= $this->connection->getResource( TRUE );
 		$reference	= $this->connection->renderReference();
+		/** @var array<int,string>|FALSE $folders */
 		$folders	= imap_list( $resource, $reference, $pattern );
 		if( FALSE === $folders ){
 			if( FALSE !== imap_last_error() )

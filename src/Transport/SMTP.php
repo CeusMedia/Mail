@@ -344,6 +344,9 @@ class SMTP
 		if( 0 === count( $acceptedCodes ) )
 			throw new RangeException( 'No accepted codes set' );
 
+		if( NULL === $this->socket )
+			throw new RuntimeException( 'Not connected' );
+
 		$response	= $this->socket->readResponse();
 		if( $response->isError() ){
 			$exception	= new SmtpException( $response->getMessage(), $response->getError() );
@@ -373,8 +376,12 @@ class SMTP
 
 	protected function sendChunk( string $message ): bool
 	{
+		if( NULL === $this->socket )
+			throw new RuntimeException( 'Not connected' );
+
 		if( $this->verbose )
 			print PHP_EOL . ' > '.$message . PHP_EOL;
+
 		return $this->socket->sendChunk( $message.Message::$delimiter );
 	}
 }
