@@ -205,10 +205,9 @@ class Parser
 		foreach( $lines as $line ){
 			if( self::regMatch( '/^\S+:/', $line ) ){
 				[$key, $value] = explode( ':', $line, 2 );
-				$value	= $encoder->decodeByOwnStrategy( ltrim( $value ) );
-				$field	= new Field( $key, $value );
+				$buffer	= [ltrim( $value )];									//  collect raw value, decode the unfolded value
+				$field	= new Field( $key, $encoder->decodeIfNeeded( $buffer[0] ) );
 				$section->addField( $field );
-				$buffer	= [$value];
 				$fws	= '';
 			}
 			else if( NULL !== $field ){											//  line is folded line
@@ -218,11 +217,10 @@ class Parser
 				$reducedLine	= substr( $line, strlen( $fws ) );				//  reduce line by folding white space
 				if( self::regMatch( '/^\s/', $reducedLine ) )					//  reduced line still contains leading white space
 					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
-				else{															//  reduced line is folding @ level 1
-					$line		= ' '.ltrim( $line );							//  reduce leading white space to one
-					$buffer[]	= $encoder->decodeByOwnStrategy( $line );		//  collect decoded line
-				}
-				$field->setValue( join( $buffer ) );							//  set unfolded field value
+				else															//  reduced line is folding @ level 1
+					$buffer[]	= ' '.ltrim( $line );							//  reduce leading white space to one
+				//  decode the whole unfolded value: white space between encoded words spanning lines is dropped (RFC 2047 6.2)
+				$field->setValue( $encoder->decodeIfNeeded( join( $buffer ) ) );
 			}
 		}
 

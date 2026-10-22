@@ -42,6 +42,8 @@ use function iconv;
 use function iconv_mime_decode;
 use function imap_qprint;
 use function join;
+use function restore_error_handler;
+use function set_error_handler;
 use function quoted_printable_decode;
 use function quoted_printable_encode;
 use function strtolower;
@@ -100,14 +102,14 @@ class Encoding
 	/** @var		integer				$decodeStrategy				Decode strategy to use */
 	public int $decodeStrategy			= self::DECODE_STRATEGY_ICONV;
 
-	/** @var		integer				$decodeStrategyFallback		Fallback decode strategy to use */
+	/** @var		integer				$decodeStrategyFallback		Fallback decode strategy to use, 0: none */
 	public int $decodeStrategyFallback	= self::DECODE_STRATEGY_IMPL;
 
-	/** @var		integer				$encodeStrategy				Decode strategy to use */
+	/** @var		integer				$encodeStrategy				Encode strategy to use */
 	public int $encodeStrategy			= self::ENCODE_STRATEGY_MB;
 
-	/** @var		integer				$encodeStrategyFallback		Decode strategy to use */
-	public int $encodeStrategyFallback	= self::DECODE_STRATEGY_IMPL;
+	/** @var		integer				$encodeStrategyFallback		Fallback encode strategy to use, 0: none */
+	public int $encodeStrategyFallback	= self::ENCODE_STRATEGY_IMPL;
 
 	/** @var		string				$charset					Target character set */
 	public string $charset				= 'UTF-8';
@@ -124,12 +126,12 @@ class Encoding
 	}
 
 	/**
-	 *	Encodes a mail header value string if needed.
-	 *	@static
+	 *	Decodes a mail header value string if needed.
+	 *	Tries the decode strategy, then the fallback strategy (if set) if the first one fails.
 	 *	@access		public
 	 *	@param		string		$string			A mail header value string, subject for example.
 	 *	@return		string
-	 *	@throws		DomainException				if given encoding is not supported
+	 *	@throws		RuntimeException			if all strategies fail
 	 */
 	public function decodeIfNeeded( string $string ): string
 	{
@@ -139,32 +141,19 @@ class Encoding
 
 		foreach( $strategies as $strategy ){
 			try{
-				switch( $strategy ){
-					case self::DECODE_STRATEGY_ICONV:
-						$result	= iconv_mime_decode( $string, 0, $this->charset );
-						if( FALSE === $result )
-							throw new RuntimeException( 'Decoding failed' );
-						return $result;
-					case self::DECODE_STRATEGY_ICONV_STRICT:
-						$result	= iconv_mime_decode( $string, 1, $this->charset );
-						if( FALSE === $result )
-							throw new RuntimeException( 'Decoding failed' );
-						return $result;
-					case self::DECODE_STRATEGY_ICONV_TOLERANT:
-						$result	= iconv_mime_decode( $string, 2, $this->charset );
-						if( FALSE === $result )
-							throw new RuntimeException( 'Decoding failed' );
-						return $result;
-					case self::DECODE_STRATEGY_IMPL:
-						return $this->decodeByOwnStrategy( $string );
-					default:
-						throw new DomainException( 'Invalid strategy' );
-				}
+				return match ($strategy) {
+					self::DECODE_STRATEGY_ICONV => $this->decodeByIconv($string, 0),
+					self::DECODE_STRATEGY_ICONV_STRICT => $this->decodeByIconv($string, 1),
+					self::DECODE_STRATEGY_ICONV_TOLERANT => $this->decodeByIconv($string, 2),
+					self::DECODE_STRATEGY_IMPL => $this->decodeByOwnStrategy($string),
+					default => throw new DomainException('Invalid strategy'),
+				};
 			}
 			catch( Exception $e ){
-				throw new RuntimeException( 'Decoding failed: '.$e->getMessage(), 0, $e );
+				$lastError	= $e;													//  try fallback strategy, if any
 			}
 		}
+		throw new RuntimeException( 'Decoding failed: '.$lastError?->getMessage(), 0, $lastError );
 	}
 
 	/**
@@ -174,13 +163,14 @@ class Encoding
 	 *	@param		string		$encoding		Optional: base64 (default) or quoted-printable (deprecated)
 	 *	@param		bool		$fold			Flag: apply folding, default: yes
 	 *	@return		string
-	 *	@throws		RangeException				if given encoding is not supported
+	 *	@throws		RuntimeException			if all strategies fail, e.g. for an unsupported encoding
 	 */
 	public function encodeIfNeeded( string $string, string $encoding = 'base64', bool $fold = TRUE ): string
 	{
 		if( self::regMatch( "/^[\w\s\.-:#]+$/", $string ) )
 			return $string;
 
+		$lastError	= NULL;
 		$strategies	= [$this->encodeStrategy];
 		if(  0 !== $this->encodeStrategyFallback )
 			$strategies[]	= $this->encodeStrategyFallback;
@@ -215,9 +205,11 @@ class Encoding
 				}
 			}
 			catch( Exception $e ){
-				throw new RuntimeException( 'Encoding failed: '.$e->getMessage(), 0, $e );
+				$lastError	= $e;													//  try fallback strategy, if any
 			}
 		}
+		if( NULL !== $lastError )
+			throw new RuntimeException( 'Encoding failed: '.$lastError->getMessage(), 0, $lastError );
 		return $string;
 	}
 
@@ -238,16 +230,16 @@ class Encoding
 	}
 
 	/**
-	 *	Sets fallback decoding strategy to apply.
+	 *	Sets fallback decoding strategy to apply, if the decoding strategy fails.
 	 *	@static
 	 *	@access		public
-	 *	@param		integer		$strategy		Decoding strategy, see ::DECODE_STRATEGIES
+	 *	@param		integer		$strategy		Decoding strategy, see ::DECODE_STRATEGIES, or 0 for no fallback
 	 *	@return		self
 	 *	@throws		RangeException				if given strategy is not supported
 	 */
 	public function setDecodeStrategyFallback( int $strategy ): self
 	{
-		if( !in_array( $strategy, static::DECODE_STRATEGIES, TRUE ) )
+		if( 0 !== $strategy && !in_array( $strategy, static::DECODE_STRATEGIES, TRUE ) )
 			throw new RangeException( 'Invalid decoding strategy' );
 		$this->decodeStrategyFallback	= $strategy;
 		return $this;
@@ -270,22 +262,46 @@ class Encoding
 	}
 
 	/**
-	 *	Sets fallback encoding strategy to apply.
+	 *	Sets fallback encoding strategy to apply, if the encoding strategy fails.
 	 *	@static
 	 *	@access		public
-	 *	@param		integer		$strategy		Encoding strategy, see ::ENCODE_STRATEGIES
+	 *	@param		integer		$strategy		Encoding strategy, see ::ENCODE_STRATEGIES, or 0 for no fallback
 	 *	@return		self
 	 *	@throws		RangeException				if given strategy is not supported
 	 */
 	public function setEncodeStrategyFallback( int $strategy ): self
 	{
-		if( !in_array( $strategy, static::ENCODE_STRATEGIES, TRUE ) )
+		if( 0 !== $strategy && !in_array( $strategy, static::ENCODE_STRATEGIES, TRUE ) )
 			throw new RangeException( 'Invalid encoding strategy' );
 		$this->encodeStrategyFallback	= $strategy;
 		return $this;
 	}
 
 	/*  --  PROTECTED  --  */
+
+    /**
+     *	Decodes by iconv_mime_decode. Its warnings (e.g. malformed string, unknown charset) become exceptions,
+     *	so decodeIfNeeded() can try the fallback strategy without leaving a PHP warning behind.
+     *	@param		string		$string
+     *	@param		int			$mode			0, ICONV_MIME_DECODE_STRICT or ICONV_MIME_DECODE_CONTINUE_ON_ERROR
+     *	@return		string
+     *	@throws		RuntimeException			if decoding fails
+     */
+    protected function decodeByIconv( string $string, int $mode ): string
+    {
+        set_error_handler( static function( int $code, string $message ): never {
+            throw new RuntimeException( 'Decoding failed: '.$message );
+        }, E_WARNING | E_NOTICE );
+        try{
+            $result	= iconv_mime_decode( $string, $mode, $this->charset );
+        }
+        finally{
+            restore_error_handler();
+        }
+        if( FALSE === $result )
+            throw new RuntimeException( 'Decoding failed' );
+        return $result;
+    }
 
 	/**
 	 *	...
