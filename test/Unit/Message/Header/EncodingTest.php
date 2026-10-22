@@ -55,6 +55,40 @@ class EncodingTest extends PhpUnitTestCase
 	}
 
 	/**
+	 *	White space between adjacent encoded words is ignored (RFC 2047 6.2), also across folded lines;
+	 *	all decode strategies must give the same result.
+	 */
+	public function testDecodeAdjacentEncodedWords(): void
+	{
+		$cases	= [
+			"=?UTF-8?Q?Oper?= =?UTF-8?Q?ation?="											=> 'Operation',
+			"Ihr Termin =?UTF-8?Q?=E2=80=93=20Oper?=\r\n =?UTF-8?Q?ation=20=28Laser=29?="		=> 'Ihr Termin – Operation (Laser)',
+			"=?UTF-8?B?w6Q=?= und =?UTF-8?Q?=C3=B6?="										=> 'ä und ö',
+			"Hallo\r\n Welt =?UTF-8?Q?=C3=A4?="												=> 'Hallo Welt ä',
+			"=?ISO-8859-1?Q?Gr=FC=DFe?= =?UTF-8?Q?_=E2=82=AC?="								=> 'Grüße €',
+			"=?UTF-8*de?Q?Stra=C3=9Fe?="														=> 'Straße',
+			"=?utf-8?q?ohne_Leerraum?=dahinter"													=> 'ohne Leerraumdahinter',
+		];
+		$encoder	= Encoding::getInstance();
+		foreach( Encoding::DECODE_STRATEGIES as $strategy ){
+			//  strict iconv rejects some cases; the own strategy keeps white space between encoded words
+			if( in_array( $strategy, [Encoding::DECODE_STRATEGY_ICONV_STRICT, Encoding::DECODE_STRATEGY_IMPL], TRUE ) )
+				continue;
+			$encoder->setDecodeStrategy( $strategy );
+			foreach( $cases as $input => $expected )
+				self::assertSame( $expected, $encoder->decodeIfNeeded( $input ), 'strategy '.$strategy.': '.$input );
+		}
+	}
+
+	/**
+	 *	In Q encoding "_" is a space, an encoded "=5F" is an underscore.
+	 */
+	public function testDecodeUnderscoreInQEncoding(): void
+	{
+		self::assertSame( 'a_b c', Encoding::getInstance()->decodeByOwnStrategy( '=?UTF-8?Q?a=5Fb_c?=' ) );
+	}
+
+	/**
 	 *	@covers		::encodeIfNeeded
 	 */
 	public function testEncodeIfNeeded()
@@ -129,6 +163,55 @@ class EncodingTest extends PhpUnitTestCase
 			$encoder->setDecodeStrategyFallback( $strategy );
 			self::assertEquals( $strategy, $encoder->decodeStrategyFallback );
 		}
+	}
+
+	/**
+	 *	If the decode strategy fails, the fallback strategy is used, without a PHP warning.
+	 *	@covers		::decodeIfNeeded
+	 */
+	public function testDecodeIfNeededUsesFallback(): void
+	{
+		//  iconv rejects raw 8-bit text in a header (not RFC compliant, but common), the own strategy decodes it
+		$encoder	= ( new Encoding() )
+			->setDecodeStrategy( Encoding::DECODE_STRATEGY_ICONV )
+			->setDecodeStrategyFallback( Encoding::DECODE_STRATEGY_IMPL );
+		$warnings	= [];
+		set_error_handler( static function( int $code, string $message ) use ( &$warnings ): bool {
+			$warnings[]	= $message;
+			return TRUE;
+		} );
+		try{
+			self::assertSame( 'Köln Köln', $encoder->decodeIfNeeded( 'Köln =?UTF-8?Q?K=C3=B6ln?=' ) );
+		}
+		finally{
+			restore_error_handler();
+		}
+		self::assertSame( [], $warnings );
+	}
+
+	/**
+	 *	Without fallback, the failure of the decode strategy is reported.
+	 *	@covers		::decodeIfNeeded
+	 *	@covers		::setDecodeStrategyFallback
+	 */
+	public function testDecodeIfNeededWithoutFallback(): void
+	{
+		$encoder	= ( new Encoding() )
+			->setDecodeStrategy( Encoding::DECODE_STRATEGY_ICONV )
+			->setDecodeStrategyFallback( 0 );
+		self::assertSame( 0, $encoder->decodeStrategyFallback );
+		$this->expectException( 'RuntimeException' );
+		$encoder->decodeIfNeeded( 'Köln =?UTF-8?Q?K=C3=B6ln?=' );
+	}
+
+	/**
+	 *	@covers		::setEncodeStrategyFallback
+	 */
+	public function testSetEncodeStrategyFallbackNone(): void
+	{
+		$encoder	= ( new Encoding() )->setEncodeStrategyFallback( 0 );
+		self::assertSame( 0, $encoder->encodeStrategyFallback );
+		self::assertSame( Encoding::ENCODE_STRATEGY_IMPL, ( new Encoding() )->encodeStrategyFallback );
 	}
 
 	/**
