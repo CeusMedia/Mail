@@ -77,7 +77,10 @@ class SMTP
 	/**	@var	boolean				$verbose */
 	protected bool $verbose			= FALSE;
 
-	/**	@var	SmtpSocket|NULL		$socket */
+    /**	@var	string|NULL			$heloHost		Name of this client for EHLO, NULL: detect */
+    protected ?string $heloHost		= NULL;
+
+    /**	@var	SmtpSocket|NULL		$socket */
 	protected ?SmtpSocket $socket	= NULL;
 
 	/**
@@ -163,12 +166,16 @@ class SMTP
 		if( $response->isError() )
 			throw new SmtpException( $response->getMessage(), $response->getError() );
 
-		$this->sendChunk( 'EHLO '.$this->host );
+		$heloHost	= $this->getHeloHost();
+		$this->sendChunk( 'EHLO '.$heloHost );
 		$this->checkResponse( [ 250 ], SmtpResponse::ERROR_HELO_FAILED );
 		if( $this->isSecure ){
 			$this->sendChunk( 'STARTTLS' );
 			$this->checkResponse( [ 220 ], SmtpResponse::ERROR_CRYPTO_FAILED );
 			$this->socket->enableCrypto( TRUE, $this->cryptoMode );
+			//  the server discards what it knows about the client before TLS, so greet again (RFC 3207, 4.2)
+			$this->sendChunk( 'EHLO '.$heloHost );
+			$this->checkResponse( [ 250 ], SmtpResponse::ERROR_HELO_FAILED );
 		}
 		if( 0 < strlen( trim( $this->username ) ) ){
 			if( 0 < strlen( trim( $this->password ) ) ){
@@ -256,6 +263,20 @@ class SMTP
 		return $this;
 	}
 
+    /**
+     *	Sets name of this client, sent with EHLO.
+     *	Should be the fully qualified domain name of this host or an address literal like "[192.0.2.1]" (RFC 5321, 4.1.4).
+     *	@access		public
+     *	@param		string		$host		Name of this client
+     *	@return		self		Self instance for chaining.
+     */
+    public function setHeloHost( string $host ): self
+    {
+        if( 0 === strlen( trim( $host ) ) )
+            throw new InvalidArgumentException( 'Missing HELO host' );
+        $this->heloHost	= trim( $host );
+        return $this;
+    }
 	/**
 	 *	Sets SMTP host.
 	 *	@access		public
@@ -338,6 +359,30 @@ class SMTP
 	}
 
 	//  --  PROTECTED  --  //
+
+	/**
+	 *	Returns name of this client for EHLO: set name, else the host name if fully qualified,
+	 *	else the local IP address as address literal (RFC 5321, 4.1.3), else "localhost".
+	 *	@access		protected
+	 *	@return		string
+	 */
+	protected function getHeloHost(): string
+	{
+		if( NULL !== $this->heloHost )
+			return $this->heloHost;
+		$hostname	= gethostname();
+		if( FALSE !== $hostname && str_contains( $hostname, '.' ) && FALSE !== filter_var( $hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME ) )
+			return $hostname;
+		$address	= $this->socket?->getLocalAddress();
+		if( NULL !== $address ){
+			$ip	= trim( substr( $address, 0, (int) strrpos( $address, ':' ) ), '[]' );
+			if( FALSE !== filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) )
+				return '['.$ip.']';
+			if( FALSE !== filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) )
+				return '[IPv6:'.$ip.']';
+		}
+		return 'localhost';
+	}
 
 	protected function checkResponse( array $acceptedCodes = [], ?int $errorCode = NULL, bool $strict = TRUE ): SmtpResponse
 	{
