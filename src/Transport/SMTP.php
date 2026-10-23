@@ -71,8 +71,11 @@ class SMTP
 	/**	@var	string				$password	SMTP auth password */
 	protected string $password		= '';
 
-	/**	@var	boolean				$isSecure */
+	/**	@var	boolean				$isSecure		Flag: encrypt connection (STARTTLS or implicit TLS) */
 	protected bool $isSecure		= FALSE;
+
+	/**	@var	boolean				$isImplicitTls	Flag: TLS right after connecting (SMTPS, port 465) instead of STARTTLS */
+	protected bool $isImplicitTls	= FALSE;
 
 	/**	@var	boolean				$verbose */
 	protected bool $verbose			= FALSE;
@@ -155,6 +158,7 @@ class SMTP
 	{
 		if( NULL === $this->socket )
 			$this->socket	= new SmtpSocket( $this->host, $this->port );
+		$this->socket->setImplicitTls( $this->isSecure && $this->isImplicitTls, $this->cryptoMode );
 		if( NULL === $message->getSender() )
 			throw new RuntimeException( 'No mail sender set' );
 		if( 0 === count( $message->getRecipientsByType( 'to' ) ) )
@@ -169,7 +173,7 @@ class SMTP
 		$heloHost	= $this->getHeloHost();
 		$this->sendChunk( 'EHLO '.$heloHost );
 		$this->checkResponse( [ 250 ], SmtpResponse::ERROR_HELO_FAILED );
-		if( $this->isSecure ){
+		if( $this->isSecure && !$this->isImplicitTls ){
 			$this->sendChunk( 'STARTTLS' );
 			$this->checkResponse( [ 220 ], SmtpResponse::ERROR_CRYPTO_FAILED );
 			$this->socket->enableCrypto( TRUE, $this->cryptoMode );
@@ -277,6 +281,19 @@ class SMTP
         $this->heloHost	= trim( $host );
         return $this;
     }
+
+    /**
+     *	Sets kind of encryption, if secure: TLS right after connecting (SMTPS, usually port 465) or STARTTLS (usually port 587).
+     *	@access		public
+     *	@param		boolean		$implicit	Flag: implicit TLS instead of STARTTLS
+     *	@return		self		Self instance for chaining.
+     */
+    public function setImplicitTls( bool $implicit ): self
+    {
+        $this->isImplicitTls	= $implicit;
+        return $this;
+    }
+
 	/**
 	 *	Sets SMTP host.
 	 *	@access		public
@@ -309,7 +326,8 @@ class SMTP
 	 *	Sets SMTP port.
 	 *	@access		public
 	 *	@param		integer		$port			SMTP server port
-	 * 	@param		boolean		$detectSecure	Flag: set secure depending on port (default: yes)
+	 * 	@param		boolean		$detectSecure	Flag: set encryption depending on port (default: yes):
+	 *											465: implicit TLS, 587: STARTTLS, other: none
 	 *	@return		self		Self instance for chaining.
 	 */
 	public function setPort( int $port, bool $detectSecure = TRUE ): self
@@ -317,11 +335,19 @@ class SMTP
 		if( NULL !== $this->socket )
 			throw new RuntimeException( 'Connection to SMTP server already established' );
 		$this->port		= $port;
-		if( $detectSecure )
+		if( $detectSecure ){
 			$this->setSecure( in_array( $port, [ 465, 587 ], TRUE ) );
+			$this->setImplicitTls( 465 === $port );
+		}
 		return $this;
 	}
 
+	/**
+	 *	Sets whether to encrypt the connection, see setImplicitTls() for the kind of encryption.
+	 *	@access		public
+	 *	@param		boolean		$secure		Flag: encrypt connection
+	 *	@return		self		Self instance for chaining.
+	 */
 	public function setSecure( bool $secure ): self
 	{
 		$this->isSecure = $secure;
