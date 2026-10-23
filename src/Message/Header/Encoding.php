@@ -153,7 +153,7 @@ class Encoding
 				$lastError	= $e;													//  try fallback strategy, if any
 			}
 		}
-		throw new RuntimeException( 'Decoding failed: '.$lastError?->getMessage(), 0, $lastError );
+		throw new RuntimeException( 'Decoding failed: '.$lastError->getMessage(), 0, $lastError );
 	}
 
 	/**
