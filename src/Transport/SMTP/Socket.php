@@ -77,6 +77,9 @@ class Socket
 	/**	@var	integer				$timeout */
 	protected int $timeout			= 5;
 
+	/** @var    integer|NULL        $implicitCrypto     Crypto mode for TLS right after connecting (SMTPS, port 465), NULL: none */
+	protected ?int $implicitCrypto	= NULL;
+
 	/**
 	 *	Alias for getInstance.
 	 *	@access		public
@@ -133,6 +136,20 @@ class Socket
 			fclose( $this->connection );
 			$this->connection	= NULL;
 		}
+		return $this;
+	}
+
+	/**
+	 *	Enables TLS right after connecting, before the server greets (implicit TLS, SMTPS on port 465).
+	 *	For STARTTLS (port 587) use enableCrypto() after the STARTTLS command instead.
+	 *	@access		public
+	 *	@param		boolean			$enable		Power switch
+	 *	@param		integer			$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT
+	 *	@return		self
+	 */
+	public function setImplicitTls( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_ANY_CLIENT ): self
+	{
+		$this->implicitCrypto	= $enable ? $crypto : NULL;
 		return $this;
 	}
 
@@ -291,6 +308,16 @@ class Socket
 			return $response;
 		}
 		$this->connection	= $socket;
+		if( NULL !== $this->implicitCrypto ){
+			//  implicit TLS: the server greets only after the TLS handshake
+			if( FALSE === @stream_socket_enable_crypto( $socket, TRUE, $this->implicitCrypto ) ){
+				fclose( $socket );
+				$this->connection	= NULL;
+				$response->setMessage( sprintf( 'TLS negotiation with SMTP server "%s" at port %d failed', $this->host, $this->port ) );
+				$response->setError( Response::ERROR_CRYPTO_FAILED );
+				return $response;
+			}
+		}
 		$response			= $this->readResponse();
 		if( 220 !== $response->getCode() ){
 			$response->setError( Response::ERROR_CONNECTION_FAILED );
