@@ -209,6 +209,19 @@ class Socket
 		return new self( $host, $port, $timeout );
 	}
 
+    /**
+     *	Returns local address of the open connection, eg. "192.0.2.1:54321" or "[2001:db8::1]:54321".
+     *	@access		public
+     *	@return		string|NULL		NULL if not connected
+     */
+    public function getLocalAddress(): ?string
+    {
+        if( NULL === $this->connection )
+            return NULL;
+        $name	= stream_socket_get_name( $this->connection, FALSE );
+        return FALSE !== $name ? $name : NULL;
+    }
+
 	/**
 	 *	Returns set port.
 	 *	@access		public
