@@ -185,9 +185,9 @@ class SMTP
 			if( 0 < strlen( trim( $this->password ) ) ){
 				$this->sendChunk( 'AUTH LOGIN' );
 				$this->checkResponse( [ 334 ] );
-				$this->sendChunk( base64_encode( $this->username ) );
+				$this->sendChunk( base64_encode( $this->username ), '[username hidden]' );
 				$this->checkResponse( [ 334 ] );
-				$this->sendChunk( base64_encode( $this->password ) );
+				$this->sendChunk( base64_encode( $this->password ), '[password hidden]' );
 				$this->checkResponse( [ 235 ], SmtpResponse::ERROR_LOGIN_FAILED );
 			}
 		}
@@ -445,13 +445,19 @@ class SMTP
 		return $response;
 	}
 
-	protected function sendChunk( string $message ): bool
+	/**
+	 *	Sends a command or content to the server.
+	 *	@param		string			$message		Command or content to send
+	 *	@param		string|NULL		$verboseMessage	Shown instead of message in verbose mode, e.g. to hide credentials
+	 *	@return		bool
+	 */
+	protected function sendChunk( string $message, ?string $verboseMessage = NULL ): bool
 	{
 		if( NULL === $this->socket )
 			throw new RuntimeException( 'Not connected' );
 
 		if( $this->verbose )
-			print PHP_EOL . ' > '.$message . PHP_EOL;
+			print PHP_EOL . ' > '.( $verboseMessage ?? $message ) . PHP_EOL;
 
 		return $this->socket->sendChunk( $message.Message::$delimiter );
 	}
