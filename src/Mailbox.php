@@ -28,8 +28,9 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail;
 
-use CeusMedia\Mail\Conduct\RegularStringHandling;
+use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
 use CeusMedia\Mail\Mailbox\Mail;
+use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Util\Str;
 

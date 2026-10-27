@@ -29,6 +29,7 @@
     "ext-iconv": "*",
     "ext-imap": "*",
     "ext-json": "*",
+    "ext-mbstring": "*",
     "ceus-media/common": "1.1.* | 1.1.x-dev",
     "ceus-media/cache": "0.7.* | 0.7.x-dev",
     "ezyang/htmlpurifier": "^4.19"
@@ -91,6 +92,13 @@
       "@dev:install-quiet",
       "XDEBUG_MODE=coverage php vendor/bin/phpunit --configuration util/phpunit10.xml --testsuite unit"
     ],
+    "dev:mailpit-up": "util/mailpit/mailpit.sh up",
+    "dev:mailpit-down": "util/mailpit/mailpit.sh down",
+    "dev:phpunit-mailpit": [
+      "@dev:install-quiet",
+      "@dev:mailpit-up",
+      "XDEBUG_MODE=off php vendor/bin/phpunit --configuration util/phpunit10.xml --no-coverage test/Integration/Mailpit"
+    ],
     "dev:rector": [
       "@dev:install-quiet",
       "vendor/bin/rector --config=util/rector.php --clear-cache --dry-run"
@@ -118,6 +126,9 @@
     "dev:phpunit-all-coverage": "Run unit and integration tests with code coverage",
     "dev:phpunit-integration": "Run integration tests",
     "dev:phpunit-unit": "Run unit tests",
+    "dev:mailpit-up": "Start local Mailpit instances for integration tests (Docker)",
+    "dev:mailpit-down": "Stop local Mailpit instances",
+    "dev:phpunit-mailpit": "Start Mailpit and run integration tests against it",
     "dev:rector": "Shows suggestions of configured Rector rules",
     "dev:rector-fix": "Apply currently configured Rector rules to codebase",
     "dev:test-syntax": "Validate code base syntax using PHP linter"

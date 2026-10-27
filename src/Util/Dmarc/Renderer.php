@@ -105,9 +105,9 @@ class Renderer
 			}
 			$facts['ruf']	= join( ', ', $list );
 		}
-		if( $record->interval != 86400 )
+		if( $record->interval !== 86400 )
 			$facts['ri']	= $record->interval;
-		if( $record->failureOption != '0' )
+		if( $record->failureOption !== '0' )
 			$facts['fo']	= $record->failureOption;
 
 		$list	= [];
