@@ -55,6 +55,7 @@ class Response
 	public const ERROR_LOGIN_FAILED				= 12;
 	public const ERROR_SENDER_NOT_ACCEPTED		= 13;
 	public const ERROR_RECEIVER_NOT_ACCEPTED	= 14;
+	public const ERROR_TIMEOUT					= 15;
 
 	/** @var	int[]		$acceptedCodes */
 	public array $acceptedCodes	= [];

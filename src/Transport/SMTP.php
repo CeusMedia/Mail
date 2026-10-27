@@ -31,6 +31,7 @@ namespace CeusMedia\Mail\Transport;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
+use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 use CeusMedia\Mail\Transport\SMTP\Response;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
@@ -41,10 +42,13 @@ use RangeException;
 use RuntimeException;
 
 use Throwable;
+use function array_filter;
+use function array_merge;
+use function array_values;
 use function count;
 use function in_array;
 use function join;
-use function strlen;
+use function strtolower;
 
 /**
  *	Sends Mail using a remote SMTP Server and a Socket Connection.
@@ -76,6 +80,23 @@ class SMTP
 
 	/**	@var	boolean				$isImplicitTls	Flag: TLS right after connecting (SMTPS, port 465) instead of STARTTLS */
 	protected bool $isImplicitTls	= FALSE;
+
+	/**	@var	boolean				$validateCertificate	Flag: validate server certificate on TLS */
+	protected bool $validateCertificate	= TRUE;
+
+	/**
+	 *	@var	array<string,mixed>	$sslOptions		SSL context options, override certificate validation flag
+	 *	@see	https://www.php.net/manual/en/context.ssl.php
+	 */
+	protected array $sslOptions		= [];
+
+	/**
+	 *	@var	array<string,mixed>|NULL	$socketSslOptions	SSL context options of socket before first use, base for own options
+	 */
+	protected ?array $socketSslOptions	= NULL;
+
+	/**	@var	integer|NULL		$readTimeout	Timeout (in seconds) on waiting for a response, NULL: default of socket */
+	protected ?int $readTimeout		= NULL;
 
 	/**	@var	boolean				$verbose */
 	protected bool $verbose			= FALSE;
@@ -159,9 +180,14 @@ class SMTP
 		if( NULL === $this->socket )
 			$this->socket	= new SmtpSocket( $this->host, $this->port );
 		$this->socket->setImplicitTls( $this->isSecure && $this->isImplicitTls, $this->cryptoMode );
+		//  options of a socket given by setSocket() are kept, own options win; base taken once, so own options can be undone
+		$this->socketSslOptions	??= $this->socket->getSslOptions();
+		$this->socket->setSslOptions( array_merge( $this->socketSslOptions, $this->getSslOptions() ) );
+		if( NULL !== $this->readTimeout )
+			$this->socket->setReadTimeout( $this->readTimeout );
 		if( NULL === $message->getSender() )
 			throw new RuntimeException( 'No mail sender set' );
-		if( 0 === count( $message->getRecipientsByType( 'to' ) ) )
+		if( !$message->hasRecipients() )													//  To may be empty, e.g. for Bcc only
 			throw new RuntimeException( 'No mail receiver(s) set' );
 		if( 0 === count( $message->getParts() ) )
 			throw new RuntimeException( 'No mail body parts set' );
@@ -198,21 +224,40 @@ class SMTP
 		$sender		= $message->getSender();
 		$this->sendChunk( 'MAIL FROM: <'.$sender->getAddress().'>' );
 		$this->checkResponse( [ 250 ] );
-		/** @var Address $receiver */
-		foreach( $message->getRecipientsByType( 'TO' ) as $receiver ){
-			$result	= new Result();
-			$result->setReceiver( $receiver );
-			$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
-			$this->checkResponse( [ 250 ] );
-			$list[]	= $result;
+		//  envelope gets all recipients, also CC and BCC, which are not or only partly in headers
+		foreach( [ 'TO', 'CC', 'BCC' ] as $type ){
+			/** @var Address $receiver */
+			foreach( $message->getRecipientsByType( $type ) as $receiver ){
+				$address	= strtolower( $receiver->getAddress() );
+				if( isset( $list[$address] ) )
+					continue;
+				$result	= new Result();
+				$result->setReceiver( $receiver );
+				$this->sendChunk( 'RCPT TO: <'.$receiver->getAddress().'>' );
+				//  251: not local, will forward (RFC 5321, 3.4); a rejected recipient does not stop sending to the others
+				$response	= $this->checkResponse( [ 250, 251 ], SmtpResponse::ERROR_RECEIVER_NOT_ACCEPTED, FALSE );
+				if( !( $response->isAccepted() ?? FALSE ) ){
+					$result->setStatus( Result::STATUS_ERROR );
+					$result->setCode( $response->getCode() );
+					$result->setMessage( $response->getMessage() );
+				}
+				$list[$address]	= $result;
+			}
+		}
+		$list		= array_values( $list );
+		$accepted	= array_values( array_filter( $list, static fn( Result $result ) => Result::STATUS_ERROR !== $result->getStatus() ) );
+		if( 0 === count( $accepted ) ){												//  no recipient accepted: no message to send
+			$this->socket->close();														//  sends QUIT
+			return $list;
 		}
 		$this->sendChunk( 'DATA' );
 		$this->checkResponse( [ 354 ] );
-		$this->sendChunk( $content );
+		//  a line with a single dot ends the data, so leading dots are doubled (RFC 5321, 4.5.2)
+		$this->sendChunk( Str::regReplace( '/^\./m', '..', $content, 'Doubling leading dots failed' ) );
 		$this->sendChunk( '.' );
 		try{
 			$response	= $this->checkResponse( [ 250 ] );
-			foreach( $list as $result ){
+			foreach( $accepted as $result ){
 				$result->setStatus( Result::STATUS_SUCCESS );
 				$result->setCode( $response->getCode() );
 				$result->setMessage( $response->getMessage() );
@@ -221,14 +266,14 @@ class SMTP
 		catch( SmtpException $e ){
 			/** @var Response $response */
 			$response	= $e->getResponse();
-			foreach( $list as $result ){
+			foreach( $accepted as $result ){
 				$result->setStatus( Result::STATUS_ERROR );
 				$result->setCode( $response->getCode() );
 				$result->setMessage( $response->getMessage() );
 			}
 		}
 		catch( Throwable $t ){
-			foreach( $list as $result ){
+			foreach( $accepted as $result ){
 				$result->setStatus( Result::STATUS_FAILURE );
 				$result->setCode( $t->getCode() );
 				$result->setMessage( $t->getMessage() );
@@ -336,7 +381,7 @@ class SMTP
 			throw new RuntimeException( 'Connection to SMTP server already established' );
 		$this->port		= $port;
 		if( $detectSecure ){
-			$this->setSecure( in_array( $port, [ 465, 587 ], TRUE ) );
+			$this->setSecure( in_array( $port, [ 465, 587 ], TRUE ), $this->validateCertificate );
 			$this->setImplicitTls( 465 === $port );
 		}
 		return $this;
@@ -345,18 +390,49 @@ class SMTP
 	/**
 	 *	Sets whether to encrypt the connection, see setImplicitTls() for the kind of encryption.
 	 *	@access		public
-	 *	@param		boolean		$secure		Flag: encrypt connection
+	 *	@param		boolean		$secure					Flag: encrypt connection
+	 *	@param		boolean		$validateCertificate	Flag: validate server certificate (default: yes), switch off for self-signed certificates only
 	 *	@return		self		Self instance for chaining.
 	 */
-	public function setSecure( bool $secure ): self
+	public function setSecure( bool $secure, bool $validateCertificate = TRUE ): self
 	{
-		$this->isSecure = $secure;
+		$this->isSecure				= $secure;
+		$this->validateCertificate	= $validateCertificate;
+		return $this;
+	}
+
+	/**
+	 *	Sets timeout on waiting for a response of the server, e.g. a greeting or the answer to a command.
+	 *	@access		public
+	 *	@param		integer		$seconds	Timeout (in seconds), at least 1, default of socket: 30
+	 *	@return		self		Self instance for chaining.
+	 */
+	public function setReadTimeout( int $seconds ): self
+	{
+		if( $seconds < 1 )
+			throw new InvalidArgumentException( 'Read timeout must be at least 1 second' );
+		$this->readTimeout	= $seconds;
+		return $this;
+	}
+
+	/**
+	 *	Sets SSL context options for TLS, e.g. a CA file to trust: ['cafile' => '/path/to/ca.pem'].
+	 *	Options given here override the certificate validation flag of setSecure().
+	 *	@access		public
+	 *	@param		array<string,mixed>		$options	SSL context options
+	 *	@return		self		Self instance for chaining.
+	 *	@see		https://www.php.net/manual/en/context.ssl.php
+	 */
+	public function setSslOptions( array $options ): self
+	{
+		$this->sslOptions	= $options;
 		return $this;
 	}
 
 	public function setSocket( SmtpSocket $socket ): self
 	{
-		$this->socket	= $socket;
+		$this->socket			= $socket;
+		$this->socketSslOptions	= NULL;
 		return $this;
 	}
 
@@ -408,6 +484,23 @@ class SMTP
 				return '[IPv6:'.$ip.']';
 		}
 		return 'localhost';
+	}
+
+	/**
+	 *	Returns SSL context options for the socket: certificate validation by flag, overridden by set options.
+	 *	@access		protected
+	 *	@return		array<string,mixed>
+	 */
+	protected function getSslOptions(): array
+	{
+		$options	= [];
+		if( !$this->validateCertificate )
+			$options	= [
+				'verify_peer'		=> FALSE,
+				'verify_peer_name'	=> FALSE,
+				'allow_self_signed'	=> TRUE,
+			];
+		return array_merge( $options, $this->sslOptions );
 	}
 
 	protected function checkResponse( array $acceptedCodes = [], ?int $errorCode = NULL, bool $strict = TRUE ): SmtpResponse

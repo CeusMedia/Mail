@@ -34,14 +34,24 @@ use CeusMedia\Mail\Util\Str;
 use RuntimeException;
 
 use function abs;
+use function error_clear_last;
+use function error_get_last;
 use function fclose;
 use function fgets;
-use function fsockopen;
+use function filter_var;
 use function fwrite;
 use function is_integer;
-use function is_null;
-use function preg_match;
 use function join;
+use function max;
+use function preg_replace;
+use function restore_error_handler;
+use function set_error_handler;
+use function sprintf;
+use function str_contains;
+use function stream_context_create;
+use function stream_get_meta_data;
+use function stream_set_timeout;
+use function stream_socket_client;
 use function stream_socket_enable_crypto;
 use function strlen;
 use function trim;
@@ -78,8 +88,17 @@ class Socket
 	/**	@var	integer				$timeout */
 	protected int $timeout			= 5;
 
+	/**	@var	integer				$readTimeout	Timeout (in seconds) on waiting for a response */
+	protected int $readTimeout		= 30;
+
 	/** @var    integer|NULL        $implicitCrypto     Crypto mode for TLS right after connecting (SMTPS, port 465), NULL: none */
 	protected ?int $implicitCrypto	= NULL;
+
+	/**
+	 *	@var	array<string,mixed>	$sslOptions		SSL context options for TLS (implicit and STARTTLS)
+	 *	@see	https://www.php.net/manual/en/context.ssl.php
+	 */
+	protected array $sslOptions		= [];
 
 	/**
 	 *	Alias for getInstance.
@@ -133,8 +152,15 @@ class Socket
 	public function close(): self
 	{
 		if( NULL !== $this->connection ){
-			$this->sendChunk( "QUIT" );
-			fclose( $this->connection );
+			//  connection may be closed by server already: no warning (broken pipe), also for custom error handlers
+			set_error_handler( static fn(): bool => TRUE, E_WARNING | E_NOTICE );
+			try{
+				fwrite( $this->connection, "QUIT\r\n" );								//  commands end with CRLF (RFC 5321, 2.3.8)
+				fclose( $this->connection );
+			}
+			finally{
+				restore_error_handler();
+			}
 			$this->connection	= NULL;
 		}
 		return $this;
@@ -166,9 +192,10 @@ class Socket
 	{
 		if( NULL === $this->connection )
 			throw new RuntimeException( 'Not connected' );
-		$result	= stream_socket_enable_crypto( $this->connection, $enable, $crypto );
-		if( FALSE === $result )
-			throw new RuntimeException( 'Crypto negotiation failed' );
+		error_clear_last();
+		$result	= @stream_socket_enable_crypto( $this->connection, $enable, $crypto );
+		if( TRUE !== $result )
+			throw new RuntimeException( 'Crypto negotiation failed'.$this->getLastPhpError() );
 		return $this;
 	}
 
@@ -261,6 +288,26 @@ class Socket
 	}
 
 	/**
+	 *	Returns set timeout on waiting for a response.
+	 *	@access		public
+	 *	@return		integer
+	 */
+	public function getReadTimeout(): int
+	{
+		return $this->readTimeout;
+	}
+
+	/**
+	 *	Returns set SSL context options.
+	 *	@access		public
+	 *	@return		array<string,mixed>
+	 */
+	public function getSslOptions(): array
+	{
+		return $this->sslOptions;
+	}
+
+	/**
 	 *	Indicates whether a socket connection has been established.
 	 *	@access		public
 	 *	@return		boolean
@@ -295,12 +342,15 @@ class Socket
 			return $response;
 		}
 
-		$socket		= @fsockopen(
-			$this->host,
-			$this->port,
+		//  stream context holds SSL options, used later on implicit TLS and STARTTLS as well
+		$context	= stream_context_create( ['ssl' => $this->sslOptions] );
+		$socket		= @stream_socket_client(
+			$this->getRemoteSocket(),
 			$this->errorNumber,
 			$this->errorMessage,
-			$this->timeout
+			$this->timeout,
+			STREAM_CLIENT_CONNECT,
+			$context
 		);
 		if( FALSE === $socket ){
 			$message	= sprintf( 'Socket connection to SMTP server "%s" at port %d failed', $this->host, $this->port );
@@ -310,19 +360,28 @@ class Socket
 			$response->setError( Response::ERROR_SOCKET_FAILED );
 			return $response;
 		}
+		stream_set_timeout( $socket, $this->readTimeout );
 		$this->connection	= $socket;
 		if( NULL !== $this->implicitCrypto ){
 			//  implicit TLS: the server greets only after the TLS handshake
-			if( FALSE === @stream_socket_enable_crypto( $socket, TRUE, $this->implicitCrypto ) ){
+			error_clear_last();
+			if( TRUE !== @stream_socket_enable_crypto( $socket, TRUE, $this->implicitCrypto ) ){
 				fclose( $socket );
 				$this->connection	= NULL;
-				$response->setMessage( sprintf( 'TLS negotiation with SMTP server "%s" at port %d failed', $this->host, $this->port ) );
+				$message	= 'TLS negotiation with SMTP server "%s" at port %d failed';
+				$response->setMessage( sprintf( $message, $this->host, $this->port ).$this->getLastPhpError() );
 				$response->setError( Response::ERROR_CRYPTO_FAILED );
 				return $response;
 			}
 		}
 		$response			= $this->readResponse();
 		if( 220 !== $response->getCode() ){
+			$message	= sprintf( 'No greeting from SMTP server "%s" at port %d', $this->host, $this->port );
+			if( 0 !== strlen( $response->getMessage() ) )
+				$message	.= ': '.$response->getMessage();
+			if( Response::ERROR_TIMEOUT === $response->getError() && NULL === $this->implicitCrypto )
+				$message	.= ' (port may expect implicit TLS)';
+			$response->setMessage( $message );
 			$response->setError( Response::ERROR_CONNECTION_FAILED );
 			$this->close();
 		}
@@ -349,22 +408,31 @@ class Socket
 		$raw		= [];
 		do{
 			$chunk	= fgets( $this->connection, abs( $length ) );
-			if( FALSE !== $chunk ){
-				$raw[]		= rtrim( $chunk, "\r\n" );
-				$matches	= [];
-				preg_match( '/^([0-9]{3})([ \-])(.+)$/', trim( $chunk ), $matches );
-				if( 0 === count( $matches ) ){
-					$response = new Response();
-					$response->setError( Response::ERROR_RESPONSE_NOT_UNDERSTOOD );
-					$response->setMessage( 'SMTP response not understood: '.trim( $chunk ) );
-					return $response;
+			if( FALSE === $chunk ){
+				$response	= new Response();
+				if( stream_get_meta_data( $this->connection )['timed_out'] ){
+					$response->setError( Response::ERROR_TIMEOUT );
+					$response->setMessage( sprintf( 'No response from SMTP server within %d seconds', $this->readTimeout ) );
 				}
-				$code		= (int) $matches[1];
-				$buffer[]	= $matches[3];
-				$lastLine	= $matches[2] === ' ';
+				else{
+					$response->setError( Response::ERROR_SOCKET_EXCEPTION );
+					$response->setMessage( 'Connection closed by SMTP server' );
+				}
+				$response->setResponse( $raw );
+				return $response;
 			}
+			$raw[]		= rtrim( $chunk, "\r\n" );
+			if( !Str::regMatch( '/^([0-9]{3})([ \-])(.+)$/', trim( $chunk ), $matches ) ){
+				$response = new Response();
+				$response->setError( Response::ERROR_RESPONSE_NOT_UNDERSTOOD );
+				$response->setMessage( 'SMTP response not understood: '.trim( $chunk ) );
+				return $response;
+			}
+			$code		= (int) $matches[1];
+			$buffer[]	= $matches[3];
+			$lastLine	= $matches[2] === ' ';
 		}
-		while( FALSE !== $chunk && !$lastLine );
+		while( !$lastLine );
 
 		$response	= new Response( $code );
 		$response->setMessage( join( "\n", $buffer ) );
@@ -420,5 +488,62 @@ class Socket
 	{
 		$this->timeout	= $seconds;
 		return $this;
+	}
+
+	/**
+	 *	Set timeout (in seconds) on waiting for a response, applied on next opening.
+	 *	@access		public
+	 *	@param		integer		$seconds	Timeout (in seconds) on waiting for a response
+	 *	@return		self
+	 */
+	public function setReadTimeout( int $seconds ): self
+	{
+		$this->readTimeout	= max( 1, $seconds );
+		return $this;
+	}
+
+	/**
+	 *	Set SSL context options for TLS, applied on next opening.
+	 *	Example: ['verify_peer' => FALSE, 'verify_peer_name' => FALSE] or ['cafile' => '/path/to/ca.pem'].
+	 *	@access		public
+	 *	@param		array<string,mixed>		$options	SSL context options
+	 *	@return		self
+	 *	@see		https://www.php.net/manual/en/context.ssl.php
+	 */
+	public function setSslOptions( array $options ): self
+	{
+		$this->sslOptions	= $options;
+		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	/**
+	 *	Returns message of last PHP error, e.g. of a failed TLS handshake, as suffix for an error message.
+	 *	@access		protected
+	 *	@return		string		Empty if no error occurred
+	 */
+	protected function getLastPhpError(): string
+	{
+		$error	= error_get_last();
+		if( NULL === $error )
+			return '';
+		$message	= trim( (string) preg_replace( '/^[a-z_]+\(\): /', '', $error['message'] ) );
+		return 0 !== strlen( $message ) ? ': '.$message : '';
+	}
+
+	/**
+	 *	Returns address for socket client: transport, host (IPv6 in brackets) and port.
+	 *	@access		protected
+	 *	@return		string
+	 */
+	protected function getRemoteSocket(): string
+	{
+		$host	= (string) $this->host;
+		if( str_contains( $host, '://' ) )
+			return $host.':'.$this->port;
+		if( FALSE !== filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) )
+			$host	= '['.$host.']';
+		return 'tcp://'.$host.':'.$this->port;
 	}
 }

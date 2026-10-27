@@ -31,8 +31,9 @@ namespace CeusMedia\Mail\Transport;
 
 use CeusMedia\Common\UI\OutputBuffer;
 use CeusMedia\Mail\Address;
-use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Message\Renderer;
 use CeusMedia\Mail\Util\Str;
 
@@ -40,12 +41,14 @@ use Exception;
 use InvalidArgumentException;
 use RuntimeException;
 
-use function base64_encode;
-use function implode;
+use function count;
 use function date;
+use function implode;
 use function mail;
 use function strlen;
-use function trim;
+use function strpos;
+use function strtolower;
+use function substr;
 
 /**
  *	Sends Mails of different Types.
@@ -80,61 +83,89 @@ class Local
 	public function send( Message $message, array $parameters = [] ): array
 	{
 		$headers	= $message->getHeaders();
-		$receivers	= $message->getRecipientsByType( 'to' );
 		$subject	= $message->getSubject() ?? '';
-		$body		= Renderer::render( $message );
 
-		//  --  VALIDATION & SECURITY CHECK  --  //
-		$this->checkForInjection( $subject );
+		//  --  VALIDATION  --  //
+		//  no check for line breaks needed: rendering encodes names and replaces line breaks in subject (header injection)
 		if( !$headers->hasField( 'From' ) )
 			throw new InvalidArgumentException( 'No mail sender defined' );
-		if( 0 === count( $receivers ) )
+		if( !$message->hasRecipients() )													//  To may be empty, e.g. for Bcc only
 			throw new InvalidArgumentException( 'No mail receiver defined' );
 		if( !Str::hasContent( $subject ) )
 			throw new InvalidArgumentException( 'No mail subject defined' );
-		$subject	= "=?UTF-8?B?".base64_encode( $subject )."?=";
 
-/*		foreach( $headers as $key => $value )
-		{
-			$this->checkForInjection( $key );
-			$this->checkForInjection( $value );
+		/** @var array<string,Address> $receivers */
+		$receivers	= [];
+		foreach( [ 'to', 'cc', 'bcc' ] as $type ){
+			/** @var Address $receiver */
+			foreach( $message->getRecipientsByType( $type ) as $receiver ){
+				$receivers[strtolower( $receiver->getAddress() )]	??= $receiver;
+			}
 		}
-*/
+
 		//  --  HEADERS  --  //
 		if( Str::hasContent( $message->getUserAgent() ) )
 			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
 		$headers->setFieldPair( 'Date', date( 'r' ) );
 
-		$parameters	= implode( PHP_EOL, $parameters );
+		//  rendering completes the message headers (subject, content type etc.), mail() needs the body only
+		$delimiter	= Message::$delimiter;
+		$rendered	= Renderer::render( $message );
+		$position	= strpos( $rendered, $delimiter.$delimiter );
+		$body		= FALSE !== $position ? substr( $rendered, $position + 2 * strlen( $delimiter ) ) : '';
+
+		//  mail() sets To and Subject itself, other recipients are read from headers by sendmail -t, which removes Bcc
+		$to			= [];
+		$subject	= '';
+		$section	= new MessageHeaderSection();
+		foreach( $headers->getFields() as $field ){
+			$name	= strtolower( $field->getName() );
+			//  To and Subject unfolded, since mail() expects them as single lines; other headers are passed folded.
+			//  A very long subject (some hundred bytes encoded) may exceed the line limit of 998 octets then.
+			$value	= MessageHeaderEncoding::unfold( $field->getValue() );
+			if( 'to' === $name )
+				$to[]		= $value;
+			else if( 'subject' === $name )
+				$subject	= $value;
+			else if( 'bcc' !== $name )											//  Bcc is set below, from recipients
+				$section->addField( $field );
+		}
+		$bcc	= [];
+		/** @var Address $receiver */
+		foreach( $message->getRecipientsByType( 'bcc' ) as $receiver )
+			$bcc[]	= $receiver->getAddress();
+		if( 0 !== count( $bcc ) )
+			$section->addFieldPair( 'Bcc', implode( ', ', $bcc ) );
+
+		if( 0 === count( $to ) )														//  no To recipient, e.g. Bcc only: empty group (RFC 5322, 3.6.3)
+			$to[]	= 'undisclosed-recipients:;';
+
+		$error	= NULL;
+		$buffer	= new OutputBuffer();
+		try{
+			$returns	= mail(
+				implode( ', ', $to ),
+				$subject,
+				$body,
+				$section->toString( TRUE ),
+				implode( ' ', $parameters )
+			);
+			if( !$returns )
+				throw new RuntimeException( $buffer->get() );
+		}
+		catch( Exception $e ){
+			$error	= $e->getMessage();
+		}
+		$buffer->close();
 
 		$list	= [];
-		$buffer	= new OutputBuffer();
-		/** @var Address $receiver */
 		foreach( $receivers as $receiver ){
 			$result	= new Result();
 			$result->setReceiver( $receiver );
-			try{
-				$this->checkForInjection( $receiver->get() );
-				$returns	= mail(
-					$receiver->getAddress(),
-					$subject,
-					$body,
-					$headers->toString(),
-					$parameters
-				);
-				if( !$returns ){
-					throw new RuntimeException( $buffer->get() );
-				}
-				$result->setStatus( Result::STATUS_SUCCESS );
-				$result->setMessage( 'mail sent to '.$receiver->getAddress() );
-			}
-			catch( Exception $e ){
-				$result->setStatus( Result::STATUS_ERROR );
-				$result->setMessage( $e->getMessage() );
-			}
+			$result->setStatus( NULL === $error ? Result::STATUS_SUCCESS : Result::STATUS_ERROR );
+			$result->setMessage( $error ?? 'mail sent to '.$receiver->getAddress() );
 			$list[]	= $result;
 		}
-		$buffer->close();
 		return $list;
 	}
 
@@ -151,20 +182,5 @@ class Local
 	{
 		$transport	= new self();
 		return $transport->send( $message, $parameters );
-	}
-
-	//  --  PROTECTED  --  //
-
-	/**
-	 *	Checks a Header Value for possible Mail Injection and throws Exception.
-	 *	@access		protected
-	 *	@param		string		$value		Header Value
-	 *	@return		void
-	 *	@throws		InvalidArgumentException
-	 */
-	protected function checkForInjection( string $value ): void
-	{
-		if( self::regMatch( '/([\r\n])/', $value ) )
-			throw new InvalidArgumentException( 'Mail injection attempt detected' );
 	}
 }
