@@ -294,20 +294,6 @@ class SMTP
         return $this;
     }
 
-    /**
-     *	Sets name of this client, sent with EHLO.
-     *	Should be the fully qualified domain name of this host or an address literal like "[192.0.2.1]" (RFC 5321, 4.1.4).
-     *	@access		public
-     *	@param		string		$host		Name of this client
-     *	@return		self		Self instance for chaining.
-     */
-    public function setHeloHost( string $host ): self
-    {
-        if( 0 === strlen( trim( $host ) ) )
-            throw new InvalidArgumentException( 'Missing HELO host' );
-        $this->heloHost	= trim( $host );
-        return $this;
-    }
 	/**
 	 *	Sets SMTP host.
 	 *	@access		public
