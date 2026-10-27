@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Mailbox;
 
 use CeusMedia\Mail\Mailbox;
+use CeusMedia\Mail\Util\Str;
 
 use IMAP\Connection as ImapConnection;
 use InvalidArgumentException;
@@ -41,8 +42,6 @@ use function imap_ping;
 use function imap_timeout;
 use function in_array;
 use function join;
-use function strlen;
-use function trim;
 
 /**
  *	Connection handler for IMAP mailboxes.
@@ -105,7 +104,7 @@ class Connection
 	{
 		Mailbox::checkExtensionInstalled();
 		$this->setHost( $host );
-		if( 0 < strlen( trim( $username ) ) && 0 < strlen( trim( $password ) ) )
+		if( Str::hasContent( $username ) && Str::hasContent( $password ) )
 			$this->setAuth( $username, $password );
 		$this->setSecure( $secure, $validateCertificates );
 	}

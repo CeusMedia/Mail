@@ -34,6 +34,7 @@ use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
 use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Util\Str;
 
 use InvalidArgumentException;
 use RangeException;
@@ -155,7 +156,7 @@ class Parser
 			$address	= new Address();
 			$address->setLocalPart( $item->mailbox );
 			$address->setDomain( $item->host );
-			if( isset( $item->personal ) && strlen( trim( $item->personal ) ) > 0 )
+			if( Str::hasContent( $item->personal ?? NULL ) )
 				$address->setName( $item->personal );
 			$collection->add( $address );
 		}
@@ -164,11 +165,11 @@ class Parser
 
 	public function parseUsingOwn( string $string, string $delimiter = ',' ): AddressCollection
 	{
-		if( 0 === strlen( trim( $delimiter ) ) )
+		if( !Str::hasContent( $delimiter ) )
 			throw new InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$list		= [];
 		$string		= str_replace( "\r", "", str_replace( "\n", "", $string ) );
-		if( 0 === strlen( trim( $string ) ) )
+		if( !Str::hasContent( $string ) )
 			return new AddressCollection();
 		$status		= static::STATE_SCANNING_FOR_NAME;
 		$part1		= "";
@@ -229,8 +230,10 @@ class Parser
 
 		$collection	= new AddressCollection();
 		foreach( $list as $entry ){
-			$address		= trim( $entry['fullname'].' <'.$entry['address'].'>' );
-			$collection->add( new Address( $address ) );
+			$address	= new Address( '<'.$entry['address'].'>' );
+			if( Str::hasContent( $entry['fullname'] ) )
+				$address->setName( trim( $entry['fullname'] ) );					//  name unescaped already, not to be parsed again
+			$collection->add( $address );
 		}
 		return $collection;
 	}
@@ -241,7 +244,6 @@ class Parser
 	 *	@param		integer		$method		Parser method to set, see METHOD_* constants
 	 *	@return		self
 	 *	@throws		InvalidArgumentException	if given method is unknown
-	 *	@throws		ReflectionException
 	 */
 	public function setMethod( int $method ): self
 	{

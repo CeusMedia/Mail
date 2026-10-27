@@ -30,12 +30,11 @@ namespace CeusMedia\Mail;
 
 use CeusMedia\Mail\Address\Parser as AddressParser;
 use CeusMedia\Mail\Address\Renderer as AddressRenderer;
+use CeusMedia\Mail\Util\Str;
 
 use InvalidArgumentException;
 use RuntimeException;
 
-use function strlen;
-use function trim;
 
 /**
  *	Data object for mail addresses, having a local part bound to a domain and optionally a name.
@@ -138,7 +137,7 @@ class Address
 	 */
 	public function getDomain( bool $strict = TRUE ): string
 	{
-		if( NULL === $this->domain || strlen( trim( $this->domain ) ) === 0 ){
+		if( !Str::hasContent( $this->domain ) ){
 			if( $strict )
 				throw new RuntimeException( 'No valid address set, yet (domain is missing)' );
 			return '';
@@ -167,7 +166,7 @@ class Address
 	 */
 	public function getLocalPart( bool $strict = TRUE ): string
 	{
-		if( NULL === $this->localPart || strlen( trim( $this->localPart ) ) === 0 ){
+		if( !Str::hasContent( $this->localPart ) ){
 			if( $strict )
 				throw new RuntimeException( 'No valid address set, yet (local part missing)' );
 			return '';
@@ -184,7 +183,7 @@ class Address
 	 */
 	public function getName( bool $strict = TRUE ): ?string
 	{
-		if( NULL === $this->name || strlen( trim( $this->name ) ) === 0 ){
+		if( !Str::hasContent( $this->name ) ){
 			if( $strict )
 				throw new RuntimeException( 'No name set' );
 			return NULL;
@@ -214,7 +213,7 @@ class Address
 	 */
 	public function set( string $string ): self
 	{
-		if( 0 === strlen( trim( $string ) ) )
+		if( !Str::hasContent( $string ) )
 			throw new InvalidArgumentException( 'No address given' );
 
 		$address		= AddressParser::getInstance()->parse( $string );

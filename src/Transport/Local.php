@@ -34,6 +34,7 @@ use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer;
+use CeusMedia\Mail\Util\Str;
 
 use Exception;
 use InvalidArgumentException;
@@ -57,8 +58,6 @@ use function trim;
  */
 class Local
 {
-	use RegularStringHandling;
-
 	/**
 	 *	Constructor.
 	 *	@access		public
@@ -91,7 +90,7 @@ class Local
 			throw new InvalidArgumentException( 'No mail sender defined' );
 		if( 0 === count( $receivers ) )
 			throw new InvalidArgumentException( 'No mail receiver defined' );
-		if( 0 === strlen( trim( $subject ) ) )
+		if( !Str::hasContent( $subject ) )
 			throw new InvalidArgumentException( 'No mail subject defined' );
 		$subject	= "=?UTF-8?B?".base64_encode( $subject )."?=";
 
@@ -102,8 +101,8 @@ class Local
 		}
 */
 		//  --  HEADERS  --  //
-		if( self::strHasContent( (string) $message->getUserAgent() ) )
-			$headers->setFieldPair( 'X-Mailer', (string) $message->getUserAgent() );
+		if( Str::hasContent( $message->getUserAgent() ) )
+			$headers->setFieldPair( 'X-Mailer', $message->getUserAgent() );
 		$headers->setFieldPair( 'Date', date( 'r' ) );
 
 		$parameters	= implode( PHP_EOL, $parameters );

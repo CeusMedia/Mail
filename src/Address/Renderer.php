@@ -29,8 +29,10 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Address;
 
 use CeusMedia\Mail\Address;
-use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+use CeusMedia\Mail\Util\Str;
 
 use RuntimeException;
 
@@ -92,8 +94,8 @@ class Renderer
 	{
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
-		$name		= $address->getName( FALSE );
-		if( NULL === $name || !self::strHasContent( $name ) )
+		$name		= trim( $address->getName( FALSE ) ?? '' );
+		if( !Str::hasContent( $name ) )
 			return $localPart.'@'.$domain;
 		if( !self::regMatch( '/^\w+$/', $name ) )
 			$name	= '"'.$name.'"';

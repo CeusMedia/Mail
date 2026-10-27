@@ -55,6 +55,7 @@ use function quoted_printable_encode;
 use function strlen;
 use function strtolower;
 use function rtrim;
+use function trim;
 
 /**
  *	Abstract Mail Part.

@@ -45,8 +45,6 @@ use function json_decode;
 use function json_encode;
 use function ksort;
 use function preg_match;
-use function strlen;
-use function trim;
 
 /**
  *	Resolver for DNS MX records related to hostname or mail address.
@@ -148,7 +146,7 @@ class MX
 		$mxRecords	= [];
 		$mxWeights	= [];
 		getmxrr( $hostname, $mxRecords, $mxWeights );
-		if( !$mxRecords && $strict )
+		if( [] === $mxRecords && $strict )
 			throw new RuntimeException( 'No MX records found for host: '.$hostname );
 		foreach( $mxRecords as $nr => $server )
 			if( array_key_exists( $nr, $mxWeights) )
@@ -188,7 +186,7 @@ if( !function_exists( 'getmxrr' ) )
 	function getmxrr( string $hostname, array &$mxhosts, array &$mxweight ): bool
 	{
 		$pattern	= "/^$hostname\tMX preference = ([0-9]+), mail exchanger = (.*)$/";
-		if( strlen( trim( $hostname ) ) > 0 ){
+		if( Str::hasContent( $hostname ) ){
 			$output	= [];
 			@exec( "nslookup.exe -type=MX $hostname.", $output );
 			$imx	= -1;
@@ -200,7 +198,7 @@ if( !function_exists( 'getmxrr' ) )
 					$mxhosts[$imx]	= $parts[2];
 				}
 			}
-			return ($imx != -1);
+			return ($imx !== -1);
 		}
 		return FALSE;
 	}

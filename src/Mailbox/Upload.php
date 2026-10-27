@@ -29,7 +29,6 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Mailbox;
 
-use A\B;
 use CeusMedia\Common\ADT\Bitmask;
 use CeusMedia\Mail\Message;
 use RangeException;

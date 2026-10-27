@@ -32,7 +32,7 @@ namespace CeusMedia\Mail\Message\Part;
 use CeusMedia\Common\Exception\IO as IoException;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part as MessagePart;
-use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Util\Str;
 
 use CeusMedia\Common\FS\File;
 use InvalidArgumentException;
@@ -46,7 +46,6 @@ use function filemtime;
 use function filesize;
 use function join;
 use function strlen;
-use function trim;
 
 /**
  *	Attachment Mail Part.
@@ -204,9 +203,9 @@ class Attachment extends MessagePart
  		if( !$file->exists() )
 			throw new InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
 
-		if( NULL === $mimeType || 0 == strlen( trim( $mimeType ) ) )
+		if( !Str::hasContent( $mimeType ) )
 			$mimeType	= $this->getMimeTypeFromFile( $filePath );
-		if( NULL === $fileName || 0 == strlen( trim( $fileName ) ) )
+		if( !Str::hasContent( $fileName ) )
 			$fileName	= basename( $filePath );
  		$this->content	= (string) $file->getContent();
 		$this->setFileName( $fileName );
@@ -220,7 +219,7 @@ class Attachment extends MessagePart
 			$this->setFileMTime( $fileMTime );
 		if( NULL !== $mimeType )
 			$this->setMimeType( $mimeType );
-		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+		if( Str::hasContent( $encoding ) )
 			$this->setEncoding( $encoding );
 		return $this;
 	}
