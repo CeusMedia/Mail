@@ -31,11 +31,9 @@ namespace CeusMedia\Mail\Address\Check;
 
 use CeusMedia\Common\ADT\Bitmask;
 use CeusMedia\Common\Alg\Obj\Constant as ObjectConstant;
-use CeusMedia\Mail\Conduct\RegularStringHandling;
-
+use CeusMedia\Mail\Util\Str;
 use InvalidArgumentException;
 
-use ReflectionException;
 use function filter_var;
 
 /**
@@ -50,8 +48,6 @@ use function filter_var;
  */
 class Syntax
 {
-	use RegularStringHandling;
-
 	public const MODE_AUTO				= 0;
 	public const MODE_ALL				= 1;
 	public const MODE_FILTER			= 2;
@@ -85,7 +81,6 @@ class Syntax
 	 *	@param		boolean			$throwException	Flag: throw exception if invalid, default: TRUE
 	 *	@return		integer							Bitmask of successfully applied test modes
 	 *	@throws		InvalidArgumentException		if address is not valid and flag 'throwException' is enabled
-	 *	@throws		ReflectionException
 	 */
 	public function check( string $address, bool $throwException = TRUE ): int
 	{
@@ -101,11 +96,11 @@ class Syntax
 						$result	|= $value;
 				}
 				if( ( $value === self::MODE_SIMPLE_REGEX ) || $wildcard ){
-					if( self::regMatch( $this->regexSimple, $address ) )
+					if( Str::regMatch( $this->regexSimple, $address ) )
 						$result	|= $value;
 				}
 				if( ( $value === self::MODE_EXTENDED_REGEX ) || $wildcard ){
-					if( self::regMatch( $this->regexExtended, $address ) )
+					if( Str::regMatch( $this->regexExtended, $address ) )
 						$result	|= $value;
 				}
 			}
@@ -159,7 +154,6 @@ class Syntax
 	 *	@access		public
 	 *	@param		string		$address		Mail address to validate
 	 *	@return		boolean
-	 *	@throws		ReflectionException
 	 */
 	public function isValid( string $address ): bool
 	{
@@ -180,9 +174,9 @@ class Syntax
 		if( $mode === self::MODE_FILTER )
 			return FALSE !== filter_var( $address, FILTER_VALIDATE_EMAIL );
 		if( $mode === self::MODE_SIMPLE_REGEX )
-			return self::regMatch( $this->regexSimple, $address );
+			return Str::regMatch( $this->regexSimple, $address );
 		if( $mode === self::MODE_EXTENDED_REGEX )
-			return self::regMatch( $this->regexExtended, $address );
+			return Str::regMatch( $this->regexExtended, $address );
 		throw new InvalidArgumentException( 'Invalid mode given' );
 	}
 

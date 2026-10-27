@@ -31,6 +31,7 @@ namespace CeusMedia\Mail\Util\Dmarc;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Util\Str;
 
 use function abs;
 use function in_array;
@@ -53,8 +54,6 @@ use function trim;
  */
 class Parser
 {
-	use RegularStringHandling;
-
 	/**
 	 *	Static constructor.
 	 *	@access			public
@@ -93,16 +92,16 @@ class Parser
 	{
 		$record		= new Record();
 		$content	= rtrim( trim( $content ), ';' );
-		$pairs		= self::regSplit( '/\s*;\s*/', $content );
+		$pairs		= Str::regSplit( '/\s*;\s*/', $content );
 		foreach( $pairs as $pair ){
-			if( !self::regMatch( '/=/', $pair ) )
+			if( !Str::regMatch( '/=/', $pair ) )
 				continue;
 			$pair	= preg_split( '/\s*=\s*/', $pair, 2 );
 			if( FALSE === $pair )
 				continue;
 			switch( $pair[0] ){
 				case 'v':
-					$record->version	= self::regReplace( '/^DMARC/', '', $pair[1],
+					$record->version	= Str::regReplace( '/^DMARC/', '', $pair[1],
 						'Parsing version failed' );
 					break;
 				case 'p':
@@ -125,18 +124,18 @@ class Parser
 					$record->percent	= min( 100, max( 0, intval( $pair[1] ) ) );
 					break;
 				case 'rua':
-					$parts = self::regSplit( '/\s*,\s*/', $pair[1] );
+					$parts = Str::regSplit( '/\s*,\s*/', $pair[1] );
 					foreach( $parts as $part ){
-						if( self::regMatch( '/^mailto:/', $part ) )
-							$part	= new Address( self::regReplace( '/^mailto:/', '', $part ) );
+						if( Str::regMatch( '/^mailto:/', $part ) )
+							$part	= new Address( Str::regReplace( '/^mailto:/', '', $part ) );
 						$record->reportAggregate[]	= $part;
 					}
 					break;
 				case 'ruf':
-					$parts	= self::regSplit( '/\s*,\s*/', $pair[1] );
+					$parts	= Str::regSplit( '/\s*,\s*/', $pair[1] );
 					foreach( $parts as $part ){
-						if( self::regMatch( '/^mailto:/', $part ) )
-							$part	= new Address( self::regReplace( '/^mailto:/', '', $part ) );
+						if( Str::regMatch( '/^mailto:/', $part ) )
+							$part	= new Address( Str::regReplace( '/^mailto:/', '', $part ) );
 						$record->reportForensic[]	= $part;
 					}
 					break;

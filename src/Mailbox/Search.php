@@ -29,6 +29,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Mailbox;
 
+use CeusMedia\Mail\Util\Str;
+
 use IMAP\Connection as ImapConnection;
 use RuntimeException;
 
@@ -161,9 +163,9 @@ class Search
 	public function renderCriteria(): string
 	{
 		$criteria	= [];
-		if( NULL !== $this->subject && 0 !== strlen( trim( $this->subject ) ) )
+		if( Str::hasContent( $this->subject ) )
 			$criteria[]	= 'SUBJECT "'.$this->subject.'"';
-		if( NULL !== $this->sender && 0 !== strlen( trim( $this->sender ) ) )
+		if( Str::hasContent( $this->sender ) )
 			$criteria[]	= 'FROM "'.$this->sender.'"';
 		return join( ' ', $criteria );
 	}

@@ -31,8 +31,7 @@ namespace CeusMedia\Mail;
 use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Mailbox\Mail;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
-use CeusMedia\Mail\Mailbox\Connection as MailboxConnection;
-use CeusMedia\Mail\Mailbox\Search as MailboxSearch;
+use CeusMedia\Mail\Util\Str;
 
 use RangeException;
 use ReflectionException;
@@ -64,8 +63,6 @@ use function ucfirst;
  */
 class Mailbox
 {
-	use RegularStringHandling;
-
 	/**
 	 * @var MailboxConnection $connection
 	 */
@@ -121,7 +118,7 @@ class Mailbox
 		if( !$fullReference ){
 			$regExp	= '/^'.preg_quote( $reference, '/' ).'/';
 			foreach( $folders as $nr => $folder )
-				$folders[$nr]	= self::regReplace( $regExp, '', $folder );
+				$folders[$nr]	= Str::regReplace( $regExp, '', $folder );
 		}
 		foreach( $folders as $nr => $folder )
 			$folders[$nr]	= mb_convert_encoding( $folder, 'UTF-8', 'UTF7-IMAP' );

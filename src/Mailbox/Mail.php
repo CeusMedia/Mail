@@ -30,9 +30,10 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Mailbox;
 
 use CeusMedia\Mail\Message;
-use CeusMedia\Mail\Message\Parser as MessageParser;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
+use CeusMedia\Mail\Message\Parser as MessageParser;
+use CeusMedia\Mail\Util\Str;
 
 use IMAP\Connection as ImapConnection;
 use ReflectionException;
@@ -145,7 +146,7 @@ class Mail
 	{
 		if( NULL === $this->rawConnection )
 			throw new RuntimeException( 'No connection set' );
-		if( NULL === $this->rawHeader || '' === trim( $this->rawHeader ) || $force ){
+		if( !Str::hasContent( $this->rawHeader ) || $force ){
 			$rawHeader	= imap_fetchheader( $this->rawConnection, $this->mailId, FT_UID );
 			if( FALSE === $rawHeader )
 				throw new RuntimeException( 'Invalid mail ID or fetching mail header failed' );

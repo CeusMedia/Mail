@@ -30,6 +30,9 @@ namespace CeusMedia\Mail\Address\Collection;
 
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+use CeusMedia\Mail\Util\Str;
 
 use InvalidArgumentException;
 
@@ -108,7 +111,7 @@ class Renderer
 	 */
 	public function setDelimiter( string $delimiter ): self
 	{
-		if( 0 === strlen( trim( $delimiter ) ) )
+		if( !Str::hasContent( $delimiter ) )
 			throw new InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$this->delimiter	= $delimiter;
 		return $this;

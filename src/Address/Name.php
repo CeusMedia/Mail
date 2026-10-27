@@ -28,7 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Address;
 
-use CeusMedia\Mail\Conduct\RegularStringHandling;
+use CeusMedia\Mail\Util\Str;
 
 use function array_pop;
 use function array_reverse;
@@ -46,8 +46,6 @@ use function join;
  */
 class Name
 {
-	use RegularStringHandling;
-
 	/** @var		string|NULL		$firstname */
 	protected ?string $firstname	= NULL;
 
@@ -85,10 +83,10 @@ class Name
 	public static function splitNameParts( Name $name ): Name
 	{
 		$fullname	= trim( $name->getFullname() ?? '' );
-		$fullname	= self::regReplace( '/ +/', ' ', $fullname );
-		if( self::regMatch( "/ +/", $fullname ) ){
+		$fullname	= Str::regReplace( '/ +/', ' ', $fullname );
+		if( Str::regMatch( "/ +/", $fullname ) ){
 			$name->setFullname( $fullname );
-			$parts	= self::regSplit( "/ +/", $fullname );
+			$parts	= Str::regSplit( "/ +/", $fullname );
 			if( $parts[0] === strtoupper( $parts[0] ) ){
 				$surname	= array_shift( $parts );
 				$name->setSurname( ucfirst( strtolower( $surname ) ) );
@@ -110,8 +108,8 @@ class Name
 	 */
 	public static function swapCommaSeparatedNameParts( Name $name ): Name
 	{
-		if( self::regMatch( "/, +/", $name->getFullname() ?? '' ) ){
-			$parts	= self::regSplit( "/, +/", $name->getFullname() ?? '', 2 );
+		if( Str::regMatch( "/, +/", $name->getFullname() ?? '' ) ){
+			$parts	= Str::regSplit( "/, +/", $name->getFullname() ?? '', 2 );
 			$name->setFullname( join( ' ', array_reverse( $parts ) ) );
 		}
 		return $name;

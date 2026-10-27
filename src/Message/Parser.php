@@ -43,13 +43,13 @@ use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
 use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
 use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Util\Str;
 
 use ReflectionException;
 use RuntimeException;
 
 use function in_array;
 use function join;
-use function strlen;
 use function strtolower;
 use function strtotime;
 use function strtoupper;
@@ -68,8 +68,6 @@ use function trim;
  */
 class Parser
 {
-	use RegularStringHandling;
-
 	/**
 	 *	Static constructor.
 	 *	@access		public
@@ -92,7 +90,7 @@ class Parser
 	{
 		$message	= new Message();
 
-		$parts		= self::regSplit( "/\r?\n\r?\n/", $content, 2,
+		$parts		= Str::regSplit( "/\r?\n\r?\n/", $content, 2,
 			'Splitting message into parts failed'
 		);
 		$headers	= MessageHeaderParser::getInstance()->parse( $parts[0] );
@@ -118,7 +116,7 @@ class Parser
 		if( $headers->hasField( 'Content-Type' ) ){
 			$mimeType	= $headers->getField( 'Content-Type' )->getValue();
 //			$attributes	= $headers->getField( 'Content-Type' )->getAttributes();
-			if( self::regMatch( '/multipart/', $mimeType ) ){					//  is multipart message
+			if( Str::regMatch( '/multipart/', $mimeType ) ){					//  is multipart message
 				$this->parseMultipartBody( $message, $content );				//  parse multipart containers
 				return $message;
 			}
@@ -147,10 +145,10 @@ class Parser
 	{
 		$part	= new MessagePartAttachment();
 		$part->setMimeType( $mimeType );
-		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+		if( Str::hasContent( $encoding ) )
 			$part->setEncoding( $encoding );
 		$part->setContent( $content );
-		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+		if( Str::hasContent( $format ) )
 			$part->setFormat( $format );
 
 		$filename	= $disposition->getAttribute( 'filename' );
@@ -170,7 +168,7 @@ class Parser
 			$value	= $disposition->getAttribute( $key );
 			if( is_null( $value ) )
 				continue;
-			if( self::regMatch( '/-date$/', $key ) )
+			if( Str::regMatch( '/-date$/', $key ) )
 				$value	= strtotime( $value );
 			if( FALSE !== $value )
 				$methodFactory->setMethod( $method, [$value] )->call();
@@ -225,9 +223,9 @@ class Parser
 	protected static function createHTMLPart( string $content, string $charset, ?string $encoding = NULL, ?string $format = NULL ): MessagePartHTML
 	{
 		$part	= new MessagePartHTML( $content, $charset );
-		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+		if( Str::hasContent( $encoding ) )
 			$part->setEncoding( $encoding );
-		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+		if( Str::hasContent( $format ) )
 			$part->setFormat( $format );
 		return $part;
 	}
@@ -252,10 +250,10 @@ class Parser
 		$part	= new MessagePartInlineImage( trim( $id, '<>' ) );
 
 		$part->setMimeType( $mimeType );
-		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+		if( Str::hasContent( $encoding ) )
 			$part->setEncoding( $encoding );
 		$part->setContent( $content );
-		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+		if( Str::hasContent( $format ) )
 			$part->setFormat( $format );
 
 		$filename	= $disposition->getAttribute( 'filename' );
@@ -275,7 +273,7 @@ class Parser
 			$value	= $disposition->getAttribute( $key );
 			if( is_null( $value ) )
 				continue;
-			if( self::regMatch( '/-date$/', $key ) )
+			if( Str::regMatch( '/-date$/', $key ) )
 				$value	= strtotime( $value );
 			if( FALSE !== $value )
 				$methodFactory->setMethod( $method, [$value] )->call();
@@ -296,9 +294,9 @@ class Parser
 	protected static function createMailPart( string $content, string $charset, ?string $encoding = NULL, ?string $format = NULL ): MessagePartMail
 	{
 		$part	= new MessagePartMail( $content, $charset );
-		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+		if( Str::hasContent( $encoding ) )
 			$part->setEncoding( $encoding );
-		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+		if( Str::hasContent( $format ) )
 			$part->setFormat( $format );
 		return $part;
 	}
@@ -306,9 +304,9 @@ class Parser
 	protected static function createTextPart( string $content, string $charset, ?string $encoding = NULL, ?string $format = NULL ): MessagePartText
 	{
 		$part	= new MessagePartText( $content, $charset );
-		if( NULL !== $encoding && 0 !== strlen( trim( $encoding ) ) )
+		if( Str::hasContent( $encoding ) )
 			$part->setEncoding( $encoding );
-		if( NULL !== $format && 0 !== strlen( trim( $format ) ) )
+		if( Str::hasContent( $format ) )
 			$part->setFormat( $format );
 		return $part;
 	}
@@ -322,7 +320,7 @@ class Parser
 	 */
 	protected function parseAtomicBodyPart( string $content ): MessagePart
 	{
-		$parts		= self::regSplit( "/\r?\n\r?\n/", $content, 2,
+		$parts		= Str::regSplit( "/\r?\n\r?\n/", $content, 2,
 			'Splitting multipart message body into parts failed'
 		);
 		$content	= $parts[1];
@@ -366,7 +364,7 @@ class Parser
 	protected function parseMultipartBody( Message $message, string $content ): void
 	{
 		$delim		= Message::$delimiter;
-		$bodyParts	= self::regSplit( "/\r?\n\r?\n/", $content, 2,
+		$bodyParts	= Str::regSplit( "/\r?\n\r?\n/", $content, 2,
 			'Splitting multipart message body into parts failed'
 		);
 
@@ -387,7 +385,7 @@ class Parser
 
 		$lines	= [];
 		$status	= 0;
-		$bodyLines	= self::regSplit( "/\r?\n/", $body, NULL,
+		$bodyLines	= Str::regSplit( "/\r?\n/", $body, NULL,
 			'Splitting multipart message body into lines failed'
 		);
 		foreach( $bodyLines as $line ){

@@ -28,8 +28,8 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Util\Str;
 
 use DomainException;
 use Exception;
@@ -77,7 +77,8 @@ use function str_replace;
  */
 class Encoding
 {
-	use RegularStringHandling;
+	/** Maximum length of lines containing encoded words (RFC 2047, 2) */
+	public const LINE_LENGTH					= 76;
 
 	public const DECODE_STRATEGY_IMPL			= 1;
 	public const DECODE_STRATEGY_ICONV			= 2;

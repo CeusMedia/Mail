@@ -41,6 +41,7 @@ use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
 use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
 use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
 use CeusMedia\Mail\Message\Part\Text as MessagePartText;
+use CeusMedia\Mail\Util\Str;
 
 use DomainException;
 use RangeException;
@@ -113,9 +114,9 @@ class Message
 	 */
 	public function __wakeup()
 	{
-		if( NULL === $this->userAgent || '' === trim( $this->userAgent ) )
+		if( !Str::hasContent( $this->userAgent ) )
 			$this->setUserAgent( Library::getUserAgent() );
-		if( NULL === $this->version || '' === trim( $this->version ) )
+		if( !Str::hasContent( $this->version ) )
 			if( NULL !== Library::getVersion() )
 				$this->setVersion( Library::getVersion() );
 	}
@@ -253,9 +254,7 @@ class Message
 		if( !in_array( strtoupper( $type ), [ "TO", "CC", "BCC" ], TRUE ) )
 			throw new DomainException( 'Invalid recipient type' );
 
-		$encoder	= MessageHeaderEncoding::getInstance();
-
-		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+		if( Str::hasContent( $name ) )
 			$address->setName( $name );
 		$this->recipients[strtolower( $type )]->add( $address );
 
@@ -286,7 +285,7 @@ class Message
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+		if( Str::hasContent( $name ) )
 			$address->setName( $name );
 		$this->addHeaderPair( 'Reply-To', $address->get() );
 		return $this;
@@ -603,7 +602,7 @@ class Message
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+		if( Str::hasContent( $name ) )
 			$address->setName( $name );
 		$this->headers->addFieldPair( 'Disposition-Notification-To', $address->get() );
 		return $this;
@@ -620,7 +619,7 @@ class Message
 	{
 		if( is_string( $address ) )
 			$address	= new Address( $address );
-		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
+		if( Str::hasContent( $name ) )
 			$address->setName( $name );
 		$this->sender	= $address;
 		$this->headers->removeFieldByName( 'From' );

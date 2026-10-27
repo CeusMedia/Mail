@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Transport\SMTP;
 
 use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Util\Str;
 
 use RuntimeException;
 
@@ -111,7 +112,7 @@ class Socket
 	 */
 	public function __construct( string $host = NULL, int $port = NULL, ?int $timeout = NULL )
 	{
-		if( !is_null( $host ) && strlen( trim( $host ) ) > 0 )
+		if( Str::hasContent( $host ) )
 			$this->setHost( $host );
 		if( is_integer( $port ) )
 			$this->setPort( abs( $port ) );
@@ -283,7 +284,7 @@ class Socket
 			$this->close();
 		}
 		$response	= new Response();
-		if( NULL === $this->host || 0 === strlen( trim( $this->host ) ) ){
+		if( !Str::hasContent( $this->host ) ){
 			$response->setError( Response::ERROR_NO_HOST_SET );
 			$response->setMessage( 'No host set' );
 			return $response;
@@ -302,8 +303,10 @@ class Socket
 			$this->timeout
 		);
 		if( FALSE === $socket ){
-			$message	= 'Socket connection to SMTP server "%s" at port %d failed';
-			$response->setMessage( sprintf( $message, $this->host, $this->port ) );
+			$message	= sprintf( 'Socket connection to SMTP server "%s" at port %d failed', $this->host, $this->port );
+			if( Str::hasContent( $this->errorMessage ) )
+				$message	.= ': '.trim( $this->errorMessage );						//  after sprintf, may contain "%"
+			$response->setMessage( $message );
 			$response->setError( Response::ERROR_SOCKET_FAILED );
 			return $response;
 		}

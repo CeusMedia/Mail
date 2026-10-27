@@ -28,7 +28,7 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Header;
 
-use CeusMedia\Mail\Conduct\RegularStringHandling;
+use CeusMedia\Mail\Util\Str;
 
 use RangeException;
 use RuntimeException;

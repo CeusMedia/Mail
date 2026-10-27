@@ -34,7 +34,7 @@ use CeusMedia\Mail\Message\Renderer as MessageRenderer;
 use CeusMedia\Mail\Transport\SMTP\Response;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
 use CeusMedia\Mail\Transport\SMTP\Socket as SmtpSocket;
-use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
+use CeusMedia\Mail\Util\Str;
 
 use InvalidArgumentException;
 use RangeException;
@@ -137,7 +137,7 @@ class SMTP
 	{
 		if( NULL !== $this->socket ){
 			$socketError	= $this->socket->getError()['message'];
-			if( 0 !== strlen( trim( $socketError ) ) )
+			if( Str::hasContent( $socketError ) )
 				return $socketError;
 		}
 		return NULL;
@@ -181,8 +181,8 @@ class SMTP
 			$this->sendChunk( 'EHLO '.$heloHost );
 			$this->checkResponse( [ 250 ], SmtpResponse::ERROR_HELO_FAILED );
 		}
-		if( 0 < strlen( trim( $this->username ) ) ){
-			if( 0 < strlen( trim( $this->password ) ) ){
+		if( Str::hasContent( $this->username ) ){
+			if( Str::hasContent( $this->password ) ){
 				$this->sendChunk( 'AUTH LOGIN' );
 				$this->checkResponse( [ 334 ] );
 				$this->sendChunk( base64_encode( $this->username ), '[username hidden]' );
@@ -276,7 +276,7 @@ class SMTP
      */
     public function setHeloHost( string $host ): self
     {
-        if( 0 === strlen( trim( $host ) ) )
+        if( !Str::hasContent( $host ) )
             throw new InvalidArgumentException( 'Missing HELO host' );
         $this->heloHost	= trim( $host );
         return $this;
@@ -304,7 +304,7 @@ class SMTP
 	{
 		if( NULL !== $this->socket )
 			throw new RuntimeException( 'Connection to SMTP server already established' );
-		if( 0 === strlen( trim( $host ) ) )
+		if( !Str::hasContent( $host ) )
 			throw new InvalidArgumentException( 'Missing SMTP host' );
 		$this->host		= $host;
 		return $this;

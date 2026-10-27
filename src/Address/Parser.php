@@ -29,8 +29,8 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Address;
 
 use CeusMedia\Mail\Address;
-use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
+use CeusMedia\Mail\Util\Str;
 
 use InvalidArgumentException;
 use RuntimeException;
@@ -53,8 +53,6 @@ use function trim;
  */
 class Parser
 {
-	use RegularStringHandling;
-
 	/**	@var	array		$patterns		Map of understandable patterns (regular expressions) */
 	protected static array $patterns	= [												//  define name patterns
 		'name <local-part@domain>'	=> "/^(.*)\s(<((\S+)@(\S+))>)$/U",			//  full address: name and local-part at domain with (maybe in brackets)
@@ -103,61 +101,61 @@ class Parser
 	public function parse( string $string ): Address
 	{
 		$string		= stripslashes( trim( $string ) );
-		$string		= self::regReplace( "/\r\n /", " ", $string,				//  unfold @see https://tools.ietf.org/html/rfc822#section-3.1
+		$string		= Str::regReplace( "/\r\n /", " ", $string,				//  unfold @see https://tools.ietf.org/html/rfc822#section-3.1
 			'Unfolding of address failed'
 		);
 		$regex1		= self::$patterns['name <local-part@domain>'];				//  get pattern of full address
 		$regex2		= self::$patterns['<local-part@domain>'];					//  get pattern of short address
 		$regex3		= self::$patterns['local-part@domain'];						//  get pattern of short address
 		$name		= '';
-		if( self::regMatch( $regex1, $string ) ){								//  found full address: with name or in brackets
-			$localPart	= self::regReplace(										//  extract local part
+		if( Str::regMatch( $regex1, $string ) ){								//  found full address: with name or in brackets
+			$localPart	= Str::regReplace(										//  extract local part
 				self::$patterns['name <local-part@domain>'],
 				"\\4",
 				$string,
 				'Extraction of local part failed'
 			);
-			$domain		= self::regReplace(										//  extract domain part
+			$domain		= Str::regReplace(										//  extract domain part
 				self::$patterns['name <local-part@domain>'],
 				"\\5",
 				$string,
 				'Extraction of domain part failed'
 			);
-			$name		= self::regReplace(				 						//  extract user name
+			$name		= Str::regReplace(				 						//  extract user name
 				self::$patterns['name <local-part@domain>'],
 				"\\1",
 				$string,
 				'Extraction of name failed'
 			);
-			$name		= self::regReplace(										//  strip quotes from user name
+			$name		= Str::regReplace(										//  strip quotes from user name
 				"/^\"(.+)\"$/",
 				"\\1",
 				trim( $name ),
 				'Unquoting of name failed'
 			);
 		}
-		else if( self::regMatch( $regex2, $string ) ){							//  otherwise found short address: neither name nor brackets
-			$localPart	= self::regReplace(										//  extract local part
+		else if( Str::regMatch( $regex2, $string ) ){							//  otherwise found short address: neither name nor brackets
+			$localPart	= Str::regReplace(										//  extract local part
 				self::$patterns['<local-part@domain>'],
 				"\\2",
 				$string,
 				'Extraction of local part failed'
 			);
-			$domain		= self::regReplace( 									//  extract domain part
+			$domain		= Str::regReplace( 									//  extract domain part
 				self::$patterns['<local-part@domain>'],
 				"\\3",
 				$string,
 				'Extraction of domain part failed'
 			);
 		}
-		else if( self::regMatch( $regex3, $string ) ){							//  otherwise found short address: neither name nor brackets
-			$localPart	= self::regReplace(										//  extract local part
+		else if( Str::regMatch( $regex3, $string ) ){							//  otherwise found short address: neither name nor brackets
+			$localPart	= Str::regReplace(										//  extract local part
 				self::$patterns['local-part@domain'],
 				"\\2",
 				$string,
 				'Extraction of local part failed'
 			);
-			$domain		= self::regReplace(										//  extract domain part
+			$domain		= Str::regReplace(										//  extract domain part
 				self::$patterns['local-part@domain'],
 				"\\3",
 				$string,

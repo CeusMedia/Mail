@@ -30,8 +30,8 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Message\Header;
 
 use CeusMedia\Common\ADT\Collection\Dictionary;
-use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message\Header\Renderer as MessageHeaderRenderer;
+use CeusMedia\Mail\Util\Str;
 
 use InvalidArgumentException;
 
@@ -54,8 +54,6 @@ use function ucwords;
  */
 class Field
 {
-	use RegularStringHandling;
-
 	/**	@var		Dictionary	$attributes		Dictionary of header attributes */
 	protected Dictionary $attributes;
 
@@ -178,9 +176,9 @@ class Field
 	 */
 	public function setName( string $name ): self
 	{
-		if( 0 === strlen( trim( $name ) ) )
+		if( !Str::hasContent( $name ) )
 			throw new InvalidArgumentException( 'Field name cannot be empty' );
-		$this->name	= self::regReplace( "/([ \-])+/", "-", trim( $name ) );
+		$this->name	= Str::regReplace( "/([ \-])+/", "-", trim( $name ) );
 		return $this;
 	}
 
