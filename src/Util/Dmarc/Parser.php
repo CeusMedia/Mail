@@ -29,7 +29,6 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Util\Dmarc;
 
 use CeusMedia\Mail\Address;
-use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Util\Str;
 
