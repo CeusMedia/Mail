@@ -6,10 +6,14 @@
 /demo/send/config.ini
 /demo/mailbox/config.ini
 /phan.json
-/doc
+/doc/*
+!/doc/Manual
+/doc/Manual/api
 /Mail.ini
 /Mail.ini.test
 /.idea
 
 .phpunit.*
 /util/mailpit/tls
+
+/util/docs/.venv
