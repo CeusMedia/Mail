@@ -92,7 +92,7 @@ class Section implements Countable
 	 *	Returns number of header fields in section.
 	 *	Implements countable interface.
 	 *	@access		public
-	 *	@return		integer		Number of header fields in section.
+	 *	@return		int<0,max>		Number of header fields in section.
 	 */
 	public function count(): int
 	{

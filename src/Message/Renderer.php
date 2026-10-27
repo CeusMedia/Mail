@@ -32,6 +32,7 @@ use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Encoding;
 use CeusMedia\Mail\Message\Header\Field as HeaderField;
+use CeusMedia\Mail\Message\Header\Section as HeaderSection;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
@@ -46,9 +47,11 @@ use function count;
 use function join;
 use function md5;
 use function microtime;
+use function preg_replace;
 use function rtrim;
 use function sha1;
 use function strlen;
+use function strtolower;
 use function time;
 use function trim;
 
@@ -103,12 +106,13 @@ class Renderer
 	{
 		if( 0 === count( $message->getParts() ) )
 			throw new RuntimeException( 'No content part set' );
-		$subject	= trim( $message->getSubject() ?? '' );
+		$subject	= trim( (string) preg_replace( '/\s*[\r\n]+\s*/', ' ', $message->getSubject() ?? '' ) );	//  no line breaks, against header injection
 		if( 0 === strlen( $subject ) )
 			throw new RuntimeException( 'No subject set' );
 
 		$headers	= $message->getHeaders();
 		if( !$headers->hasField( 'Message-ID' ) ){
+            /** @var string $server */
 			$server	= $_SERVER['SERVER_NAME'] ?? 'localhost';
 			$headers->setFieldPair( 'Message-ID', '<'.sha1( microtime() ).'@'.$server.'>' );
 		}
@@ -116,7 +120,7 @@ class Renderer
 			$headers->setFieldPair( 'Date', date( 'D, d M Y H:i:s O', time() ) );
 
 		$encoder	= Encoding::getInstance();
-		$encodedSubject	= $encoder->encodeIfNeeded( $subject, self::$encodingSubject );
+		$encodedSubject	= $encoder->encodeIfNeeded( $subject, self::$encodingSubject, TRUE, strlen( 'Subject: ' ) );
 		$headers->setFieldPair( 'Subject', $encodedSubject );
 
 		$headers->setFieldPair( 'MIME-Version', '1.0' );
@@ -126,7 +130,9 @@ class Renderer
 		if( 1 === count( $message->getParts() ) ){								//  no multipart message
 			$parts	= $message->getParts();										//  get parts
 			$part	= array_pop( $parts );										//  get solo part
-			return $part->render( MessagePart::SECTION_ALL, $headers );			//  render part and apply part headers as message headers
+			$part->applyHeaders( $headers );										//  apply part headers as message headers
+			return self::renderHeaders( $headers ).Message::$delimiter.Message::$delimiter
+				.$part->render( MessagePart::SECTION_CONTENT );
 		}
 
 		$bodyParts		= (object) [
@@ -178,6 +184,25 @@ class Renderer
 		foreach( $fileParts as $filePart )
 			$contents[]	= '--'.$mimeBoundaryOuter.$delim.rtrim( $filePart->render() ).$delim;
 		$contents[]	= '--'.$mimeBoundaryOuter.'--'.$delim;
-		return $headers->toString( TRUE ).$delim.$delim.join( $delim, $contents );
+		return self::renderHeaders( $headers ).$delim.$delim.join( $delim, $contents );
+	}
+
+	/*  --  PROTECTED  --  */
+
+	/**
+	 *	Renders message headers without Bcc: blind copy recipients must not be visible to others (RFC 5322, 3.6.3).
+	 *	Bcc header may be present in parsed messages, its recipients are delivered by the transports.
+	 *	@access		protected
+	 *	@static
+	 *	@param		HeaderSection	$headers		Message headers
+	 *	@return		string
+	 */
+	protected static function renderHeaders( HeaderSection $headers ): string
+	{
+		$section	= new HeaderSection();
+		foreach( $headers->getFields() as $field )
+			if( 'bcc' !== strtolower( $field->getName() ) )
+				$section->addField( $field );
+		return $section->toString( TRUE );
 	}
 }

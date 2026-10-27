@@ -31,6 +31,7 @@ namespace CeusMedia\Mail\Message\Part;
 
 use CeusMedia\Common\Exception\IO as IoException;
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Util\Str;
 
@@ -39,7 +40,6 @@ use InvalidArgumentException;
 
 use function array_reverse;
 use function basename;
-use function date;
 use function fileatime;
 use function filectime;
 use function filemtime;
@@ -149,6 +149,22 @@ class InlineImage extends MessagePart
 	}
 
 	/**
+	 *	Sets content headers of this part in given header section, e.g. Content-Type.
+	 *	@access		public
+	 *	@param		MessageHeaderSection	$section		Header section to set content headers in
+	 *	@return		MessageHeaderSection	Given header section
+	 */
+	public function applyHeaders( MessageHeaderSection $section ): MessageHeaderSection
+	{
+		$section->setFieldPair( 'Content-Type', $this->renderFileContentType( $this->fileName ) );
+		$section->setFieldPair( 'Content-Transfer-Encoding', $this->getTransferEncoding() );
+		$section->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
+		$section->setFieldPair( 'Content-Disposition', static::renderDisposition( 'inline', $this->fileName,
+			$this->fileSize, $this->fileATime, $this->fileCTime, $this->fileMTime ) );
+		return $section;
+	}
+
+	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
 	 *	@param		integer						$sections				Section(s) to render, default: all
@@ -166,28 +182,13 @@ class InlineImage extends MessagePart
 		$section	= $additionalHeaders ?? new MessageHeaderSection();
 
 		if( $doContent || $doAll ){
-			$content	= static::encodeContent( $this->content, $this->encoding );
+			$content	= static::encodeContent( $this->content, $this->getTransferEncoding() );
 			$list[]		= $content;
 //			$section->setFieldPair( 'Content-Length', (string) $content );
 		}
 
 		if( $doHeader || $doAll ){
-			$section->setFieldPair( 'Content-Type', $this->mimeType.'; name="'.$this->fileName.'"' );
-			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
-			$section->setFieldPair( 'Content-ID', '<'.$this->id.'>' );
-			$disposition	= [
-				'INLINE',
-				'filename="'.$this->fileName.'"'
-			];
-			if( NULL !== $this->fileSize )
-				$disposition[]	= 'size="'.$this->fileSize.'"';
-			if( NULL !== $this->fileATime )
-				$disposition[]	= 'read-date="'.date( 'r', $this->fileATime ).'"';
-			if( NULL !== $this->fileCTime )
-				$disposition[]	= 'creation-date="'.date( 'r', $this->fileCTime ).'"';
-			if( NULL !== $this->fileMTime )
-				$disposition[]	= 'modification-date="'.date( 'r', $this->fileMTime ).'"';
-			$section->setFieldPair( 'Content-Disposition', join( '; ', $disposition ) );
+			$this->applyHeaders( $section );
 			$list[]		= $section->toString( TRUE );
 		}
 

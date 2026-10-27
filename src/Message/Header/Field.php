@@ -38,7 +38,7 @@ use InvalidArgumentException;
 use function function_exists;
 use function mb_convert_case;
 use function str_replace;
-use function strlen;
+use function strcasecmp;
 use function strtolower;
 use function trim;
 use function ucwords;
@@ -90,6 +90,7 @@ class Field
 
 	/**
 	 *	Returns value of header attribute, if set. NULL otherwise.
+	 *	Attribute names are case-insensitive (RFC 2045, 5.1), parsed ones are stored lowercase.
 	 *	@access		public
 	 *	@param		string		$name			Name of header attribute to get
 	 *	@param		mixed		$default		Optional: Value to return if key is not set
@@ -97,7 +98,16 @@ class Field
 	 */
 	public function getAttribute( string $name, mixed $default = NULL ): ?string
 	{
-		$value	= $this->attributes->get( $name, $default );
+		$value	= $this->attributes->get( $name );
+		if( NULL === $value ){
+			foreach( $this->attributes->getAll() as $key => $item ){
+				if( 0 === strcasecmp( (string) $key, $name ) ){
+					$value	= $item;
+					break;
+				}
+			}
+		}
+		$value	??= $default;
 		if( !is_string( $value ) )
 			return NULL;
 		return $value;

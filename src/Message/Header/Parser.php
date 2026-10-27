@@ -30,22 +30,19 @@ namespace CeusMedia\Mail\Message\Header;
 
 use CeusMedia\Mail\Util\Str;
 
-use RangeException;
 use RuntimeException;
 
-use function array_shift;
-use function array_walk;
 use function count;
-use function explode;
-use function iconv;
-use function iconv_mime_decode_headers;
-use function is_array;
+use function ksort;
+use function in_array;
 use function ltrim;
-use function mb_strlen;
-use function strtoupper;
+use function strtolower;
 use function substr;
+use function rawurldecode;
+use function str_contains;
+use function str_replace;
+use function strlen;
 use function trim;
-use function urldecode;
 
 /**
  *	Parser for mail headers.
@@ -59,55 +56,37 @@ use function urldecode;
  */
 class Parser
 {
-	use RegularStringHandling;
-
-	public const STRATEGY_AUTO				= 0;
-	public const STRATEGY_OWN				= 3;	//  own implementation, supports DKIM key folding and RFC 2231
-	public const STRATEGY_ICONV				= 4;	//  iconv, not supporting DKIM key folding and RFC 2231
-	public const STRATEGY_ICONV_STRICT		= 5;	//  iconv in strict mode, not supporting DKIM key folding and RFC 2231
-	public const STRATEGY_ICONV_TOLERANT	= 6;	//  iconv in tolerant mode, not supporting DKIM key folding and RFC 2231
-
-	public const STRATEGIES		= [
-		self::STRATEGY_AUTO,
-		self::STRATEGY_OWN,
-		self::STRATEGY_ICONV,
-		self::STRATEGY_ICONV_STRICT,
-		self::STRATEGY_ICONV_TOLERANT,
+	/** Header fields with parameters, like: text/csv; name="test.csv" */
+	public const PARAMETER_FIELDS		= [
+		'content-type',
+		'content-disposition',
 	];
-
-	/** @var		integer		$defaultStrategy			Strategy to use in auto mode */
-	protected int $defaultStrategy	= self::STRATEGY_OWN;
-
-	/** @var		integer		$strategy				Strategy to use */
-	protected int $strategy			= self::STRATEGY_AUTO;
 
 	/**
 	 *	Static constructor.
 	 *	@access		public
 	 *	@static
-	 *	@param		integer		$strategy		Optional: strategy to set, leaving auto mode
 	 *	@return		self
 	 */
-	public static function getInstance( int $strategy = self::STRATEGY_AUTO ): self
+	public static function getInstance(): self
 	{
-		$instance	= new self;
-		$instance->setStrategy( $strategy );
-		return $instance;
+		return new self;
 	}
 
+	/**
+	 *	Parses header fields block. Values are decoded by Encoding (RFC 2047), parameters split (RFC 2231).
+	 *	@access		public
+	 *	@param		string		$content		Header fields block to parse
+	 *	@return		Section
+	 *	@throws		RuntimeException			if splitting of header fails
+	 */
 	public function parse( string $content ): Section
 	{
-		$strategy	= $this->strategy;
-		if( $this->strategy === self::STRATEGY_AUTO )
-			$strategy	= $this->defaultStrategy;
-
-		return match( $strategy ){
-			self::STRATEGY_OWN				=> self::parseByOwnStrategy( $content ),
-			self::STRATEGY_ICONV			=> self::parseByIconvStrategy( $content ),
-			self::STRATEGY_ICONV_STRICT		=> self::parseByIconvStrategy( $content, 1 ),
-			self::STRATEGY_ICONV_TOLERANT	=> self::parseByIconvStrategy( $content, 2 ),
-			default		=> throw new RuntimeException( 'Unsupported strategy' ),
-		};
+		$encoder	= Encoding::getInstance();
+		$section	= new Section();
+		foreach( self::splitFields( $content ) as [$name, $value] )
+			$section->addField( self::createField( $name, $value, $encoder ) );
+		return $section;
 	}
 
 	/**
@@ -122,126 +101,111 @@ class Parser
 	 */
 	public static function parseAttributedHeaderValue( string $headerValue ): AttributedValue
 	{
-		$string	= self::regReplace( "/\r?\n/", "", $headerValue, 'Unfolding the value failed' );
-		$parts	= self::regSplit( '/\s*;\s*/', trim( $string ), 0, 'Parsing the value failed' );
-		$value	= array_shift( $parts );
-		$list	= [];
-		if( 0 !== count( $parts ) ){
-			foreach( $parts as $part ){
-				$hasAssignment	= self::regMatch( '/=/', $part, 'Parsing the value failed' );
-				if( !$hasAssignment )
-					continue;
-				$p = self::regSplit( '/\s?=\s?/', $part, 2, 'Parsing the value failed' );
-				if( trim( $p[1][0] ?? '' ) === '"' )
-					$p[1]	= substr( trim( $p[1] ), 1, -1 );
-				$hasLabel	= self::regMatch( '/\*\d+\*?$/', $p[0], 'Parsing the value failed' );
-				$valueLine	= stripslashes( $p[1] );
-				if( $hasLabel ){
-					$label	= self::regReplace( '/^(.+)\*\d+\*?$/', '\\1', $p[0] );
-					if( !isset( $list[$label] ) )
-						$list[$label]	= '';
-					$list[$label]	.= $valueLine;
-				}
-				else
-					$list[$p[0]]	= $valueLine;
+		$string		= trim( Encoding::unfold( $headerValue ) );
+		$quoted		= Encoding::PATTERN_QUOTED;
+		Str::regMatch( '/^(?:'.$quoted.'|[^;"]++)*+/', $string, $matches );			//  value up to first semicolon outside quotes, possessive: no stack limit
+		$value		= trim( $matches[0] ?? '' );
+		$rest		= substr( $string, strlen( $matches[0] ?? '' ) );
+		$parameters	= Str::regMatchAll( '/;\s*([^\s=;]+)\s*=\s*('.$quoted.'|[^;]*)/', $rest );
+
+		$list		= [];
+		$extended	= [];
+		foreach( $parameters as $parameter ){
+			$key		= strtolower( $parameter[1] );									//  parameter names are case-insensitive (RFC 2045, 5.1)
+			$content	= trim( $parameter[2] );
+			$content	= Encoding::unquote( $content );
+			//  RFC 2231: name* (encoded), name*0, name*1 (continuations), name*0*, name*1* (encoded continuations)
+			if( Str::regMatch( '/^(.+?)\*(\d+)?(\*)?$/', $key, $parts ) ){
+				$encoded	= !isset( $parts[2] ) || '' === $parts[2] || isset( $parts[3] );
+				$extended[$parts[1]][(int) ( $parts[2] ?? 0 )]	= [$content, $encoded];
+				$list[$parts[1]]	??= '';												//  keep order of attributes
+				continue;
 			}
+			$list[$key]	= $content;
 		}
 
-		//  Apply RFC 2231 (https://datatracker.ietf.org/doc/html/rfc2231)
-		$rfc2231	= "/^(?<charset>[A-Z0-9\-]+)(\'(?<language>[A-Z\-]{0,5})\')(?<content>.*)$/i";	//  eG. utf-8'en'Some%20content
-		array_walk( $list, function( &$value, $key ) use ( $rfc2231 ): void {						//  apply RFC expr to list
-			if( self::regMatch( $rfc2231, $value, NULL, $matches ) ){								//  encoding prefix found
-				$m	= (object) $matches;															//  shortcut matches
-				if( strtoupper( $m->charset ) !== 'UTF-8' )											//  encoding differs from UTF-8
-					$m->content    = iconv( $m->charset, 'UTF-8', $m->content );					//  recode content to UTF-8
-				$value = urldecode( $m->content );													//  remove prefix and decode content
+		foreach( $extended as $label => $segments ){										//  extended value wins over plain value
+			ksort( $segments );
+			$charset	= 'UTF-8';
+			$result		= '';
+			foreach( $segments as $index => [$segment, $encoded] ){
+				if( $encoded ){
+					if( 0 === $index && Str::regMatch( "/^([^']*)'[^']*'(.*)$/s", $segment, $parts ) ){
+						$charset	= '' !== $parts[1] ? $parts[1] : $charset;					//  charset'language'content
+						$segment	= $parts[2];
+					}
+					$segment	= rawurldecode( $segment );
+				}
+				$result	.= $segment;
 			}
-		} );
-
+			$result			= Encoding::getInstance()->convertToCharset( $result, $charset );
+			$list[$label]	= $result;
+		}
 		return new AttributedValue( $value, $list );
 	}
 
+	/*  --  PROTECTED  --  */
+
 	/**
-	 *	...
-	 *	@access		public
+	 *	Creates header field from raw, unfolded value.
+	 *	Address lists are decoded name by name, so names with special characters, like "Doe, Jürgen", are quoted
+	 *	and the list can still be split. Parameters (Content-Type, Content-Disposition) are split before decoding,
+	 *	so decoded quotes or semicolons do not break them. Other values are decoded as a whole.
+	 *	@access		protected
 	 *	@static
-	 *	@param		string		$content		Header fields block to parse
-	 *	@param		integer		$mode			iconv mode (0-normal, 1-strict, 2-tolerant), default: 0
-	 *	@return		Section
-	 *	@throws		RuntimeException			if decoding of header failed
- 	 */
-	public static function parseByIconvStrategy( string $content, int $mode = 0 ): Section
+	 *	@param		string		$name			Header field name
+	 *	@param		string		$value			Raw header field value, unfolded
+	 *	@param		Encoding	$encoder		Encoder to decode with
+	 *	@return		Field
+	 */
+	protected static function createField( string $name, string $value, Encoding $encoder ): Field
 	{
-		$headers	= iconv_mime_decode_headers( $content, $mode, 'UTF-8' );
-		if( FALSE === $headers )
-			throw new RuntimeException( 'Decoding of header failed' );
+		$key	= strtolower( $name );
+		if( in_array( $key, Encoding::ADDRESS_FIELDS, TRUE ) )
+			return new Field( $name, $encoder->decodeAddressListIfNeeded( $value ) );
+		if( !in_array( $key, self::PARAMETER_FIELDS, TRUE ) )
+			return new Field( $name, $encoder->decodeIfNeeded( $value ) );
 
-		$section	= new Section();
-		foreach( $headers as $key => $values ){
-			if( !is_array( $values ) )
-				$values	= [$values];
-			foreach( $values as $value ){
-				$field	= new Field( $key, $value );
-				$attributedValue = self::parseAttributedHeaderValue( $value );
-				if( $attributedValue->getValue() !== $value ){
-					$field->setValue( $attributedValue->getValue() );
-					$field->setAttributes( $attributedValue->getAttributes() );
+		$attributedValue	= self::parseAttributedHeaderValue( $value );
+		$attributes			= [];
+		foreach( $attributedValue->getAttributes() as $attributeKey => $attributeValue )		//  encoded words in quoted parameter: not allowed, but common
+			$attributes[$attributeKey]	= str_contains( $attributeValue, '=?' ) ? $encoder->decodeIfNeeded( $attributeValue ) : $attributeValue;
+		return new Field( $name, $encoder->decodeIfNeeded( $attributedValue->getValue() ), $attributes );
+	}
+
+	/**
+	 *	Splits header fields block into list of field names and raw, unfolded values.
+	 *	Values are decoded later, once per field: white space between encoded words spanning lines is dropped (RFC 2047, 6.2).
+	 *	@access		protected
+	 *	@static
+	 *	@param		string		$content		Header fields block
+	 *	@return		array<array{string,string}>
+	 *	@throws		RuntimeException			if splitting fails
+	 */
+	protected static function splitFields( string $content ): array
+	{
+		$names		= [];
+		$values		= [];
+		$skip		= FALSE;
+		foreach( Str::regSplit( "/\r?\n/", $content, 0, 'Splitting of header failed' ) as $line ){
+			$line	= str_replace( "\r", ' ', $line );									//  bare CR (not before LF): no line break, could not be rendered again
+			if( Str::regMatch( '/^([^\s:]+)[ \t]*:(.*)$/s', $line, $matches ) ){
+				//  skip field with invalid name (printable ASCII without colon, RFC 5322, 2.2), it could not be rendered again
+				$skip	= !Str::regMatch( '/^'.Encoding::PATTERN_FIELD_NAME.'$/', $matches[1] );
+				if( !$skip ){
+					$names[]	= $matches[1];
+					$values[]	= ltrim( $matches[2] );
 				}
-				$section->addField( $field );
+				continue;
 			}
+			$last	= count( $values ) - 1;
+			if( $skip || $last < 0 || !Str::hasContent( $line ) )
+				continue;
+			$values[$last]	.= ' '.ltrim( $line );									//  folded line, leading white space reduced to one space
 		}
-		return $section;
-	}
-
-	public static function parseByOwnStrategy( string $content ): Section
-	{
-		$encoder	= Encoding::getInstance();
-
-		$lines		= self::regSplit( "/\r?\n/", $content, 0, 'Splitting of header failed' );
-		$fws		= '';
-		$buffer		= [];
-		$field		= NULL;
-		$section	= new Section();
-		foreach( $lines as $line ){
-			if( self::regMatch( '/^\S+:/', $line ) ){
-				[$key, $value] = explode( ':', $line, 2 );
-				$buffer	= [ltrim( $value )];									//  collect raw value, decode the unfolded value
-				$field	= new Field( $key, $encoder->decodeIfNeeded( $buffer[0] ) );
-				$section->addField( $field );
-				$fws	= '';
-			}
-			else if( NULL !== $field ){											//  line is folded line
-				if( 0 === mb_strlen( $fws ) )									//  folding white space not detected yet
-					$fws	= self::regReplace( '/^(\s+).+$/', '\\1', $line,	//  get only folding white space
-						'Unfolding the value failed' );
-				$reducedLine	= substr( $line, strlen( $fws ) );				//  reduce line by folding white space
-				if( self::regMatch( '/^\s/', $reducedLine ) )					//  reduced line still contains leading white space
-					$buffer[]	= ltrim( $line );								//  folding @ level 2: folded structure header field
-				else															//  reduced line is folding @ level 1
-					$buffer[]	= ' '.ltrim( $line );							//  reduce leading white space to one
-				//  decode the whole unfolded value: white space between encoded words spanning lines is dropped (RFC 2047 6.2)
-				$field->setValue( $encoder->decodeIfNeeded( join( $buffer ) ) );
-			}
-		}
-
-		//  iterate all fields again to detect attributed values
-		$finalSection	= new Section();
-		foreach( $section->getFields() as $foundField ){
-			$attributedValue = self::parseAttributedHeaderValue( $foundField->getValue() );
-			if( $attributedValue->hasAttributes() ){
-				$foundField->setValue( $attributedValue->getValue() );				//  set unfolded field value
-				$foundField->setAttributes( $attributedValue->getAttributes() );
-			}
-			$finalSection->addField( $foundField );
-		}
-		return $finalSection;
-	}
-
-	public function setStrategy( int $strategy ): self
-	{
-		if( !in_array( $strategy, self::STRATEGIES, TRUE ) )
-			throw new RangeException( 'Invalid strategy' );
-		$this->strategy	= $strategy;
-		return $this;
+		$fields	= [];
+		foreach( $names as $nr => $name )
+			$fields[]	= [$name, $values[$nr]];
+		return $fields;
 	}
 }

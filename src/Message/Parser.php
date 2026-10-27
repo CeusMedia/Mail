@@ -32,15 +32,15 @@ namespace CeusMedia\Mail\Message;
 use CeusMedia\Common\Alg\Obj\MethodFactory as MethodFactory;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
-use CeusMedia\Mail\Conduct\RegularStringHandling;
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Parser as MessageHeaderParser;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Message\Part as MessagePart;
 use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
-use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
 use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
+use CeusMedia\Mail\Message\Part\InlineImage as MessagePartInlineImage;
 use CeusMedia\Mail\Message\Part\Mail as MessagePartMail;
 use CeusMedia\Mail\Message\Part\Text as MessagePartText;
 use CeusMedia\Mail\Util\Str;
@@ -48,6 +48,7 @@ use CeusMedia\Mail\Util\Str;
 use ReflectionException;
 use RuntimeException;
 
+use function array_map;
 use function in_array;
 use function join;
 use function strtolower;
@@ -106,10 +107,22 @@ class Parser
 				case 'to':
 				case 'cc':
 				case 'bcc':
-					$addresses	= AddressCollectionParser::getInstance()->parse( $field->getValue() );
-					/** @var Address $address */
-					foreach( $addresses as $address )
-						$message->addRecipient( $address, NULL, $field->getName() );
+					$addresses	= AddressCollectionParser::getInstance()->parse( $field->getValue() )->getAll();
+					if( !MessageHeaderEncoding::isPrintableAscii( $field->getValue() ) ){	//  decoded non-ASCII names: header rendered again, encoded
+						foreach( $addresses as $address )
+							$message->addRecipient( $address, NULL, $field->getName() );
+						break;
+					}
+					//  ASCII header kept as it is, recipients added to list directly: addRecipient() would render the header
+					//  again, losing parts the address parser skips, like groups ("undisclosed-recipients:;")
+					$recipients	= $message->getRecipientsByType( $field->getName() );
+					$known		= array_map( static fn( Address $address ) => strtolower( $address->getAddress() ), $recipients->getAll() );
+					foreach( $addresses as $address ){
+						if( in_array( strtolower( $address->getAddress() ), $known, TRUE ) )
+							continue;
+						$recipients->add( $address );
+						$known[]	= strtolower( $address->getAddress() );
+					}
 					break;
 			}
 		}

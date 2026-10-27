@@ -34,8 +34,6 @@ use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 
 use function array_reverse;
 use function join;
-use function strtolower;
-use function trim;
 
 /**
  *	Mail Attachment Data Object.
@@ -67,6 +65,19 @@ class Mail extends MessagePart
 	}
 
 	/**
+	 *	Sets content headers of this part in given header section, e.g. Content-Type.
+	 *	@access		public
+	 *	@param		MessageHeaderSection	$section		Header section to set content headers in
+	 *	@return		MessageHeaderSection	Given header section
+	 */
+	public function applyHeaders( MessageHeaderSection $section ): MessageHeaderSection
+	{
+		$section->setFieldPair( 'Content-Type', $this->renderTextContentType() );
+		$section->setFieldPair( 'Content-Transfer-Encoding', $this->getTransferEncoding() );
+		return $section;
+	}
+
+	/**
 	 *	Returns string representation of mail part for rendering whole mail.
 	 *	@access		public
 	 *	@param		integer						$sections				Section(s) to render, default: all
@@ -84,18 +95,13 @@ class Mail extends MessagePart
 		$section	= $additionalHeaders ?? new MessageHeaderSection();
 
 		if( $doContent || $doAll ){
-			$content	= static::encodeContent( $this->content ?? '', $this->encoding );
+			$content	= static::encodeContent( $this->content ?? '', $this->getTransferEncoding() );
 			$list[]		= $content;
 //			$section->setFieldPair( 'Content-Length', (string) $content );
 		}
 
 		if( $doHeader || $doAll ){
-			$section->setFieldPair( 'Content-Type', join( '; ', [
-				$this->mimeType,
-				'charset="'.strtolower( trim( $this->charset ?? '' ) ).'"',
-				'format='.$this->format
-			] ) );
-			$section->setFieldPair( 'Content-Transfer-Encoding', $this->encoding );
+			$this->applyHeaders( $section );
 			$list[]		= $section->toString( TRUE );
 		}
 

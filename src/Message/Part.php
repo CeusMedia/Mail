@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Message;
 
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
 use CeusMedia\Mail\Message\Part\Attachment as MessagePartAttachment;
 use CeusMedia\Mail\Message\Part\HTML as MessagePartHTML;
@@ -41,6 +42,8 @@ use RuntimeException;
 
 use function base64_decode;
 use function chunk_split;
+use function date;
+use function explode;
 use function file_exists;
 use function finfo_close;
 use function finfo_file;
@@ -48,12 +51,19 @@ use function finfo_open;
 use function function_exists;
 use function imap_8bit;
 use function imap_qprint;
+use function implode;
 use function in_array;
+use function join;
+use function max;
 use function mb_convert_encoding;
+use function mb_strcut;
+use function preg_match;
+use function preg_replace;
 use function quoted_printable_decode;
 use function quoted_printable_encode;
 use function strlen;
 use function strtolower;
+use function substr;
 use function rtrim;
 use function trim;
 
@@ -97,6 +107,9 @@ abstract class Part
 		self::SECTION_CONTENT,
 	];
 
+	/**	@var	integer		MAX_LINE_LENGTH		Maximum octets of a line without encoding (7bit, 8bit), CRLF excluded (RFC 5322, 2.1.1) */
+	public const MAX_LINE_LENGTH		= 998;
+
 	/**	@var	string|NULL		$charset		Character set */
 	protected ?string $charset	= NULL;
 
@@ -107,7 +120,7 @@ abstract class Part
 	protected string $encoding;
 
 	/**	@var	string			$format			Format */
-	protected string $format;
+	protected string $format    = 'fixed';
 
 	/**	@var	string			$mimeType		MIME type */
 	protected string $mimeType;
@@ -300,6 +313,19 @@ abstract class Part
 	}
 
 	/**
+	 *	Sets content headers of this part in given header section, e.g. Content-Type.
+	 *	Default: by rendering the header section, parts of this library set them without rendering.
+	 *	@access		public
+	 *	@param		MessageHeaderSection	$section		Header section to set content headers in
+	 *	@return		MessageHeaderSection	Given header section
+	 */
+	public function applyHeaders( MessageHeaderSection $section ): MessageHeaderSection
+	{
+		$this->render( self::SECTION_HEADER, $section );
+		return $section;
+	}
+
+	/**
 	 *	Return string representation of this mail path, so with headers and content.
 	 *	Every part implements this abstract method.
 	 *	@abstract
@@ -380,6 +406,63 @@ abstract class Part
 	//  --  PROTECTED  -- //
 
 	/**
+	 *	Renders Content-Disposition header value of a file part, parameters folded one per line.
+	 *	@access		protected
+	 *	@static
+	 *	@param		string			$type			Disposition type: attachment or inline
+	 *	@param		string|NULL		$fileName		File name, encoded if needed (RFC 2231)
+	 *	@param		int|NULL		$size			File size in bytes
+	 *	@param		int|NULL		$readTime		Timestamp of last access
+	 *	@param		int|NULL		$creationTime	Timestamp of creation
+	 *	@param		int|NULL		$modificationTime	Timestamp of last modification
+	 *	@return		string
+	 *	@see		https://datatracker.ietf.org/doc/html/rfc2183
+	 */
+	protected static function renderDisposition( string $type, ?string $fileName, ?int $size = NULL, ?int $readTime = NULL, ?int $creationTime = NULL, ?int $modificationTime = NULL ): string
+	{
+		$parameters	= [$type];
+		if( NULL !== $fileName && '' !== $fileName )
+			$parameters[]	= MessageHeaderEncoding::renderParameter( 'filename', $fileName );
+		if( NULL !== $size )
+			$parameters[]	= 'size='.$size;
+		if( NULL !== $readTime )
+			$parameters[]	= 'read-date="'.date( 'r', $readTime ).'"';
+		if( NULL !== $creationTime )
+			$parameters[]	= 'creation-date="'.date( 'r', $creationTime ).'"';
+		if( NULL !== $modificationTime )
+			$parameters[]	= 'modification-date="'.date( 'r', $modificationTime ).'"';
+		return join( ';'.Message::$delimiter.' ', $parameters );
+	}
+
+	/**
+	 *	Returns Content-Type value of file part: MIME type and file name, if set.
+	 *	The name is set here also (besides Content-Disposition), for clients reading only this one.
+	 *	@access		protected
+	 *	@param		string|NULL	$fileName		File name, encoded if needed (RFC 2231)
+	 *	@return		string
+	 */
+	protected function renderFileContentType( ?string $fileName ): string
+	{
+		if( NULL === $fileName || '' === $fileName )
+			return $this->mimeType;
+		return $this->mimeType.';'.Message::$delimiter.' '.MessageHeaderEncoding::renderParameter( 'name', $fileName );
+	}
+
+	/**
+	 *	Returns Content-Type value of text part: MIME type, charset and format.
+	 *	@access		protected
+	 *	@return		string
+	 */
+	protected function renderTextContentType(): string
+	{
+		return join( '; ', [
+			$this->mimeType,
+			'charset="'.strtolower( trim( $this->charset ?? '' ) ).'"',
+			'format='.$this->format
+		] );
+	}
+
+	/**
 	 *	Applies encoding to UTF-8 content.
 	 *	@access		protected
 	 *	@static
@@ -398,15 +481,10 @@ abstract class Part
 		switch( strtolower( $encoding ) ){
 			case '7bit':
 			case '8bit':
-				$result	= @mb_convert_encoding( $content, 'UTF-8', strtolower( $encoding ) );
-				/** @var string|FALSE $result */
-				if( FALSE === $result )
-					$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
-				/** @var string|FALSE $result */
-				if( FALSE !== $result )
-					$content	= $result;
-				if( $split && strlen( $content ) > $lineLength )
-					$content	= static::wrapContent( $content, $lineLength, $delimiter );
+				//  content is sent as it is, already in the part's charset: only line breaks must be CRLF (RFC 2045, 2.7/2.8)
+				$content	= (string) preg_replace( '/\r\n|\r|\n/', $delimiter, $content );
+				if( $split )
+					$content	= static::wrapLongLines( $content, static::MAX_LINE_LENGTH, $delimiter );
 				break;
 			case 'base64':
 			case 'binary':
@@ -429,6 +507,19 @@ abstract class Part
 				throw new InvalidArgumentException( 'Encoding method "'.$encoding.'" is not supported' );
 		}
 		return $content;
+	}
+
+	/**
+	 *	Returns transfer encoding to apply: set encoding, but quoted-printable for 7bit content containing non-ASCII,
+	 *	which would be sent as 8bit data otherwise, labelled as 7bit (RFC 2045, 2.7).
+	 *	@access		protected
+	 *	@return		string
+	 */
+	protected function getTransferEncoding(): string
+	{
+		if( '7bit' === strtolower( $this->encoding ) && 1 === preg_match( '/[\x80-\xFF]/', $this->content ?? '' ) )
+			return 'quoted-printable';
+		return $this->encoding;
 	}
 
 	/**
@@ -464,5 +555,34 @@ abstract class Part
 		$delimiter	??= Message::$delimiter;
 		$content	= chunk_split( $content, max( 1, $length ), $delimiter );
 		return rtrim( $content, $delimiter );
+	}
+
+	/**
+	 *	Breaks lines longer than the given number of octets, without splitting a UTF-8 character.
+	 *	Shorter lines stay unchanged, since an inserted line break changes the content of an unencoded part.
+	 *	@access		protected
+	 *	@static
+	 *	@param		string			$content		Content with lines separated by delimiter
+	 *	@param		integer			$length			Maximum octets per line
+	 *	@param		string			$delimiter		Line separator
+	 *	@return		string
+	 *	@throws		InvalidArgumentException	if delimiter is empty
+	 */
+	protected static function wrapLongLines( string $content, int $length, string $delimiter ): string
+	{
+		if( '' === $delimiter )
+			throw new InvalidArgumentException( 'Line delimiter must not be empty' );
+		$lines	= [];
+		foreach( explode( $delimiter, $content ) as $line ){
+			while( strlen( $line ) > $length ){
+				$chunk		= mb_strcut( $line, 0, $length, 'UTF-8' );
+				if( '' === $chunk )												//  no UTF-8 character boundary found, cut by octets
+					$chunk	= substr( $line, 0, $length );
+				$lines[]	= $chunk;
+				$line		= substr( $line, strlen( $chunk ) );
+			}
+			$lines[]	= $line;
+		}
+		return implode( $delimiter, $lines );
 	}
 }
