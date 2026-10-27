@@ -153,6 +153,9 @@ class Parser
 		$collection		= new AddressCollection();
 		$list			= imap_rfc822_parse_adrlist( $string, '_invalid.tld' );
 		foreach( $list as $item ){
+			//  skip group markers (e.g. "undisclosed-recipients:;") and syntax errors
+			if( !isset( $item->mailbox, $item->host ) || '.SYNTAX-ERROR.' === $item->host )
+				continue;
 			$address	= new Address();
 			$address->setLocalPart( $item->mailbox );
 			$address->setDomain( $item->host );
@@ -202,6 +205,10 @@ class Parser
 				}
 			}
 			else if( $status === static::STATE_READING_QUOTED_NAME ){
+				if( $letter === '\\' ){												//  quoted pair, e.g. \" or \\ (RFC 5322, 3.2.1)
+					$buffer	.= array_shift( $letters ) ?? '';
+					continue;
+				}
 				if( $letter === '"' ){
 					$status = static::STATE_SCANNING_FOR_ADDRESS;
 					$part1	= $buffer;

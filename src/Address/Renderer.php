@@ -36,6 +36,11 @@ use CeusMedia\Mail\Util\Str;
 
 use RuntimeException;
 
+use function max;
+use function preg_match;
+use function strlen;
+use function trim;
+
 /**
  *	Renderer for mail addresses.
  *
@@ -49,7 +54,11 @@ use RuntimeException;
  */
 class Renderer
 {
-	use RegularStringHandling;
+	/** @var		boolean		$encodeName		Flag: encode name (RFC 2047), for use in headers */
+	protected bool $encodeName	= FALSE;
+
+	/** @var		integer		$lineLength		Fold encoded names if greater than 0 (lines with encoded words: 76 at most) */
+	protected int $lineLength	= 0;
 
 	/**
 	 *	Static constructor.
@@ -81,24 +90,94 @@ class Renderer
 	}
 
 	/**
+	 *	Returns line length for folding encoded names, 0: no folding.
+	 *	@access		public
+	 *	@return		integer
+	 */
+	public function getLineLength(): int
+	{
+		return $this->lineLength;
+	}
+
+	/**
+	 *	Indicates whether name will be encoded (RFC 2047), for use in headers.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function isEncodingName(): bool
+	{
+		return $this->encodeName;
+	}
+
+	/**
 	 *	Renders full mail address by given parts.
 	 *	Creates patterns 'local-part@domain' and 'name <local-part@domain>'.
+	 *	Names are quoted and escaped if needed, e.g. "Max \"Mo\" Muster".
+	 *	If encoding names, non-ASCII names are encoded as a whole (RFC 2047), and names of words
+	 *	separated by spaces stay unquoted, e.g. Max Muster.
 	 *	@access		public
 	 *	@param		Address		$address		Address to render
+	 *	@param		integer		$offset			Position in line, for encoding names within line length, default: 0
 	 *	@return		string		Rendered mail address
 	 *	@throws		RuntimeException			If domain is empty
 	 *	@throws		RuntimeException			If local part is empty
-	 *	@todo		addslashes on name?
 	 */
-	public function render( Address $address ): string
+	public function render( Address $address, int $offset = 0 ): string
 	{
 		$domain		= $address->getDomain();
 		$localPart	= $address->getLocalPart();
 		$name		= trim( $address->getName( FALSE ) ?? '' );
 		if( !Str::hasContent( $name ) )
 			return $localPart.'@'.$domain;
-		if( !self::regMatch( '/^\w+$/', $name ) )
-			$name	= '"'.$name.'"';
+		if( $this->encodeName && !MessageHeaderEncoding::isPrintableAscii( $name ) )
+			//  encode whole name, a partial encoding (like by mb_encode_mimeheader) would leave special characters
+			//  outside the encoded words and break an address list, e.g. "Doe, =?UTF-8?B?…?=" for "Doe, Jürgen"
+			return $this->renderEncoded( $name, '<'.$localPart.'@'.$domain.'>', $offset );
+		if( 1 !== preg_match( $this->encodeName ? '/^[\w ]+$/' : '/^\w+$/', $name ) )
+			$name	= MessageHeaderEncoding::quote( $name );						//  quote special characters, e.g. comma or colon
 		return $name.' <'.$localPart.'@'.$domain.'>';
+	}
+
+	/**
+	 *	Sets line length for folding encoded names. Lines with encoded words are 76 characters at most (RFC 2047, 2),
+	 *	so any value greater than 0 enables folding at 76 characters.
+	 *	@access		public
+	 *	@param		integer		$length			Line length, 0: no folding (default)
+	 *	@return		self
+	 */
+	public function setLineLength( int $length ): self
+	{
+		$this->lineLength	= max( 0, $length );
+		return $this;
+	}
+
+	/**
+	 *	Sets whether to encode name (RFC 2047), needed for use in headers.
+	 *	@access		public
+	 *	@param		boolean		$encode			Flag: encode name, default: yes
+	 *	@return		self
+	 */
+	public function setEncodeName( bool $encode = TRUE ): self
+	{
+		$this->encodeName	= $encode;
+		return $this;
+	}
+
+	/**
+	 *	Renders encoded name and address. If folding, encoded words and address are put on new lines
+	 *	if line would be too long (RFC 2047, 2).
+	 *	@access		protected
+	 *	@param		string		$name			Name to encode, containing non-ASCII characters
+	 *	@param		string		$angleAddress	Address in angle brackets
+	 *	@param		integer		$offset			Position in line
+	 *	@return		string
+	 */
+	protected function renderEncoded( string $name, string $angleAddress, int $offset ): string
+	{
+		$fold		= 0 !== $this->lineLength;
+		$encoded	= MessageHeaderEncoding::getInstance()->encodeWords( $name, 'base64', $fold, $offset );
+		$length		= MessageHeaderEncoding::getLastLineLength( $encoded, $offset );
+		$tooLong	= $length + 1 + strlen( $angleAddress ) > MessageHeaderEncoding::LINE_LENGTH;
+		return $encoded.( $fold && $tooLong ? Message::$delimiter.' ' : ' ' ).$angleAddress;
 	}
 }

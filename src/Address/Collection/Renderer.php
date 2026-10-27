@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace CeusMedia\Mail\Address\Collection;
 
 use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Address\Renderer as AddressRenderer;
 use CeusMedia\Mail\Deprecation;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
@@ -37,10 +38,14 @@ use CeusMedia\Mail\Util\Str;
 use InvalidArgumentException;
 
 use function join;
+use function max;
+use function rtrim;
+use function str_contains;
 use function strlen;
+use function strpos;
 
 /**
- *	Parser for list of addresses collected as string.
+ *	Renderer for list of addresses, for headers with encoded names and folding.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Address_Collection
@@ -53,6 +58,15 @@ class Renderer
 {
 	/** @var string $delimiter */
 	protected string $delimiter		= ', ';
+
+	/** @var bool $encodeNames		Flag: encode names (RFC 2047) and quote special characters, for use in headers */
+	protected bool $encodeNames		= FALSE;
+
+	/** @var int $lineLength		Maximum line length for folding between addresses, 0: no folding */
+	protected int $lineLength		= 0;
+
+	/** @var		integer		$offset			Length of text before the list in first line, e.g. 4 for "To: " */
+	protected int $offset			= 0;
 
 	/**
 	 *	Static constructor.
@@ -93,13 +107,84 @@ class Renderer
 		return new self();
 	}
 
+	/**
+	 *	Returns maximum line length for folding, 0 if folding is disabled.
+	 *	@access		public
+	 *	@return		integer
+	 */
+	public function getLineLength(): int
+	{
+		return $this->lineLength;
+	}
+
+	/**
+	 *	Returns length of text before the list in first line, e.g. 4 for "To: ".
+	 *	@access		public
+	 *	@return		integer
+	 */
+	public function getOffset(): int
+	{
+		return $this->offset;
+	}
+
+	/**
+	 *	Indicates whether names are encoded and quoted for use in headers.
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function isEncodingNames(): bool
+	{
+		return $this->encodeNames;
+	}
+
+	/**
+	 *	Renders addresses as list, separated by delimiter.
+	 *	For headers: with names encoded (setEncodeNames) and lines folded between addresses (setLineLength).
+	 *	@access		public
+	 *	@param		AddressCollection	$collection		Addresses to render
+	 *	@return		string
+	 */
 	public function render( AddressCollection $collection ): string
 	{
-		$list	= [];
-		foreach( $collection->getAll() as $address ){
-			$list[]	= $address->get();
+		$renderer	= AddressRenderer::getInstance()
+			->setEncodeName( $this->encodeNames )
+			->setLineLength( $this->lineLength );
+		if( 0 === $this->lineLength ){
+			$list	= [];
+			foreach( $collection->getAll() as $address )
+				$list[]	= $renderer->render( $address );
+			return join( $this->delimiter, $list );
 		}
-		return join( $this->delimiter, $list );
+
+		//  fold between addresses, continuation lines start with a space (RFC 5322, 2.2.3)
+		//  encoded names are rendered for their position in line, so lines with encoded words stay within limit (RFC 2047, 2)
+		$separator	= rtrim( $this->delimiter );
+		$value		= '';
+		$length		= $this->offset;
+		foreach( $collection->getAll() as $address ){
+			$isFirst	= '' === $value;
+			$start		= $isFirst ? $length : $length + strlen( $this->delimiter );
+			$entry		= $renderer->render( $address, $start );
+			$moveEntry	= FALSE;
+			if( !$isFirst ){
+				$tooLong	= $start + $this->getFirstLineLength( $entry ) > $this->lineLength;
+				$isSplit	= str_contains( $entry, Message::$delimiter );
+				if( $tooLong || $isSplit ){											//  next line, also if address would be split, but fits there
+					$folded		= $renderer->render( $address, 1 );
+					$moveEntry	= $tooLong || !str_contains( $folded, Message::$delimiter );
+					if( $moveEntry ){
+						$start	= 1;
+						$entry	= $folded;
+					}
+				}
+			}
+			if( $moveEntry )
+				$value	.= $separator.Message::$delimiter.' '.$entry;
+			else
+				$value	.= ( $isFirst ? '' : $this->delimiter ).$entry;
+			$length		= MessageHeaderEncoding::getLastLineLength( $entry, $start );
+		}
+		return $value;
 	}
 
 	/**
@@ -115,5 +200,56 @@ class Renderer
 			throw new InvalidArgumentException( 'Delimiter cannot be empty or whitespace' );
 		$this->delimiter	= $delimiter;
 		return $this;
+	}
+
+	/**
+	 *	Sets whether to encode names (RFC 2047) and quote special characters, needed for use in headers.
+	 *	@access		public
+	 *	@param		boolean		$encode			Flag: encode names, default: no
+	 *	@return		self
+	 */
+	public function setEncodeNames( bool $encode = TRUE ): self
+	{
+		$this->encodeNames	= $encode;
+		return $this;
+	}
+
+	/**
+	 *	Sets maximum line length, to fold between addresses, e.g. 76 for headers.
+	 *	A single long address may exceed it.
+	 *	@access		public
+	 *	@param		integer		$length			Maximum line length, 0: no folding (default)
+	 *	@return		self
+	 */
+	public function setLineLength( int $length ): self
+	{
+		$this->lineLength	= max( 0, $length );
+		return $this;
+	}
+
+	/**
+	 *	Sets length of text before the list in first line, e.g. 4 for "To: ", needed for folding.
+	 *	@access		public
+	 *	@param		integer		$offset			Length of header name, colon and space, default: 0
+	 *	@return		self
+	 */
+	public function setOffset( int $offset ): self
+	{
+		$this->offset	= max( 0, $offset );
+		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	/**
+	 *	Returns length of first line of a rendered, maybe folded address.
+	 *	@access		protected
+	 *	@param		string		$entry
+	 *	@return		integer
+	 */
+	protected function getFirstLineLength( string $entry ): int
+	{
+		$position	= strpos( $entry, Message::$delimiter );
+		return FALSE === $position ? strlen( $entry ) : $position;
 	}
 }

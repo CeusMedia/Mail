@@ -75,7 +75,7 @@ class Collection implements Countable, Iterator
 	/**
 	 *	Returns Size of Dictionary.
 	 *	@access		public
-	 *	@return		integer
+	 *	@return		int<0,max>
 	 */
 	public function count(): int
 	{
