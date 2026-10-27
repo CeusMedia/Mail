@@ -11,6 +11,9 @@ namespace CeusMedia\MailTest\Unit;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
+use CeusMedia\Mail\Message\Parser as MessageParser;
+use CeusMedia\Mail\Message\Renderer as MessageRenderer;
 use CeusMedia\Mail\Message\Part\Attachment;
 use CeusMedia\Mail\Message\Part\HTML;
 use CeusMedia\Mail\Message\Part\InlineImage;
@@ -173,21 +176,61 @@ class MessageTest extends PhpUnitTestCase
 		$actual		= $message->addReplyTo( $address1 );
 		self::assertEquals( $message, $actual );
 
+		//  one header listing all addresses (RFC 5322, 3.6.2)
 		$header		= $message->getHeaders()->getFieldsByName( 'Reply-To' );
-		self::assertEquals( 2, count( $header ) );
+		self::assertEquals( 1, count( $header ) );
+		self::assertEquals( 'test1@example.com, Test 2 <test2@example.com>', $header[0]->getValue() );
 
 		$expected	= [new Address( $string ), $address1];
 		self::assertEquals( $expected, $message->getReplyTo() );
 
-		$address2	= new Address( 'test2@example.com' );
+		//  same address again is ignored
+		$address2	= new Address( 'TEST2@example.com' );
 		$actual		= $message->addReplyTo( $address2, 'Test 3' );
 		self::assertEquals( $message, $actual );
-
-		$header		= $message->getHeaders()->getFieldsByName( 'Reply-To' );
-		self::assertEquals( 3, count( $header ) );
-
-		$expected	= [new Address( $string ), $address1, $address2->setName( 'Test 3' )];
+		self::assertEquals( 1, count( $message->getHeaders()->getFieldsByName( 'Reply-To' ) ) );
 		self::assertEquals( $expected, $message->getReplyTo() );
+
+		//  names with umlauts are encoded, but returned decoded
+		$message->addReplyTo( 'test3@example.com', 'Zoë Müller' );
+		self::assertStringContainsString( '=?UTF-8?', $message->getHeaders()->getField( 'Reply-To' )->getValue() );
+		self::assertEquals( 'Zoë Müller', $message->getReplyTo()[2]->getName() );
+	}
+
+	/**
+	 *	To and Cc are one header each, listing all addresses (RFC 5322, 3.6.3), Bcc is not shown.
+	 *	@covers		::addRecipient
+	 */
+	public function testRecipientHeadersAreCombined()
+	{
+		$message	= Message::getInstance()
+			->addRecipient( 'one@example.com' )
+			->addRecipient( 'two@example.com', 'Doe, John' )
+			->addRecipient( 'ONE@example.com', 'Again' )										//  same address: name taken, since missing
+			->addRecipient( 'two@example.com', 'Other' )										//  same address: name kept
+			->addRecipient( 'copy@example.com', 'Zoë', 'cc' )
+			->addRecipient( 'hidden@example.com', NULL, 'bcc' );
+		$headers	= $message->getHeaders();
+
+		self::assertCount( 1, $headers->getFieldsByName( 'To' ) );
+		self::assertEquals( 'Again <one@example.com>, "Doe, John" <two@example.com>', $headers->getField( 'To' )->getValue() );
+		self::assertCount( 2, $message->getRecipientsByType( 'to' ) );
+
+		self::assertCount( 1, $headers->getFieldsByName( 'Cc' ) );
+		self::assertMatchesRegularExpression( '/^=\?UTF-8\?.+\?= <copy@example\.com>$/', $headers->getField( 'Cc' )->getValue() );
+
+		self::assertFalse( $headers->hasField( 'Bcc' ) );
+
+		//  long lists are folded between addresses
+		for( $i = 1; $i <= 10; $i++ )
+			$message->addRecipient( 'receiver-number-'.$i.'@example.com' );
+		$value	= $headers->getField( 'To' )->getValue();
+		foreach( explode( Message::$delimiter, $value ) as $nr => $line ){
+			self::assertLessThanOrEqual( 78, strlen( $line ) );
+			if( 0 !== $nr )
+				self::assertStringStartsWith( ' ', $line );
+		}
+		self::assertCount( 12, explode( ',', str_replace( '"Doe, John"', 'Doe', $value ) ) );
 	}
 
 	/**
@@ -290,6 +333,13 @@ class MessageTest extends PhpUnitTestCase
 		$expected	= new Address( "test@example.com" );
 		$expected->setName( "Test Name" );
 		self::assertEquals( $expected, $message->getSender() );
+		self::assertEquals( 'Test Name <test@example.com>', $message->getHeaders()->getField( 'From' )->getValue() );
+
+		//  name with umlauts is encoded in header (RFC 2047), sender is replaced, not added
+		$message->setSender( "other@example.com", "Jürgen Müller" );
+		self::assertCount( 1, $message->getHeaders()->getFieldsByName( 'From' ) );
+		self::assertMatchesRegularExpression( '/^=\?UTF-8\?B\?.+\?= <other@example\.com>$/', $message->getHeaders()->getField( 'From' )->getValue() );
+		self::assertEquals( 'Jürgen Müller', $message->getSender()->getName() );
 	}
 
 	/**
@@ -361,9 +411,9 @@ class MessageTest extends PhpUnitTestCase
 		self::assertEquals( $message, $actual );
 
 		$fields		= $message->getHeaders()->getFieldsByName( 'Disposition-Notification-To' );
-		self::assertEquals( 2, count( $fields ) );
+		self::assertEquals( 1, count( $fields ), 'set again: replaced' );
 
-		self::assertEquals( $string, $fields[1]->getValue() );
+		self::assertEquals( $string, $fields[0]->getValue() );
 
 
 		$message	= Message::getInstance();
@@ -377,5 +427,75 @@ class MessageTest extends PhpUnitTestCase
 
 		$expected	= 'Observer <observer@example.net>';
 		self::assertEquals( $expected, $fields[0]->getValue() );
+
+		//  name with non-ASCII characters is encoded (RFC 2047)
+		$message->setReadNotificationRecipient( 'observer@example.net', 'Jürgen Müller' );
+		$value		= $message->getHeaders()->getField( 'Disposition-Notification-To' )?->getValue();
+		self::assertSame( 1, preg_match( '/^[\x20-\x7E\r\n\t]+$/', (string) $value ), 'ASCII only' );
+		$decoded	= MessageHeaderEncoding::getInstance()->decodeAddressListIfNeeded( (string) $value );
+		self::assertSame( 'Jürgen Müller <observer@example.net>', $decoded );
+	}
+
+	/**
+	 *	Address headers with long encoded names: lines within 76 characters incl. header name (RFC 2047, 2).
+	 */
+	public function testAddressHeaderLineLength(): void
+	{
+		$message	= Message::getInstance()
+			->setSender( 's@example.org', str_repeat( 'Jürgen ', 12 ) )
+			->addRecipient( 'a@example.org', 'Bob' )
+			->addRecipient( 'b@example.org', str_repeat( 'Müller ', 12 ) )
+			->addReplyTo( 'r@example.org', str_repeat( 'Größe ', 12 ) );
+		foreach( ['From', 'To', 'Reply-To'] as $name ){
+			$header	= $message->getHeaders()->getField( $name )?->toString( TRUE );
+			self::assertNotNull( $header );
+			foreach( explode( Message::$delimiter, $header ) as $line )
+				self::assertLessThanOrEqual( 76, strlen( $line ), $line );
+		}
+	}
+
+	/**
+	 *	Bcc header of a parsed message is never rendered, its recipients stay blind (RFC 5322, 3.6.3).
+	 */
+	public function testParsedBccHeaderIsNotRendered(): void
+	{
+		$raw		= "From: s@example.org\r\nTo: t@example.org\r\nBcc: secret@example.org\r\nSubject: x\r\nContent-Type: text/plain\r\n\r\nHallo";
+		$message	= MessageParser::getInstance()->parse( $raw );
+		self::assertSame( ['secret@example.org'], array_map( static fn( Address $a ) => $a->getAddress(), $message->getRecipientsByType( 'bcc' )->getAll() ) );
+
+		foreach( [$message, $message->addText( 'Zweiter Teil' )] as $variant ){
+			$rendered	= MessageRenderer::render( $variant );
+			$headers	= (string) strstr( $rendered, Message::$delimiter.Message::$delimiter, TRUE );
+			self::assertDoesNotMatchRegularExpression( '/^Bcc:/mi', $headers );
+			self::assertStringNotContainsString( 'secret@example.org', $rendered );
+		}
+		self::assertTrue( $message->getHeaders()->hasField( 'Bcc' ), 'message headers unchanged' );
+	}
+
+	/**
+	 *	Unreadable Reply-To (no usable address) is skipped by getReplyTo and replaced by addReplyTo.
+	 *	@covers		::addReplyTo
+	 *	@covers		::getReplyTo
+	 */
+	public function testAddReplyToWithUnreadableHeader(): void
+	{
+		$message	= Message::getInstance()->addHeaderPair( 'Reply-To', 'undisclosed-recipients:;' );
+		self::assertSame( [], $message->getReplyTo() );
+
+		$message->addReplyTo( 'reply@example.org', 'Reply' );										//  only one Reply-To (RFC 5322, 3.6)
+		$values		= array_map( static fn( $field ) => $field->getValue(), $message->getHeaders()->getFieldsByName( 'Reply-To' ) );
+		self::assertSame( ['Reply <reply@example.org>'], $values );
+	}
+
+	/**
+	 *	Same address object added again with name: header follows the recipient list.
+	 *	@covers		::addRecipient
+	 */
+	public function testAddSameRecipientObjectWithName(): void
+	{
+		$address	= new Address( 'x@example.org' );
+		$message	= Message::getInstance()->addRecipient( $address )->addRecipient( $address, 'New Name' );
+		self::assertSame( 'New Name <x@example.org>', $message->getHeaders()->getField( 'To' )->getValue() );
+		self::assertCount( 1, $message->getRecipientsByType( 'to' ) );
 	}
 }

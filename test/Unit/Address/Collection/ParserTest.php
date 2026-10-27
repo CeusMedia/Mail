@@ -184,4 +184,42 @@ class ParserTest extends TestCase
 		$parser->setMethod( Parser::METHOD_IMAP_PLUS_OWN );
 		self::assertEquals( $expected, $parser->parse( $string ) );
 	}
+
+	/**
+	 *	Quoted names with quoted pairs (escaped quotes and backslashes), for all methods.
+	 *	@covers		::parse
+	 *	@covers		::parseUsingOwn
+	 */
+	public function testParseQuotedPairs(): void
+	{
+		$string		= '"Max \\"Mo\\" Muster \\\\ Co" <a@example.org>, b@example.org, "Doe, Jürgen" <c@example.org>';
+		$expected	= [
+			['Max "Mo" Muster \\ Co', 'a@example.org'],
+			[NULL, 'b@example.org'],
+			['Doe, Jürgen', 'c@example.org'],
+		];
+		$methods	= [Parser::METHOD_OWN];
+		if( function_exists( 'imap_rfc822_parse_adrlist' ) )
+			$methods	= [Parser::METHOD_OWN, Parser::METHOD_IMAP, Parser::METHOD_IMAP_PLUS_OWN];
+		foreach( $methods as $method ){
+			$list	= [];
+			foreach( Parser::getInstance()->setMethod( $method )->parse( $string )->getAll() as $address )
+				$list[]	= [$address->getName( FALSE ), $address->getAddress()];
+			self::assertSame( $expected, $list, 'method '.$method );
+		}
+	}
+
+	/**
+	 *	Groups (e.g. "undisclosed-recipients:;") are skipped by IMAP method, without warning.
+	 *	@covers		::parseUsingImap
+	 */
+	public function testParseUsingImapSkipsGroups(): void
+	{
+		if( !function_exists( 'imap_rfc822_parse_adrlist' ) )
+			self::markTestSkipped( 'IMAP extension not available' );
+		$parser	= Parser::getInstance()->setMethod( Parser::METHOD_IMAP );
+		self::assertCount( 0, $parser->parse( 'undisclosed-recipients:;' ) );
+		$list	= $parser->parse( 'Team: a@example.org, b@example.org;, c@example.org' )->getAll();
+		self::assertSame( ['a@example.org', 'b@example.org', 'c@example.org'], array_map( static fn( Address $a ) => $a->getAddress(), $list ) );
+	}
 }

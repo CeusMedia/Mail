@@ -58,6 +58,41 @@ class RendererTest extends TestCase
 	}
 
 	/**
+	 *	Quotes and backslashes in names are escaped.
+	 *	@covers		::render
+	 */
+	public function testRenderEscapesName(): void
+	{
+		$address	= new Address( 'max@example.org' );
+		$address->setName( 'Max "Mo" Muster \\ Co' );
+		$expected	= '"Max \\"Mo\\" Muster \\\\ Co" <max@example.org>';
+		self::assertSame( $expected, ( new Renderer() )->render( $address ) );
+		self::assertSame( 'Max "Mo" Muster \\ Co', ( new Address( $expected ) )->getName( FALSE ) );
+	}
+
+	/**
+	 *	For headers: non-ASCII names encoded as a whole, words separated by spaces unquoted.
+	 *	@covers		::render
+	 *	@covers		::setEncodeName
+	 *	@covers		::isEncodingName
+	 */
+	public function testRenderEncodedName(): void
+	{
+		$renderer	= ( new Renderer() )->setEncodeName();
+		self::assertTrue( $renderer->isEncodingName() );
+
+		$address	= new Address( 'one@example.org' );
+		self::assertSame( 'one@example.org', $renderer->render( $address ) );
+		self::assertSame( 'Max Muster <one@example.org>', $renderer->render( $address->setName( 'Max Muster' ) ) );
+		self::assertSame( '"Doe, John" <one@example.org>', $renderer->render( $address->setName( 'Doe, John' ) ) );
+		$expected	= '=?UTF-8?B?'.base64_encode( 'Doe, Jürgen' ).'?= <one@example.org>';
+		self::assertSame( $expected, $renderer->render( $address->setName( 'Doe, Jürgen' ) ) );
+
+		self::assertFalse( $renderer->setEncodeName( FALSE )->isEncodingName() );
+		self::assertSame( '"Doe, Jürgen" <one@example.org>', $renderer->render( $address ) );
+	}
+
+	/**
 	 *	@covers		::render
 	 */
 	public function testRenderExceptionNoDomain(): void

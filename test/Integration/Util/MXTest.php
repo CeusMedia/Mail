@@ -20,6 +20,8 @@ use CeusMedia\MailTest\TestCase;
  */
 class MXTest extends TestCase
 {
+	protected MX $mx;
+
 	public function setUp(): void
 	{
 		$this->mx	= MX::getInstance();

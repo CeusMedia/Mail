@@ -156,4 +156,19 @@ class ParserTest extends TestCase
 		self::assertEquals( $collection,  );
 		self::assertEquals( $collection, $message->getRecipientsByType( 'bcc' ) );*/
 	}
+
+	/**
+	 *	ASCII To/Cc headers are kept as they are (groups), non-ASCII ones rendered again, encoded.
+	 */
+	public function testParseKeepsAsciiRecipientHeaders(): void
+	{
+		$raw		= "From: s@example.org\r\nTo: Team: a@example.org, b@example.org;, undisclosed-recipients:;\r\n"
+			."Cc: =?UTF-8?B?".base64_encode( 'Doe, Jürgen' )."?= <c@example.org>, C@example.org\r\n"
+			."Subject: x\r\nContent-Type: text/plain\r\n\r\nHallo";
+		$message	= Parser::getInstance()->parse( $raw );
+		self::assertSame( 'Team: a@example.org, b@example.org;, undisclosed-recipients:;', $message->getHeaders()->getField( 'To' )->getValue() );
+		self::assertCount( 2, $message->getRecipientsByType( 'to' ) );
+		self::assertSame( '=?UTF-8?B?'.base64_encode( 'Doe, Jürgen' ).'?= <c@example.org>', $message->getHeaders()->getField( 'Cc' )->getValue() );
+		self::assertCount( 1, $message->getRecipientsByType( 'cc' ) );
+	}
 }
