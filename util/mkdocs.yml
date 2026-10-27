@@ -1,0 +1,174 @@
+site_name: CeusMedia Mail
+site_description: Produce, send and read mails using PHP + IMAP & SMTP.
+site_author: Christian Würker
+repo_url: https://github.com/CeusMedia/Mail
+repo_name: CeusMedia/Mail
+edit_uri: ""
+copyright: Copyright &copy; 2007-2026 Christian Würker &middot; GPL-3.0-or-later
+
+docs_dir: ../doc/Manual
+site_dir: ../doc/Site
+use_directory_urls: false
+
+theme:
+  name: material
+  language: en
+  icon:
+    logo: material/email-fast-outline
+    repo: fontawesome/brands/github
+  favicon: assets/favicon.svg
+  font:
+    text: Fira Sans
+    code: Fira Code
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/theme-light-dark
+        name: "Theme: system – switch to light"
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: "Theme: light – switch to dark"
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: "Theme: dark – switch to system"
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+
+extra_css:
+  - assets/extra.css
+
+plugins:
+  - search
+  - offline
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      extend_pygments_lang:
+        - name: php
+          lang: php
+          options:
+            startinline: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/CeusMedia/Mail
+    - icon: simple/packagist
+      link: https://packagist.org/packages/ceus-media/mail
+
+nav:
+  - Home: index.md
+  - Guide:
+      - guide/installation.md
+      - guide/quickstart.md
+      - guide/messages.md
+      - guide/addresses.md
+      - guide/sending.md
+      - guide/mailbox.md
+      - guide/parsing.md
+      - guide/headers.md
+      - guide/checks.md
+      - guide/development.md
+  - API Reference:
+    # api-nav:start
+    - api/index.md
+    - Core:
+      - "Address": api/Address.md
+      - "Client": api/Client.md
+      - "Deprecation": api/Deprecation.md
+      - "Library": api/Library.md
+      - "Mailbox": api/Mailbox.md
+      - "Message": api/Message.md
+    - Address:
+      - "Check\\Availability": api/Address/Check/Availability.md
+      - "Check\\Syntax": api/Address/Check/Syntax.md
+      - "Collection": api/Address/Collection.md
+      - "Collection\\Parser": api/Address/Collection/Parser.md
+      - "Collection\\Renderer": api/Address/Collection/Renderer.md
+      - "Name": api/Address/Name.md
+      - "Parser": api/Address/Parser.md
+      - "Renderer": api/Address/Renderer.md
+    - Message:
+      - "Header\\AttributedValue": api/Message/Header/AttributedValue.md
+      - "Header\\Encoding": api/Message/Header/Encoding.md
+      - "Header\\Field": api/Message/Header/Field.md
+      - "Header\\Parser": api/Message/Header/Parser.md
+      - "Header\\Received": api/Message/Header/Received.md
+      - "Header\\Renderer": api/Message/Header/Renderer.md
+      - "Header\\Section": api/Message/Header/Section.md
+      - "Parser": api/Message/Parser.md
+      - "Part": api/Message/Part.md
+      - "Part\\Attachment": api/Message/Part/Attachment.md
+      - "Part\\HTML": api/Message/Part/HTML.md
+      - "Part\\InlineImage": api/Message/Part/InlineImage.md
+      - "Part\\Mail": api/Message/Part/Mail.md
+      - "Part\\Text": api/Message/Part/Text.md
+      - "Renderer": api/Message/Renderer.md
+    - Mailbox:
+      - "Connection": api/Mailbox/Connection.md
+      - "Mail": api/Mailbox/Mail.md
+      - "Mail\\Collection": api/Mailbox/Mail/Collection.md
+      - "Search": api/Mailbox/Search.md
+      - "Upload": api/Mailbox/Upload.md
+    - Transport:
+      - "Local": api/Transport/Local.md
+      - "Result": api/Transport/Result.md
+      - "SMTP": api/Transport/SMTP.md
+      - "SMTP\\Code": api/Transport/SMTP/Code.md
+      - "SMTP\\Exception": api/Transport/SMTP/Exception.md
+      - "SMTP\\Response": api/Transport/SMTP/Response.md
+      - "SMTP\\ReturnCode": api/Transport/SMTP/ReturnCode.md
+      - "SMTP\\Socket": api/Transport/SMTP/Socket.md
+    - Utilities:
+      - "Dmarc\\Parser": api/Util/Dmarc/Parser.md
+      - "Dmarc\\Record": api/Util/Dmarc/Record.md
+      - "Dmarc\\Renderer": api/Util/Dmarc/Renderer.md
+      - "MX": api/Util/MX.md
+      - "Str": api/Util/Str.md
+    # api-nav:end
+  - Changelog: changelog.md

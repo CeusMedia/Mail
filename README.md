@@ -187,6 +187,16 @@ composer dev:phpunit-mailpit			# start instances if needed, run Mailpit tests
 composer dev:mailpit-down				# stop instances
 ```
 
+### Documentation
+
+Guides and API reference, built with [MkDocs Material](https://squidfunk.github.io/mkdocs-material/)
+(local installation, `composer dev:docs-install` or Docker):
+
+```sh
+composer dev:docs						# generate API reference, build site, open doc/Site/index.html
+composer dev:docs-serve					# live preview on http://localhost:8000
+```
+
 ## Future plans
 - documentation for already existing parser
 - automatic virus scan
