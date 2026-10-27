@@ -32,6 +32,8 @@ namespace CeusMedia\Mail;
 use CeusMedia\Common\Exception\IO;
 use CeusMedia\Mail\Address as Address;
 use CeusMedia\Mail\Address\Collection as AddressCollection;
+use CeusMedia\Mail\Address\Collection\Parser as AddressCollectionParser;
+use CeusMedia\Mail\Address\Collection\Renderer as AddressCollectionRenderer;
 use CeusMedia\Mail\Message\Header\Encoding as MessageHeaderEncoding;
 use CeusMedia\Mail\Message\Header\Field as MessageHeaderField;
 use CeusMedia\Mail\Message\Header\Section as MessageHeaderSection;
@@ -45,11 +47,15 @@ use CeusMedia\Mail\Util\Str;
 
 use DomainException;
 use RangeException;
+use Throwable;
 
 use function array_reverse;
+use function count;
 use function in_array;
 use function is_string;
+use function strcasecmp;
 use function strlen;
+use function strtolower;
 use function strtoupper;
 use function trim;
 use function ucfirst;
@@ -256,20 +262,27 @@ class Message
 
 		if( Str::hasContent( $name ) )
 			$address->setName( $name );
-		$this->recipients[strtolower( $type )]->add( $address );
 
-		$recipient	= '<'.$address->getAddress().'>';
-		if( NULL !== $name && 0 !== strlen( trim( $name ) ) )
-			$recipient	= $encoder->encodeIfNeeded( $name ).' '.$recipient;
-		else
-			$recipient	= $address->get();
+		$recipients	= $this->recipients[strtolower( $type )];
+		$isKnown	= FALSE;
+		foreach( $recipients->getAll() as $recipient ){
+			if( 0 !== strcasecmp( $recipient->getAddress(), $address->getAddress() ) )
+				continue;
+			$isKnown	= TRUE;															//  same address only once
+			$knownName	= trim( $recipient->getName( FALSE ) ?? '' );
+			$newName	= trim( $address->getName( FALSE ) ?? '' );
+			if( '' === $knownName && '' !== $newName )								//  name taken if missing
+				$recipient->setName( $newName );
+			break;
+		}
+		if( !$isKnown )
+			$recipients->add( $address );
+		//  header rendered again in any case: a known address object may have been changed outside
 
+		//  one header per type, listing all addresses (RFC 5322, 3.6.3), BCC is not shown
 		if( 'BCC' !== strtoupper( $type ) ){
-			$fields	= $this->headers->getFieldsByName( $type );
-			foreach( $fields as $field )
-				if( $field->getValue() == $recipient )
-					return $this;
-			$this->addHeaderPair( ucfirst( strtolower( $type ) ), $recipient );
+			$fieldName	= ucfirst( strtolower( $type ) );
+			$this->headers->setFieldPair( $fieldName, $this->renderAddressHeader( $fieldName, $recipients->getAll() ) );
 		}
 		return $this;
 	}
@@ -287,7 +300,15 @@ class Message
 			$address	= new Address( $address );
 		if( Str::hasContent( $name ) )
 			$address->setName( $name );
-		$this->addHeaderPair( 'Reply-To', $address->get() );
+
+		$addresses	= $this->getReplyTo() ?? [];
+		foreach( $addresses as $replyTo )
+			if( 0 === strcasecmp( $replyTo->getAddress(), $address->getAddress() ) )
+				return $this;
+
+		//  one header, listing all addresses (RFC 5322, 3.6.2); unreadable values (no usable address) are replaced
+		$addresses[]	= $address;
+		$this->headers->setFieldPair( 'Reply-To', $this->renderAddressHeader( 'Reply-To', $addresses ) );
 		return $this;
 	}
 
@@ -447,15 +468,26 @@ class Message
 	}
 
 	/**
-	 *	...
+	 *	Returns addresses to reply to, from Reply-To header (also several ones, as parsed from foreign messages).
+	 *	Unreadable header values, e.g. of foreign messages, are skipped.
 	 *	@access		public
 	 *	@return		Address[]|NULL
 	 */
 	public function getReplyTo(): ?array
 	{
-		return array_map(static function( Message\Header\Field $field ){
-			return new Address( $field->getValue() );
-		}, $this->headers->getFieldsByName( 'Reply-To' ) );
+		$parser		= AddressCollectionParser::getInstance();
+		$encoder	= MessageHeaderEncoding::getInstance();
+		$list		= [];
+		foreach( $this->headers->getFieldsByName( 'Reply-To' ) as $field ){
+			try{
+				$value	= $encoder->decodeAddressListIfNeeded( $field->getValue() );			//  unfold, decode names, quoted if needed
+				foreach( $parser->parse( $value )->getAll() as $address )
+					$list[]	= $address;
+			}
+			catch( Throwable ){															//  unreadable, e.g. of foreign message
+			}
+		}
+		return $list;
 	}
 
 	/**
@@ -567,6 +599,19 @@ class Message
 	}
 
 	/**
+	 *	Indicates whether at least one recipient is set, of any type (To, Cc or Bcc).
+	 *	@access		public
+	 *	@return		boolean
+	 */
+	public function hasRecipients(): bool
+	{
+		foreach( $this->recipients as $collection )
+			if( 0 !== count( $collection ) )
+				return TRUE;
+		return FALSE;
+	}
+
+	/**
 	 *	Indicates whether a text part is set.
 	 *	@access		public
 	 *	@return		boolean
@@ -593,7 +638,7 @@ class Message
 	}
 
 	/**
-	 *	...
+	 *	Sets recipient of read notification (Disposition-Notification-To, RFC 8098), replacing a set one.
 	 *	@access		public
 	 *	@param		Address|string	$address		Address to send notification to
 	 *	@param		string|NULL		$name			Additional name of address
@@ -604,7 +649,7 @@ class Message
 			$address	= new Address( $address );
 		if( Str::hasContent( $name ) )
 			$address->setName( $name );
-		$this->headers->addFieldPair( 'Disposition-Notification-To', $address->get() );
+		$this->headers->setFieldPair( 'Disposition-Notification-To', $this->renderAddressHeader( 'Disposition-Notification-To', [$address] ) );
 		return $this;
 	}
 
@@ -622,8 +667,7 @@ class Message
 		if( Str::hasContent( $name ) )
 			$address->setName( $name );
 		$this->sender	= $address;
-		$this->headers->removeFieldByName( 'From' );
-		$this->addHeaderPair( "From", $address->get() );
+		$this->headers->setFieldPair( 'From', $this->renderAddressHeader( 'From', [$address] ) );
 		return $this;
 	}
 
@@ -659,5 +703,23 @@ class Message
 	{
 		$this->version	= $version;
 		return $this;
+	}
+
+	//  --  PROTECTED  --  //
+
+	/**
+	 *	Renders addresses as value of a header field: names encoded or quoted, folded between addresses.
+	 *	@access		protected
+	 *	@param		string				$name			Header field name, for line length
+	 *	@param		array<Address>		$addresses		Addresses to list
+	 *	@return		string
+	 */
+	protected function renderAddressHeader( string $name, array $addresses ): string
+	{
+		return AddressCollectionRenderer::getInstance()
+			->setEncodeNames()
+			->setLineLength( MessageHeaderEncoding::LINE_LENGTH )
+			->setOffset( strlen( $name.': ' ) )
+			->render( new AddressCollection( $addresses ) );
 	}
 }
