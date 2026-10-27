@@ -143,4 +143,18 @@ class FieldTest extends TestCase
 		$actual	= (string) $header;
 		self::assertEquals( $expected, $actual );
 	}
+
+	/**
+	 *	Attribute names are case-insensitive (RFC 2045, 5.1).
+	 *	@covers		::getAttribute
+	 */
+	public function testGetAttributeCaseInsensitive(): void
+	{
+		$field	= new Field( 'Content-Type', 'multipart/mixed', ['boundary' => 'abc', 'Name' => 'a.txt'] );
+		self::assertSame( 'abc', $field->getAttribute( 'Boundary' ) );
+		self::assertSame( 'abc', $field->getAttribute( 'boundary' ) );
+		self::assertSame( 'a.txt', $field->getAttribute( 'name' ) );
+		self::assertNull( $field->getAttribute( 'charset' ) );
+		self::assertSame( 'x', $field->getAttribute( 'charset', 'x' ) );
+	}
 }

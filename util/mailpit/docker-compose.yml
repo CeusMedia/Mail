@@ -1,0 +1,35 @@
+# Mailpit instances for integration tests, see test/Integration/Mailpit.
+# Start with: util/mailpit/mailpit.sh up
+#
+#   plain     SMTP 1525, API 8525  no encryption, any credentials accepted
+#   starttls  SMTP 1587, API 8587  STARTTLS required, login tester/secret
+#   tls       SMTP 1465, API 8465  implicit TLS required, login tester/secret
+
+services:
+  plain:
+    image: axllent/mailpit:latest
+    container_name: ceusmedia-mail-mailpit-plain
+    command: --smtp-disable-rdns --smtp-auth-accept-any --smtp-auth-allow-insecure
+    ports:
+      - "127.0.0.1:1525:1025"
+      - "127.0.0.1:8525:8025"
+
+  starttls:
+    image: axllent/mailpit:latest
+    container_name: ceusmedia-mail-mailpit-starttls
+    command: --smtp-disable-rdns --smtp-tls-cert /data/tls/cert.pem --smtp-tls-key /data/tls/key.pem --smtp-require-starttls --smtp-auth-file /data/smtp-auth.txt
+    volumes:
+      - ./:/data:ro
+    ports:
+      - "127.0.0.1:1587:1025"
+      - "127.0.0.1:8587:8025"
+
+  tls:
+    image: axllent/mailpit:latest
+    container_name: ceusmedia-mail-mailpit-tls
+    command: --smtp-disable-rdns --smtp-tls-cert /data/tls/cert.pem --smtp-tls-key /data/tls/key.pem --smtp-require-tls --smtp-auth-file /data/smtp-auth.txt
+    volumes:
+      - ./:/data:ro
+    ports:
+      - "127.0.0.1:1465:1025"
+      - "127.0.0.1:8465:8025"

@@ -10,8 +10,10 @@ namespace CeusMedia\MailTest\Unit\Message\Part;
 
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Part;
+use CeusMedia\Mail\Message\Header\Parser as HeaderParser;
 use CeusMedia\Mail\Message\Part\Attachment;
 use CeusMedia\MailTest\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  *	Unit test for mail message part.
@@ -216,7 +218,7 @@ class AttachmentTest extends TestCase
 
 		$headers	= array(
 			"Content-Disposition: attachment;".$delimiter." ".join( ";".$delimiter." ", $facts ),
-			"Content-Type: text/php",
+			"Content-Type: text/php;".$delimiter.' name="'.basename( $file ).'"',
 			"Content-Transfer-Encoding: base64",
 			"Content-Description: ".basename( $file ),
 		);
@@ -230,7 +232,7 @@ class AttachmentTest extends TestCase
 
 		$headers	= array(
 			"Content-Disposition: attachment;".$delimiter." ".join( ";".$delimiter." ", $facts ),
-			"Content-Type: application/octet-stream",
+			"Content-Type: application/octet-stream;".$delimiter.' name="'.basename( $file ).'"',
 			"Content-Transfer-Encoding: binary",
 			"Content-Description: ".basename( $file ),
 		);
@@ -242,5 +244,54 @@ class AttachmentTest extends TestCase
 	protected function wrapContent( string $content ): string
 	{
 		return rtrim( chunk_split( $content, $this->lineLength, $this->delimiter ), $this->delimiter );
+	}
+
+	/**
+	 *	@return		array<string,array{string,string}>
+	 */
+	public static function fileNames(): array
+	{
+		return [
+			'plain'				=> ['report.pdf', 'filename="report.pdf"'],
+			'quotes, semicolon'	=> ['a "b"; c.txt', 'filename="a \\"b\\"; c.txt"'],
+			'umlauts'			=> ['Grüße.txt', "filename*=UTF-8''Gr%C3%BC%C3%9Fe.txt"],
+			'long'				=> [str_repeat( 'Größenänderung ', 6 ).'.pdf', "filename*0*=UTF-8''Gr%C3%B6%C3%9F"],
+		];
+	}
+
+	/**
+	 *	File names: printable ASCII quoted and escaped, others encoded (RFC 2231), long ones in continuations.
+	 *	Lines stay within 76 characters, the header parser reads the file name back unchanged.
+	 *	@covers		::render
+	 *	@covers		\CeusMedia\Mail\Message\Part::renderDisposition
+	 *	@covers		\CeusMedia\Mail\Message\Header\Encoding::renderParameter
+	 */
+	#[DataProvider( 'fileNames' )]
+	public function testRenderFileName( string $fileName, string $expected ): void
+	{
+		$part		= ( new Attachment() )->setContent( 'x' )->setFileName( $fileName );
+		$headers	= (string) strstr( $part->render(), Message::$delimiter.Message::$delimiter, TRUE );
+
+		self::assertStringContainsString( 'Content-Disposition: attachment;'.Message::$delimiter.' '.$expected, $headers );
+		self::assertTrue( mb_check_encoding( $headers, 'ASCII' ), 'headers without 8bit characters' );
+		foreach( explode( Message::$delimiter, $headers ) as $line )
+			self::assertLessThanOrEqual( 76, strlen( $line ), $line );
+
+		$section	= HeaderParser::getInstance()->parse( $headers );
+		self::assertSame( $fileName, $section->getField( 'Content-Disposition' )?->getAttribute( 'filename' ) );
+		self::assertSame( $fileName, $section->getField( 'Content-Type' )?->getAttribute( 'name' ) );
+		self::assertSame( $fileName, $section->getField( 'Content-Description' )?->getValue() );
+	}
+
+	/**
+	 *	Content headers set in given section without rendering, same as rendered.
+	 *	@covers		::applyHeaders
+	 */
+	public function testApplyHeaders(): void
+	{
+		$part		= ( new Attachment() )->setContent( 'x' )->setFileName( 'Grüße.txt' );
+		$section	= $part->applyHeaders( new \CeusMedia\Mail\Message\Header\Section() );
+		self::assertSame( ['Content-Disposition', 'Content-Type', 'Content-Transfer-Encoding', 'Content-Description'], array_map( static fn( $field ) => $field->getName(), $section->getFields() ) );
+		self::assertStringStartsWith( $section->toString( TRUE ), $part->render() );
 	}
 }
