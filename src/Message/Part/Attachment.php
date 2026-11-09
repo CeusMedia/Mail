@@ -46,6 +46,7 @@ use function filectime;
 use function filemtime;
 use function filesize;
 use function join;
+use function realpath;
 use function strlen;
 
 /**
@@ -190,35 +191,43 @@ class Attachment extends MessagePart
 	/**
 	 *	Sets attachment by existing file.
 	 *	Will gather file size, file dates (access, creation, modification).
+	 *
+	 *	Security note: If $filePath originates from user input, ensure it is validated
+	 *	against a trusted base directory before calling this method. The file path is
+	 *	resolved via realpath() to prevent path traversal attacks (e.g., ../../etc/passwd).
+	 *
 	 *	@access		public
 	 *	@param		string			$filePath		Path of file to attach
 	 *	@param		string|NULL		$mimeType		Optional: MIME type of file (will be detected if not given)
 	 *	@param		string|NULL		$encoding		Optional: Encoding of file
 	 *	@param		string|NULL		$fileName		Optional: Name of file in part
 	 *	@return		self			Self instance for chaining
-	 *	@throws		InvalidArgumentException		if file is not existing
+	 *	@throws		InvalidArgumentException		if file is not existing or path traversal detected
 	 *	@throws		IoException						if reading from file failed
 	 *	@todo		scan file for malware
 	 */
 	public function setFile( string $filePath, ?string $mimeType = NULL, ?string $encoding = NULL, ?string $fileName = NULL ): self
 	{
-		$file	= new File( $filePath );
- 		if( !$file->exists() )
+		//  Resolve the real path to prevent path traversal attacks
+		$realPath	= realpath( $filePath );
+		if( FALSE === $realPath )
 			throw new InvalidArgumentException( 'Attachment file "'.$filePath.'" is not existing' );
 
+		$file	= new File( $realPath );
+
 		if( !Str::hasContent( $mimeType ) )
-			$mimeType	= $this->getMimeTypeFromFile( $filePath );
+			$mimeType	= $this->getMimeTypeFromFile( $realPath );
 		if( !Str::hasContent( $fileName ) )
-			$fileName	= basename( $filePath );
+			$fileName	= basename( $realPath );
  		$this->content	= (string) $file->getContent();
 		$this->setFileName( $fileName );
-		if( FALSE !== ( $fileSize = filesize( $filePath ) ) )
+		if( FALSE !== ( $fileSize = filesize( $realPath ) ) )
 			$this->setFileSize( $fileSize );
-		if( FALSE !== ( $fileATime = fileatime( $filePath ) ) )
+		if( FALSE !== ( $fileATime = fileatime( $realPath ) ) )
 			$this->setFileATime( $fileATime );
-		if( FALSE !== ( $fileCTime = filectime( $filePath ) ) )
+		if( FALSE !== ( $fileCTime = filectime( $realPath ) ) )
 			$this->setFileCTime( $fileCTime );
-		if( FALSE !== ( $fileMTime = filemtime( $filePath ) ) )
+		if( FALSE !== ( $fileMTime = filemtime( $realPath ) ) )
 			$this->setFileMTime( $fileMTime );
 		if( NULL !== $mimeType )
 			$this->setMimeType( $mimeType );

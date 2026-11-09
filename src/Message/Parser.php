@@ -51,6 +51,7 @@ use RuntimeException;
 use function array_map;
 use function in_array;
 use function join;
+use function sprintf;
 use function strtolower;
 use function strtotime;
 use function strtoupper;
@@ -69,6 +70,12 @@ use function trim;
  */
 class Parser
 {
+	/**
+	 *	Maximum nesting depth for multipart parsing. Prevents stack overflow on pathological MIME messages.
+	 *	@var	integer
+	 */
+	protected const MAX_DEPTH	= 10;
+
 	/**
 	 *	Static constructor.
 	 *	@access		public
@@ -367,15 +374,23 @@ class Parser
 	/**
 	 *	Parses complete body of a multipart message.
 	 *	Adds found body parts to given message object.
-	 *	Supports nested multiparts by working recursively.
+	 *	Supports nested multiparts by working recursively, up to MAX_DEPTH levels.
 	 *	@access		protected
 	 *	@param		Message		$message		...
 	 *	@param		string		$content		...
+	 *	@param		integer		$depth		Current recursion depth
 	 *	@return		void
 	 *	@throws		ReflectionException
+	 *	@throws		RuntimeException		if maximum nesting depth is exceeded
 	 */
-	protected function parseMultipartBody( Message $message, string $content ): void
+	protected function parseMultipartBody( Message $message, string $content, int $depth = 0 ): void
 	{
+		if( $depth >= self::MAX_DEPTH ){
+			throw new RuntimeException(
+				sprintf( 'Multipart nesting depth exceeded maximum of %d levels', self::MAX_DEPTH )
+			);
+		}
+
 		$delim		= Message::$delimiter;
 		$bodyParts	= Str::regSplit( "/\r?\n\r?\n/", $content, 2,
 			'Splitting multipart message body into parts failed'
@@ -407,7 +422,7 @@ class Parser
 					$status	= 1;
 				}
 				else if( [] !== $lines ){
-					$this->parseMultipartBody( $message, join( $delim, $lines ) );
+					$this->parseMultipartBody( $message, join( $delim, $lines ), $depth + 1 );
 					$lines	= [];
 				}
 				continue;
@@ -415,7 +430,7 @@ class Parser
 
 			if( $line === '--'.$mimeBoundary.'--' ){
 				if( [] !== $lines )
-					$this->parseMultipartBody( $message, join( $delim, $lines ) );
+					$this->parseMultipartBody( $message, join( $delim, $lines ), $depth + 1 );
 				$status	= 0;
 				$lines	= [];
 				continue;

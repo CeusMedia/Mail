@@ -12,6 +12,15 @@ receiverName	= "Receiver Name"
 subject			= "CeusMedia/Mail: Demo Mail #%s"
 body			= "This is just a test. The current UNIX timestamp is %s. And here are some umlauts: äöüÄÖÜß :-)"
 
+[DKIM]
+;  DKIM private key file path (PEM format)
+;  Generate with: openssl genrsa 2048 > dkim-private.pem
+privateKey		= ""
+;  DKIM domain (e.g., "example.com")
+domain			= ""
+;  DNS selector (e.g., "default" or "2025")
+selector		= ""
+
 [mailbox]
 host			= ""
 address			= ""
