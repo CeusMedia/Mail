@@ -99,7 +99,7 @@
       "XDEBUG_MODE=off vendor/bin/phpstan clear-result-cache --verbose"
     ],
     "dev:phpstan-save": [
-      "@dev:instal-quietl",
+      "@dev:install-quiet",
       "XDEBUG_MODE=off vendor/bin/phpstan analyse --configuration util/phpstan.neon --generate-baseline util/phpstan-baseline.neon --verbose"
     ],
     "dev:phpunit-all": [

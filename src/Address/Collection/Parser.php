@@ -58,7 +58,6 @@ use function trim;
  *	@copyright		2007-2025 Christian Würker
  *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@todo			Finish code documentation
  */
 class Parser
 {
@@ -82,24 +81,6 @@ class Parser
 
 	/** @var int $method */
 	protected int $method						= 0;
-
-	/**
-	 *	Static constructor.
-	 *	@access			public
-	 *	@static
-	 *	@return			self
-	 *	@deprecated		use getInstance instead
-	 *	@todo			to be removed
-	 *	@codeCoverageIgnore
-	 */
-	public static function create(): self
-	{
-		Deprecation::getInstance()
-			->setErrorVersion( '2.5' )
-			->setExceptionVersion( '2.6' )
-			->message( 'Use method getInstance instead' );
-		return new self();
-	}
 
 	/**
 	 *	Static constructor.

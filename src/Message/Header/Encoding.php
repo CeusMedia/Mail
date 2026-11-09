@@ -178,8 +178,8 @@ class Encoding
 		if( FALSE !== $converted )
 			return $converted;
 		if( mb_check_encoding( $octets, 'UTF-8' ) )
-			return 0 === strcasecmp( $this->charset, 'UTF-8' ) ? $octets : (string) mb_convert_encoding( $octets, $this->charset, 'UTF-8' );
-		return (string) mb_convert_encoding( $octets, $this->charset, 'ISO-8859-1' );
+			return 0 === strcasecmp( $this->charset, 'UTF-8' ) ? $octets : mb_convert_encoding( $octets, $this->charset, 'UTF-8' );
+		return mb_convert_encoding( $octets, $this->charset, 'ISO-8859-1' );
 	}
 
 	/**
@@ -446,7 +446,7 @@ class Encoding
 				continue;
 			}
 			$content	= 'B' === strtoupper( $parts[2] )
-				? (string) base64_decode( $parts[3] )
+				? base64_decode( $parts[3], TRUE )
 				: quoted_printable_decode( str_replace( '_', ' ', $parts[3] ) );
 			if( NULL !== $charset && 0 !== strcasecmp( $charset, $parts[1] ) ){
 				$result	.= $this->convertToCharset( $octets, $charset );
@@ -490,7 +490,7 @@ class Encoding
 		if( $offset + strlen( $string ) <= self::LINE_LENGTH )
 			return $string;
 		$words		= explode( ' ', $string );
-		$result		= (string) array_shift( $words );
+		$result		= array_shift( $words );
 		$length		= $offset + strlen( $result );
 		$hasText	= Str::hasContent( $result );
 		foreach( $words as $word ){
