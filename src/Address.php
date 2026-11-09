@@ -52,9 +52,6 @@ use RuntimeException;
  *	@copyright		2007-2025 Christian Würker
  *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@todo			code doc
- *	@todo			create tests
- *	@todo			use in Message class
  */
 class Address
 {
@@ -89,22 +86,6 @@ class Address
 	public function __toString(): string
 	{
 		return $this->get();
-	}
-
-	/**
-	 *	Alias for getInstance.
-	 *	@static
-	 *	@deprecated		use getInstance instead
-	 *	@todo			to be removed
-	 *	@codeCoverageIgnore
-	 */
-	public static function create( string $string = NULL ): self
-	{
-		Deprecation::getInstance()
-			->setErrorVersion( '2.5' )
-			->setExceptionVersion( '2.6' )
-			->message(  'Use method getInstance instead' );
-		return new self( $string );
 	}
 
 	/**

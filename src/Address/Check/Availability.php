@@ -60,7 +60,6 @@ use function join;
  *	@copyright		2007-2025 Christian Würker
  *	@license		https://www.gnu.org/licenses/gpl-3.0.txt GPL 3
  *	@link			https://github.com/CeusMedia/Mail
- *	@todo			code doc
  */
 class Availability
 {
@@ -92,45 +91,6 @@ class Availability
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$this->cache		= CacheFactory::createStorage( 'Noop' );
 		$this->lastResponse	= new SmtpResponse();
-	}
-
-	/**
-	 *	...
-	 *	@access		public
-	 *	@return		SmtpResponse
-	 *	@deprecated	use getLastResponse instead
-	 *	@codeCoverageIgnore
-	 *	@noinspection	PhpDocMissingThrowsInspection
-	 */
-	public function getLastError(): SmtpResponse
-	{
-		/** @noinspection PhpUnhandledExceptionInspection */
-		Deprecation::getInstance()
-			->setErrorVersion( '2.5' )
-			->setExceptionVersion( '2.6' )
-			->message(  'Use method getLastResponse instead' );
-		return $this->getLastResponse();
-	}
-
-	/**
-	 *	...
-	 *	@access		public
-	 *	@param		string		$key		Response data key (error|code|message)
-	 *	@return		mixed
-	 *	@deprecated		use getLastResponse instead
-	 *	@todo			remove in version 2.7
-	 *	@noinspection	PhpDocMissingThrowsInspection
-	 *	@noinspection	PhpUnused
-	 *	@codeCoverageIgnore
-	 */
-	public function getLastErrorValue( string $key ): mixed
-	{
-		/** @noinspection PhpUnhandledExceptionInspection */
-		Deprecation::getInstance()
-			->setErrorVersion( '2.5' )
-			->setExceptionVersion( '2.6' )
-			->message(  'Use method getLastResponseValue instead' );
-		return $this->getLastResponseValue( $key );
 	}
 
 	/**

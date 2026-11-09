@@ -69,24 +69,6 @@ class Renderer
 	protected int $offset			= 0;
 
 	/**
-	 *	Static constructor.
-	 *	@access			public
-	 *	@static
-	 *	@return			self
-	 *	@deprecated		use getInstance instead
-	 *	@todo			to be removed
-	 *	@codeCoverageIgnore
-	 */
-	public static function create(): self
-	{
-		Deprecation::getInstance()
-			->setErrorVersion( '2.5' )
-			->setExceptionVersion( '2.6' )
-			->message(  'Use method getInstance instead' );
-		return new self();
-	}
-
-	/**
 	 *	Returns set delimiter.
 	 *	@access		public
 	 *	@return		string

@@ -141,13 +141,9 @@ abstract class Part
 	public static function decodeContent( string $content, string $encoding, string $charset = 'UTF-8' ): string
 	{
 		switch( strtolower( $encoding ) ){
-			case '7bit':
-				/** @var string|FALSE $result */
-				$result	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
-				if( FALSE === $result )
-					throw new RuntimeException( 'Decoding 7bit content failed' );
-				$content	= $result;
-				break;
+ 			case '7bit':
+ 				$content	= mb_convert_encoding( $content, 'UTF-8', '8bit' );
+ 				break;
 			case '8bit':
 			case '':
 				break;

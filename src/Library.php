@@ -61,7 +61,7 @@ class Library
 	public static function getIdentifier(): ?string
 	{
 		self::detect();
-		return self::$version;
+		return self::$identifier;
 	}
 
 	/**

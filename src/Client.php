@@ -65,26 +65,6 @@ class Client
 		return MailboxSearch::getInstance()->applyConditions( $conditions );
 	}
 
-	/**
-	 *	@param			array			$conditions
-	 *	@param			integer|NULL	$limit
-	 *	@param			integer|NULL	$offset
-	 *	@return			array
-	 *	@deprecated		use search with mailbox search instance instead
-	 *	@todo			to be removed in 2.6
-	 *	@noinspection	PhpUnusedParameterInspection
-	 *	@codeCoverageIgnore
-	 */
-	public function find( array $conditions, ?int $limit = NULL, ?int $offset = NULL ): array
-	{
-		Deprecation::getInstance()
-			->setErrorVersion( '2.5' )
-			->setExceptionVersion( '2.6' )
-			->message(  'Use method search with mailbox search instance, instead' );
-		$mailbox	= $this->getMailbox();
-		return $mailbox->search( $conditions );
-	}
-
 	public function search( MailboxSearch $search ): array
 	{
 		$mailbox	= $this->getMailbox();
