@@ -31,6 +31,10 @@ namespace CeusMedia\Mail\Transport;
 use CeusMedia\Mail\Address;
 use CeusMedia\Mail\Message;
 use CeusMedia\Mail\Message\Renderer as MessageRenderer;
+use CeusMedia\Mail\Message\Signer\Dkim;
+use CeusMedia\Mail\Transport\SMTP\Auth\AuthStrategy;
+use CeusMedia\Mail\Transport\SMTP\Auth\Login as AuthLogin;
+use CeusMedia\Mail\Transport\SMTP\SmtpConnection;
 use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 use CeusMedia\Mail\Transport\SMTP\Response;
 use CeusMedia\Mail\Transport\SMTP\Response as SmtpResponse;
@@ -61,7 +65,7 @@ use function strtolower;
  *	@link			https://github.com/CeusMedia/Mail
  *	@see			https://www.der-webdesigner.net/tutorials/php/anwendungen/329-php-und-oop-mailversand-via-smtp.html
  */
-class SMTP
+class SMTP implements SmtpConnection
 {
 	/**	@var	string				$host		SMTP server host name */
 	protected string $host;
@@ -112,6 +116,16 @@ class SMTP
 	 *	@see	https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 */
 	protected int $cryptoMode		= STREAM_CRYPTO_METHOD_ANY_CLIENT;
+
+	/**
+	 *	@var	AuthStrategy|NULL	$authStrategy	Custom AUTH strategy, NULL: use username/password with AUTH LOGIN
+	 */
+	protected ?AuthStrategy $authStrategy	= NULL;
+
+	/**
+	 *	@var	Dkim|NULL			$dkimSigner		DKIM signer, NULL: no DKIM signing
+	 */
+	protected ?Dkim $dkimSigner			= NULL;
 
 	/**
 	 *	Get instance of SMTP transport.
@@ -192,6 +206,11 @@ class SMTP
 		if( 0 === count( $message->getParts() ) )
 			throw new RuntimeException( 'No mail body parts set' );
 		$content	= MessageRenderer::render( $message );
+
+		//  Apply DKIM signing if configured
+		if( NULL !== $this->dkimSigner )
+			$content	= $this->dkimSigner->sign( $content );
+
 		$response	= $this->socket->open();
 		if( $response->isError() )
 			throw new SmtpException( $response->getMessage(), $response->getError() );
@@ -207,16 +226,22 @@ class SMTP
 			$this->sendChunk( 'EHLO '.$heloHost );
 			$this->checkResponse( [ 250 ], SmtpResponse::ERROR_HELO_FAILED );
 		}
-		if( Str::hasContent( $this->username ) ){
-			if( Str::hasContent( $this->password ) ){
-				$this->sendChunk( 'AUTH LOGIN' );
-				$this->checkResponse( [ 334 ] );
-				$this->sendChunk( base64_encode( $this->username ), '[username hidden]' );
-				$this->checkResponse( [ 334 ] );
-				$this->sendChunk( base64_encode( $this->password ), '[password hidden]' );
-				$this->checkResponse( [ 235 ], SmtpResponse::ERROR_LOGIN_FAILED );
-			}
+
+		//  Authenticate: use configured strategy, or fall back to AUTH LOGIN when username/password are set
+		/** @var AuthStrategy|null $strategy */
+		$strategy	= $this->authStrategy;
+		if( NULL === $strategy && Str::hasContent( $this->username ) && Str::hasContent( $this->password ) ){
+			$strategy	= new AuthLogin( $this->username, $this->password );
 		}
+		if( NULL !== $strategy ){
+			try{
+				$strategy->authenticate( $this );
+			}
+			catch( RuntimeException $e ){
+				//  Wrap AUTH strategy exceptions as SMTP exceptions
+				throw new SmtpException( $e->getMessage(), SmtpResponse::ERROR_LOGIN_FAILED );
+ 			}
+ 		}
 
 		$list	= [];
 
@@ -312,32 +337,32 @@ class SMTP
 		return $this;
 	}
 
-    /**
-     *	Sets name of this client, sent with EHLO.
-     *	Should be the fully qualified domain name of this host or an address literal like "[192.0.2.1]" (RFC 5321, 4.1.4).
-     *	@access		public
-     *	@param		string		$host		Name of this client
-     *	@return		self		Self instance for chaining.
-     */
-    public function setHeloHost( string $host ): self
-    {
-        if( !Str::hasContent( $host ) )
-            throw new InvalidArgumentException( 'Missing HELO host' );
-        $this->heloHost	= trim( $host );
-        return $this;
-    }
+	/**
+	 *	Sets name of this client, sent with EHLO.
+	 *	Should be the fully qualified domain name of this host or an address literal like "[192.0.2.1]" (RFC 5321, 4.1.4).
+	 *	@access		public
+	 *	@param		string		$host		Name of this client
+	 *	@return		self		Self instance for chaining.
+	 */
+	public function setHeloHost( string $host ): self
+	{
+		if( !Str::hasContent( $host ) )
+			throw new InvalidArgumentException( 'Missing HELO host' );
+		$this->heloHost	= trim( $host );
+		return $this;
+	}
 
-    /**
-     *	Sets kind of encryption, if secure: TLS right after connecting (SMTPS, usually port 465) or STARTTLS (usually port 587).
-     *	@access		public
-     *	@param		boolean		$implicit	Flag: implicit TLS instead of STARTTLS
-     *	@return		self		Self instance for chaining.
-     */
-    public function setImplicitTls( bool $implicit ): self
-    {
-        $this->isImplicitTls	= $implicit;
-        return $this;
-    }
+	/**
+	 *	Sets kind of encryption, if secure: TLS right after connecting (SMTPS, usually port 465) or STARTTLS (usually port 587).
+	 *	@access		public
+	 *	@param		boolean		$implicit	Flag: implicit TLS instead of STARTTLS
+	 *	@return		self		Self instance for chaining.
+	 */
+	public function setImplicitTls( bool $implicit ): self
+	{
+		$this->isImplicitTls	= $implicit;
+		return $this;
+	}
 
 	/**
 	 *	Sets SMTP host.
@@ -460,6 +485,31 @@ class SMTP
 		return $this;
 	}
 
+	/**
+	 *	Sets a custom AUTH strategy (e.g. AUTH PLAIN or AUTH XOAUTH2).
+	 *	When set, the username/password properties are ignored.
+	 *	@access		public
+	 *	@param		AuthStrategy		$strategy		AUTH strategy instance
+	 *	@return		self		Self instance for chaining.
+	 */
+	public function setAuthStrategy( AuthStrategy $strategy ): self
+	{
+		$this->authStrategy	= $strategy;
+		return $this;
+	}
+
+	/**
+	 *	Sets the DKIM signer for message signing before sending.
+	 *	@access		public
+	 *	@param		Dkim		$signer		DKIM signer instance
+	 *	@return		self		Self instance for chaining.
+	 */
+	public function setDkimSigner( Dkim $signer ): self
+	{
+		$this->dkimSigner	= $signer;
+		return $this;
+	}
+
 	//  --  PROTECTED  --  //
 
 	/**
@@ -540,11 +590,12 @@ class SMTP
 
 	/**
 	 *	Sends a command or content to the server.
+	 *	@access		public
 	 *	@param		string			$message		Command or content to send
 	 *	@param		string|NULL		$verboseMessage	Shown instead of message in verbose mode, e.g. to hide credentials
 	 *	@return		bool
 	 */
-	protected function sendChunk( string $message, ?string $verboseMessage = NULL ): bool
+	public function sendChunk( string $message, ?string $verboseMessage = NULL ): bool
 	{
 		if( NULL === $this->socket )
 			throw new RuntimeException( 'Not connected' );
@@ -553,5 +604,18 @@ class SMTP
 			print PHP_EOL . ' > '.( $verboseMessage ?? $message ) . PHP_EOL;
 
 		return $this->socket->sendChunk( $message.Message::$delimiter );
+	}
+
+	/**
+	 *	Read the next SMTP response from the server.
+	 *	@access		public
+	 *	@return		Response
+	 */
+	public function readResponse(): Response
+	{
+		if( NULL === $this->socket )
+			throw new RuntimeException( 'Not connected' );
+
+		return $this->socket->readResponse();
 	}
 }

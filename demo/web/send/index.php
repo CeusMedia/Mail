@@ -75,6 +75,29 @@ $transport->send($mail);
 		->addPart(new \CeusMedia\Mail\Message\Part\Text("Test Message..."));
 	);
 			</pre>
+			<h3>Auth Strategies</h3>
+			Instead of username/password (AUTH LOGIN), you can use custom auth strategies:
+			<pre>
+//  AUTH PLAIN (RFC 4616, single-step SASL)
+$transport->setAuthStrategy(
+	new \CeusMedia\Mail\Transport\SMTP\Auth\Plain("john@example.com", "my_password")
+);
+
+//  AUTH XOAUTH2 (OAuth 2.0, e.g. Gmail, Microsoft 365)
+$transport->setAuthStrategy(
+	new \CeusMedia\Mail\Transport\SMTP\Auth\Xoauth2("john@example.com", "ya29.a0AfH6SMB...")
+);
+			</pre>
+			<h3>DKIM Signing</h3>
+			Sign messages with DKIM (DomainKeys Identified Mail, RFC 6376):
+			<pre>
+$signer = new \CeusMedia\Mail\Message\Signer\Dkim(
+	"/path/to/dkim-private.pem",  //  private key file
+	"example.com",                 //  DKIM domain
+	"default"                      //  DNS selector
+);
+$transport->setDkimSigner($signer);
+			</pre>
 		</div>
 	</div>
 </div>

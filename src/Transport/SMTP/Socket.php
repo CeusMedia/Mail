@@ -171,10 +171,10 @@ class Socket
 	 *	For STARTTLS (port 587) use enableCrypto() after the STARTTLS command instead.
 	 *	@access		public
 	 *	@param		boolean			$enable		Power switch
-	 *	@param		integer			$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT
+	 *	@param		integer			$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
 	 *	@return		self
 	 */
-	public function setImplicitTls( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_ANY_CLIENT ): self
+	public function setImplicitTls( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT ): self
 	{
 		$this->implicitCrypto	= $enable ? $crypto : NULL;
 		return $this;
@@ -184,11 +184,11 @@ class Socket
 	 *	Sets cryptography mode.
 	 *	@access		public
 	 *	@param		boolean			$enable		Power switch
-	 *	@param		integer			$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_ANY_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
+	 *	@param		integer			$crypto		Cryptography mode, default: STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT, @see https://www.php.net/manual/en/function.stream-socket-enable-crypto.php
 	 *	@throws		RuntimeException			if connection is not open
 	 *	@return		self
 	 */
-	public function enableCrypto( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_ANY_CLIENT ): self
+	public function enableCrypto( bool $enable, int $crypto = STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT ): self
 	{
 		if( NULL === $this->connection )
 			throw new RuntimeException( 'Not connected' );

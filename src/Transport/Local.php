@@ -45,6 +45,7 @@ use function count;
 use function date;
 use function implode;
 use function mail;
+use function preg_match;
 use function strlen;
 use function strpos;
 use function strtolower;
@@ -143,12 +144,13 @@ class Local
 		$error	= NULL;
 		$buffer	= new OutputBuffer();
 		try{
+			$validatedParams	= self::validateParameters( $parameters );
 			$returns	= mail(
 				implode( ', ', $to ),
 				$subject,
 				$body,
 				$section->toString( TRUE ),
-				implode( ' ', $parameters )
+				implode( ' ', $validatedParams )
 			);
 			if( !$returns )
 				throw new RuntimeException( $buffer->get() );
@@ -169,6 +171,48 @@ class Local
 		return $list;
 	}
 
+
+	/**
+	 *	Validates sendmail parameters against a whitelist of allowed flags.
+	 *	Only safe, standard sendmail flags are permitted: -f (envelope sender),
+	 *	-F (from name), -R (reply-to address), -r (return path).
+	 *	All other flags are rejected to prevent command injection via the mail() parameters.
+	 *
+	 *	@access		private
+	 *	@static
+	 *	@param		array<string>	$parameters	Parameters to validate
+	 *	@return		array<string>				Validated parameters
+	 *	@throws		InvalidArgumentException	if a parameter contains unsafe characters or disallowed flags
+	 */
+	protected static function validateParameters( array $parameters ): array
+	{
+		if( 0 === count( $parameters ) )
+			return [];
+
+		//  Allowed sendmail flags (single-letter, with optional value)
+		$allowedFlags	= [ 'f', 'F', 'R', 'r' ];
+
+		$validated	= [];
+		foreach( $parameters as $param ){
+			//  Each parameter must be a flag (-X) or a flag with a value (-Xvalue or -X value)
+			//  Only alphanumeric values allowed after the flag
+			$match	= preg_match('/^-[a-zA-Z][a-zA-Z0-9._@+\-]*$/', $param);
+			if( 0 === $match )
+				throw new InvalidArgumentException(
+					sprintf( 'Unsafe sendmail parameter detected: %s', $param )
+				);
+
+			//  Extract the flag letter and check against whitelist
+			$flag	= strtolower( substr( $param, 1, 1 ) );
+			if( !in_array( $flag, $allowedFlags, TRUE ) )
+				throw new InvalidArgumentException(
+					sprintf( 'Disallowed sendmail parameter flag: -%s', $flag )
+				);
+
+			$validated[]	= $param;
+		}
+		return $validated;
+	}
 
 	/**
 	 *	Sends Mail statically.

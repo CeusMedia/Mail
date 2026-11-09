@@ -1,5 +1,7 @@
 <?php /** @noinspection PhpMultipleClassDeclarationsInspection */
 
+namespace CeusMedia\MailDemo\Web\Mailbox;
+
 use CeusMedia\Cache\Adapter\Folder as FolderCache;
 use CeusMedia\Cache\Encoder\Serial as CacheEncoder;
 use CeusMedia\Cache\SimpleCacheFactory as CacheFactory;
@@ -12,6 +14,8 @@ use CeusMedia\Common\UI\HTML\Tag as Tag;
 use CeusMedia\Mail\Mailbox;
 use CeusMedia\Mail\Mailbox\Connection;
 use CeusMedia\Mail\Message;
+use ErrorException;
+use ReflectionException;
 
 
 class DemoMailboxApp
@@ -38,13 +42,12 @@ class DemoMailboxApp
 			$this->config	= (object) $config->getAll();
 			$this->request	= new HttpRequestReceiver;
 			$this->response	= new HttpResponse;
-			/** @noinspection PhpFieldAssignmentTypeMismatchInspection */
-			$this->cache	= CacheFactory::createStorage( 'Folder', 'cache/', NULL, 3600 );
+            $this->cache	= CacheFactory::createStorage( 'Folder', 'cache/', NULL, 3600 );
 			$this->cache->setEncoder( CacheEncoder::class );
 			$this->openMailbox();
 			$this->dispatch();
 		}
-		catch( Exception|Error $e ){
+		catch( \Exception|\Error $e ){
 			ExceptionPage::display( $e );
 		}
 	}
@@ -138,7 +141,7 @@ class DemoMailboxApp
 	 * @return bool
 	 * @throws ErrorException
 	 */
-	protected function handleError( int $number, string $message, string $file, int $line, ?array $context = NULL ): bool
+	public function handleError( int $number, string $message, string $file, int $line, ?array $context = NULL ): bool
 	{
 		if( 0 === error_reporting() )											// error was suppressed with the @-operator
 			return FALSE;
@@ -147,7 +150,6 @@ class DemoMailboxApp
 
 	/**
 	 * @return void
-	 * @throws ReflectionException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function respondWithPage(): void
@@ -167,7 +169,6 @@ class DemoMailboxApp
 
 	/**
 	 * @return string
-	 * @throws ReflectionException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function renderIndex(): string
@@ -196,7 +197,6 @@ class DemoMailboxApp
 	/**
 	 * @param array $mailIndex
 	 * @return string
-	 * @throws ReflectionException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function renderIndexListAsTable( array $mailIndex ): string
@@ -246,7 +246,6 @@ class DemoMailboxApp
 	/**
 	 * @param array $mailIndex
 	 * @return string
-	 * @throws ReflectionException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function renderIndexListAsFlexList( array $mailIndex ): string
@@ -287,11 +286,11 @@ class DemoMailboxApp
 		$username	= $this->config->username ?? '';
 		$password	= $this->config->password ?? '';
 		if( '' === $address )
-			throw new RuntimeException( 'Error: No mailbox address defined.' );
+			throw new \RuntimeException( 'Error: No mailbox address defined.' );
 		if( '' === $username )
-			throw new RuntimeException( 'Error: No mailbox user name defined.' );
+			throw new \RuntimeException( 'Error: No mailbox user name defined.' );
 		if( '' === $password )
-			throw new RuntimeException( 'Error: No mailbox user password defined.' );
+			throw new \RuntimeException( 'Error: No mailbox user password defined.' );
 
 		$connection		= new Connection( $host, $username, $password );
 		$connection->setSecure( $secure, $secure );
@@ -300,11 +299,11 @@ class DemoMailboxApp
 
 	protected function purifyHtmlContent( string $content ): string
 	{
-		$purifierConfig	= HTMLPurifier_Config::createDefault();
+		$purifierConfig	= \HTMLPurifier_Config::createDefault();
 		$purifierConfig->set( 'Cache.SerializerPath', 'cache/' );
 		$purifierConfig->set( 'Cache.SerializerPermissions', NULL );
 
-		$purifier		= new HTMLPurifier( $purifierConfig );
+		$purifier		= new \HTMLPurifier( $purifierConfig );
 		$contentPure	= $purifier->purify( $content );
 		$bodyContainer	= Tag::create( 'div', $contentPure, ['class' => 'container-fluid'] );
 
