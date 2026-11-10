@@ -31,7 +31,6 @@ class RendererTest extends TestCase
 	}
 
 	/**
-	 *	@covers		::create
 	 *	@covers		::getInstance
 	 *	@covers		::render
 	 */

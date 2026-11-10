@@ -78,14 +78,8 @@ class Plain implements AuthStrategy
 		//  RFC 4616: base64( authz_id \0 auth_id \0 password )
 		$credentials	= $this->authzId."\0".$this->authId."\0".$this->password;
 
-		$connection->sendChunk( 'AUTH PLAIN '.$credentials );
-		$response	= $connection->readResponse();
-
-		if( 235 !== $response->getCode() ){
-			throw new RuntimeException(
-				'AUTH PLAIN failed: expected 235, got '.$response->getCode().' '.$response->getMessage()
-			);
-		}
+		$connection->sendChunk( 'AUTH PLAIN '.base64_encode( $credentials ), '[credentials hidden]' );
+		$connection->checkResponse( [ 235 ] );
 	}
 }
 

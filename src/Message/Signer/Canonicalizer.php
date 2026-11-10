@@ -28,16 +28,27 @@ declare(strict_types=1);
  */
 namespace CeusMedia\Mail\Message\Signer;
 
+use InvalidArgumentException;
+
+use function array_pop;
+use function count;
+use function explode;
 use function implode;
+use function in_array;
 use function preg_replace;
 use function rtrim;
+use function str_replace;
 use function strlen;
+use function strpos;
 use function strtolower;
+use function substr;
 use function trim;
 
 /**
  *	DKIM message canonicalization (RFC 6376, Section 3.4).
- *	Supports "simple" and "relaxed" modes for both headers and body.
+ *	Supports "simple" and "relaxed" modes for headers and body.
+ *
+ *	All results use CRLF line endings, as transmitted by SMTP, also for input with LF line endings.
  *
  *	@category		Library
  *	@package		CeusMedia_Mail_Message
@@ -52,6 +63,11 @@ class Canonicalizer
 	public const SIMPLE		= 'simple';
 	public const RELAXED	= 'relaxed';
 
+	public const MODES		= [
+		self::SIMPLE,
+		self::RELAXED,
+	];
+
 	/** @var string  $headerMode  Canonicalization mode for headers */
 	protected string $headerMode;
 
@@ -61,200 +77,163 @@ class Canonicalizer
 	/**
 	 *	Constructor.
 	 *	@access		public
-	 *	@param		string		$headerMode	Canonicalization mode for headers (simple|relaxed)
+	 *	@param		string		$headerMode		Canonicalization mode for headers (simple|relaxed)
 	 *	@param		string		$bodyMode		Canonicalization mode for body (simple|relaxed)
+	 *	@throws		InvalidArgumentException	if a mode is unknown
 	 */
 	public function __construct( string $headerMode = self::RELAXED, string $bodyMode = self::RELAXED )
 	{
-		$this->headerMode	= strtolower( $headerMode );
-		$this->bodyMode		= strtolower( $bodyMode );
+		$this->headerMode	= self::checkMode( $headerMode );
+		$this->bodyMode		= self::checkMode( $bodyMode );
 	}
 
 	/**
-	 *	Returns the mode identifier, e.g. "r/s" for relaxed/simple.
+	 *	Returns the value of the c= tag, e.g. "relaxed/simple".
 	 *	@access		public
 	 *	@return		string
 	 */
 	public function getMode(): string
 	{
-		$header	= self::RELAXED === $this->headerMode ? 'r' : 's';
-		$body	= self::RELAXED === $this->bodyMode ? 'r' : 's';
-		return $header.'/'.$body;
+		return $this->headerMode.'/'.$this->bodyMode;
 	}
 
 	/**
-	 *	Canonicalize message headers.
-	 *	Expects raw header string (no body, no trailing CRLF after the last header).
-	 *	@access		public
-	 *	@param		string		$headers		Raw header string
-	 *	@return		string					Canonicalized headers
-	 */
-	public function canonicalizeHeaders( string $headers ): string
-	{
-		if( self::SIMPLE === $this->headerMode ){
-			//  Simple: fold long lines, keep whitespace as-is, use original case
-			return $this->foldHeaders( $headers );
-		}
-
-		//  Relaxed: normalize whitespace, lowercase header names
-		return $this->relaxHeaders( $headers );
-	}
-
-	/**
-	 *	Canonicalize message body.
+	 *	Canonicalize message body (RFC 6376, 3.4.3 and 3.4.4).
+	 *	Simple: trailing empty lines removed, ends with one CRLF (empty body: CRLF).
+	 *	Relaxed: whitespace at line ends removed, other whitespace runs reduced to one space,
+	 *	trailing empty lines removed, ends with one CRLF (empty body: empty string).
 	 *	@access		public
 	 *	@param		string		$body		Raw body string
-	 *	@return		string				Canonicalized body
+	 *	@return		string					Canonicalized body
 	 */
 	public function canonicalizeBody( string $body ): string
 	{
-		if( self::SIMPLE === $this->bodyMode ){
-			//  Simple: convert CRLF to LF, remove trailing empty lines
-			$body	= str_replace( "\r\n", "\n", $body );
-			return rtrim( $body, "\n" );
+		$lines	= explode( "\n", str_replace( "\r\n", "\n", $body ) );
+		if( self::RELAXED === $this->bodyMode ){
+			foreach( $lines as $nr => $line )
+				$lines[$nr]	= rtrim( (string) preg_replace( '/[ \t]+/', ' ', $line ), ' ' );
 		}
+		while( 0 !== count( $lines ) && '' === $lines[count( $lines ) - 1] )
+			array_pop( $lines );
 
-		//  Relaxed: normalize line endings, remove trailing whitespace, collapse empty lines
-		return $this->relaxBody( $body );
+		if( 0 === count( $lines ) )
+			return self::RELAXED === $this->bodyMode ? '' : "\r\n";
+		return implode( "\r\n", $lines )."\r\n";
 	}
 
 	/**
-	 *	Canonicalize a set of headers for signing.
-	 *	Parses the raw header string, selects only the specified headers, and canonicalizes them.
+	 *	Canonicalize one header field (RFC 6376, 3.4.1 and 3.4.2), without trailing CRLF.
+	 *	Simple: unchanged, folding kept (line endings as CRLF).
+	 *	Relaxed: name in lower case, unfolded, whitespace runs reduced to one space,
+	 *	no whitespace around the colon and at the end.
 	 *	@access		public
-	 *	@param		string		$headers		Raw header string
-	 *	@param		string[]	$headerNames	List of header names to include (case-insensitive)
-	 *	@return		string					Canonicalized header list (name:value\r\n)
+	 *	@param		string		$field		Raw header field (name: value), may be folded
+	 *	@return		string
+	 */
+	public function canonicalizeHeaderField( string $field ): string
+	{
+		$field	= rtrim( str_replace( "\r\n", "\n", $field ), "\n" );
+		if( self::SIMPLE === $this->headerMode )
+			return str_replace( "\n", "\r\n", $field );
+
+		$pos	= strpos( $field, ':' );
+		if( FALSE === $pos )
+			return strtolower( trim( $field ) );
+		$name	= strtolower( rtrim( substr( $field, 0, $pos ), " \t" ) );
+		$value	= str_replace( "\n", '', substr( $field, $pos + 1 ) );
+		$value	= trim( (string) preg_replace( '/[ \t]+/', ' ', $value ), ' ' );
+		return $name.':'.$value;
+	}
+
+	/**
+	 *	Canonicalize all fields of a header section, each ending with CRLF.
+	 *	@access		public
+	 *	@param		string		$headers		Raw header section
+	 *	@return		string
+	 */
+	public function canonicalizeHeaders( string $headers ): string
+	{
+		$result	= '';
+		foreach( self::splitHeaderFields( $headers ) as $field )
+			$result	.= $this->canonicalizeHeaderField( $field )."\r\n";
+		return $result;
+	}
+
+	/**
+	 *	Canonicalize header fields to sign, in order of the given names, each ending with CRLF (RFC 6376, 5.4.2).
+	 *	A name given several times takes the next instance from the bottom of the header section.
+	 *	Names without (another) instance add nothing, so listing a name once more prevents adding it later (oversigning).
+	 *	@access		public
+	 *	@param		string		$headers		Raw header section
+	 *	@param		string[]	$headerNames	Names of header fields to sign (case-insensitive), as in h= tag
+	 *	@return		string
 	 */
 	public function canonicalizeHeaderList( string $headers, array $headerNames ): string
 	{
-		//  Parse headers into name => value pairs
-		$parsed	= $this->parseHeaders( $headers );
-
-		//  Build lowercase lookup
-		$lowerNames	= [];
-		foreach( $headerNames as $name ){
-			$lowerNames[strtolower( $name )]	= TRUE;
-		}
-
-		//  Collect and canonicalize selected headers
-		$result	= [];
-		foreach( $parsed as $name => $value ){
-			if( isset( $lowerNames[strtolower( $name )] ) ){
-				if( self::RELAXED === $this->headerMode ){
-					//  Relaxed: lowercase name, collapse whitespace in value
-					$name		= strtolower( $name );
-					$value		= preg_replace( '/\s+/ ', ' ', trim( $value ) );
-				}
-				$result[]	= $name.':'.$value;
+		$fields	= self::splitHeaderFields( $headers );
+		$used	= [];
+		$result	= '';
+		foreach( $headerNames as $headerName ){
+			$headerName	= strtolower( trim( $headerName ) );
+			for( $i = count( $fields ) - 1; $i >= 0; $i-- ){
+				if( in_array( $i, $used, TRUE ) || $headerName !== self::getFieldName( $fields[$i] ) )
+					continue;
+				$used[]	= $i;
+				$result	.= $this->canonicalizeHeaderField( $fields[$i] )."\r\n";
+				break;
 			}
 		}
+		return $result;
+	}
 
-		return implode( "\n", $result )."\n";
+	/**
+	 *	Returns the name of a raw header field in lower case.
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$field		Raw header field
+	 *	@return		string
+	 */
+	public static function getFieldName( string $field ): string
+	{
+		$pos	= strpos( $field, ':' );
+		return strtolower( trim( FALSE === $pos ? $field : substr( $field, 0, $pos ) ) );
+	}
+
+	/**
+	 *	Splits a header section into raw fields, folding kept (line endings as in input, without trailing line break).
+	 *	@access		public
+	 *	@static
+	 *	@param		string		$headers		Raw header section, lines separated by CRLF or LF
+	 *	@return		array<int,string>
+	 */
+	public static function splitHeaderFields( string $headers ): array
+	{
+		$eol	= FALSE !== strpos( $headers, "\r\n" ) ? "\r\n" : "\n";
+		$fields	= [];
+		foreach( explode( $eol, rtrim( $headers, "\r\n" ) ) as $line ){
+			if( 0 !== strlen( $line ) && in_array( $line[0], [' ', "\t"], TRUE ) ){
+				if( 0 !== count( $fields ) )
+					$fields[count( $fields ) - 1]	.= $eol.$line;
+				continue;
+			}
+			if( '' !== $line )
+				$fields[]	= $line;
+		}
+		return $fields;
 	}
 
 	//  --  PROTECTED  --  //
 
 	/**
-	 *	Fold long header lines (simple mode).
-	 *	@access		protected
-	 *	@param		string		$headers
+	 *	@param		string		$mode
 	 *	@return		string
+	 *	@throws		InvalidArgumentException	if mode is unknown
 	 */
-	protected function foldHeaders( string $headers ): string
+	protected static function checkMode( string $mode ): string
 	{
-		//  Ensure CRLF line endings and trim trailing whitespace
-		$headers	= str_replace( "\n", "\r\n", $headers );
-		$headers	= rtrim( $headers, "\r\n" );
-		return $headers."\r\n";
-	}
-
-	/**
-	 *	Relax headers: lowercase names, normalize whitespace.
-	 *	@access		protected
-	 *	@param		string		$headers
-	 *	@return		string
-	 */
-	protected function relaxHeaders( string $headers ): string
-	{
-		$parsed	= $this->parseHeaders( $headers );
-		$result	= [];
-		foreach( $parsed as $name => $value ){
-			$name	= strtolower( $name );
-			$value	= preg_replace( '/\s+/ ', ' ', trim( $value ) );
-			$result[]	= $name.':'.$value;
-		}
-		return implode( "\n", $result )."\n";
-	}
-
-	/**
-	 *	Relax body: normalize line endings, remove trailing whitespace, collapse empty lines.
-	 *	@access		protected
-	 *	@param		string		$body
-	 *	@return		string
-	 */
-	protected function relaxBody( string $body ): string
-	{
-		//  Convert all line endings to CRLF
-		$body	= str_replace( "\r\n", "\n", $body );
-		$body	= str_replace( "\r", "\n", $body );
-
-		//  Remove trailing whitespace from each line
-		$lines	= explode( "\n", $body );
-		$lines	= array_map( static fn( string $line ): string => rtrim( $line, ' \t' ), $lines );
-
-		//  Remove trailing empty lines
-		while( count( $lines ) > 0 && '' === $lines[ count( $lines ) - 1 ] ){
-			array_pop( $lines );
-		}
-
-		return implode( "\n", $lines );
-	}
-
-	/**
-	 *	Parse raw headers into an associative array of name => value.
-	 *	Handles folded (continuation) lines.
-	 *	@access		protected
-	 *	@param		string		$headers
-	 *	@return		array<string,string>
-	 */
-	protected function parseHeaders( string $headers ): array
-	{
-		//  Normalize line endings
-		$headers	= str_replace( "\r\n", "\n", $headers );
-		$headers	= rtrim( $headers, "\n" );
-
-		$lines	= explode( "\n", $headers );
-
-		//  Unfold continuation lines
-		$unfolded	= [];
-		$current	= '';
-		foreach( $lines as $line ){
-			if( strlen( $line ) > 0 && (' ' === $line[0] || "\t" === $line[0] ) ){
-				//  Continuation line
-				$current	.= ' '.trim( $line );
-			}
-			else{
-				if( strlen( $current ) > 0 )
-					$unfolded[]	= $current;
-				$current	= $line;
-			}
-		}
-		if( strlen( $current ) > 0 )
-			$unfolded[]	= $current;
-
-		//  Parse name: value pairs
-		$result	= [];
-		foreach( $unfolded as $line ){
-			$pos	= strpos( $line, ':' );
-			if( FALSE !== $pos ){
-				$name	= trim( substr( $line, 0, $pos ) );
-				$value	= trim( substr( $line, $pos + 1 ) );
-				$result[$name]	= $value;
-			}
-		}
-
-		return $result;
+		$mode	= strtolower( trim( $mode ) );
+		if( !in_array( $mode, self::MODES, TRUE ) )
+			throw new InvalidArgumentException( 'Invalid canonicalization mode "'.$mode.'", must be simple or relaxed' );
+		return $mode;
 	}
 }
-

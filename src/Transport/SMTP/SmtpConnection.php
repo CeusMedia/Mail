@@ -55,6 +55,24 @@ interface SmtpConnection
 	 *	@return		Response
 	 */
 	public function readResponse(): Response;
+
+	/**
+	 *	Read the next SMTP response and verify it matches one of the accepted codes.
+	 *	In verbose mode, the response is printed to stdout.
+	 *	@access		public
+	 *	@param		array<integer>	$acceptedCodes	Expected response codes
+	 *	@return		Response
+	 *	@throws		\RuntimeException		When response code is not in accepted list
+	 */
+	public function checkResponse( array $acceptedCodes ): Response;
+
+	/**
+	 *	Print a response in verbose mode (no-op if verbose is disabled).
+	 *	Used by AUTH strategies that read responses manually via readResponse().
+	 *	@access		public
+	 *	@param		Response	$response	SMTP response to print
+	 */
+	public function printResponse( Response $response ): void;
 }
 
 

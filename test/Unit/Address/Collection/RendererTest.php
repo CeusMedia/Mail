@@ -33,9 +33,7 @@ class RendererTest extends TestCase
 	}
 
 	/**
-	 *	@covers		::create
 	 *	@covers		::getInstance
-	 *	@todo		remove coverage of create after removing method
 	 */
 	public function testGetInstance()
 	{

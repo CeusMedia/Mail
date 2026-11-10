@@ -3,78 +3,117 @@ namespace CeusMedia\MailTest\Message\Signer;
 
 use CeusMedia\Mail\Message\Signer\Canonicalizer;
 use CeusMedia\MailTest\TestCase;
+use InvalidArgumentException;
 
+/**
+ *	@coversDefaultClass	\CeusMedia\Mail\Message\Signer\Canonicalizer
+ */
 class CanonicalizerTest extends TestCase
 {
-	public function testGetModeRelaxedRelaxed(): void
+	/** Example of RFC 6376, 3.4.5 */
+	protected const RFC_HEADERS	= "A: X\r\nB : Y\t\r\n\tZ  \r\n";
+	protected const RFC_BODY	= " C \r\nD \t E\r\n\r\n\r\n";
+
+	/**
+	 *	@covers		::getMode
+	 */
+	public function testGetMode(): void
 	{
-		$canonicalizer	= new Canonicalizer();
-		$this->assertSame( 'r/r', $canonicalizer->getMode() );
+		self::assertSame( 'relaxed/relaxed', ( new Canonicalizer() )->getMode() );
+		self::assertSame( 'simple/simple', ( new Canonicalizer( Canonicalizer::SIMPLE, Canonicalizer::SIMPLE ) )->getMode() );
+		self::assertSame( 'relaxed/simple', ( new Canonicalizer( 'Relaxed', 'simple' ) )->getMode() );
 	}
 
-	public function testGetModeSimpleSimple(): void
+	/**
+	 *	@covers		::__construct
+	 */
+	public function testInvalidModeThrows(): void
 	{
-		$canonicalizer	= new Canonicalizer( Canonicalizer::SIMPLE, Canonicalizer::SIMPLE );
-		$this->assertSame( 's/s', $canonicalizer->getMode() );
+		$this->expectException( InvalidArgumentException::class );
+		new Canonicalizer( 'r', 'r' );
 	}
 
-	public function testGetModeRelaxedSimple(): void
-	{
-		$canonicalizer	= new Canonicalizer( Canonicalizer::RELAXED, Canonicalizer::SIMPLE );
-		$this->assertSame( 'r/s', $canonicalizer->getMode() );
-	}
-
-	public function testCanonicalizeBodySimple(): void
-	{
-		$canonicalizer	= new Canonicalizer( Canonicalizer::SIMPLE, Canonicalizer::SIMPLE );
-		$body			= "Hello\r\nWorld\r\n\r\n";
-		$result			= $canonicalizer->canonicalizeBody( $body );
-		$this->assertSame( "Hello\nWorld", $result );
-	}
-
-	public function testCanonicalizeBodyRelaxed(): void
-	{
-		$canonicalizer	= new Canonicalizer( Canonicalizer::RELAXED, Canonicalizer::RELAXED );
-		$body			= "Hello  \r\nWorld  \r\n\r\n";
-		$result			= $canonicalizer->canonicalizeBody( $body );
-		$this->assertSame( "Hello\nWorld", $result );
-	}
-
-	public function testCanonicalizeHeadersRelaxed(): void
+	/**
+	 *	@covers		::canonicalizeHeaders
+	 *	@covers		::canonicalizeHeaderField
+	 */
+	public function testRfcExampleRelaxedHeaders(): void
 	{
 		$canonicalizer	= new Canonicalizer( Canonicalizer::RELAXED, Canonicalizer::RELAXED );
-		$headers		= "From: sender@example.com\r\nSubject:  Test  Subject\r\n";
-		$result			= $canonicalizer->canonicalizeHeaders( $headers );
-		$this->assertStringContainsString( 'from:sender@example.com', $result );
-		$this->assertStringContainsString( 'subject:Test Subject', $result );
+		self::assertSame( "a:X\r\nb:Y Z\r\n", $canonicalizer->canonicalizeHeaders( self::RFC_HEADERS ) );
 	}
 
+	/**
+	 *	@covers		::canonicalizeBody
+	 */
+	public function testRfcExampleRelaxedBody(): void
+	{
+		$canonicalizer	= new Canonicalizer( Canonicalizer::RELAXED, Canonicalizer::RELAXED );
+		self::assertSame( " C\r\nD E\r\n", $canonicalizer->canonicalizeBody( self::RFC_BODY ) );
+	}
+
+	/**
+	 *	@covers		::canonicalizeHeaders
+	 */
+	public function testRfcExampleSimpleHeaders(): void
+	{
+		$canonicalizer	= new Canonicalizer( Canonicalizer::SIMPLE, Canonicalizer::SIMPLE );
+		self::assertSame( self::RFC_HEADERS, $canonicalizer->canonicalizeHeaders( self::RFC_HEADERS ) );
+	}
+
+	/**
+	 *	@covers		::canonicalizeBody
+	 */
+	public function testRfcExampleSimpleBody(): void
+	{
+		$canonicalizer	= new Canonicalizer( Canonicalizer::SIMPLE, Canonicalizer::SIMPLE );
+		self::assertSame( " C \r\nD \t E\r\n", $canonicalizer->canonicalizeBody( self::RFC_BODY ) );
+	}
+
+	/**
+	 *	Empty body: simple is one CRLF, relaxed is empty (RFC 6376, 3.4.3 and 3.4.4).
+	 *	@covers		::canonicalizeBody
+	 */
+	public function testEmptyBody(): void
+	{
+		self::assertSame( "\r\n", ( new Canonicalizer( 'simple', 'simple' ) )->canonicalizeBody( "\r\n\r\n" ) );
+		self::assertSame( '', ( new Canonicalizer( 'relaxed', 'relaxed' ) )->canonicalizeBody( " \r\n\t\r\n" ) );
+		self::assertSame( '', ( new Canonicalizer( 'relaxed', 'relaxed' ) )->canonicalizeBody( '' ) );
+	}
+
+	/**
+	 *	Body with LF line endings is canonicalized as sent by SMTP (CRLF), missing final line break added.
+	 *	@covers		::canonicalizeBody
+	 */
+	public function testBodyLineEndings(): void
+	{
+		$canonicalizer	= new Canonicalizer( Canonicalizer::RELAXED, Canonicalizer::RELAXED );
+		self::assertSame( "Line 1\r\nLine 2\r\n", $canonicalizer->canonicalizeBody( "Line 1  \nLine 2\t\n\n\n" ) );
+		self::assertSame( "Hello World\r\n", $canonicalizer->canonicalizeBody( 'Hello World' ) );
+	}
+
+	/**
+	 *	Fields are taken in order of the names, repeated names from the bottom up, missing ones add nothing.
+	 *	@covers		::canonicalizeHeaderList
+	 *	@covers		::splitHeaderFields
+	 *	@covers		::getFieldName
+	 */
 	public function testCanonicalizeHeaderList(): void
 	{
 		$canonicalizer	= new Canonicalizer( Canonicalizer::RELAXED, Canonicalizer::RELAXED );
-		$headers		= "From: sender@example.com\r\nDate: Mon, 1 Jan 2024 00:00:00 +0000\r\nSubject: Test\r\nX-Custom: Ignore\r\n";
-		$result			= $canonicalizer->canonicalizeHeaderList( $headers, [ 'from', 'subject' ] );
-		$this->assertStringContainsString( 'from:sender@example.com', $result );
-		$this->assertStringContainsString( 'subject:Test', $result );
-		$this->assertStringNotContainsString( 'x-custom', $result );
-		$this->assertStringNotContainsString( 'date', $result );
+		$headers		= "Received: one\r\nFrom: sender@example.com\r\nReceived: two\r\nX-Custom: Ignore\r\nSubject: Test\r\n";
+		$result			= $canonicalizer->canonicalizeHeaderList( $headers, ['Subject', 'received', 'from', 'received', 'received', 'date'] );
+		self::assertSame( "subject:Test\r\nreceived:two\r\nfrom:sender@example.com\r\nreceived:one\r\n", $result );
 	}
 
-	public function testCanonicalizeHeaderListSimple(): void
+	/**
+	 *	@covers		::splitHeaderFields
+	 */
+	public function testSplitHeaderFields(): void
 	{
-		$canonicalizer	= new Canonicalizer( Canonicalizer::SIMPLE, Canonicalizer::SIMPLE );
-		$headers		= "From: sender@example.com\r\nSubject: Test\r\n";
-		$result			= $canonicalizer->canonicalizeHeaderList( $headers, [ 'from', 'subject' ] );
-		//  Simple mode keeps original case
-		$this->assertStringContainsString( 'From:sender@example.com', $result );
-	}
-
-	public function testCanonicalizeBodyRelaxedRemovesTrailingWhitespace(): void
-	{
-		$canonicalizer	= new Canonicalizer( Canonicalizer::RELAXED, Canonicalizer::RELAXED );
-		$body			= "Line 1  \nLine 2\t\n\n\n";
-		$result			= $canonicalizer->canonicalizeBody( $body );
-		$this->assertSame( "Line 1\nLine 2", $result );
+		self::assertSame(
+			['From: a@example.com', "Subject: folded\n line", 'To: b@example.com'],
+			Canonicalizer::splitHeaderFields( "From: a@example.com\nSubject: folded\n line\nTo: b@example.com\n" )
+		);
 	}
 }
-

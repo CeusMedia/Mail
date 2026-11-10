@@ -55,7 +55,7 @@ class AuthStrategyTest extends TestCase
 		$connection	= new SmtpConnectionMock( $responses );
 
 		$this->expectException( RuntimeException::class );
-		$this->expectExceptionMessage( 'AUTH LOGIN failed' );
+		$this->expectExceptionMessage( 'got 535' );
 		$auth->authenticate( $connection );
 	}
 
@@ -79,6 +79,7 @@ class AuthStrategyTest extends TestCase
 
 		$this->assertCount( 1, $connection->sentCommands );
 		$this->assertStringStartsWith( 'AUTH PLAIN ', $connection->sentCommands[0] );
+		$this->assertSame( "user\0user\0pass", base64_decode( substr( $connection->sentCommands[0], 11 ), TRUE ) );
 	}
 
 	public function testPlainAuthenticateFailure(): void
@@ -90,7 +91,7 @@ class AuthStrategyTest extends TestCase
 		] );
 
 		$this->expectException( RuntimeException::class );
-		$this->expectExceptionMessage( 'AUTH PLAIN failed' );
+		$this->expectExceptionMessage( 'got 535' );
 		$auth->authenticate( $connection );
 	}
 
@@ -105,8 +106,8 @@ class AuthStrategyTest extends TestCase
 		$auth->authenticate( $connection );
 
 		//  Extract the base64 payload
-		$parts	= explode( ' ', $connection->sentCommands[0], 2 );
-		$decoded	= base64_decode( $parts[1] );
+		$parts	= explode( ' ', $connection->sentCommands[0], 3 );
+		$decoded	= base64_decode( $parts[2], TRUE );
 		$this->assertSame( "authz_id\0auth_id\0pass", $decoded );
 	}
 

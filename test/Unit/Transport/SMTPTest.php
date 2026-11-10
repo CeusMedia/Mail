@@ -8,11 +8,13 @@
 namespace CeusMedia\MailTest\Unit\Transport;
 
 use CeusMedia\Mail\Message;
+use CeusMedia\Mail\Message\Signer\Dkim;
 use CeusMedia\Mail\Transport\Result;
 use CeusMedia\Mail\Transport\SMTP;
 use CeusMedia\Mail\Transport\SMTP\Exception as SmtpException;
 use CeusMedia\Mail\Transport\SMTP\Response;
 use CeusMedia\Mail\Transport\SMTP\Socket;
+use CeusMedia\MailTest\Message\Signer\DkimVerifier;
 use CeusMedia\MailTest\TestCase;
 use InvalidArgumentException;
 
@@ -286,6 +288,27 @@ class SMTPTest extends TestCase
 		self::assertSame( 'User unknown', preg_replace( '/^5\.1\.1 /', '', (string) $results[0]->getMessage() ) );
 		self::assertNotContains( 'DATA', $socket->getCommands() );
 		self::assertNotContains( 'QUIT', $socket->getCommands(), 'QUIT sent by socket on close only' );
+	}
+
+	/**
+	 *	A DKIM signed message stays verifiable after sending, dot-stuffing removed by receiver.
+	 *	@covers		::setDkimSigner
+	 *	@covers		::send
+	 */
+	public function testDkimSignedMessageIsVerifiable(): void
+	{
+		$dataPath	= dirname( __DIR__, 2 ).'/data/dkim/';
+		$signer		= Dkim::createFromKey( (string) file_get_contents( $dataPath.'rfc8463-rsa.pem' ), 'example.org', 'test' );
+		$message	= $this->createMessage()->addText( "Erste\r\n.zweite\r\nletzte", 'UTF-8', '8bit' );
+		$socket		= new FakeServerSocket();
+		$this->createTransport( $socket, 25 )->setDkimSigner( $signer )->send( $message );
+
+		self::assertStringStartsWith( 'DKIM-Signature: v=1; a=rsa-sha256;', $socket->data );
+		$received	= (string) preg_replace( '/^\.\./m', '.', $socket->data );
+		$publicKey	= substr( $signer->getDnsRecord(), strlen( 'v=DKIM1; k=rsa; p=' ) );
+		$result		= DkimVerifier::verify( $received, $publicKey );
+		self::assertTrue( $result['bodyHash'] );
+		self::assertTrue( $result['signature'] );
 	}
 
 	private function createTransport( Socket $socket, int $port ): SMTP

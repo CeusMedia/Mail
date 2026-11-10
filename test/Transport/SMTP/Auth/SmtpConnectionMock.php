@@ -45,6 +45,22 @@ class SmtpConnectionMock implements SmtpConnection
 		}
 		return $this->responses[ $this->responseIndex++ ];
 	}
+
+	public function checkResponse( array $acceptedCodes ): \CeusMedia\Mail\Transport\SMTP\Response
+	{
+		$response = $this->readResponse();
+		if ( !in_array( $response->getCode(), $acceptedCodes, TRUE ) ) {
+			throw new \RuntimeException(
+				'Expected response code in [' . implode(', ', $acceptedCodes) . '], got ' . $response->getCode()
+			);
+		}
+		return $response;
+	}
+
+	public function printResponse( Response $response ): void
+	{
+		//  No-op in mock — tests don't need verbose output
+	}
 }
 
 
