@@ -71,30 +71,15 @@ class Login implements AuthStrategy
 	{
 		//  Initiate AUTH LOGIN
 		$connection->sendChunk( 'AUTH LOGIN' );
-		$response	= $connection->readResponse();
-		if( 334 !== $response->getCode() ){
-			throw new RuntimeException(
-				'AUTH LOGIN failed: expected 334, got '.$response->getCode().' '.$response->getMessage()
-			);
-		}
+		$connection->checkResponse( [ 334 ] );
 
 		//  Send base64-encoded username (masked in verbose output)
 		$connection->sendChunk( base64_encode( $this->username ), '[username hidden]' );
-		$response	= $connection->readResponse();
-		if( 334 !== $response->getCode() ){
-			throw new RuntimeException(
-				'AUTH LOGIN failed: expected 334 after username, got '.$response->getCode().' '.$response->getMessage()
-			);
-		}
+		$connection->checkResponse( [ 334 ] );
 
 		//  Send base64-encoded password (masked in verbose output)
 		$connection->sendChunk( base64_encode( $this->password ), '[password hidden]' );
-		$response	= $connection->readResponse();
-		if( 235 !== $response->getCode() ){
-			throw new RuntimeException(
-				'AUTH LOGIN failed: expected 235, got '.$response->getCode().' '.$response->getMessage()
-			);
-		}
+		$connection->checkResponse( [ 235 ] );
 	}
 }
 

@@ -1,6 +1,18 @@
 
 ## Changelog
 
+- 2.8.0 (unreleased)
+	* Remove deprecated methods: create() of Address, Address\Parser, Address\Renderer, Address\Collection\Parser and Address\Collection\Renderer (use getInstance), Availability::getLastError and getLastErrorValue (use getLastResponse), Client::find (use search).
+	* SMTP: AUTH by strategies (new interface Transport\SMTP\Auth\AuthStrategy): Login, Plain (RFC 4616) and Xoauth2, new method setAuthStrategy; AUTH LOGIN stays default for username and password.
+	* SMTP: Failed AUTH strategy throws SMTP exception with code ERROR_LOGIN_FAILED and server response; credentials and tokens hidden in verbose output.
+	* SMTP: DKIM signing of sent messages, new method setDkimSigner.
+	* DKIM: New signer Message\Signer\Dkim (RFC 6376, RSA-SHA256, key of at least 1024 bits): prepends DKIM-Signature, message unchanged; canonicalization relaxed (default) or simple for headers and body (Message\Signer\Canonicalizer), computed for CRLF also for messages with LF.
+	* DKIM: Signs From, Reply-To, Subject, Date, To, Cc, Message-ID, In-Reply-To, References, MIME-Version and Content-Type if present (setHeaders), oversigns From and Subject (setOversignHeaders), never Bcc; DNS record by getDnsName and getDnsRecord.
+	* DKIM: Reject messages with 8bit data (non-ASCII bytes), a conversion to 7bit on the way would break the signature; allow by setAllow8bit.
+	* Message parser: Limit nesting of multipart bodies to 10 levels.
+	* Attachment: Resolve file path before reading.
+	* Local transport: Reject unsafe sendmail parameters.
+	* Tests: Add tests for DKIM (test vectors of RFC 6376 and RFC 8463, signed messages received by Mailpit) and AUTH strategies, add them to test suite.
 - 2.7.2 (unreleased)
 	* SMTP: Fix: Deliver to CC and BCC recipients as well, not only to TO recipients; messages without TO recipient (e.g. BCC only) are sent.
 	* SMTP: Fix: Double leading dots of content lines (RFC 5321, 4.5.2), a single dot line ended the message early.

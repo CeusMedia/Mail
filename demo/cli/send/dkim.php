@@ -74,15 +74,19 @@ try {
 		'relaxed'					//  Body canonicalization: "simple" or "relaxed"
 	);
 
-	//  Optionally customize which headers are included in the signature
-	//  Default: from, date, subject (recommended minimum)
-	//  $signer->setHeaders( ['from', 'date', 'subject', 'to', 'reply-to'] );
+	//  Signed by default, if present: From, Reply-To, Subject, Date, To, Cc, Message-ID,
+	//  In-Reply-To, References, MIME-Version, Content-Type. From and Subject are signed
+	//  once more (oversigning), so no second one can be added later. Bcc is never signed.
+	//  $signer->setHeaders( ['from', 'subject', 'date', 'to'] );
+	//  $signer->setOversignHeaders( ['from', 'subject'] );
 
 	$transport->setDkimSigner( $signer );
 	CLI::out( 'DKIM signer configured:' );
 	CLI::out( '  Domain:   '.$dkim->domain );
 	CLI::out( '  Selector: '.$dkim->selector );
 	CLI::out( '  Key file: '.$dkim->privateKey );
+	CLI::out( '  DNS name: '.$signer->getDnsName() );
+	CLI::out( '  DNS TXT:  '.$signer->getDnsRecord() );
 
 	$transport->send( $mail );
 	CLI::out( 'Mail sent successfully with DKIM signature.' );

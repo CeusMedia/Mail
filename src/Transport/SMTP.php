@@ -237,6 +237,12 @@ class SMTP implements SmtpConnection
 			try{
 				$strategy->authenticate( $this );
 			}
+			catch( SmtpException $e ){
+				//  checkResponse() throws SmtpException with Response — normalize code to LOGIN_FAILED
+				$wrapped	= new SmtpException( $e->getMessage(), SmtpResponse::ERROR_LOGIN_FAILED );
+				$wrapped->setResponse( $e->getResponse() );
+				throw $wrapped;
+			}
 			catch( RuntimeException $e ){
 				//  Wrap AUTH strategy exceptions as SMTP exceptions
 				throw new SmtpException( $e->getMessage(), SmtpResponse::ERROR_LOGIN_FAILED );
@@ -553,7 +559,60 @@ class SMTP implements SmtpConnection
 		return array_merge( $options, $this->sslOptions );
 	}
 
-	protected function checkResponse( array $acceptedCodes = [], ?int $errorCode = NULL, bool $strict = TRUE ): SmtpResponse
+
+	/**
+	 *	Sends a command or content to the server.
+	 *	@access		public
+	 *	@param		string			$message		Command or content to send
+	 *	@param		string|NULL		$verboseMessage	Shown instead of message in verbose mode, e.g. to hide credentials
+	 *	@return		bool
+	 */
+	public function sendChunk( string $message, ?string $verboseMessage = NULL ): bool
+	{
+		if( NULL === $this->socket )
+			throw new RuntimeException( 'Not connected' );
+
+		if( $this->verbose )
+			print PHP_EOL . ' > '.( $verboseMessage ?? $message ) . PHP_EOL;
+
+		return $this->socket->sendChunk( $message.Message::$delimiter );
+	}
+
+	/**
+	 *	Read the next SMTP response from the server.
+	 *	@access		public
+	 *	@return		Response
+	 */
+	public function readResponse(): Response
+	{
+		if( NULL === $this->socket )
+			throw new RuntimeException( 'Not connected' );
+
+		return $this->socket->readResponse();
+	}
+
+	/**
+	 *	Print a response in verbose mode (no-op if verbose is disabled).
+	 *	@access		public
+	 *	@param		Response	$response	SMTP response to print
+	 */
+	public function printResponse( Response $response ): void
+	{
+		if( $this->verbose )
+			print ' < ' . join( PHP_EOL . '   ', $response->getResponse() );
+	}
+
+	/**
+	 *	Read the next SMTP response and verify it matches one of the accepted codes.
+	 *	Implements SmtpConnection interface method for AUTH strategies.
+	 *	@access		public
+	 *	@param		array<integer>	$acceptedCodes	Expected response codes
+	 *	@param		int|null			$errorCode		Optional error code for exception
+	 *	@param		bool				$strict			Whether to throw on unexpected code (default: true)
+	 *	@return		SmtpResponse
+	 *	@throws		\RuntimeException		When response code is not in accepted list
+	 */
+	public function checkResponse( array $acceptedCodes, ?int $errorCode = NULL, bool $strict = TRUE ): SmtpResponse
 	{
 		if( 0 === count( $acceptedCodes ) )
 			throw new RangeException( 'No accepted codes set' );
@@ -586,36 +645,5 @@ class SMTP implements SmtpConnection
 			}
 		}
 		return $response;
-	}
-
-	/**
-	 *	Sends a command or content to the server.
-	 *	@access		public
-	 *	@param		string			$message		Command or content to send
-	 *	@param		string|NULL		$verboseMessage	Shown instead of message in verbose mode, e.g. to hide credentials
-	 *	@return		bool
-	 */
-	public function sendChunk( string $message, ?string $verboseMessage = NULL ): bool
-	{
-		if( NULL === $this->socket )
-			throw new RuntimeException( 'Not connected' );
-
-		if( $this->verbose )
-			print PHP_EOL . ' > '.( $verboseMessage ?? $message ) . PHP_EOL;
-
-		return $this->socket->sendChunk( $message.Message::$delimiter );
-	}
-
-	/**
-	 *	Read the next SMTP response from the server.
-	 *	@access		public
-	 *	@return		Response
-	 */
-	public function readResponse(): Response
-	{
-		if( NULL === $this->socket )
-			throw new RuntimeException( 'Not connected' );
-
-		return $this->socket->readResponse();
 	}
 }

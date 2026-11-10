@@ -78,11 +78,12 @@ class Xoauth2 implements AuthStrategy
 		//  Format: user=<username>\1auth=Bearer <token>\1\1
 		$saslIR	= sprintf( 'user=%s\1auth=Bearer %s\1\1', $this->username, $this->accessToken );
 
-		$connection->sendChunk( 'AUTH XOAUTH2 '.base64_encode( $saslIR ) );
+		$connection->sendChunk( 'AUTH XOAUTH2 '.base64_encode( $saslIR ), '[token hidden]' );
 		$response	= $connection->readResponse();
 
 		if( 235 === $response->getCode() ){
 			//  SASL IR succeeded — authentication complete
+			$connection->printResponse( $response );
 			return;
 		}
 
@@ -94,12 +95,14 @@ class Xoauth2 implements AuthStrategy
 
 			if( 334 === $response->getCode() ){
 				//  Server sent a challenge — send our SASL IR as response
-				$connection->sendChunk( base64_encode( $saslIR ) );
+				$connection->sendChunk( base64_encode( $saslIR ), '[token hidden]' );
 				$response	= $connection->readResponse();
 			}
 		}
 
+		//  Final check: expect 235 success
 		if( 235 !== $response->getCode() ){
+			$connection->printResponse( $response );
 			//  Collect additional error details from server response lines
 			$details	= '';
 			if( $response->getCode() === 535 || $response->getCode() === 534 ){
@@ -109,6 +112,7 @@ class Xoauth2 implements AuthStrategy
 				'AUTH XOAUTH2 failed: expected 235, got '.$response->getCode().$details
 			);
 		}
+		$connection->printResponse( $response );
 	}
 }
 

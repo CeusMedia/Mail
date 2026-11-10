@@ -14,6 +14,7 @@ use CeusMedia\Mail\Address\Collection as AddressCollection;
 use CeusMedia\Mail\Message\Part\Attachment;
 use CeusMedia\Mail\Message\Part\InlineImage;
 use CeusMedia\MailTest\TestCase;
+use RuntimeException;
 
 /**
  *	Unit test for mail message parser.
@@ -170,5 +171,34 @@ class ParserTest extends TestCase
 		self::assertCount( 2, $message->getRecipientsByType( 'to' ) );
 		self::assertSame( '=?UTF-8?B?'.base64_encode( 'Doe, Jürgen' ).'?= <c@example.org>', $message->getHeaders()->getField( 'Cc' )->getValue() );
 		self::assertCount( 1, $message->getRecipientsByType( 'cc' ) );
+	}
+
+	/**
+	 *	Parsing a deeply nested multipart message throws RuntimeException when MAX_DEPTH is exceeded.
+	 *	@covers		::parse
+	 *	@covers		::parseMultipartBody
+	 */
+	public function testMaxDepthExceeded(): void
+	{
+		//  Build a MIME message where each part is itself a multipart/mixed.
+		//  The parser recurses into each part, so 15 levels exceed MAX_DEPTH (10).
+		//  Structure: multipart -> part (multipart) -> part (multipart) -> ... -> text/plain
+		$levels	= 15;
+
+		//  Start from the innermost part (text/plain)
+		$innerPart	= "Content-Type: text/plain\r\n\r\ninnermost";
+
+		//  Wrap it in nested multipart/mixed containers
+		$nested	= $innerPart;
+		for( $i = 0; $i < $levels; $i++ ){
+			$b	= 'b'.$i;
+			$nested	= "Content-Type: multipart/mixed; boundary=\"{$b}\"\r\n\r\n--{$b}\r\n{$nested}\r\n--{$b}--";
+		}
+
+		$raw	= "From: test@example.org\r\nSubject: Nested\r\n{$nested}";
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Multipart nesting depth exceeded maximum' );
+		Parser::getInstance()->parse( $raw );
 	}
 }
