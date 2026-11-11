@@ -149,6 +149,8 @@ nav:
       - "Part\\Mail": api/Message/Part/Mail.md
       - "Part\\Text": api/Message/Part/Text.md
       - "Renderer": api/Message/Renderer.md
+      - "Signer\\Canonicalizer": api/Message/Signer/Canonicalizer.md
+      - "Signer\\Dkim": api/Message/Signer/Dkim.md
     - Mailbox:
       - "Connection": api/Mailbox/Connection.md
       - "Mail": api/Mailbox/Mail.md
@@ -159,10 +161,15 @@ nav:
       - "Local": api/Transport/Local.md
       - "Result": api/Transport/Result.md
       - "SMTP": api/Transport/SMTP.md
+      - "SMTP\\Auth\\AuthStrategy": api/Transport/SMTP/Auth/AuthStrategy.md
+      - "SMTP\\Auth\\Login": api/Transport/SMTP/Auth/Login.md
+      - "SMTP\\Auth\\Plain": api/Transport/SMTP/Auth/Plain.md
+      - "SMTP\\Auth\\Xoauth2": api/Transport/SMTP/Auth/Xoauth2.md
       - "SMTP\\Code": api/Transport/SMTP/Code.md
       - "SMTP\\Exception": api/Transport/SMTP/Exception.md
       - "SMTP\\Response": api/Transport/SMTP/Response.md
       - "SMTP\\ReturnCode": api/Transport/SMTP/ReturnCode.md
+      - "SMTP\\SmtpConnection": api/Transport/SMTP/SmtpConnection.md
       - "SMTP\\Socket": api/Transport/SMTP/Socket.md
     - Utilities:
       - "Dmarc\\Parser": api/Util/Dmarc/Parser.md

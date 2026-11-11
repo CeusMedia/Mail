@@ -325,11 +325,13 @@ class DkimTest extends TestCase
 	}
 
 	/**
-	 *	Unsigned message of RFC 8463, Appendix A.
+	 *	Unsigned message of RFC 8463, Appendix A, with CRLF line endings.
+	 *	The fixture is normalized, since Git may check it out with LF (core.autocrlf).
 	 */
 	protected function getRfcMessage(): string
 	{
 		$message	= (string) file_get_contents( $this->dataPath.'rfc8463-message.eml' );
+		$message	= (string) preg_replace( '/\r?\n/', "\r\n", $message );
 		return substr( $message, (int) strpos( $message, 'From: ' ) );
 	}
 }
